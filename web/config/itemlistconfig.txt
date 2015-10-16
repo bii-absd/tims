@@ -1,0 +1,13 @@
+#VENDOR
+Affymetrix$Affymetrix
+Illumina$Illumina
+#TYPE
+HG-U113-Plus2.0$HG-U113-Plus2.0
+HG-U123-Plus2.0$HG-U123-Plus2.0
+HG-U133-Plus2.0$HG-U133-Plus2.0
+#INSTITUTION
+Bioinformatics Institute$Bioinformatics Institute
+Khoo Teck Puat Hospital$Khoo Teck Puat Hospital
+#DEPARTMENT
+ABSD$ABSD
+CRU$CRU
