@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="trace">
+  <Appenders>
+    <File name="File" fileName="C:/temp/log/app.log">
+      <PatternLayout>
+        <Pattern>%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n</Pattern>
+      </PatternLayout>
+    </File>
+    <Console name="Console" target="SYSTEM_OUT">
+      <PatternLayout pattern="%m%n"/>
+    </Console>
+  </Appenders>
+  <Loggers>
+    <Root level="all">
+      <AppenderRef ref="File" level="DEBUG"/>
+      <AppenderRef ref="Console" level="DEBUG"/>
+    </Root>
+  </Loggers>
+</Configuration>
