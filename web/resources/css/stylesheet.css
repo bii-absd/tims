@@ -1,0 +1,98 @@
+/* 
+    Created on : Oct 14, 2015, 3:48:53 PM
+    Author     : Tay Wei Hong
+    Description: This document contains all the style used in describing the
+                 presentation of the xhtml web pages found in the application.
+*/
+
+.loginpage.ui-panelgrid>*>tr,
+.loginpage.ui-panelgrid .ui-panelgrid-cell {
+    border: none;
+}
+.grid-main {
+    width: 100%;
+}
+.grid-left-col {
+    width: 35%;
+}
+.grid-centre-col {
+    width: 30%;
+    alignment-adjust: middle;
+    alignment-baseline: middle;
+}
+.grid-left-col {
+    width: 35%;
+}
+
+.app-name {
+    font-family: Arial, sans-serif;
+    font-weight: 900;
+    margin: 0.1em;
+    color: rgb(0,124,188);
+}
+
+.element-spacing {
+    margin: 0.1em;
+}
+
+.button {
+    width: 215px;
+}
+
+.inputtext {
+    border-width: thin;
+}
+
+.login-box {
+    border-style: solid;
+    border-width: thick;
+    border-spacing: 20px;
+    color: rgb(204,204,204);
+}
+
+.page-border {
+    border-style: solid;
+    border-width: thick;
+    border-spacing: 15px;
+    font-family: courier, arial, monospace;
+    border-color: rgb(204,204,204);
+}
+
+.errors {
+    font-family: courier, arial, monospace;
+    font-size: 9pt;
+    color: red;
+}
+
+.underline {
+    margin-top: 3em;
+    color: rgb(204,204,204);
+    size: 5px;
+}
+
+.alignleft {
+    float: left;
+    color: rgb(204,204,204);
+}
+
+.alignright {
+    float: right;
+    color: rgb(204,204,204);
+}
+
+.page {
+    font-family: courier, arial, monospace;
+    font-size: 10pt;
+    text-align: left;
+}
+
+.user-info {
+    font-family: courier, arial, monospace;
+    font-size: 9pt;
+    font-style: italic;
+    float: right;
+}
+
+.header {
+    margin-bottom: 1em;
+}
