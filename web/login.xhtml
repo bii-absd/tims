@@ -6,14 +6,14 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
     <h:head>
-        <link rel="stylesheet" type="text/css" href="stylesheet.css"/>
+        <h:outputStylesheet library="css" name="stylesheet.css"/>
         <title>Clinical Data Sink Login</title>
     </h:head>
     <h:body>
             <h:panelGrid columns="3" border="0" cellpadding="5"
                         cellspacing="5" width="100%">
                     
-                <h:graphicImage url="/images/BII.jpg"/>
+                <h:graphicImage library="images" name="BII.jpg"/>
                 <h:panelGroup/>
                 <h:panelGroup/>
                     
@@ -24,33 +24,35 @@
                 <h:panelGroup/>
                 <h:panelGrid styleClass="login-box" width="550px">
                 <h:form>
+                    <p:messages id="msg" for="global" showDetail="true"/>
+                    
                 <h:panelGrid columns="3" border="0" cellpadding="10"
                             cellspacing="3">
-                        
-                <h:outputLabel for="userNameInput">
+
+                <h:outputLabel for="username">
                 <h:outputText value="User name:"/>
                 </h:outputLabel>
-                <h:inputText id="userNameInput" size="20" maxlength="20" 
+                <h:inputText id="username" size="20" maxlength="20" 
                              required="true" value="#{authenticationBean.loginName}">
                     <f:validateLength minimum="5" maximum="20"/>
                 </h:inputText>
-                <h:message for="userNameInput" styleClass="errors"/>
-                        
-                <h:outputLabel for="passwordInput">
+                <p:message for="username"/>
+
+                <h:outputLabel for="password">
                 <h:outputText value="Password:"/>
                 </h:outputLabel>
-                <h:inputSecret id="passwordInput" size="20"
+                <h:inputSecret id="password" size="20"
                             maxlength="20" required="true"
                             value="#{authenticationBean.password}">
                     <f:validateLength minimum="5" maximum="20"/>
                 </h:inputSecret>
-                <h:message for="passwordInput" styleClass="errors"/>
+                <p:message for="password"/>
                 
                 <h:panelGroup/>
                 <h:commandButton action="#{authenticationBean.login}" 
-                                title="Login" style="width:150px"
-                                value="Login"/>
-                <h:messages globalOnly="true" styleClass="errors"/>
+                                 title="Login" style="width:150px"
+                                 value="Login"/>
+                <h:panelGroup/>
                 
                 </h:panelGrid>
                 </h:form>
