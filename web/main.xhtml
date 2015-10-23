@@ -20,7 +20,10 @@
             
             <p:panel id="array" header="Array Data" toggleable="true" widgetVar="array">
                 <h:panelGrid cellpadding="2">
-                    <h:commandLink action="array" value="run-gex-pipeline (Illumina)"/>
+                    <h:commandLink action="#{menuSelectionBean.gexPipelineIllumina()}" 
+                                   value="run-gex-pipeline (Illumina)">
+                        <f:param name="command" value="TGIF"/>
+                    </h:commandLink>
                     <h:commandLink action="array" value="run-meth-pipeline"/>
                     <h:commandLink action="array" value="run-geno-pipeline"/>
                 </h:panelGrid>
