@@ -32,9 +32,11 @@
                 <h:outputLabel for="username">
                 <h:outputText value="User name:"/>
                 </h:outputLabel>
-                <h:inputText id="username" size="20" maxlength="20" 
-                             required="true" value="#{authenticationBean.loginName}">
-                    <f:validateLength minimum="5" maximum="20"/>
+                    <h:inputText id="username" size="20" 
+                                 maxlength="20" autocomplete="off"
+                                 required="true" 
+                                 value="#{authenticationBean.loginName}">
+                    <f:validateLength minimum="5"/>
                 </h:inputText>
                 <p:message for="username"/>
 
@@ -44,7 +46,7 @@
                 <h:inputSecret id="password" size="20"
                             maxlength="20" required="true"
                             value="#{authenticationBean.password}">
-                    <f:validateLength minimum="5" maximum="20"/>
+                    <f:validateLength minimum="5"/>
                 </h:inputSecret>
                 <p:message for="password"/>
                 
