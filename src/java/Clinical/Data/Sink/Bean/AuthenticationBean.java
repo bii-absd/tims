@@ -110,23 +110,25 @@ public class AuthenticationBean implements Serializable {
         // application is first deployed.
         if ((loginName.compareTo("super")==0) && 
             (password.compareTo("super")==0)) {
-            return Constants.SUCCESS;
+            return Constants.MAIN_PAGE;
         }
         
         userAcct = UserAccountDB.checkPwd(loginName, password);
         
         if (userAcct != null) {
             logger.info(loginName + ": login to the system.");
-            return Constants.SUCCESS;
+            // Login success, proceed to Main Page.
+            return Constants.MAIN_PAGE;
         }
         else {
             FacesContext facesContext = getFacesContext();
             
-            facesContext.addMessage(null, new FacesMessage(
+            facesContext.addMessage("global", new FacesMessage(
                     FacesMessage.SEVERITY_WARN, 
                     "Invalid name or password.", ""));
             logger.info(loginName + ": failed to login to the system.");
-            return Constants.FAILURE;
+            // User ID/Password invalid, return to login page.
+            return Constants.LOGIN_PAGE;
         }
     }
     
@@ -141,7 +143,8 @@ public class AuthenticationBean implements Serializable {
         }
         
         logger.info(loginName + ": logout from the system.");
-        return Constants.LOGOFF;
+        // User logoff from system, return to Login Page.
+        return Constants.LOGIN_PAGE;
     }
     
     // getAdminRight will return true if the role ID of the user is 1 
