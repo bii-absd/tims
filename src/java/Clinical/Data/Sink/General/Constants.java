@@ -57,6 +57,10 @@ public class Constants {
     public final static String FAILURE = "failure";
     public final static String ERROR = "error";
     public final static String LOGOFF = "logoff";
+    // Navigation Strings
+    public final static String MAIN_PAGE = "main";
+    public final static String LOGIN_PAGE = "login";
+    public final static String NGS_PAGE = "ngs";
     // Constants used in Array pipeline
     private static String OUTPUTFILE_PATH = null;
     private static String INPUTFILE_PATH = null;
