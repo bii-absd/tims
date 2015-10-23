@@ -18,9 +18,9 @@
                 </h:panelGrid>
             </p:panel>
             
-            <p:panel id="array" header="Array Data" toggleable="true" widgetVar="array" collapsed="true">
+            <p:panel id="array" header="Array Data" toggleable="true" widgetVar="array">
                 <h:panelGrid cellpadding="2">
-                    <h:commandLink action="array" value="run-gex-pipeline"/>
+                    <h:commandLink action="array" value="run-gex-pipeline (Illumina)"/>
                     <h:commandLink action="array" value="run-meth-pipeline"/>
                     <h:commandLink action="array" value="run-geno-pipeline"/>
                 </h:panelGrid>
@@ -45,7 +45,7 @@
                 </h:panelGrid>
             </p:panel>
             
-            <p:panel id="job" header="My Job Submission" toggleable="true" widgetVar="job" collapsed="true">
+            <p:panel id="job" header="My Job Submission" toggleable="true" widgetVar="job">
                 <h:commandLink action="jobStatus" value="Job Status"/>
             </p:panel>
         </h:form>
