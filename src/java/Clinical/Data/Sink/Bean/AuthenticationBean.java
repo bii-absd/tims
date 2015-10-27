@@ -7,6 +7,7 @@ import Clinical.Data.Sink.Database.DBHelper;
 import Clinical.Data.Sink.General.Constants;
 import Clinical.Data.Sink.Database.UserAccount;
 import Clinical.Data.Sink.Database.UserAccountDB;
+import Clinical.Data.Sink.General.SelectOneMenuList;
 
 import java.io.Serializable;
 import java.sql.SQLException;
@@ -45,6 +46,8 @@ import org.apache.logging.log4j.LogManager;
  * 13-Oct-2015 - Added new method getAdminRight, to provide basic access control
  * to command/link.
  * 15-Oct-2015 - Critical error handling.
+ * 27-Oct-2015 - Created 2 new functions setupConstants and setupMenuList, to
+ * handle the setting up of systems constants and parameters.
  */
 
 @ManagedBean (name="authenticationBean")
@@ -60,21 +63,40 @@ public class AuthenticationBean implements Serializable {
     
     public AuthenticationBean() {}
     
-    public String login()
-    {
-        // Setting up the database configuration, input and config file path.
-        ServletContext context = getServletContext();
+    // setupConstants help to setup the database configuration, input and
+    // config file path.
+    private String setupConstants(ServletContext context) {
         // Load the setup filename from context-param
         String setupFile = context.getInitParameter("setting");
         logger.debug("Config file located at: " + context.getRealPath(setupFile));
+        
         // Setup the constants using the parameters defined in setup
-        if (Constants.setup(context.getRealPath(setupFile)).
-                compareTo(Constants.ERROR) == 0) {
+        return Constants.setup(context.getRealPath(setupFile));
+    }
+    
+    // setupMenuList help to setup all the menu list found in the system.
+    private String setupMenuList(ServletContext context) {
+        // Load the itemlist filename from context-param
+        String itemListFile = context.getInitParameter("itemlist");
+        logger.debug("Item list file located at: " + context.getRealPath(itemListFile));
+        
+        // Setup the menu list using the items defined in item list config
+        return SelectOneMenuList.setup(context.getRealPath(itemListFile));
+    }
+    
+    // login will setup the system, check the user login and password against 
+    // the database before letting the user use the system.
+    public String login()
+    {
+        // Setting up the database configuration, input, config file path, etc
+        ServletContext context = getServletContext();
+
+        if ( (setupConstants(context).compareTo(Constants.ERROR) == 0) ||
+             (setupMenuList(context).compareTo(Constants.ERROR) == 0) )
+        {
             // System having issue, shouldn't let the user proceed.
             return Constants.ERROR;
         }
-        // The real path of the setup file should change accordingly once
-        // the web application has been ported to linux server
         
         try {
             // Setup the database handler
