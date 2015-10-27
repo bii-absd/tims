@@ -6,5 +6,9 @@
 
     <application>
         <message-bundle>CustomMessages</message-bundle>
+        <resource-bundle>
+            <base-name>Clinical.Data.Sink.General.messages</base-name>
+            <var>msg</var>
+        </resource-bundle>
     </application>
 </faces-config>
