@@ -20,12 +20,12 @@
             <h:graphicImage library="images" name="BII.jpg" alt="BII"/>
 
             <p:menubar>
-                <p:submenu label="Account" rendered="#{authenticationBean.adminRight}">
-                    <p:menuitem value="New" icon="fa fa-plus"/>
-                    <p:menuitem value="Change Password" icon=""/>
+                <p:submenu label="Admin" rendered="#{authenticationBean.adminRight}">
+                    <p:menuitem value="New Account" icon="fa fa-plus"/>
+                    <p:menuitem value="Change Password" icon="fa fa-pencil"/>
                 </p:submenu>
                 <f:facet name="options">
-                    <p:commandButton type="button" value="Logout" 
+                    <p:commandButton value="Logout" 
                                      action="#{authenticationBean.logout()}"
                                      icon="ui-icon-extlink"/>
                 </f:facet>
