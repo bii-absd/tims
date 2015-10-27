@@ -1,21 +1,28 @@
 # The below defines the path, filename, filename extention of the input file, 
 # config file, etc
-OUTPUTFILE_PATH C://temp//datasink//
-INPUTFILE_PATH C://temp//datasink//
+SYSTEM_PATH C://temp//datasink//users//
+OUTPUTFILE_PATH //output//
+OUTPUTFILE_NAME output-
+REPORTFILE_NAME report-
+REPORTFILE_EXT .pdf
+INPUTFILE_PATH //input//
 INPUTFILE_NAME arraydata_
-CTRLFILE_PATH C://temp//datasink//
+CTRLFILE_PATH //input//
 CTRLFILE_NAME ctrl_
 CTRLFILE_EXT .qcc
-MPSFILE_PATH C://temp//datasink//
+MPSFILE_PATH //input//
 MPSFILE_NAME mps_
-SAMPLEANTFILE_PATH C://temp//datasink//
 SAMPLEANTFILE_NAME sample_annot_
-PROBEANTFILE_PATH C://temp//datasink//
 PROBEANTFILE_NAME probe_annot_
-CONFIG_FILE_PATH C://temp//config//
+LOGFILE_PATH //log//
+LOGFILE_NAME log_
+CONFIG_FILE_PATH //config//
 CONFIG_FILE_NAME arrayconfig_
 CONFIG_FILE_EXT .txt
 # The below defines the database name, database driver
 DATABASE_NAME jdbc:postgresql://localhost:5432/clinical
 DATABASE_DRIVER org.postgresql.Driver
+# The below defines the perl command to be run
+COMMAND1 Perl
+COMMAND2 C:\\Perl\\compound_interest.pl
 # This is the end of the line. There should not be any blank line in-between.
