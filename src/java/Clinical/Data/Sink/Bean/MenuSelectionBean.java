@@ -32,6 +32,8 @@ public class MenuSelectionBean implements Serializable{
             getLogger(ArrayConfigBean.class.getName());
     @ManagedProperty("#{param.command}")
     String command;
+    @ManagedProperty("#{param.vendor}")
+    String vendor;
     
     public MenuSelectionBean() {}
     
@@ -39,6 +41,7 @@ public class MenuSelectionBean implements Serializable{
     // pipeline selected.
     public String gexPipeline() {
         ArrayConfigBean.setPipelineName(command);
+        ArrayConfigBean.setVendor(vendor);
         logger.debug(AuthenticationBean.getUserName() + ": selected " +
                      command);
         
@@ -52,6 +55,9 @@ public class MenuSelectionBean implements Serializable{
         return Constants.MAIN_PAGE;
     }
     
+    // Machine generated getters and setters
+    public String getVendor() { return vendor; }
+    public void setVendor(String vendor) { this.vendor = vendor; }
     public String getCommand() { return command; }
     public void setCommand(String command) { this.command = command; }
 }
