@@ -36,6 +36,7 @@ import org.apache.logging.log4j.LogManager;
  * 14-Oct-2015 - Using annotation for JSF. Added one new constant ERROR. Moved 
  * the initialization code out of the Constructor.
  * 15-Oct-2015 - Critical error handling.
+ * 27-Oct-2015 - Ported to JSF 2.2
  */
 
 @ApplicationScoped
@@ -60,9 +61,14 @@ public class Constants {
     // Navigation Strings
     public final static String MAIN_PAGE = "main";
     public final static String LOGIN_PAGE = "login";
+    public final static String ARRAYCONFIG_PAGE = "arrayconfig";
     public final static String NGS_PAGE = "ngs";
     // Constants used in Array pipeline
+    private static String SYSTEM_PATH = null;
     private static String OUTPUTFILE_PATH = null;
+    private static String OUTPUTFILE_NAME = null;
+    private static String REPORTFILE_NAME = null;
+    private static String REPORTFILE_EXT = null;
     private static String INPUTFILE_PATH = null;
     private static String INPUTFILE_NAME = null;
     private static String CTRLFILE_PATH = null;
@@ -70,16 +76,19 @@ public class Constants {
     private static String CTRLFILE_EXT = null;
     private static String MPSFILE_PATH = null;
     private static String MPSFILE_NAME = null;
-    private static String SAMPLEANTFILE_PATH = null;
     private static String SAMPLEANTFILE_NAME = null;
-    private static String PROBEANTFILE_PATH = null;
     private static String PROBEANTFILE_NAME = null;
+    private static String LOGFILE_PATH = null;
+    private static String LOGFILE_NAME = null;
     private static String CONFIG_FILE_PATH = null;
     private static String CONFIG_FILE_NAME = null;
     private static String CONFIG_FILE_EXT = null;
     // Constants used in database setup
     private static String DATABASE_NAME = null;
     private static String DATABASE_DRIVER = null;
+    // Commands for running pipeline
+    private static String COMMAND1 = null;
+    private static String COMMAND2 = null;
 
     public Constants() {}
     
@@ -113,7 +122,11 @@ public class Constants {
             }
         
             // Setup the config parameters
+            SYSTEM_PATH = setup.get("SYSTEM_PATH");
             OUTPUTFILE_PATH = setup.get("OUTPUTFILE_PATH");
+            OUTPUTFILE_NAME = setup.get("OUTPUTFILE_NAME");
+            REPORTFILE_NAME = setup.get("REPORTFILE_NAME");
+            REPORTFILE_EXT = setup.get("REPORTFILE_EXT");
             INPUTFILE_PATH = setup.get("INPUTFILE_PATH");
             INPUTFILE_NAME = setup.get("INPUTFILE_NAME");
             CTRLFILE_PATH = setup.get("CTRLFILE_PATH");
@@ -121,22 +134,28 @@ public class Constants {
             CTRLFILE_EXT = setup.get("CTRLFILE_EXT");
             MPSFILE_PATH = setup.get("MPSFILE_PATH");
             MPSFILE_NAME = setup.get("MPSFILE_NAME");
-            SAMPLEANTFILE_PATH = setup.get("SAMPLEANTFILE_PATH");
             SAMPLEANTFILE_NAME = setup.get("SAMPLEANTFILE_NAME");
-            PROBEANTFILE_PATH = setup.get("PROBEANTFILE_PATH");
             PROBEANTFILE_NAME = setup.get("PROBEANTFILE_NAME");
+            LOGFILE_PATH = setup.get("LOGFILE_PATH");
+            LOGFILE_NAME = setup.get("LOGFILE_NAME");
             CONFIG_FILE_PATH = setup.get("CONFIG_FILE_PATH");
             CONFIG_FILE_NAME = setup.get("CONFIG_FILE_NAME");
             CONFIG_FILE_EXT = setup.get("CONFIG_FILE_EXT");
             DATABASE_NAME = setup.get("DATABASE_NAME");
             DATABASE_DRIVER = setup.get("DATABASE_DRIVER");
+            COMMAND1 = setup.get("COMMAND1");
+            COMMAND2 = setup.get("COMMAND2");
         }
         
         return SUCCESS;
     }
     
     // Machine generated getters
+    public static String getSYSTEM_PATH() { return SYSTEM_PATH; }
     public static String getOUTPUTFILE_PATH() { return OUTPUTFILE_PATH; }
+    public static String getOUTPUTFILE_NAME() { return OUTPUTFILE_NAME; }
+    public static String getREPORTFILE_NAME() { return REPORTFILE_NAME; }
+    public static String getREPORTFILE_EXT() { return REPORTFILE_EXT; }
     public static String getINPUTFILE_PATH() { return INPUTFILE_PATH; }
     public static String getINPUTFILE_NAME() { return INPUTFILE_NAME; }
     public static String getCTRLFILE_PATH() { return CTRLFILE_PATH; }
@@ -144,13 +163,15 @@ public class Constants {
     public static String getCTRLFILE_EXT() { return CTRLFILE_EXT; }
     public static String getMPSFILE_PATH() { return MPSFILE_PATH; }
     public static String getMPSFILE_NAME() { return MPSFILE_NAME; }
-    public static String getSAMPLEANTFILE_PATH() { return SAMPLEANTFILE_PATH; }
     public static String getSAMPLEANTFILE_NAME() { return SAMPLEANTFILE_NAME; }
-    public static String getPROBEANTFILE_PATH() { return PROBEANTFILE_PATH; }
     public static String getPROBEANTFILE_NAME() { return PROBEANTFILE_NAME; }
+    public static String getLOGFILE_PATH() { return LOGFILE_PATH; }
+    public static String getLOGFILE_NAME() { return LOGFILE_NAME; }    
     public static String getCONFIG_FILE_PATH() { return CONFIG_FILE_PATH; }
     public static String getCONFIG_FILE_NAME() { return CONFIG_FILE_NAME; }
     public static String getCONFIG_FILE_EXT() { return CONFIG_FILE_EXT; }
     public static String getDATABASE_NAME() { return DATABASE_NAME; }
     public static String getDATABASE_DRIVER() { return DATABASE_DRIVER; }
+    public static String getCOMMAND1() { return COMMAND1; }
+    public static String getCOMMAND2() { return COMMAND2; }
 }
