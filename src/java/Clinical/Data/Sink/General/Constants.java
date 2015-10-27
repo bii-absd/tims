@@ -8,6 +8,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 import javax.faces.bean.ApplicationScoped;
+import javax.faces.bean.ManagedBean;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -39,6 +40,7 @@ import org.apache.logging.log4j.LogManager;
  * 27-Oct-2015 - Ported to JSF 2.2
  */
 
+@ManagedBean (name = "constants")
 @ApplicationScoped
 public class Constants {
     // Get the logger for Log4j
@@ -58,6 +60,9 @@ public class Constants {
     public final static String FAILURE = "failure";
     public final static String ERROR = "error";
     public final static String LOGOFF = "logoff";
+    // Vendor
+    public final static String ILLUMINA = "Illumina";
+    public final static String AFFYMETRIX = "Affymetrix";
     // Navigation Strings
     public final static String MAIN_PAGE = "main";
     public final static String LOGIN_PAGE = "login";
@@ -151,6 +156,8 @@ public class Constants {
     }
     
     // Machine generated getters
+    public String getAFFYMETRIX() { return AFFYMETRIX; }
+    public String getILLUMINA() { return ILLUMINA; }    
     public static String getSYSTEM_PATH() { return SYSTEM_PATH; }
     public static String getOUTPUTFILE_PATH() { return OUTPUTFILE_PATH; }
     public static String getOUTPUTFILE_NAME() { return OUTPUTFILE_NAME; }
