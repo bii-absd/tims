@@ -29,6 +29,9 @@ import org.apache.logging.log4j.LogManager;
  * 14-Oct-2015 - Item list will be read in and constructed during object's
  * initialization. Added logging for this class.
  * 22-Oct-2015 - Separate the Type into vendor specific type.
+ * 27-Oct-2015 - Moved the setup function out of the Constructor, and place it
+ * in static function setup. The functions to get the Illumina and Affymetrix
+ * types have also been made static.
  */
 
 @ManagedBean (name="selectOneMenuList")
@@ -43,68 +46,71 @@ public class SelectOneMenuList {
     private static final LinkedHashMap illuminaTypeList = new LinkedHashMap();    
     private static final LinkedHashMap institutionList = new LinkedHashMap();
     private static final LinkedHashMap departmentList = new LinkedHashMap();
+    // Setup indicator
+    private static Boolean setup = false;
 
-    public SelectOneMenuList() {
-        // Construct the dropdown list during first initialization.
-        ServletContext context = getServletContext();
-        // Load the itemlist filename from context-param
-        String itemListFile = context.getInitParameter("itemlist");
-        // Get the real path of the itemListFile
-        String realPath = context.getRealPath(itemListFile);
-        logger.debug("Item list file located at: " + realPath);
-        
-        try (BufferedReader br = new BufferedReader(new FileReader(realPath)))
-        {
-            String currentLine;
-            String switchStr = null;
+    public SelectOneMenuList() {}
+    
+    // setup will help to setup all the item lists found in the system using
+    // the config file passed in.
+    public static String setup(String uri) {
+        if (!setup) {
+            try (BufferedReader br = new BufferedReader(new FileReader(uri)))
+            {
+                String currentLine;
+                String switchStr = null;
 
-            while ((currentLine = br.readLine()) != null) {
-                if (currentLine.startsWith("#")) {
-                    // Remove the # character, only want the remaining characters
-                    switchStr = currentLine.substring(1);
-                    // switchStr will tell us which hashmap to build on next.
-                    continue;  // Read the next line
-                }
+                while ((currentLine = br.readLine()) != null) {
+                    if (currentLine.startsWith("#")) {
+                        // Remove the # character, only want the remaining characters
+                        switchStr = currentLine.substring(1);
+                        // switchStr will tell us which hashmap to build on next.
+                        continue;  // Read the next line
+                    }
 
-                // As split takes in regular expression, so need to escape
-                // special character like '$'
-                String[] itemPair = currentLine.split("\\$");
-                // Only take in the values if they are in pair
-                if (itemPair.length == 2) {
-                    switch(switchStr) {
-                        case "VENDOR":
-                            vendorList.put(itemPair[0], itemPair[1]);
-                            break;
-                        case "AFFYMETRIX":
-                            affymetrixTypeList.put(itemPair[0], itemPair[1]);
-                            break;
-                        case "ILLUMINA":
-                            illuminaTypeList.put(itemPair[0], itemPair[1]);
-                            break;
-                        case "INSTITUTION":
-                            institutionList.put(itemPair[0], itemPair[1]);
-                            break;
-                        case "DEPARTMENT":
-                            departmentList.put(itemPair[0], itemPair[1]);
-                            break;
-                        default:
-                            // something is wrong with the item list file
-                            break;
+                    // As split takes in regular expression, so need to escape
+                    // special character like '$'
+                    String[] itemPair = currentLine.split("\\$");
+                    // Only take in the values if they are in pair
+                    if (itemPair.length == 2) {
+                        switch(switchStr) {
+                            case "VENDOR":
+                                vendorList.put(itemPair[0], itemPair[1]);
+                                break;
+                            case "AFFYMETRIX":
+                                affymetrixTypeList.put(itemPair[0], itemPair[1]);
+                                break;
+                            case "ILLUMINA":
+                                illuminaTypeList.put(itemPair[0], itemPair[1]);
+                                break;
+                            case "INSTITUTION":
+                                institutionList.put(itemPair[0], itemPair[1]);
+                                break;
+                            case "DEPARTMENT":
+                                departmentList.put(itemPair[0], itemPair[1]);
+                                break;
+                            default:
+                                // something is wrong with the item list file
+                                break;
+                        }
                     }
                 }
-            }
             
-            logger.debug(realPath + " loaded.");
-            logger.debug(vendorList.values());
-            logger.debug(affymetrixTypeList.values());
-            logger.debug(illuminaTypeList.values());
-            logger.debug(institutionList.values());
-            logger.debug(departmentList.values());
-        } catch (IOException e) {
-                logger.error("IOException encountered while loading " + 
-                        itemListFile);
+                setup = true;
+                logger.debug(uri + " loaded.");
+                logger.debug(vendorList.values());
+                logger.debug(affymetrixTypeList.values());
+                logger.debug(illuminaTypeList.values());
+                logger.debug(institutionList.values());
+                logger.debug(departmentList.values());
+            } catch (IOException e) {
+                logger.error("IOException encountered while loading " + uri);
                 logger.error(e.getMessage());
+                return Constants.ERROR;
+            }
         }
+        
+        return Constants.SUCCESS;
     }
     
     // getVendorTypes will return the list of vendors.
@@ -112,11 +118,11 @@ public class SelectOneMenuList {
     {   return vendorList;      }
     
     // getAffymetrixType will return the list of Affymetrix type.
-    public LinkedHashMap<String,String> getAffymetrixType() 
+    public static LinkedHashMap<String,String> getAffymetrixType() 
     {   return affymetrixTypeList;        }
 
     // getIlluminaType will return the list of Illumina type.
-    public LinkedHashMap<String,String> getIlluminaType()
+    public static LinkedHashMap<String,String> getIlluminaType()
     {   return illuminaTypeList;    }
     
     // getInstitution will return the list of institution.
