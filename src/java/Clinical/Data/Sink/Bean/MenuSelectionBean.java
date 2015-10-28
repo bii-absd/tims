@@ -22,6 +22,8 @@ import org.apache.logging.log4j.LogManager;
  * 23-Oct-2015 - Created with all the standard getters and setters.
  * 27-Oct-2015 - Added 2 functions (gexPipeline and ngsPipeline) that will help
  * to setup the pipeline backing bean.
+ * 28-Oct-2015 - Split the gexPipeline function into 2 new functions, 
+ * gexIllumina and gexAffymetrix.
  */
 
 @ManagedBean (name="menuSelectionBean")
@@ -29,35 +31,40 @@ import org.apache.logging.log4j.LogManager;
 public class MenuSelectionBean implements Serializable{
     // Get the logger for Log4j
     private final static Logger logger = LogManager.
-            getLogger(ArrayConfigBean.class.getName());
+            getLogger(MenuSelectionBean.class.getName());
     @ManagedProperty("#{param.command}")
     String command;
-    @ManagedProperty("#{param.vendor}")
-    String vendor;
     
     public MenuSelectionBean() {}
     
-    // gexPipeline will setup the ArrayConfigBean according to the specific
-    // pipeline selected.
-    public String gexPipeline() {
+    // Setup the ArrayConfigBean for GEX Illumina pipeline processing.
+    public String gexIllumina() {
         ArrayConfigBean.setPipelineName(command);
-        ArrayConfigBean.setVendor(vendor);
+        ArrayConfigBean.setPipelineType(Constants.GEX_ILLUMINA);
         logger.debug(AuthenticationBean.getUserName() + ": selected " +
                      command);
         
-        return Constants.ARRAYCONFIG_PAGE;
+        return Constants.GEX_ILLUMINA;
     }
 
+    // Setup the ArrayConfigBean for GEX Affymetrix pipeline processing.
+    public String gexAffymetrix() {
+        ArrayConfigBean.setPipelineName(command);
+        ArrayConfigBean.setPipelineType(Constants.GEX_AFFYMETRIX);
+        logger.debug(AuthenticationBean.getUserName() + ": selected " +
+                     command);
+
+        return Constants.GEX_AFFYMETRIX;
+    }
+    
     // ngsPipeline will setup the NGSConfigBean according to the specific
     // pipeline selected.
     public String ngsPipeline() {
         
-        return Constants.MAIN_PAGE;
+        return Constants.NGS_PAGE;
     }
     
     // Machine generated getters and setters
-    public String getVendor() { return vendor; }
-    public void setVendor(String vendor) { this.vendor = vendor; }
     public String getCommand() { return command; }
     public void setCommand(String command) { this.command = command; }
 }
