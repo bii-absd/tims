@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -16,7 +17,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
-import javax.faces.bean.RequestScoped;
+import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.UploadedFile;
@@ -33,20 +34,21 @@ import org.apache.logging.log4j.LogManager;
  * Revision History
  * 27-Oct-2015 - Created with the main function fileUploadListener, that is able
  * to handle multiple uploaded files at one time.
+ * 28-Oct-2015 - Changed to allow this class to handle both single and multiple
+ * file upload.
  */
 
 @ManagedBean (name="fileUploadBean")
-@RequestScoped
-public class FileUploadBean {
+@ViewScoped
+public class FileUploadBean implements Serializable {
     // Get the logger for Log4j
     private final static Logger logger = LogManager.
-            getLogger(AuthenticationBean.class.getName());
-    private static int fileCount = 0;
+            getLogger(FileUploadBean.class.getName());
+    private int fileCount = 0;
     private static String fileDirectory = null;
-    private static LinkedHashMap<Integer,String> fileList = new LinkedHashMap();
-    
-    UploadedFile file;
+    private LinkedHashMap<Integer,String> fileList = new LinkedHashMap();
 
+    public FileUploadBean() {}
     
     // fileUploadListener will get call for each file uploaded.
     public void fileUploadListener(FileUploadEvent event) {
@@ -74,13 +76,14 @@ public class FileUploadBean {
                          uFile.getFileName());
             logger.error(ex.getMessage());
         }
+        
+        logger.debug("File list: " + fileList.toString());
     }
     
-    // getFileDirectory will return the full path of the input folder for this
-    // pipeline job.
+    // Return the full path of the input folder for this pipeline job.
     private String getFileDirectory() {
         if (fileDirectory == null) {
-            DateFormat dateFormat = new SimpleDateFormat("ddMMM_hhmm");
+            DateFormat dateFormat = new SimpleDateFormat("ddMMM_HHmm");
             fileDirectory = Constants.getSYSTEM_PATH() + 
                             AuthenticationBean.getUserName() +
                             Constants.getINPUTFILE_PATH() +
@@ -91,8 +94,7 @@ public class FileUploadBean {
         return fileDirectory;
     }
     
-    // createSystemDirectory will help to create system directory used for
-    // storing system files.
+    // Helper function to create the system directory used for storing input files.
     public static String createSystemDirectory(String systemDir) {
         String result = Constants.SUCCESS;
         File dir = new File(systemDir);
@@ -112,22 +114,35 @@ public class FileUploadBean {
         return result;
     }
     
-    // getInputFileList will return the list of input file(s) that have been 
-    // uploaded by the users for the pipeline execution.
+    // Return the list of input files that have been uploaded by the 
+    // user; multiple files upload.
     public List<String> getInputFileList() {
         List<String> inputList = new ArrayList<String>(fileList.values());
 
-        System.out.println(inputList.toString());
+        System.out.println("Filename: " + fileList.values());
+        System.out.println("File count: " + fileCount);
 
         return inputList;
+    }
+    
+    // Check whether any input file uploaded by the user.
+    public Boolean checkFileIsEmpty() {
+        return fileList.isEmpty();
+    }
+    
+    // Return the input filename that has been been uploaded by the 
+    // user; single file upload.
+    public String getInputFilename() {
+        if (fileList.isEmpty()) {
+            return "This field is required.";
+        }
+        else {
+            return fileList.get(1);            
+        }
     }
     
     // Retrieve the faces context
     private FacesContext getFacesContext() {
 	return FacesContext.getCurrentInstance();
     }
-    
-    // Machine generated getters and setters
-    public UploadedFile getFile() { return file; }
-    public void setFile(UploadedFile file) { this.file = file; }
 }
