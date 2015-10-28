@@ -64,8 +64,10 @@ public class Constants {
     public final static String ILLUMINA = "Illumina";
     public final static String AFFYMETRIX = "Affymetrix";
     // Navigation Strings
-    public final static String MAIN_PAGE = "main";
     public final static String LOGIN_PAGE = "login";
+    public final static String MAIN_PAGE = "main";
+    public final static String GEX_ILLUMINA = "gex-illumina";
+    public final static String GEX_AFFYMETRIX = "gex-affymetrix";
     public final static String ARRAYCONFIG_PAGE = "arrayconfig";
     public final static String NGS_PAGE = "ngs";
     // Constants used in Array pipeline
@@ -156,6 +158,8 @@ public class Constants {
     }
     
     // Machine generated getters
+    public String getGEX_AFFYMETRIX() { return GEX_AFFYMETRIX; }
+    public String getGEX_ILLUMINA() { return GEX_ILLUMINA; }
     public String getAFFYMETRIX() { return AFFYMETRIX; }
     public String getILLUMINA() { return ILLUMINA; }    
     public static String getSYSTEM_PATH() { return SYSTEM_PATH; }
