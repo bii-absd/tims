@@ -4,11 +4,12 @@
 package Clinical.Data.Sink.Bean;
 
 import Clinical.Data.Sink.General.Constants;
-import Clinical.Data.Sink.General.SelectOneMenuList;
 import java.io.Serializable;
-import java.util.LinkedHashMap;
+import java.util.List;
+import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
-import javax.faces.bean.SessionScoped;
+import javax.faces.bean.ManagedProperty;
+import javax.faces.bean.ViewScoped;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -57,7 +58,7 @@ import org.apache.logging.log4j.LogManager;
  */
 
 @ManagedBean (name="arrayConfigBean")
-@SessionScoped
+@ViewScoped
 public class ArrayConfigBean implements Serializable {
     // Get the logger for Log4j
     private final static Logger logger = LogManager.
@@ -65,39 +66,82 @@ public class ArrayConfigBean implements Serializable {
     // Input Parameters
     private String studyID, type;
     // Processing Parameters
-    private String normalization, filterType, column;
+    private String probeFilter, normalization, phenotype;
+    private List<String> probeFilters;
     private boolean probeSelect;
     // Further Processing
     private String average, stdLog2Ratio;
     // Pipeline name
     private static String pipelineName;
-    // Vendor
-    private static String vendor;
-    
-    public ArrayConfigBean() {}
-    
-    public LinkedHashMap<String,String> getTypeList(){
-        if (vendor.compareTo(Constants.ILLUMINA) == 0) {
-            return SelectOneMenuList.getIlluminaType();
-        }
-        else {
-            return SelectOneMenuList.getAffymetrixType();
-        }
-    }
+    // Pipeline type
+    private static String pipelineType;
+    // 
+    private FileUploadBean inputFile, sampleFile, ctrlFile;
 
+    public ArrayConfigBean() {}
+
+    @PostConstruct
+    public void initFiles() {
+        inputFile = new FileUploadBean();
+        sampleFile = new FileUploadBean();
+        ctrlFile = new FileUploadBean();
+    }
+    
+    // If any of the input files is not uploaded, user is not allowed to
+    // submit the job for execution.
+    public Boolean allowToSubmitJob() {
+       return !(inputFile.checkFileIsEmpty() ||
+                sampleFile.checkFileIsEmpty() ||
+                ctrlFile.checkFileIsEmpty());
+    }
+    
+    // After reviewing the configuration, user decided to proceed with 
+    // the pipeline execution.
+    public String submitJob() {
+        logger.info(AuthenticationBean.getUserName() + ": started " +
+                    pipelineName);
+        
+        return Constants.MAIN_PAGE;
+    }
+    
+    // After reviewing the configuration, user decided not to proceed with
+    // the pipeline execution.
+    public void cancelJob() {
+        logger.info(AuthenticationBean.getUserName() + 
+                ": decided not to proceed with " + pipelineName);
+    }
+    
     // Machine generated getters and setters
-    public static void setVendor(String vendor) {
-        ArrayConfigBean.vendor = vendor;
+    public FileUploadBean getCtrlFile() {
+        return ctrlFile;
     }
-    public static String getVendor() {
-        return vendor;
+    public void setCtrlFile(FileUploadBean ctrlFile) {
+        this.ctrlFile = ctrlFile;
     }
-    public static void setPipelineName(String pipelineName) {
-        ArrayConfigBean.pipelineName = pipelineName;
+    public FileUploadBean getSampleFile() {
+        return sampleFile;
+    }
+    public void setSampleFile(FileUploadBean sampleFile) {
+        this.sampleFile = sampleFile;
+    }
+    public FileUploadBean getInputFile() {
+        return inputFile;
+    }
+    public void setInputFile(FileUploadBean inputFile) {
+        this.inputFile = inputFile;
+    }
+    public static String getPipelineType() {
+        return pipelineType;
+    }
+    public static void setPipelineType(String pipelineType) {
+        ArrayConfigBean.pipelineType = pipelineType;
     }
     public String getPipelineName() {
         return pipelineName;
     }    
+    public static void setPipelineName(String pipelineName) {
+        ArrayConfigBean.pipelineName = pipelineName;
+    }
     public String getStudyID() {
         return studyID;
     }
@@ -116,17 +160,23 @@ public class ArrayConfigBean implements Serializable {
     public void setNormalization(String normalization) {
         this.normalization = normalization;
     }
-    public String getFilterType() {
-        return filterType;
+    public String getProbeFilter() {
+        return probeFilter;
     }
-    public void setFilterType(String filterType) {
-        this.filterType = filterType;
+    public void setProbeFilter(String probeFilter) {
+        this.probeFilter = probeFilter;
     }
-    public String getColumn() {
-        return column;
+    public List<String> getProbeFilters() {
+        return probeFilters;
     }
-    public void setColumn(String column) {
-        this.column = column;
+    public void setProbeFilters(List<String> probeFilters) {
+        this.probeFilters = probeFilters;
+    }
+    public String getPhenotype() {
+        return phenotype;
+    }
+    public void setPhenotype(String phenotype) {
+        this.phenotype = phenotype;
     }
     public boolean isProbeSelect() {
         return probeSelect;
