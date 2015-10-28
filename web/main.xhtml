@@ -25,15 +25,13 @@
             <p:panel id="array" header="Array Data" toggleable="true" 
                      widgetVar="array">
                 <h:panelGrid cellpadding="2">
-                    <h:commandLink action="#{menuSelectionBean.gexPipeline}" 
+                    <h:commandLink action="#{menuSelectionBean.gexIllumina}" 
                                    value="#{msg['gex.illumina']}">
                         <f:param name="command" value="#{msg['gex.illumina']}"/>
-                        <f:param name="vendor" value="#{constants.ILLUMINA}"/>
                     </h:commandLink>
-                    <h:commandLink action="#{menuSelectionBean.gexPipeline}" 
+                    <h:commandLink action="#{menuSelectionBean.gexAffymetrix}" 
                                    value="#{msg['gex.affymetrix']}">
                         <f:param name="command" value="#{msg['gex.affymetrix']}"/>
-                        <f:param name="vendor" value="#{constants.AFFYMETRIX}"/>
                     </h:commandLink>
                     <h:commandLink value="#{msg['meth']}"/>
                     <h:commandLink value="#{msg['geno']}"/>
