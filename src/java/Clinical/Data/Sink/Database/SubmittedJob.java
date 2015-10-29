@@ -4,9 +4,6 @@
 package Clinical.Data.Sink.Database;
 
 import Clinical.Data.Sink.Bean.AuthenticationBean;
-// Libraries for Log4j
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
 
 /**
  * SubmittedJob is used to represent the submitted_job table in the database.
@@ -22,8 +19,8 @@ import org.apache.logging.log4j.LogManager;
  * getStatus_name.
  * 07-Oct-2015 - Added Log4j2 for this class.
  * 12-Oct-2015 - Added job_id field.
+ * 23-Oct-2015 - Added report field.
  */
-
 public class SubmittedJob {
     private int job_id;
     private String user_id;
@@ -31,20 +28,22 @@ public class SubmittedJob {
     private String study_id;
     private String submit_time;
     private String output_file;
+    private String report;
     // status_name will be used by the job status page
-    private String  status_name;
+    private String status_name;
 
     public SubmittedJob(int job_id, int status_id, String study_id, 
-            String submit_time, String output_file) {
+            String submit_time, String output_file, String report) {
         this.job_id = job_id;
         this.user_id = AuthenticationBean.getUserName();
         this.status_id = status_id;
         this.study_id = study_id;
         this.submit_time = submit_time;
         this.output_file = output_file;
+        this.report = report;
     }
 
-    // getStatus_name will return the job status name of this submitted job.
+    // Return the job status name of this submitted job.
     public String getStatus_name() {
         return JobStatus.getStatusName(status_id);
     }
@@ -56,6 +55,8 @@ public class SubmittedJob {
     public void setStudy_id(String study_id) { this.study_id = study_id; }
     public void setSubmit_time(String submit_time) { this.submit_time = submit_time; }
     public void setOutput_file(String output_file) { this.output_file = output_file; }
+    public void setReport(String report) { this.report = report; }
+    
     // Machine generated geters
     public int getJob_id() { return job_id; }
     public String getUser_id() { return user_id; }
@@ -63,4 +64,5 @@ public class SubmittedJob {
     public String getStudy_id() { return study_id; }
     public String getSubmit_time() { return submit_time; }
     public String getOutput_file() { return output_file; }
+    public String getReport() { return report; }
 }
