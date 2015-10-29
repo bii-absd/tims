@@ -75,24 +75,32 @@ public class ArrayConfigBean implements Serializable {
     private static String pipelineName;
     // Pipeline type
     private static String pipelineType;
-    // 
+    // To store the 3 kind of input files that will be uploaded by the users
     private FileUploadBean inputFile, sampleFile, ctrlFile;
 
     public ArrayConfigBean() {}
 
     @PostConstruct
     public void initFiles() {
+        if (pipelineType.compareTo(Constants.GEX_ILLUMINA) == 0) {
+            // Only Illumina pipeline required the user to upload the control file
+            ctrlFile = new FileUploadBean();            
+        }
         inputFile = new FileUploadBean();
         sampleFile = new FileUploadBean();
-        ctrlFile = new FileUploadBean();
     }
     
     // If any of the input files is not uploaded, user is not allowed to
     // submit the job for execution.
     public Boolean allowToSubmitJob() {
-       return !(inputFile.checkFileIsEmpty() ||
-                sampleFile.checkFileIsEmpty() ||
-                ctrlFile.checkFileIsEmpty());
+        if (pipelineType.compareTo(Constants.GEX_ILLUMINA) == 0) {
+            return !(inputFile.checkFileIsEmpty() ||
+                     sampleFile.checkFileIsEmpty() ||
+                     ctrlFile.checkFileIsEmpty());
+        } else {
+            return !(inputFile.checkFileIsEmpty() ||
+                     sampleFile.checkFileIsEmpty());
+        }
     }
     
     // After reviewing the configuration, user decided to proceed with 
