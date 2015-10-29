@@ -15,7 +15,7 @@
                 <p:menuitem styleClass="subheading" value="#{arrayConfigBean.pipelineName}"/>
             </p:breadCrumb>
             <p:panel id="inputpara" header="Input Parameters">
-                <h:panelGrid columns="2" cellpadding="5">
+                <h:panelGrid columns="3" cellpadding="5">
                     <p:column>
                         <p:inputText id="studyID" maxlength="20" required="true"
                                      value="#{arrayConfigBean.studyID}"/>
@@ -28,31 +28,31 @@
                             <f:selectItems value="#{selectOneMenuList.illuminaType}"/>
                         </p:selectOneMenu>
                     </p:column>
+                    <h:message for="studyID" styleClass="errors"/>
                 </h:panelGrid>
             </p:panel>
             
             <p:panel id="inputcontrol" header="Upload Sample and Control Probe Files">
-                <p:growl id="uploadStatus" life="2000"/>
+                <p:growl id="uploadStatus" life="2500" globalOnly="true"/>
                 <p:fileUpload mode="advanced" auto="true" update="uploadStatus" 
-                              label="Select Sample File" required="true"
+                              label="Select Sample File"
                               fileUploadListener="#{arrayConfigBean.inputFile.fileUploadListener}">
                 </p:fileUpload>
                 <p:fileUpload mode="advanced" auto="true" update="uploadStatus" 
-                              label="Select Control File" required="true"
+                              label="Select Control File"
                               fileUploadListener="#{arrayConfigBean.ctrlFile.fileUploadListener}"/>
             </p:panel>
             <p:panel id="sample" header="Upload Samples Annotation File">
                 <p:fileUpload mode="advanced" auto="true" update="uploadStatus" 
-                              label="Select Samples Annotation File" required="true"
+                              label="Select Samples Annotation File"
                               fileUploadListener="#{arrayConfigBean.sampleFile.fileUploadListener}"/>
             </p:panel>
 
             <p:panel id="processparameters" header="Processing Parameters">
-                <h:panelGrid columns="4" cellpadding="5">
+                <h:panelGrid columns="5" cellpadding="5">
                     <p:column>
                         <p:outputLabel value="Probe Filtering" style="font-weight: bold" title="#{msg['probe.filtering']}"/>
-                        <p:selectManyMenu id="probefilter" required="true" 
-                                          showCheckbox="true"
+                        <p:selectManyMenu id="probefilter" showCheckbox="true"
                                           value="#{arrayConfigBean.probeFilters}">
                             <f:selectItem itemLabel="Low-expression" itemValue="low-expression"/>
                             <f:selectItem itemLabel="Non-unique" itemValue="non-unique"/>
@@ -82,6 +82,7 @@
                                                title="#{msg['probe.selection']}"
                                                onLabel="Yes" offLabel="No"/>
                     </p:column>
+                    <h:message for="normalization" styleClass="errors"/>
                 </h:panelGrid>
             </p:panel>
             
