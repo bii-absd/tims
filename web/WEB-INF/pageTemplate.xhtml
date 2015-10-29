@@ -36,8 +36,12 @@
                 <h:outputText value="#{authenticationBean.getHeaderInstDept()}"/>
             </h:panelGrid>
         </h:panelGrid>
+        <p:breadCrumb>
+            <p:menuitem value="Array Data" url="main.xhtml" title="Back to Main Page"/>
+            <p:menuitem styleClass="subheading" value="#{link}"/>
+        </p:breadCrumb>
         </h:form>
-        
+
         <div id="content" class="center_content">
             <ui:insert name="content">Content</ui:insert>
         </div>
