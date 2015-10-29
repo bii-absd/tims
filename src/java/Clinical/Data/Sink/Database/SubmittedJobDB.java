@@ -36,6 +36,7 @@ import org.apache.logging.log4j.LogManager;
  * 07-Oct-2015 - Changed to connection based for database access.
  * 08-Oct-2015 - Add methods to update the status_id of submitted job.
  * 12-Oct-2015 - Added job_id field during query. Log the exception message.
+ * 23-Oct-2015 - Added report field during query.
  */
 
 public class SubmittedJobDB {
@@ -56,8 +57,8 @@ public class SubmittedJobDB {
     // handled by the caller.
     public static int insertJob(SubmittedJob job) throws SQLException {
         String insertStr = "INSERT INTO submitted_job"
-                + "(user_id, status_id, study_id, submit_time, output_file) "
-                + "VALUES(?,?,?,?,?)";
+                + "(user_id, status_id, study_id, submit_time, output_file, report) "
+                + "VALUES(?,?,?,?,?,?)";
         PreparedStatement insertStm = conn.prepareStatement(insertStr);
         // Build the INSERT statement using the variables retrieved from the
         // SubmittedJob object (i.e. job) passed in.
@@ -66,9 +67,10 @@ public class SubmittedJobDB {
         insertStm.setString(3, job.getStudy_id());
         insertStm.setString(4, job.getSubmit_time());
         insertStm.setString(5, job.getOutput_file());
+        insertStm.setString(6, job.getReport());
         // Execute the INSERT statement
         insertStm.executeUpdate();
-        // Get the job_id of the inserted job
+        // Retrieve and store the last inserted Job ID
         int job_id = getLastInsertedJob();
         
         logger.debug("New job request inserted into database. ID: " + job_id);
@@ -88,7 +90,7 @@ public class SubmittedJobDB {
         PreparedStatement queryStm = conn.prepareStatement(queryLast);
         lastJobID = queryStm.executeQuery();
         
-        while (lastJobID.next()) {
+        if (lastJobID.next()) {
             job_id = lastJobID.getInt("job_id");
         }
         
@@ -121,26 +123,29 @@ public class SubmittedJobDB {
             logger.debug("updateJobStatus success.");
         }
         catch (SQLException e) {
-            logger.error(AuthenticationBean.getUserName() + 
-                    ": encountered SQLException at updateJobStatus.");
-            System.out.println(e.getMessage());
+            logger.error("SQLException at updateJobStatus.");
+            logger.error(e.getMessage());
         }
     }
     
     // querySubmittedJob will query the submitted_job table using the user_id 
     // as a match condition. The results from the query will be returned as
     // a list to the caller.
-    public static List querySubmittedJob(String user_id) {
+    public static List<SubmittedJob> querySubmittedJob(String user_id) {
         // Only execute the query if the list is empty
         // This is to prevent the query from being run multiple times.
         if (submittedJobs.isEmpty()) {
             ResultSet result;
         
             String queryStr = "SELECT job_id, status_id, submit_time, "
-                    + "output_file, study_id FROM submitted_job WHERE "
+                    + "output_file, report, study_id FROM submitted_job WHERE "
                     + "user_id = ? ORDER BY " + queryOrderBy + " " + orderIn;
         
             logger.debug(queryStr);
+        // Additional logging to get the logger context
+//        LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+//        Configuration cfg = ctx.getConfiguration();
+//        FileAppender fa = (FileAppender) cfg.getAppender("File");
                 
             try (PreparedStatement queryJob = conn.prepareStatement(queryStr))
             {
@@ -157,21 +162,21 @@ public class SubmittedJobDB {
                                     result.getInt("status_id"),
                                     result.getString("study_id"),
                                     result.getString("submit_time"),
-                                    result.getString("output_file"));
+                                    result.getString("output_file"),
+                                    result.getString("report"));
                     // Add the object to the HashMap
                     submittedJobs.put(id++, job);
                 }
                 logger.debug("querySubmittedJob success.");
             } catch (SQLException e) {
-                logger.error(AuthenticationBean.getUserName() + 
-                        ": encountered SQLException at querySubmittedJob.");
+                logger.error("SQLException at querySubmittedJob.");
                 logger.error(e.getMessage());
-                // Some errors has occurred, return back a empty list.
-                return new ArrayList(0);
+                // Exception has occurred, return back a empty list.
+                return new ArrayList<>(0);
             }
         }
         
-        return new ArrayList<SubmittedJob>(submittedJobs.values());
+        return new ArrayList<>(submittedJobs.values());
     }
 
     // setQueryOrderBy will sort the result return by query according to the
