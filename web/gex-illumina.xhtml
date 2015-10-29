@@ -8,12 +8,9 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
     
     <ui:define name="title">GEX Pipeline (Illumina)</ui:define>
+    <ui:param name="link" value="#{arrayConfigBean.pipelineName}"/>
     <ui:define name="content">
         <h:form enctype="multipart/form-data">
-            <p:breadCrumb>
-                <p:menuitem value="Array Data" url="main.xhtml" title="Back to Main Page"/>
-                <p:menuitem styleClass="subheading" value="#{arrayConfigBean.pipelineName}"/>
-            </p:breadCrumb>
             <p:panel id="inputpara" header="Input Parameters">
                 <h:panelGrid columns="3" cellpadding="5">
                     <p:column>
