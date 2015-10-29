@@ -43,7 +43,7 @@ public class SubmittedJobDB {
     private final static Logger logger = LogManager.
             getLogger(SubmittedJobDB.class.getName());
     private final static Connection conn = DBHelper.getDBConn();
-    private static Map submittedJobs = new HashMap();
+    private static Map<Integer,SubmittedJob> submittedJobs = new HashMap<>();
     // By default, the query will be order by job_id DESC
     private static String queryOrderBy = "job_id";
     private static String orderIn = "DESC";
@@ -171,7 +171,7 @@ public class SubmittedJobDB {
             }
         }
         
-        return new ArrayList(submittedJobs.values());
+        return new ArrayList<SubmittedJob>(submittedJobs.values());
     }
 
     // setQueryOrderBy will sort the result return by query according to the
