@@ -41,11 +41,11 @@ public class SelectOneMenuList {
     private final static Logger logger = LogManager.
             getLogger(SelectOneMenuList.class.getName());
     // Used LinkedHashMap in order to maintains the insertion order
-    private static final LinkedHashMap vendorList = new LinkedHashMap();
-    private static final LinkedHashMap affymetrixTypeList = new LinkedHashMap();    
-    private static final LinkedHashMap illuminaTypeList = new LinkedHashMap();    
-    private static final LinkedHashMap institutionList = new LinkedHashMap();
-    private static final LinkedHashMap departmentList = new LinkedHashMap();
+    private static final LinkedHashMap<String,String> vendorList = new LinkedHashMap<>();
+    private static final LinkedHashMap<String,String> affymetrixTypeList = new LinkedHashMap<>();    
+    private static final LinkedHashMap<String,String> illuminaTypeList = new LinkedHashMap<>();    
+    private static final LinkedHashMap<String,String> institutionList = new LinkedHashMap<>();
+    private static final LinkedHashMap<String,String> departmentList = new LinkedHashMap<>();
     // Setup indicator
     private static Boolean setup = false;
 
