@@ -15,7 +15,7 @@
                 <p:menuitem styleClass="subheading" value="#{arrayConfigBean.pipelineName}"/>
             </p:breadCrumb>
             <p:panel id="inputpara" header="Input Parameters">
-                <h:panelGrid columns="2" cellpadding="5">
+                <h:panelGrid columns="3" cellpadding="5">
                     <p:column>
                         <p:inputText id="studyID" maxlength="20" required="true"
                                      value="#{arrayConfigBean.studyID}"/>
@@ -28,29 +28,29 @@
                             <f:selectItems value="#{selectOneMenuList.affymetrixType}"/>
                         </p:selectOneMenu>
                     </p:column>
+                    <h:message for="studyID" styleClass="errors"/>
                 </h:panelGrid>
             </p:panel>
             
             <p:panel id="inputfile" header="Upload Sample Probe Files">
-                <p:growl id="uploadStatus" life="2000"/>
-                <p:fileUpload value="#{fileUploadBean.file}" mode="advanced" multiple="true"
+                <p:growl id="uploadStatus" life="2500" globalOnly="true"/>
+                <p:fileUpload mode="advanced" multiple="true"
                               auto="true" update="uploadStatus" 
                               label="Select Sample Files"
                               allowTypes="/(\.|\/)(CEL)$/"
-                              fileUploadListener="#{fileUploadBean.fileUploadListener}">
+                              fileUploadListener="#{arrayConfigBean.inputFile.fileUploadListener}">
                 </p:fileUpload>
             </p:panel>
-            <p:panel id="ctrlfile" header="Upload Samples Annotation File">
-                <p:fileUpload value="#{fileUploadBean.file}" mode="advanced" 
-                              auto="true" update="uploadStatus" 
+            <p:panel id="annotfile" header="Upload Samples Annotation File">
+                <p:fileUpload mode="advanced" auto="true" update="uploadStatus" 
                               label="Select Samples Annotation File" 
-                              fileUploadListener="#{fileUploadBean.fileUploadListener}"/>
+                              fileUploadListener="#{arrayConfigBean.sampleFile.fileUploadListener}"/>
             </p:panel>
             
             <p:panel id="processparameters" header="Processing Parameters">
-                <h:panelGrid columns="4" cellpadding="5">
+                <h:panelGrid columns="5" cellpadding="5">
                     <p:column>
-                        <p:selectOneMenu id="probefilter" required="true" 
+                        <p:selectOneMenu id="probefilter"
                                           value="#{arrayConfigBean.probeFilter}">
                             <f:selectItem itemLabel="Probe Filtering" itemValue=""/>
                             <f:selectItem itemLabel="None" itemValue="none"/>
@@ -82,6 +82,7 @@
                                                title="#{msg['probe.selection']}"
                                                onLabel="Yes" offLabel="No"/>
                     </p:column>
+                    <h:message for="normalization" styleClass="errors"/>
                 </h:panelGrid>
             </p:panel>
             
@@ -109,8 +110,52 @@
                 </h:panelGrid>
             </p:panel>
             <p:separator style="height: 20px"/>
-            <p:commandButton value="Submit" action="#{arrayConfigBean.submitJob()}" 
-                             ajax="false" icon="ui-icon-check"/>
+            <p:commandButton value="Submit" update="display @form"
+                             oncomplete="PF('dlg').show()" 
+                             icon="ui-icon-check"/>
+            
+            <p:dialog header="Pipeline Configuration Review"
+                      widgetVar="dlg"
+                      resizable="false">
+                <p:panelGrid columns="2" id="display">
+                    <h:outputText value="Study ID: "/>
+                    <h:outputText value="#{arrayConfigBean.studyID}"/>
+                    <h:outputText value="Type: "/>
+                    <h:outputText value="#{arrayConfigBean.type}"/> 
+                    <h:outputText value="Sample File: "/>
+                    <p:dataList itemType="square" 
+                                value="#{arrayConfigBean.inputFile.inputFileList}"
+                                var="filelist" styleClass="datalist">
+                        <h:outputText value="#{filelist}"/>
+                    </p:dataList>
+                    <h:outputText value="Samples Annotation File: "/>
+                    <h:outputText value="#{arrayConfigBean.sampleFile.inputFilename}"/>
+                    <h:outputText value="Probe Filtering: "/>
+                    <h:outputText value="#{arrayConfigBean.probeFilter}"/>
+                    <h:outputText value="Normalization: "/>
+                    <h:outputText value="#{arrayConfigBean.normalization}"/>
+                    <h:outputText value="Phenotype Column: "/>
+                    <h:outputText value="#{arrayConfigBean.phenotype}"/>
+                    <h:outputText value="Probe Selection: "/>
+                    <h:outputText value="#{arrayConfigBean.probeSelect?'Yes':'No'}"/>
+                    <h:outputText value="Sample Averaging: "/>
+                    <h:outputText value="#{arrayConfigBean.average}"/>
+                    <h:outputText value="Standardization Method: "/>
+                    <h:outputText value="#{arrayConfigBean.stdLog2Ratio}"/>
+                </p:panelGrid>
+                <p:separator style="height: 20px"/>
+                <h:form>
+                    <h:panelGrid columns="2" cellspacing="2" cellpadding="2">
+                        <p:commandButton value="Cancel" title="Redo the configuration"
+                                         style="width: 130px" oncomplete="PF('dlg').hide()"
+                                         action="#{arrayConfigBean.cancelJob}"/>
+                        <p:commandButton value="Confirm" title="Start the pipeline execution"
+                                         style="width: 130px"
+                                         action="#{arrayConfigBean.submitJob}" 
+                                         rendered="#{arrayConfigBean.allowToSubmitJob()}"/>                        
+                    </h:panelGrid>
+                </h:form>
+            </p:dialog>
         </h:form>
     </ui:define>
 </ui:composition>
