@@ -46,9 +46,12 @@ public class FileUploadBean implements Serializable {
             getLogger(FileUploadBean.class.getName());
     private int fileCount = 0;
     private static String fileDirectory = null;
-    private LinkedHashMap<Integer,String> fileList = new LinkedHashMap();
+    private List<String> inputList = null;
+    private LinkedHashMap<Integer,String> fileList = null;
 
-    public FileUploadBean() {}
+    public FileUploadBean() {
+        fileList = new LinkedHashMap<>();
+    }
     
     // fileUploadListener will get call for each file uploaded.
     public void fileUploadListener(FileUploadEvent event) {
@@ -117,10 +120,9 @@ public class FileUploadBean implements Serializable {
     // Return the list of input files that have been uploaded by the 
     // user; multiple files upload.
     public List<String> getInputFileList() {
-        List<String> inputList = new ArrayList<String>(fileList.values());
-
-        System.out.println("Filename: " + fileList.values());
-        System.out.println("File count: " + fileCount);
+        if (inputList == null) {
+            inputList = new ArrayList<>(fileList.values());
+        }
 
         return inputList;
     }
@@ -139,6 +141,11 @@ public class FileUploadBean implements Serializable {
         else {
             return fileList.get(1);            
         }
+    }
+    
+    // Return the directory where the uploaded input files are stored.
+    public String getFiledirectory() {
+        return fileDirectory;
     }
     
     // Retrieve the faces context
