@@ -37,8 +37,9 @@
                                  required="true" 
                                  value="#{authenticationBean.loginName}">
                     <f:validateLength minimum="5"/>
+                    <f:ajax event="blur" render="id-error"/>
                 </h:inputText>
-                <p:message for="username"/>
+                    <p:message id="id-error" for="username"/>
 
                 <h:outputLabel for="password">
                 <h:outputText value="Password:"/>
@@ -47,8 +48,9 @@
                             maxlength="20" required="true"
                             value="#{authenticationBean.password}">
                     <f:validateLength minimum="5"/>
+                    <f:ajax event="blur" render="pwd-error"/>
                 </h:inputSecret>
-                <p:message for="password"/>
+                    <p:message id="pwd-error" for="password"/>
                 
                 <h:panelGroup/>
                 <h:commandButton action="#{authenticationBean.login}" 
