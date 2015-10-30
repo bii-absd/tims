@@ -38,6 +38,7 @@ import org.apache.logging.log4j.LogManager;
  * the initialization code out of the Constructor.
  * 15-Oct-2015 - Critical error handling.
  * 27-Oct-2015 - Ported to JSF 2.2
+ * 30-Oct-2015 - Add 2 new String constants, TRUE and FALSE.
  */
 
 @ManagedBean (name = "constants")
@@ -60,6 +61,8 @@ public class Constants {
     public final static String FAILURE = "failure";
     public final static String ERROR = "error";
     public final static String LOGOFF = "logoff";
+    public final static String TRUE = "true";
+    public final static String FALSE = "false";
     // Vendor
     public final static String ILLUMINA = "Illumina";
     public final static String AFFYMETRIX = "Affymetrix";
