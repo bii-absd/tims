@@ -18,7 +18,7 @@
                          rowsPerPageTemplate="5,10,15"
                          styleClass="table-odd-row table-even-row"
                          binding="#{jobStatusBean.jobStatusTable}">
-                <p:column headerText="Study ID" sortBy="#{submittedJob.study_id}">
+                <p:column headerText="Study ID" sortFunction="#{jobStatusBean.sort}">
                     <h:outputText value="#{submittedJob.study_id}"/>
                 </p:column>
                 <p:column headerText="Submission Time">
@@ -29,14 +29,17 @@
                 </p:column>
                 <p:column headerText="Output File">
                     <p:commandLink ajax="false" value="Download" 
-                                   actionListener="#{jobStatusBean.preDownload}"
+                                   actionListener="#{jobStatusBean.preOutput}"
                                    disabled="#{jobStatusBean.available}">
-                        <p:fileDownload value="#{jobStatusBean.output}"/>
+                        <p:fileDownload value="#{jobStatusBean.file}"/>
                     </p:commandLink>
                 </p:column>
                 <p:column headerText="Report">
-                    <p:commandLink ajax="false" action="#{jobStatusBean.downloadReport}" 
-                                   value="Download" type="submit" disabled="#{jobStatusBean.available}"/>
+                    <p:commandLink ajax="false" value="Download" 
+                                   actionListener="#{jobStatusBean.preReport}" 
+                                   disabled="#{jobStatusBean.available}">
+                        <p:fileDownload value="#{jobStatusBean.file}"/>
+                    </p:commandLink>
                 </p:column>
             </p:dataTable>
         </h:form>
