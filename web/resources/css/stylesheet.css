@@ -5,6 +5,13 @@
                  presentation of the xhtml web pages found in the application.
 */
 
+.datalist .ui-widget-content {
+    border: none;
+}
+.datalistitem .ui-datalist-item {
+    text-align: left;
+}
+
 .loginpage.ui-panelgrid>*>tr,
 .loginpage.ui-panelgrid .ui-panelgrid-cell {
     border: none;
@@ -27,6 +34,7 @@
 .app-name {
     font-family: Arial, sans-serif;
     font-weight: 900;
+    font-size: 15pt;
     margin: 0.1em;
     color: rgb(0,124,188);
 }
@@ -46,8 +54,9 @@
 .login-box {
     border-style: solid;
     border-width: thick;
-    border-spacing: 20px;
+    border-spacing: 15px;
     color: rgb(204,204,204);
+    font-size: 10pt;
 }
 
 .page-border {
@@ -80,6 +89,14 @@
     color: rgb(204,204,204);
 }
 
+.aligncentre {
+    text-align: center;
+}
+
+.subheading {
+    font-size: 10pt;
+}
+
 .page {
     font-family: courier, arial, monospace;
     font-size: 10pt;
@@ -95,4 +112,16 @@
 
 .header {
     margin-bottom: 1em;
+}
+
+.table-odd-row .ui-datatable-odd {
+    font-family: courier, arial, monospace;
+    font-size: 10pt;
+    background-color: rgb(232, 255, 225);
+}
+
+.table-even-row .ui-datatable-even {
+    font-family: courier, arial, monospace;
+    font-size: 10pt;
+    background-color: rgb(233, 249, 244);
 }
