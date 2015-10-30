@@ -13,7 +13,7 @@
     </h:head>
 
     <h:body>
-        <h:form>
+        <h:form id="template">
         <h:panelGrid columns="3" cellspacing="0" cellpadding="0"
                      styleClass="header" width="100%">
 
@@ -42,9 +42,7 @@
         </p:breadCrumb>
         </h:form>
 
-        <div id="content" class="center_content">
-            <ui:insert name="content">Content</ui:insert>
-        </div>
+        <ui:insert name="content">Content</ui:insert>
         
         <hr class="underline"/>
         <div>
