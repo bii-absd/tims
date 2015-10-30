@@ -16,8 +16,7 @@
                          {FirstPageLink} {PreviousPageLink} {CurrentPageReport} 
                          {NextPageLink} {LastPageLink}"
                          rowsPerPageTemplate="5,10,15"
-                         styleClass="table-odd-row table-even-row"
-                         binding="#{jobStatusBean.jobStatusTable}">
+                         styleClass="table-odd-row table-even-row">
                 <p:column headerText="Study ID" sortBy="#{submittedJob.study_id}">
                     <h:outputText value="#{submittedJob.study_id}"/>
                 </p:column>
@@ -30,14 +29,16 @@
                 <p:column headerText="Output File">
                     <p:commandLink ajax="false" value="Download" 
                                    actionListener="#{jobStatusBean.preOutput}"
-                                   disabled="#{jobStatusBean.available}">
+                                   disabled="#{submittedJob.available}">
+                        <f:param name="output" value="#{submittedJob.output_file}"/>
                         <p:fileDownload value="#{jobStatusBean.file}"/>
                     </p:commandLink>
                 </p:column>
                 <p:column headerText="Report">
                     <p:commandLink ajax="false" value="Download" 
                                    actionListener="#{jobStatusBean.preReport}" 
-                                   disabled="#{jobStatusBean.available}">
+                                   disabled="#{submittedJob.available}">
+                        <f:param name="report" value="#{submittedJob.report}"/>
                         <p:fileDownload value="#{jobStatusBean.file}"/>
                     </p:commandLink>
                 </p:column>
