@@ -18,7 +18,7 @@
                          rowsPerPageTemplate="5,10,15"
                          styleClass="table-odd-row table-even-row"
                          binding="#{jobStatusBean.jobStatusTable}">
-                <p:column headerText="Study ID" sortFunction="#{jobStatusBean.sort}">
+                <p:column headerText="Study ID" sortBy="#{submittedJob.study_id}">
                     <h:outputText value="#{submittedJob.study_id}"/>
                 </p:column>
                 <p:column headerText="Submission Time">
