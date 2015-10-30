@@ -163,7 +163,9 @@ public class JobStatusBean implements Serializable {
     
     // Return the list of SubmittedJob objects that belong to the current user.
     // NOTE: This function will get called multiple times, hence should'nt
-    // include any business logic into it (i.e. performance issue).
+    // include any business logic into it (i.e. performance issue). The 
+    // initialisation of jobSubmission will be done in PostConstruct function
+    // init() instead.
     public List getJobSubmission() {
         return jobSubmission;
     }
