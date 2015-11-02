@@ -32,10 +32,11 @@ import org.apache.logging.log4j.LogManager;
  * Date: 27-Oct-2015
  * 
  * Revision History
- * 27-Oct-2015 - Created with the main function fileUploadListener, that is able
- * to handle multiple uploaded files at one time.
+ * 27-Oct-2015 - Created with the main function fileUploadListener, that is 
+ * able to handle multiple uploaded files at one time.
  * 28-Oct-2015 - Changed to allow this class to handle both single and multiple
  * file upload.
+ * 02-Nov-2015 - Added 2 new methods, createInputList and resetFileDirectory.
  */
 
 @ManagedBean (name="fileUploadBean")
@@ -70,7 +71,8 @@ public class FileUploadBean implements Serializable {
             }
         
             getFacesContext().addMessage(null, 
-                    new FacesMessage(uFile.getFileName() + " uploaded successfully."));
+                    new FacesMessage(uFile.getFileName() + 
+                                     " uploaded successfully."));
             
         }
         catch (IOException ex) {
@@ -89,7 +91,7 @@ public class FileUploadBean implements Serializable {
             DateFormat dateFormat = new SimpleDateFormat("ddMMM_HHmm");
             fileDirectory = Constants.getSYSTEM_PATH() + 
                             AuthenticationBean.getUserName() +
-                            Constants.getINPUTFILE_PATH() +
+                            Constants.getINPUT_PATH() +
                             dateFormat.format(new Date()) + "//";
             createSystemDirectory(fileDirectory);
         }
@@ -97,7 +99,8 @@ public class FileUploadBean implements Serializable {
         return fileDirectory;
     }
     
-    // Helper function to create the system directory used for storing input files.
+    // Helper function to create the system directory used for storing 
+    // input files.
     public static String createSystemDirectory(String systemDir) {
         String result = Constants.SUCCESS;
         File dir = new File(systemDir);
@@ -118,13 +121,23 @@ public class FileUploadBean implements Serializable {
     }
     
     // Return the list of input files that have been uploaded by the 
-    // user; multiple files upload.
+    // user; multiple files upload. 
+    // This method will be called multiple times, hence the business logic to 
+    // create the inputList have been moved to createInputList and this method
+    // will only return the inputList.
     public List<String> getInputFileList() {
-        if (inputList == null) {
-            inputList = new ArrayList<>(fileList.values());
-        }
-
         return inputList;
+    }
+
+    // Called when the user click on Submit button for GEX pipeline (Affymetrix)
+    // to create the input files list.
+    public void createInputList() {
+        inputList = new ArrayList<>(fileList.values());
+    }
+    
+    // Reset the fileDirectory to null to get ready for the next pipeline job.
+    public static void resetFileDirectory() {
+        fileDirectory = null;
     }
     
     // Check whether any input file uploaded by the user.
