@@ -86,7 +86,7 @@
             <p:panel id="furtherprocessing" header="Optional Processing">
                 <h:panelGrid columns="2" cellpadding="5">
                     <p:column>
-                        <p:selectOneMenu id="averaging" value="#{arrayConfigBean.average}" 
+                        <p:selectOneMenu id="averaging" value="#{arrayConfigBean.sampleAverage}" 
                                          title="#{msg['sample.averaging']}">
                             <f:selectItem itemLabel="Sample Averaging"
                                           itemValue=""/>
@@ -109,7 +109,7 @@
             <p:separator style="height: 20px"/>
             <p:commandButton value="Submit" update="display @form"
                              oncomplete="PF('dlg').show()" 
-                             icon="ui-icon-check"/>
+                             icon="ui-icon-check" action="#{arrayConfigBean.inputFile.createInputList}"/>
             
             <p:dialog header="Pipeline Configuration Review"
                       widgetVar="dlg"
@@ -122,8 +122,8 @@
                     <h:outputText value="Sample File: "/>
                     <p:dataList itemType="square" 
                                 value="#{arrayConfigBean.inputFile.inputFileList}"
-                                var="filelist" styleClass="datalist">
-                        <h:outputText value="#{filelist}"/>
+                                var="filelist" styleClass="datalist" type="none">
+                        <h:outputText value="#{filelist}"/><br/>
                     </p:dataList>
                     <h:outputText value="Samples Annotation File: "/>
                     <h:outputText value="#{arrayConfigBean.sampleFile.inputFilename}"/>
@@ -136,7 +136,7 @@
                     <h:outputText value="Probe Selection: "/>
                     <h:outputText value="#{arrayConfigBean.probeSelect?'Yes':'No'}"/>
                     <h:outputText value="Sample Averaging: "/>
-                    <h:outputText value="#{arrayConfigBean.average}"/>
+                    <h:outputText value="#{arrayConfigBean.sampleAverage}"/>
                     <h:outputText value="Standardization Method: "/>
                     <h:outputText value="#{arrayConfigBean.stdLog2Ratio}"/>
                 </p:panelGrid>
