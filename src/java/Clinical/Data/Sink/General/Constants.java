@@ -39,6 +39,7 @@ import org.apache.logging.log4j.LogManager;
  * 15-Oct-2015 - Critical error handling.
  * 27-Oct-2015 - Ported to JSF 2.2
  * 30-Oct-2015 - Add 2 new String constants, TRUE and FALSE.
+ * 02-Nov-2015 - Changes in the naming convention for all file related constants.
  */
 
 @ManagedBean (name = "constants")
@@ -75,22 +76,16 @@ public class Constants {
     public final static String NGS_PAGE = "ngs";
     // Constants used in Array pipeline
     private static String SYSTEM_PATH = null;
-    private static String OUTPUTFILE_PATH = null;
+    private static String OUTPUT_PATH = null;
+    private static String INPUT_PATH = null;
+    private static String CONFIG_PATH = null;
+    private static String LOG_PATH = null;
     private static String OUTPUTFILE_NAME = null;
+    private static String OUTPUTFILE_EXT = null;
     private static String REPORTFILE_NAME = null;
     private static String REPORTFILE_EXT = null;
-    private static String INPUTFILE_PATH = null;
-    private static String INPUTFILE_NAME = null;
-    private static String CTRLFILE_PATH = null;
-    private static String CTRLFILE_NAME = null;
-    private static String CTRLFILE_EXT = null;
-    private static String MPSFILE_PATH = null;
-    private static String MPSFILE_NAME = null;
-    private static String SAMPLEANTFILE_NAME = null;
-    private static String PROBEANTFILE_NAME = null;
-    private static String LOGFILE_PATH = null;
     private static String LOGFILE_NAME = null;
-    private static String CONFIG_FILE_PATH = null;
+    private static String LOGFILE_EXT = null;
     private static String CONFIG_FILE_NAME = null;
     private static String CONFIG_FILE_EXT = null;
     // Constants used in database setup
@@ -101,7 +96,6 @@ public class Constants {
     private static String COMMAND2 = null;
 
     public Constants() {}
-    
     
     // No setters for the setup parameters will be provided.
     // Function setup will load the parameters value from the file passed in uri.
@@ -133,22 +127,16 @@ public class Constants {
         
             // Setup the config parameters
             SYSTEM_PATH = setup.get("SYSTEM_PATH");
-            OUTPUTFILE_PATH = setup.get("OUTPUTFILE_PATH");
+            OUTPUT_PATH = setup.get("OUTPUT_PATH");
+            INPUT_PATH = setup.get("INPUT_PATH");
+            CONFIG_PATH = setup.get("CONFIG_PATH");
+            LOG_PATH = setup.get("LOG_PATH");
             OUTPUTFILE_NAME = setup.get("OUTPUTFILE_NAME");
+            OUTPUTFILE_EXT = setup.get("OUTPUTFILE_EXT");
             REPORTFILE_NAME = setup.get("REPORTFILE_NAME");
             REPORTFILE_EXT = setup.get("REPORTFILE_EXT");
-            INPUTFILE_PATH = setup.get("INPUTFILE_PATH");
-            INPUTFILE_NAME = setup.get("INPUTFILE_NAME");
-            CTRLFILE_PATH = setup.get("CTRLFILE_PATH");
-            CTRLFILE_NAME = setup.get("CTRLFILE_NAME");
-            CTRLFILE_EXT = setup.get("CTRLFILE_EXT");
-            MPSFILE_PATH = setup.get("MPSFILE_PATH");
-            MPSFILE_NAME = setup.get("MPSFILE_NAME");
-            SAMPLEANTFILE_NAME = setup.get("SAMPLEANTFILE_NAME");
-            PROBEANTFILE_NAME = setup.get("PROBEANTFILE_NAME");
-            LOGFILE_PATH = setup.get("LOGFILE_PATH");
             LOGFILE_NAME = setup.get("LOGFILE_NAME");
-            CONFIG_FILE_PATH = setup.get("CONFIG_FILE_PATH");
+            LOGFILE_EXT = setup.get("LOGFILE_EXT");
             CONFIG_FILE_NAME = setup.get("CONFIG_FILE_NAME");
             CONFIG_FILE_EXT = setup.get("CONFIG_FILE_EXT");
             DATABASE_NAME = setup.get("DATABASE_NAME");
@@ -164,24 +152,18 @@ public class Constants {
     public String getGEX_AFFYMETRIX() { return GEX_AFFYMETRIX; }
     public String getGEX_ILLUMINA() { return GEX_ILLUMINA; }
     public String getAFFYMETRIX() { return AFFYMETRIX; }
-    public String getILLUMINA() { return ILLUMINA; }    
+    public String getILLUMINA() { return ILLUMINA; }
     public static String getSYSTEM_PATH() { return SYSTEM_PATH; }
-    public static String getOUTPUTFILE_PATH() { return OUTPUTFILE_PATH; }
+    public static String getOUTPUT_PATH() { return OUTPUT_PATH; }
+    public static String getINPUT_PATH() { return INPUT_PATH; }
+    public static String getCONFIG_PATH() { return CONFIG_PATH; }
+    public static String getLOG_PATH() { return LOG_PATH; }
     public static String getOUTPUTFILE_NAME() { return OUTPUTFILE_NAME; }
+    public static String getOUTPUTFILE_EXT() { return OUTPUTFILE_EXT; }
     public static String getREPORTFILE_NAME() { return REPORTFILE_NAME; }
     public static String getREPORTFILE_EXT() { return REPORTFILE_EXT; }
-    public static String getINPUTFILE_PATH() { return INPUTFILE_PATH; }
-    public static String getINPUTFILE_NAME() { return INPUTFILE_NAME; }
-    public static String getCTRLFILE_PATH() { return CTRLFILE_PATH; }
-    public static String getCTRLFILE_NAME() { return CTRLFILE_NAME; }
-    public static String getCTRLFILE_EXT() { return CTRLFILE_EXT; }
-    public static String getMPSFILE_PATH() { return MPSFILE_PATH; }
-    public static String getMPSFILE_NAME() { return MPSFILE_NAME; }
-    public static String getSAMPLEANTFILE_NAME() { return SAMPLEANTFILE_NAME; }
-    public static String getPROBEANTFILE_NAME() { return PROBEANTFILE_NAME; }
-    public static String getLOGFILE_PATH() { return LOGFILE_PATH; }
-    public static String getLOGFILE_NAME() { return LOGFILE_NAME; }    
-    public static String getCONFIG_FILE_PATH() { return CONFIG_FILE_PATH; }
+    public static String getLOGFILE_NAME() { return LOGFILE_NAME; }
+    public static String getLOGFILE_EXT() { return LOGFILE_EXT; }
     public static String getCONFIG_FILE_NAME() { return CONFIG_FILE_NAME; }
     public static String getCONFIG_FILE_EXT() { return CONFIG_FILE_EXT; }
     public static String getDATABASE_NAME() { return DATABASE_NAME; }
