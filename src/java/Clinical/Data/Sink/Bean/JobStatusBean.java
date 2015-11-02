@@ -47,6 +47,8 @@ import org.primefaces.model.StreamedContent;
  * 30-Oct-2015 - Ported from JSF1.1 to JSF2.2 + PrimeFaces. Added PostConstruct
  * function init(), and 3 new functions to handle pipeline output/report
  * downloading for the users.
+ * 02-Nov-2015 - Passing in the current submittedJob as method argument for 
+ * downloadOuptut and downloadReport methods.
  */
 
 @ManagedBean(name = "jobStatusBean")
@@ -58,7 +60,8 @@ public class JobStatusBean implements Serializable {
     // For JSF 2.2, since we are using @ViewScoped we cannot bind any UIComponent.
 //    private transient UIData jobStatusTable;
     private List<SubmittedJob> jobSubmission;
-    // These 2 variables are used during downloading of output and report
+    // These 2 variables are used during downloading of output and report. Not in
+    // use anymore.
     private File file = null;
     private String type;
     
@@ -87,19 +90,21 @@ public class JobStatusBean implements Serializable {
     }
     
     // Download the pipeline output for user.
-    public void downloadOutput() {
-        String output = getExternalContext().getRequestParameterMap().get("output");
-        download(output);
+    public void downloadOutput(SubmittedJob job) {
+//        String output = getExternalContext().getRequestParameterMap().get("output");
+        download(job.getOutput_file());
     }
     
     // Download the pipeline report for user.
-    public void downloadReport() {
-        String report = getExternalContext().getRequestParameterMap().get("report");
-        download(report);
+    public void downloadReport(SubmittedJob job) {
+//        String report = getExternalContext().getRequestParameterMap().get("report");
+        download(job.getReport());
     }
     
     // Setup the variables file and type according to the pipeline output.
     public void preOutput() {
+        // Need to pass in the parameter from JSF
+        // <f:param name="output" value="#{submittedJob.output_file}"/>
         String output = getExternalContext().getRequestParameterMap().get("output");
         file = new File(output);
         type = getFacesContext().getExternalContext().getMimeType(file.getName());
@@ -121,8 +126,8 @@ public class JobStatusBean implements Serializable {
                                           "text/plain",file.getName());
     }
     
-    // download let the user download the output file after the pipeline has
-    // completed execution
+    // Allow the user to download the output/report file after the pipeline has
+    // completed execution.
     public void download(String downloadFile) {
         // Get ready the pipeline file for user to download
         File file = new File(downloadFile);
