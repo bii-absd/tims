@@ -1,23 +1,20 @@
-# The below defines the path, filename, filename extention of the input file, 
-# config file, etc
+# The below defines the path, filename, filename extention of the input, output, 
+# log and config file, etc
 SYSTEM_PATH C://temp//datasink//users//
-OUTPUTFILE_PATH //output//
+OUTPUT_PATH //output//
+INPUT_PATH //input//
+CONFIG_PATH //config//
+LOG_PATH //log//
+# All input files (i.e. input, ctrl and sample) will be stored in the /input
+# directory (with their original name unchange).
+# All output files (i.e. output and report) will be stored in the /output dir
 OUTPUTFILE_NAME output-
+OUTPUTFILE_EXT .txt
 REPORTFILE_NAME report-
 REPORTFILE_EXT .pdf
-INPUTFILE_PATH //input//
-INPUTFILE_NAME arraydata_
-CTRLFILE_PATH //input//
-CTRLFILE_NAME ctrl_
-CTRLFILE_EXT .qcc
-MPSFILE_PATH //input//
-MPSFILE_NAME mps_
-SAMPLEANTFILE_NAME sample_annot_
-PROBEANTFILE_NAME probe_annot_
-LOGFILE_PATH //log//
-LOGFILE_NAME log_
-CONFIG_FILE_PATH //config//
-CONFIG_FILE_NAME arrayconfig_
+LOGFILE_NAME log-
+LOGFILE_EXT .txt
+CONFIG_FILE_NAME config-
 CONFIG_FILE_EXT .txt
 # The below defines the database name, database driver
 DATABASE_NAME jdbc:postgresql://localhost:5432/clinical
