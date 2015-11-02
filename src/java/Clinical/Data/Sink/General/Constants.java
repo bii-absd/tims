@@ -39,7 +39,8 @@ import org.apache.logging.log4j.LogManager;
  * 15-Oct-2015 - Critical error handling.
  * 27-Oct-2015 - Ported to JSF 2.2
  * 30-Oct-2015 - Add 2 new String constants, TRUE and FALSE.
- * 02-Nov-2015 - Changes in the naming convention for all file related constants.
+ * 02-Nov-2015 - Changes in the naming convention for all file related 
+ * constants. Added one new constant, DIRECTORY_SEPARATOR.
  */
 
 @ManagedBean (name = "constants")
@@ -60,7 +61,6 @@ public class Constants {
     // General return status
     public final static String SUCCESS = "success";
     public final static String FAILURE = "failure";
-    public final static String ERROR = "error";
     public final static String LOGOFF = "logoff";
     public final static String TRUE = "true";
     public final static String FALSE = "false";
@@ -74,6 +74,7 @@ public class Constants {
     public final static String GEX_AFFYMETRIX = "gex-affymetrix";
     public final static String ARRAYCONFIG_PAGE = "arrayconfig";
     public final static String NGS_PAGE = "ngs";
+    public final static String ERROR = "error";
     // Constants used in Array pipeline
     private static String SYSTEM_PATH = null;
     private static String OUTPUT_PATH = null;
@@ -88,6 +89,8 @@ public class Constants {
     private static String LOGFILE_EXT = null;
     private static String CONFIG_FILE_NAME = null;
     private static String CONFIG_FILE_EXT = null;
+    // Constants that identify the directory separator for OS
+    private static String DIRECTORY_SEPARATOR = null;
     // Constants used in database setup
     private static String DATABASE_NAME = null;
     private static String DATABASE_DRIVER = null;
@@ -139,6 +142,7 @@ public class Constants {
             LOGFILE_EXT = setup.get("LOGFILE_EXT");
             CONFIG_FILE_NAME = setup.get("CONFIG_FILE_NAME");
             CONFIG_FILE_EXT = setup.get("CONFIG_FILE_EXT");
+            DIRECTORY_SEPARATOR = setup.get("DIRECTORY_SEPARATOR");
             DATABASE_NAME = setup.get("DATABASE_NAME");
             DATABASE_DRIVER = setup.get("DATABASE_DRIVER");
             COMMAND1 = setup.get("COMMAND1");
@@ -166,6 +170,7 @@ public class Constants {
     public static String getLOGFILE_EXT() { return LOGFILE_EXT; }
     public static String getCONFIG_FILE_NAME() { return CONFIG_FILE_NAME; }
     public static String getCONFIG_FILE_EXT() { return CONFIG_FILE_EXT; }
+    public static String getDIRECTORY_SEPARATOR() { return DIRECTORY_SEPARATOR; }
     public static String getDATABASE_NAME() { return DATABASE_NAME; }
     public static String getDATABASE_DRIVER() { return DATABASE_DRIVER; }
     public static String getCOMMAND1() { return COMMAND1; }
