@@ -46,8 +46,13 @@ import org.apache.logging.log4j.LogManager;
  * 13-Oct-2015 - Added new method getAdminRight, to provide basic access control
  * to command/link.
  * 15-Oct-2015 - Critical error handling.
+ * 21-Oct-2015 - To create user directory once successfully login.
+ * 22-Oct-2015 - Added one String variable to store the user home directory.
+ * 23-Oct-2015 - To create system directory once successfully login.
  * 27-Oct-2015 - Created 2 new functions setupConstants and setupMenuList, to
  * handle the setting up of systems constants and parameters.
+ * 02-Nov-2015 - To create all the user system directories once successfully 
+ * login.
  */
 
 @ManagedBean (name="authenticationBean")
@@ -57,7 +62,7 @@ public class AuthenticationBean implements Serializable {
     private final static Logger logger = LogManager.
             getLogger(AuthenticationBean.class.getName());
     private static DBHelper dbHandle;
-    private static String loginName;
+    private static String loginName, homeDir;
     private String password;
     private static UserAccount userAcct;
     
@@ -68,7 +73,8 @@ public class AuthenticationBean implements Serializable {
     private String setupConstants(ServletContext context) {
         // Load the setup filename from context-param
         String setupFile = context.getInitParameter("setting");
-        logger.debug("Config file located at: " + context.getRealPath(setupFile));
+        logger.debug("Config file located at: " + 
+                     context.getRealPath(setupFile));
         
         // Setup the constants using the parameters defined in setup
         return Constants.setup(context.getRealPath(setupFile));
@@ -78,7 +84,8 @@ public class AuthenticationBean implements Serializable {
     private String setupMenuList(ServletContext context) {
         // Load the itemlist filename from context-param
         String itemListFile = context.getInitParameter("itemlist");
-        logger.debug("Item list file located at: " + context.getRealPath(itemListFile));
+        logger.debug("Item list file located at: " + 
+                     context.getRealPath(itemListFile));
         
         // Setup the menu list using the items defined in item list config
         return SelectOneMenuList.setup(context.getRealPath(itemListFile));
@@ -139,8 +146,19 @@ public class AuthenticationBean implements Serializable {
         
         if (userAcct != null) {
             logger.info(loginName + ": login to the system.");
-            // Login success, proceed to Main Page.
-            return Constants.MAIN_PAGE;
+            // Create user home directory once successfully login
+            homeDir = Constants.getSYSTEM_PATH() + loginName;
+            
+            // Create the .../users directory 
+            // Follow by .../users/loginName directory
+            if (FileUploadBean.createSystemDirectory(Constants.getSYSTEM_PATH())) {
+                if (FileUploadBean.createAllSystemDirectories(homeDir)) {
+                    return Constants.MAIN_PAGE;
+                }
+            }
+            // If control reached here, it means some of the system directories
+            // is not created, shouldn't allow user to proceed.
+            return Constants.ERROR;
         }
         else {
             FacesContext facesContext = getFacesContext();
@@ -190,6 +208,9 @@ public class AuthenticationBean implements Serializable {
     
     // getUserName allows all other classes to get the id of the current user
     public static String getUserName() { return loginName; }
+    // getHomeDir will return the home directory of the current user.
+    public static String getHomeDir() { return homeDir; }
+    
     // getHeaderInstDept will supply the Institution-Department string to
     // header.jsp view
     public static String getHeaderInstDept() { 
