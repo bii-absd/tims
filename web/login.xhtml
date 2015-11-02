@@ -10,21 +10,25 @@
         <title>Clinical Data Sink Login</title>
     </h:head>
     <h:body>
-            <h:panelGrid columns="3" border="0" cellpadding="5"
-                        cellspacing="5" width="100%">
-                    
-                <h:graphicImage library="images" name="BII.jpg"/>
-                <h:panelGroup/>
-                <h:panelGroup/>
-                    
-                <h:panelGroup/>
-                <h:outputText value="Clinical Data Sink" styleClass="app-name"/>
-                <h:panelGroup/>
-                    
-                <h:panelGroup/>
-                <h:panelGrid styleClass="login-box" width="550px">
+        <h:panelGrid columns="3" border="0" cellpadding="5" 
+                     columnClasses="grid-left grid-centre grid-right"
+                     cellspacing="5" width="100%">
+                
+            <h:panelGroup>
+                <h:graphicImage library="images" name="Astar.jpg"/>
+                <h:graphicImage library="images" name="BII.jpg"/>                
+            </h:panelGroup>
+            <h:panelGroup/>
+            <h:panelGroup/>
+
+            <h:panelGroup/>
+            <h:outputText value="Clinical Data Sink" styleClass="app-name"/>
+            <h:panelGroup/>
+
+            <h:panelGroup/>
+            <h:panelGrid styleClass="login-box" width="550px">
                 <h:form>
-                    <p:messages id="msg" for="global" showDetail="true"/>
+                <p:messages id="msg" for="global" showDetail="true"/>
                     
                 <h:panelGrid columns="3" border="0" cellpadding="10"
                             cellspacing="3">
@@ -39,18 +43,18 @@
                     <f:validateLength minimum="5"/>
                     <f:ajax event="blur" render="id-error"/>
                 </h:inputText>
-                    <p:message id="id-error" for="username"/>
+                <p:message id="id-error" for="username"/>
 
                 <h:outputLabel for="password">
                 <h:outputText value="Password:"/>
                 </h:outputLabel>
                 <h:inputSecret id="password" size="20"
-                            maxlength="20" required="true"
-                            value="#{authenticationBean.password}">
+                               maxlength="20" required="true"
+                               value="#{authenticationBean.password}">
                     <f:validateLength minimum="5"/>
                     <f:ajax event="blur" render="pwd-error"/>
                 </h:inputSecret>
-                    <p:message id="pwd-error" for="password"/>
+                <p:message id="pwd-error" for="password"/>
                 
                 <h:panelGroup/>
                 <h:commandButton action="#{authenticationBean.login}" 
