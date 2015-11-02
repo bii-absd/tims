@@ -16,8 +16,10 @@
         <h:form id="template">
         <h:panelGrid columns="3" cellspacing="0" cellpadding="0"
                      styleClass="header" width="100%">
-
-            <h:graphicImage library="images" name="BII.jpg" alt="BII"/>
+            <h:panelGroup>
+                <h:graphicImage library="images" name="Astar.jpg" alt="AStar"/>
+                <h:graphicImage library="images" name="BII.jpg" alt="BII"/>                
+            </h:panelGroup>
 
             <p:menubar>
                 <p:submenu label="Admin" rendered="#{authenticationBean.adminRight}">
