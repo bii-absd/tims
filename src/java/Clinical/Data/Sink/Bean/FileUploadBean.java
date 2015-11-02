@@ -9,10 +9,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import javax.faces.application.FacesMessage;
@@ -36,7 +33,8 @@ import org.apache.logging.log4j.LogManager;
  * able to handle multiple uploaded files at one time.
  * 28-Oct-2015 - Changed to allow this class to handle both single and multiple
  * file upload.
- * 02-Nov-2015 - Added 2 new methods, createInputList and resetFileDirectory.
+ * 02-Nov-2015 - Added one new variable, localDirectoryPath and it's getter and 
+ * setter methods. Added one new method, createAllSystemDirectories.
  */
 
 @ManagedBean (name="fileUploadBean")
@@ -47,6 +45,9 @@ public class FileUploadBean implements Serializable {
             getLogger(FileUploadBean.class.getName());
     private int fileCount = 0;
     private static String fileDirectory = null;
+    // To store the local path of the input files folder (to be use during
+    // config file creation).
+    private String localDirectoryPath = null;
     private List<String> inputList = null;
     private LinkedHashMap<Integer,String> fileList = null;
 
@@ -59,7 +60,8 @@ public class FileUploadBean implements Serializable {
         UploadedFile uFile = event.getFile();
         // Store the uploaded filename for configuration review later.
         fileList.put(++fileCount, uFile.getFileName());
-        File file = new File(getFileDirectory() + uFile.getFileName());
+        File file = new File(fileDirectory + uFile.getFileName());
+        setLocalDirectoryPath(file.getAbsolutePath());
         
         try (FileOutputStream fop = new FileOutputStream(file);
              InputStream filecontent = uFile.getInputstream(); ) {
@@ -85,24 +87,22 @@ public class FileUploadBean implements Serializable {
         logger.debug("File list: " + fileList.toString());
     }
     
-    // Return the full path of the input folder for this pipeline job.
-    private String getFileDirectory() {
-        if (fileDirectory == null) {
-            DateFormat dateFormat = new SimpleDateFormat("ddMMM_HHmm");
-            fileDirectory = Constants.getSYSTEM_PATH() + 
-                            AuthenticationBean.getUserName() +
-                            Constants.getINPUT_PATH() +
-                            dateFormat.format(new Date()) + "//";
-            createSystemDirectory(fileDirectory);
-        }
+    // Create all the system directories for the user.
+    public static Boolean createAllSystemDirectories(String homeDir) {
+        Boolean result = 
+                createSystemDirectory(homeDir) && 
+                createSystemDirectory(homeDir + Constants.getINPUT_PATH()) &&
+                createSystemDirectory(homeDir + Constants.getOUTPUT_PATH()) &&
+                createSystemDirectory(homeDir + Constants.getCONFIG_PATH()) &&
+                createSystemDirectory(homeDir + Constants.getLOG_PATH());
         
-        return fileDirectory;
+        return result;
     }
     
     // Helper function to create the system directory used for storing 
     // input files.
-    public static String createSystemDirectory(String systemDir) {
-        String result = Constants.SUCCESS;
+    public static Boolean createSystemDirectory(String systemDir) {
+        Boolean result = Constants.OK;
         File dir = new File(systemDir);
         
         if (!dir.exists()) {
@@ -113,11 +113,25 @@ public class FileUploadBean implements Serializable {
             else {
                 logger.error("Failed to create system directory " +
                         systemDir);
-                result = Constants.ERROR;
+                result = Constants.NOT_OK;
             }
         }
         
         return result;
+    }
+    
+    // Setup and store the local path of the input files folder; to be use in
+    // config file creation.
+    private void setLocalDirectoryPath(String fullpath) {
+        if (localDirectoryPath == null) {
+            int tmp = fullpath.lastIndexOf(Constants.getDIRECTORY_SEPARATOR());
+            localDirectoryPath = fullpath.substring(0, tmp+1);
+            logger.debug("Local input files directory: " + localDirectoryPath);
+        }
+    }
+    // Return the local path of the input files folder.
+    public String getLocalDirectoryPath() {
+        return localDirectoryPath;
     }
     
     // Return the list of input files that have been uploaded by the 
@@ -135,6 +149,18 @@ public class FileUploadBean implements Serializable {
         inputList = new ArrayList<>(fileList.values());
     }
     
+    // Return the input files directory for this pipeline job.
+    public static String getFileDirectory() {
+        return fileDirectory;
+    }
+    // Set the input files directory for this pipeline job.
+    public static Boolean setFileDirectory(String directory) {
+        fileDirectory = AuthenticationBean.getHomeDir() + 
+                        Constants.getINPUT_PATH() +
+                        directory + "//";
+        
+        return createSystemDirectory(fileDirectory);
+    }
     // Reset the fileDirectory to null to get ready for the next pipeline job.
     public static void resetFileDirectory() {
         fileDirectory = null;
@@ -154,11 +180,6 @@ public class FileUploadBean implements Serializable {
         else {
             return fileList.get(1);            
         }
-    }
-    
-    // Return the directory where the uploaded input files are stored.
-    public String getFiledirectory() {
-        return fileDirectory;
     }
     
     // Retrieve the faces context
