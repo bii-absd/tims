@@ -28,18 +28,14 @@
                 </p:column>
                 <p:column headerText="Output File">
                     <p:commandLink ajax="false" value="Download" 
-                                   actionListener="#{jobStatusBean.preOutput}"
+                                   action="#{jobStatusBean.downloadOutput(submittedJob)}"
                                    disabled="#{submittedJob.available}">
-                        <f:param name="output" value="#{submittedJob.output_file}"/>
-                        <p:fileDownload value="#{jobStatusBean.file}"/>
                     </p:commandLink>
                 </p:column>
                 <p:column headerText="Report">
                     <p:commandLink ajax="false" value="Download" 
-                                   actionListener="#{jobStatusBean.preReport}" 
+                                   action="#{jobStatusBean.downloadReport(submittedJob)}" 
                                    disabled="#{submittedJob.available}">
-                        <f:param name="report" value="#{submittedJob.report}"/>
-                        <p:fileDownload value="#{jobStatusBean.file}"/>
                     </p:commandLink>
                 </p:column>
             </p:dataTable>
