@@ -86,7 +86,7 @@
             <p:panel id="furtherprocessing" header="Optional Processing">
                 <h:panelGrid columns="2" cellpadding="5">
                     <p:column>
-                        <p:selectOneMenu id="averaging" value="#{arrayConfigBean.average}" 
+                        <p:selectOneMenu id="averaging" value="#{arrayConfigBean.sampleAverage}" 
                                          title="#{msg['sample.averaging']}">
                             <f:selectItem itemLabel="Sample Averaging"
                                           itemValue=""/>
@@ -127,8 +127,8 @@
                     <h:outputText value="#{arrayConfigBean.sampleFile.inputFilename}"/>
                     <h:outputText value="Probe Filtering: "/>
                     <p:dataList itemType="square" value="#{arrayConfigBean.probeFilters}" 
-                                var="probe" styleClass="datalist">
-                        <h:outputText value="#{probe}"/>
+                                var="probe" styleClass="datalist" type="none">
+                        <h:outputText value="#{probe}"/><br/>
                     </p:dataList>
                     <h:outputText value="Normalization: "/>
                     <h:outputText value="#{arrayConfigBean.normalization}"/>
@@ -137,7 +137,7 @@
                     <h:outputText value="Probe Selection: "/>
                     <h:outputText value="#{arrayConfigBean.probeSelect?'Yes':'No'}"/>
                     <h:outputText value="Sample Averaging: "/>
-                    <h:outputText value="#{arrayConfigBean.average}"/>
+                    <h:outputText value="#{arrayConfigBean.sampleAverage}"/>
                     <h:outputText value="Standardization Method: "/>
                     <h:outputText value="#{arrayConfigBean.stdLog2Ratio}"/>
                 </p:panelGrid>
