@@ -45,7 +45,7 @@ import org.apache.logging.log4j.LogManager;
  * 02-Nov-2015 - Changes in the naming convention for all file related 
  * constants. Added one new constant, DIRECTORY_SEPARATOR.
  * 03-Nov-2015 - Added in one new method, getDateTime for displaying of date
- * and time.
+ * and time. Added one new constant NONE.
  */
 
 @ManagedBean (name = "constants")
@@ -69,6 +69,7 @@ public class Constants {
     public final static String LOGOFF = "logoff";
     public final static String TRUE = "true";
     public final static String FALSE = "false";
+    public final static String NONE = "none";
     // Vendor
     public final static String ILLUMINA = "Illumina";
     public final static String AFFYMETRIX = "Affymetrix";
