@@ -4,10 +4,10 @@
 package Clinical.Data.Sink.Bean;
 
 import Clinical.Data.Sink.Database.DBHelper;
-import Clinical.Data.Sink.General.Constants;
 import Clinical.Data.Sink.Database.UserAccount;
 import Clinical.Data.Sink.Database.UserAccountDB;
 import Clinical.Data.Sink.General.SelectOneMenuList;
+import Clinical.Data.Sink.General.Constants;
 
 import java.io.Serializable;
 import java.sql.SQLException;
@@ -20,9 +20,10 @@ import javax.faces.bean.ManagedBean;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.LoggerContext;
 
 /**
- * AuthenticationBean is the backing bean for the login.jsp view.
+ * AuthenticationBean is the backing bean for the login.xhtml view.
  * 
  * Author: Tay Wei Hong
  * Created on: 18-Sep-2015
@@ -53,6 +54,8 @@ import org.apache.logging.log4j.LogManager;
  * handle the setting up of systems constants and parameters.
  * 02-Nov-2015 - To create all the user system directories once successfully 
  * login.
+ * 03-Nov-2015 - Setup will be loaded base on the Operating System the 
+ * application is hosted on.
  */
 
 @ManagedBean (name="authenticationBean")
@@ -68,11 +71,33 @@ public class AuthenticationBean implements Serializable {
     
     public AuthenticationBean() {}
     
+    // Update log4j2 log filename
+    // Use together with:
+    // <RollingRandomAccessFile name="RollingRandomAccessFile" fileName="${sys:logFilename}" filePattern="${sys:logFilename}-%d{MMM-yyyy}-%i.gz">
+    // NOT IN USE.
+    private void updateLog4jConfiguration() {
+        System.setProperty("logFilename", "C:/temp/datasink/log/log");
+        
+        LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+        ctx.reconfigure();
+    }
+    
     // setupConstants help to setup the database configuration, input and
-    // config file path.
+    // config file path according to the OS the application is hosted on.
     private String setupConstants(ServletContext context) {
-        // Load the setup filename from context-param
-        String setupFile = context.getInitParameter("setting");
+        String setupFile;
+        String OS = System.getProperty("os.name");
+        
+        // Load the setup file from context-param according to the Operating
+        // System the application is hosted on.
+        if (OS.startsWith("Windows")) {
+            setupFile = context.getInitParameter("windows");
+        }
+        else {
+            setupFile = context.getInitParameter("linux");            
+        }
+
+        logger.debug("Application is hosted on: " + OS);
         logger.debug("Config file located at: " + 
                      context.getRealPath(setupFile));
         
