@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="trace">
+    <Appenders>
+        <RollingRandomAccessFile name="RollingRandomAccessFile" fileName="C:/temp/datasink/log/app.log" filePattern="C:/temp/datasink/log/app-%d{MMM-yyyy}-%i.gz">
+            <PatternLayout>
+                <Pattern>%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n</Pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy />
+                <SizeBasedTriggeringPolicy size="250 MB"/>
+            </Policies>
+        </RollingRandomAccessFile>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%m%n"/>
+        </Console>
+    </Appenders>
+    <Loggers>
+        <Root level="all">
+            <AppenderRef ref="RollingRandomAccessFile" level="DEBUG"/>
+            <AppenderRef ref="Console" level="DEBUG"/>
+        </Root>
+    </Loggers>
+</Configuration>
