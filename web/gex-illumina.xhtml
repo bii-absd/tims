@@ -89,18 +89,17 @@
                         <p:selectOneMenu id="averaging" value="#{arrayConfigBean.sampleAverage}" 
                                          title="#{msg['sample.averaging']}">
                             <f:selectItem itemLabel="Sample Averaging"
-                                          itemValue=""/>
-                            <f:selectItem itemLabel="None" itemValue="none"/>
+                                          itemValue="none"/>
                             <f:selectItem itemLabel="Sample" itemValue="Sample"/>
                         </p:selectOneMenu>
                     </p:column>
                     <p:column>
                         <p:selectOneMenu id="stdlog2ratio" value="#{arrayConfigBean.stdLog2Ratio}">
                             <f:selectItem itemLabel="Standardization Method"
-                                          itemValue=""/>
+                                          itemValue="none"/>
                             <f:selectItem itemLabel="Standardize" itemValue="Standardize" 
                                           itemDescription="#{msg['standardization']}"/>
-                            <f:selectItem itemLabel="Log2Ratio" itemValue="Log2 Ratio" 
+                            <f:selectItem itemLabel="Log2Ratio" itemValue="Log2Ratio" 
                                           itemDescription="#{msg['log2ratio']}"/>
                         </p:selectOneMenu>
                     </p:column>
