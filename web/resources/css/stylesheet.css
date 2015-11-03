@@ -19,23 +19,24 @@
 .grid-main {
     width: 100%;
 }
-.grid-left-col {
+.grid-left {
     width: 35%;
 }
-.grid-centre-col {
+.grid-centre {
     width: 30%;
     alignment-adjust: middle;
     alignment-baseline: middle;
 }
-.grid-left-col {
+.grid-right {
     width: 35%;
 }
 
 .app-name {
-    font-family: Arial, sans-serif;
+//    font-family: Arial, sans-serif;
+    font-family: "Comic Sans MS", cursive, sans-serif;
     font-weight: 900;
-    font-size: 15pt;
-    margin: 0.1em;
+    font-size: 18pt;
+    margin: 0.2em;
     color: rgb(0,124,188);
 }
 
@@ -87,6 +88,13 @@
 .alignright {
     float: right;
     color: rgb(204,204,204);
+}
+
+.clock {
+    margin-top: 2em;
+    float: right;
+    font-family: courier, arial, monospace;
+    font-size: 10pt;
 }
 
 .aligncentre {
