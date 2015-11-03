@@ -70,6 +70,7 @@ import org.apache.logging.log4j.LogManager;
  * pipelineReport to store the filepath of the pipeline report that will be 
  * generated. Pipeline report module.
  * 02-Nov-2015 - Full porting to JSF 2.2 completed.
+ * 03-Nov-2015 - Fixed the Probe Filtering text issue.
  */
 
 @ManagedBean (name="arrayConfigBean")
@@ -247,7 +248,7 @@ public class ArrayConfigBean implements Serializable {
             String ctrl = " ";
             String sample = sampleFile.getLocalDirectoryPath() + 
                             sampleFile.getInputFilename();
-            String probeFiltering = probeFilter;
+            String probeFiltering;
             // Create the config file
             configFile.createNewFile();
 
@@ -255,11 +256,22 @@ public class ArrayConfigBean implements Serializable {
                 input += inputFile.getInputFilename();
                 ctrl = ctrlFile.getLocalDirectoryPath() + 
                        ctrlFile.getInputFilename();
-                for (String tmp : probeFilters) {
-                    probeFiltering += tmp;
-                    probeFiltering += ";";
+                
+                if (probeFilters.size() == 0) {
+                    probeFiltering = Constants.NONE;
+                }
+                else {
+                    probeFiltering = probeFilters.get(0);
+                    for (int i = 1; i < probeFilters.size(); i++) {
+                        probeFiltering += ";";
+                        probeFiltering += probeFilters.get(i);
+                    }
                 }
             }
+            else {
+                probeFiltering = probeFilter;
+            }
+            
             // Write to the config file according to the format needed 
             // by the pipeline.
             fw.write("### INPUT parameters\n" +
