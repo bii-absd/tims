@@ -141,7 +141,7 @@ public class SubmittedJobDB {
                     + "output_file, report, study_id FROM submitted_job WHERE "
                     + "user_id = ? ORDER BY " + queryOrderBy + " " + orderIn;
         
-            logger.debug(queryStr);
+//            logger.debug(queryStr);
         // Additional logging to get the logger context
 //        LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
 //        Configuration cfg = ctx.getConfiguration();
