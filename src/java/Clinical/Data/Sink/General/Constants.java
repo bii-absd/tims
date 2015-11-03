@@ -6,6 +6,9 @@ package Clinical.Data.Sink.General;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import javax.faces.bean.ApplicationScoped;
 import javax.faces.bean.ManagedBean;
@@ -41,6 +44,8 @@ import org.apache.logging.log4j.LogManager;
  * 30-Oct-2015 - Add 2 new String constants, TRUE and FALSE.
  * 02-Nov-2015 - Changes in the naming convention for all file related 
  * constants. Added one new constant, DIRECTORY_SEPARATOR.
+ * 03-Nov-2015 - Added in one new method, getDateTime for displaying of date
+ * and time.
  */
 
 @ManagedBean (name = "constants")
@@ -150,6 +155,12 @@ public class Constants {
         }
         
         return SUCCESS;
+    }
+    
+    // To display the date and time.
+    public String getDateTime() {
+        DateFormat dateFormat = new SimpleDateFormat("dd-MMM-yyyy hh:mm:ss aa");
+        return dateFormat.format(new Date());
     }
     
     // Machine generated getters
