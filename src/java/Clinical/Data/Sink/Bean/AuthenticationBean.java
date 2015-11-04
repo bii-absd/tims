@@ -56,6 +56,8 @@ import org.apache.logging.log4j.core.LoggerContext;
  * login.
  * 03-Nov-2015 - Setup will be loaded base on the Operating System the 
  * application is hosted on.
+ * 04-Nov-2015 - To update the last login time of the user once he/she 
+ * successfully login to the system.
  */
 
 @ManagedBean (name="authenticationBean")
@@ -173,6 +175,8 @@ public class AuthenticationBean implements Serializable {
             logger.info(loginName + ": login to the system.");
             // Create user home directory once successfully login
             homeDir = Constants.getSYSTEM_PATH() + loginName;
+            // Update the last login of this user            
+            UserAccountDB.updateLastLogin(loginName, Constants.getDateTime());
             
             // Create the .../users directory 
             // Follow by .../users/loginName directory
@@ -181,6 +185,8 @@ public class AuthenticationBean implements Serializable {
                     return Constants.MAIN_PAGE;
                 }
             }
+            
+            logger.debug(loginName + ": failed to create system directories after login.");
             // If control reached here, it means some of the system directories
             // is not created, shouldn't allow user to proceed.
             return Constants.ERROR;
