@@ -11,10 +11,10 @@
     <ui:param name="link" value="Account Management"/>
     <ui:define name="content">
         <p:panel id="newaccount" header="Create New User Account" toggleable="true" 
-                 rendered="#{authenticationBean.adminRight}" collapsed="true">
+                 rendered="#{authenticationBean.adminRight}">
             <h:form id="newacct">
             <h:panelGrid styleClass="page-border">
-                <p:messages id="status" for="newacctstatus" showDetail="true"/>
+                <p:messages id="newacct-msg" for="newacctstatus" showDetail="true"/>
                 <h:panelGrid columns="3" border="0" cellpadding="5" 
                              cellspacing="3">
                     <p:inputText id="userid" size="32" maxlength="10" autocomplete="off"
@@ -80,7 +80,8 @@
                     <p:watermark for="email" value="Email"/>
 
                     <p:password id="pwd" feedback="true" inline="true" 
-                                style="width: 170px"
+                                style="width: 170px" 
+                                onkeypress="if (event.keyCode == 13) {return false;}"
                                 required="true" value="#{accountManagementBean.pwd}">
                         <f:validateLength minimum="5" maximum="10"/>
                         <f:ajax event="blur" render="pwd-status"/>
@@ -90,14 +91,40 @@
 
                     <h:commandButton action="#{accountManagementBean.createUserAccount}"
                                      value="Create New Account" 
-                                     styleClass="create-button"/>
+                                     styleClass="panel-button"/>
                 </h:panelGrid>
             </h:panelGrid>
             </h:form>
         </p:panel>
 
         <p:panel id="changepassword" header="Change Password" toggleable="true">
-            
+            <h:form id="changepwd">
+                <h:panelGrid styleClass="page-border">
+                <p:messages id="changepwd-msg" for="changepwdstatus" showDetail="true"/>
+                <h:panelGrid columns="3" border="0" cellpadding="5" cellspacing="3">
+                    <p:password id="newpwd" feedback="true" style="width: 170px"
+                                required="true" value="#{accountManagementBean.new_pwd}">
+                        <f:validateLength minimum="5" maximum="10"/>
+                        <f:ajax event="blur" render="newpwd-status"/>
+                    </p:password>
+                    <h:message id="newpwd-status" for="newpwd" styleClass="errors"/>
+                    <p:watermark for="newpwd" value="Enter New Password"/>
+                    
+                    <p:password id="cfmpwd" style="width: 170px" 
+                                onkeypress="if (event.keyCode == 13) {return false;}"
+                                required="true" value="#{accountManagementBean.cfm_pwd}">
+                        <f:validateLength minimum="5" maximum="10"/>
+                        <f:ajax event="blur" render="cfmpwd-status"/>
+                    </p:password>
+                    <h:message id="cfm-status" for="cfmpwd" styleClass="errors"/>
+                    <p:watermark for="cfmpwd" value="Retype New Password"/>
+                    
+                    <h:commandButton action="#{accountManagementBean.changePassword}"
+                                     value="Change Password" 
+                                     styleClass="panel-button"/>
+                </h:panelGrid>
+                </h:panelGrid>
+            </h:form>
         </p:panel>
         <p:separator style="height: 20px"/>
     </ui:define>
