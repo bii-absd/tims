@@ -25,6 +25,9 @@ import org.mindrot.jbcrypt.BCrypt;
  * insertAccount) created.
  * 13-Oct-2015 - Added new method getEmailAddress that return the email address
  * of the requestor.
+ * 04-Nov-2015 - Added the following new methods:
+ * I. updateLastLogin to update the last login of the user.
+ * II. updatePassword to allow user to change his/her password.
  */
 
 public class UserAccountDB {
@@ -35,8 +38,8 @@ public class UserAccountDB {
     
     UserAccountDB() {};
     
-    // getEmailAddress will return the email address of the user that 
-    // requested this job with ID equal to jobID.
+    // Return the email address of the user that requested this job with 
+    // ID equal to jobID.
     public static String getEmailAddress(int jobID) {
        String queryStr = "SELECT email FROM user_account WHERE user_id = ("
                + "SELECT user_id FROM submitted_job WHERE job_id = "
@@ -63,8 +66,8 @@ public class UserAccountDB {
        return email;
     }
     
-    // checkPwd is used to check the password entered by the user, and if the 
-    // password is valid, a UserAccount object will be return.
+    // Check the password entered by the user, and if the password is valid, 
+    // a UserAccount object will be return.
     public static UserAccount checkPwd(String user_id, String pwd) {
         String queryStr = "SELECT * FROM user_account WHERE user_id = ?";
         String pwd_hash = null;
@@ -100,7 +103,7 @@ public class UserAccountDB {
             }
         } catch (SQLException e) {
             logger.error("SQLException encountered at checkPwd.");
-            System.out.println(e.getMessage());
+            logger.error(e.getMessage());
         } 
         
         // If acct is null, either password don't match or account
@@ -112,9 +115,8 @@ public class UserAccountDB {
         return acct;
     }
     
-    // insertAccount will insert the UserAccount object into the user_account 
-    // table. Any exception encountered here will be throw and to be handled 
-    // by the caller.
+    // Insert the UserAccount object into the user_account table. Any exception 
+    // encountered here will be throw and to be handled by the caller.
     public static void insertAccount(UserAccount newAcct) throws SQLException {
         // Hash the password using BCrypt before storing it into the database.
         String pwd_hash = BCrypt.hashpw(newAcct.getPwd(), BCrypt.gensalt());
@@ -138,5 +140,39 @@ public class UserAccountDB {
         insertStm.setString(9, newAcct.getInstitution());
         // Execute the INSERT statement
         insertStm.executeUpdate();
+    }
+    
+    // Update the last login of this user.
+    public static void updateLastLogin(String user_id, String last_login) {
+        String updateStr = "UPDATE user_account SET last_login = ? WHERE "
+                + "user_id = ?";
+        
+        try (PreparedStatement updateStm = conn.prepareStatement(updateStr)) {
+            updateStm.setString(1, last_login);
+            updateStm.setString(2, user_id);
+            // Execute the UPDATE statement
+            updateStm.executeUpdate();
+        }
+        catch (SQLException e) {
+            logger.error("SQLException when trying to update last login of " +
+                    user_id);
+            logger.error(e.getMessage());
+        }
+    }
+    
+    // Update the password of this user. Any exception encountered here will 
+    // be throw and to be handled by the caller.
+    public static void updatePassword(String user_id, String new_pwd) 
+            throws SQLException  {
+        // Hash the password using BCrypt before storing it into the database.
+        String pwd_hash = BCrypt.hashpw(new_pwd, BCrypt.gensalt());
+        String updateStr = "UPDATE user_account SET pwd = ? WHERE "
+                + "user_id = ?";
+        
+        PreparedStatement updateStm = conn.prepareStatement(updateStr);
+        updateStm.setString(1, pwd_hash);
+        updateStm.setString(2, user_id);
+        // Execute the UPDATE statement
+        updateStm.executeUpdate();
     }
 }
