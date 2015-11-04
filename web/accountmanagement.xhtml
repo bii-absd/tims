@@ -1,0 +1,110 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition template="/WEB-INF/pageTemplate.xhtml"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    
+    <ui:define name="title">User Account Creation</ui:define>
+    <ui:param name="link" value="Account Management"/>
+    <ui:define name="content">
+        <p:panel id="newaccount" header="Create New User Account" toggleable="true" 
+                 rendered="#{authenticationBean.adminRight}">
+            <h:form id="newacct">
+            <h:panelGrid styleClass="page-border">
+                <p:messages id="status" for="newacctstatus" showDetail="true"/>
+                <h:panelGrid columns="3" border="0" cellpadding="5" 
+                             cellspacing="3">
+                    <p:inputText id="userid" size="32" maxlength="10" 
+                                 required="true" value="#{userAccountBean.user_id}">
+                        <f:validateLength minimum="5" maximum="10"/>
+                        <f:ajax event="blur" render="userid-status"/>
+                    </p:inputText>
+                    <h:message id="userid-status" for="userid" styleClass="errors"/>
+                    <p:watermark for="userid" value="New User ID"/>
+
+                    <p:inputText id="firstname" size="32" maxlength="50" 
+                                 required="true" value="#{userAccountBean.first_name}">
+                        <f:validateLength minimum="1" maximum="50"/>
+                        <f:ajax event="blur" render="firstname-status"/>
+                    </p:inputText>
+                    <h:message id="firstname-status" for="firstname" 
+                               styleClass="errors"/>
+                    <p:watermark for="firstname" value="First Name"/>
+
+                    <p:inputText id="lastname" size="32" maxlength="50" 
+                                 required="true" value="#{userAccountBean.last_name}">
+                        <f:validateLength minimum="1" maximum="50"/>
+                        <f:ajax event="blur" render="lastname-status"/>
+                    </p:inputText>
+                    <h:message id="lastname-status" for="lastname" 
+                               styleClass="errors"/>
+                    <p:watermark for="lastname" value="Last Name"/>
+
+                    <p:selectOneMenu id="institution" 
+                                     style="width:180px" required="true"
+                                     value="#{userAccountBean.institution}">
+                        <f:selectItem itemLabel="Select Institution" itemValue=""/>
+                        <f:selectItems value="#{selectOneMenuList.institution}"/>
+                    </p:selectOneMenu>
+                    <h:message id="institution-status" for="institution" 
+                               styleClass="errors"/>
+                    <h:panelGroup/>
+
+                    <p:selectOneMenu id="department" 
+                                     style="width:180px" required="true"
+                                     value="#{userAccountBean.department}">
+                        <f:selectItem itemLabel="Select Department" itemValue=""/>
+                        <f:selectItems value="#{selectOneMenuList.department}"/>
+                    </p:selectOneMenu>
+                    <h:message for="department" styleClass="errors"/>
+                    <h:panelGroup/>
+                
+                    <p:selectOneMenu id="role" 
+                                     style="width:180px" required="true"
+                                     value="#{userAccountBean.role_id}">
+                        <f:selectItem itemLabel="Select Role" itemValue=""/>
+                        <f:selectItems value="#{userAccountBean.roleList}"/>
+                    </p:selectOneMenu>
+                    <h:message for="role" styleClass="errors"/>
+                    <h:panelGroup/>
+                
+                    <p:inputText id="email" size="32" maxlength="50" 
+                                 required="true" value="#{userAccountBean.email}">
+                        <f:validateLength minimum="5" maximum="50"/>
+                        <f:ajax event="blur" render="email-status"/>
+                    </p:inputText>
+                    <h:message id="email-status" for="email" styleClass="errors"/>
+                    <p:watermark for="email" value="Email"/>
+
+                    <p:password id="pwd" feedback="true" inline="true" 
+                                style="width: 170px"
+                                required="true" value="#{userAccountBean.pwd}">
+                        <f:validateLength minimum="5" maximum="10"/>
+                        <f:ajax event="blur" render="pwd-status"/>
+                    </p:password>
+                    <h:message id="pwd-status" for="pwd" styleClass="errors"/>
+                    <p:watermark for="pwd" value="Password"/>
+
+                
+                <h:panelGrid columns="2" cellspacing="2">
+                    <h:commandButton action="main" title="Back to previous page" 
+                                     style="width:85px" value="Back"
+                                     immediate="true"/>
+                    <h:commandButton action="#{userAccountBean.createUserAccount}" 
+                                     title="Create New Account" style="width:85px"
+                                     value="Create"/>                        
+                </h:panelGrid>
+                </h:panelGrid>
+            </h:panelGrid>
+            </h:form>
+        </p:panel>
+
+        <p:panel id="changepassword" header="Change Password" toggleable="true">
+            
+        </p:panel>
+        <p:separator style="height: 20px"/>
+    </ui:define>
+</ui:composition>
