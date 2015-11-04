@@ -46,6 +46,7 @@ import org.apache.logging.log4j.LogManager;
  * constants. Added one new constant, DIRECTORY_SEPARATOR.
  * 03-Nov-2015 - Added in one new method, getDateTime to return the current date
  * and time. Added one new constant NONE.
+ * 04-Nov-2015 - Added one new constant, ACCOUNT_MANAGEMENT.
  */
 
 @ManagedBean (name = "constants")
@@ -78,6 +79,7 @@ public class Constants {
     public final static String MAIN_PAGE = "main";
     public final static String GEX_ILLUMINA = "gex-illumina";
     public final static String GEX_AFFYMETRIX = "gex-affymetrix";
+    public final static String ACCOUNT_MANAGEMENT = "accountmanagement";
     public final static String ARRAYCONFIG_PAGE = "arrayconfig";
     public final static String NGS_PAGE = "ngs";
     public final static String ERROR = "error";
