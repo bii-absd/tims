@@ -30,7 +30,8 @@ import org.apache.logging.log4j.LogManager;
  * class.
  * 23-Oct-2015 - Role will be inputted by the user during account creation i.e.
  * no longer defaulted to 'User'.
- * 04-Nov-2015 - Port to JSF 2.2
+ * 04-Nov-2015 - Port to JSF 2.2. Added new method changePassword to allow user
+ * to change his/her password.  Added 2 new variables, new_pwd and cfm_pwd.
  */
 
 @ManagedBean (name="accountManagementBean")
@@ -45,10 +46,10 @@ public class AccountManagementBean implements Serializable {
     private Boolean active;
     private int role_id;
     private String department, institution;
+    private String new_pwd, cfm_pwd;
     
     public AccountManagementBean() {
-        System.out.println("User account bean constructed.");
-    
+        logger.debug("AccountManagementBean created.");
     }
     
     // Create a new UserAccount object and call insertAccount to insert a new 
@@ -79,9 +80,44 @@ public class AccountManagementBean implements Serializable {
                     + user_id + " : " + errorMsg);
             logger.error(e.getMessage());
             facesContext.addMessage("newacctstatus", new FacesMessage(
-                    FacesMessage.SEVERITY_WARN, "Failed: " + errorMsg, ""));
+                    FacesMessage.SEVERITY_ERROR, "Failed: " + errorMsg, ""));
         }
         // Return to the same page, but recreate the AccountManagementBean.
+        return Constants.ACCOUNT_MANAGEMENT;
+    }
+    
+    // Update the password of the current user if the two passwords entered 
+    // are the same.
+    public String changePassword() {
+        FacesContext facesContext = getFacesContext();
+
+        if (new_pwd.compareTo(cfm_pwd) == 0) {
+            try {
+                // Update the password of the current user into the database
+                UserAccountDB.updatePassword(AuthenticationBean.getUserName(), 
+                        new_pwd);
+                logger.info(AuthenticationBean.getUserName() + 
+                        ": successfully updated password.");
+                facesContext.addMessage("changepwdstatus", new FacesMessage(
+                        FacesMessage.SEVERITY_INFO,
+                        "Password successfully updated.", ""));
+            }
+            catch (SQLException e) {
+                logger.error("SQLException while trying to update password of " 
+                        + AuthenticationBean.getUserName());
+                logger.error(e.getMessage());
+            facesContext.addMessage("changepwdstatus", new FacesMessage(
+                    FacesMessage.SEVERITY_FATAL, 
+                    "Database Error, failed to update password!", ""));            }
+        }
+        else {
+            logger.info(AuthenticationBean.getUserName() + 
+                    ": the two new passwords entered are not the same.");
+            facesContext.addMessage("changepwdstatus", new FacesMessage(
+                    FacesMessage.SEVERITY_ERROR, 
+                    "The passwords entered are not the same", ""));
+        }
+        // Return to the same page, but recreate the AccountManagementBean.        
         return Constants.ACCOUNT_MANAGEMENT;
     }
     
@@ -107,6 +143,8 @@ public class AccountManagementBean implements Serializable {
     {   this.department = department;   }
     public void setInstitution(String institution) 
     {   this.institution = institution; }
+    public void setNew_pwd(String new_pwd) { this.new_pwd = new_pwd; }
+    public void setCfm_pwd(String cfm_pwd) { this.cfm_pwd = cfm_pwd; }
 
     // Machine generated getters
     public String getUser_id() { return user_id; }
@@ -118,4 +156,6 @@ public class AccountManagementBean implements Serializable {
     public int getRole_id() { return role_id; }
     public String getDepartment() { return department; }
     public String getInstitution() { return institution; }
+    public String getNew_pwd() { return new_pwd; }
+    public String getCfm_pwd() { return cfm_pwd; }
 }
