@@ -60,7 +60,14 @@
     font-size: 10pt;
 }
 
+.panel-button {
+    margin-top: 1em;
+    width: 180px;
+}
+
 .page-border {
+    width: 100%;
+    margin-top: 0.5em;
     border-style: solid;
     border-width: thick;
     border-spacing: 15px;
