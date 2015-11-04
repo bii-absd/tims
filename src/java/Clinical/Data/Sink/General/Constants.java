@@ -44,7 +44,7 @@ import org.apache.logging.log4j.LogManager;
  * 30-Oct-2015 - Add 2 new String constants, TRUE and FALSE.
  * 02-Nov-2015 - Changes in the naming convention for all file related 
  * constants. Added one new constant, DIRECTORY_SEPARATOR.
- * 03-Nov-2015 - Added in one new method, getDateTime for displaying of date
+ * 03-Nov-2015 - Added in one new method, getDateTime to return the current date
  * and time. Added one new constant NONE.
  */
 
@@ -159,8 +159,9 @@ public class Constants {
     }
     
     // To display the date and time.
-    public String getDateTime() {
-        DateFormat dateFormat = new SimpleDateFormat("dd-MMM-yyyy hh:mm:ss aa");
+    public static String getDateTime() {
+//        DateFormat dateFormat = new SimpleDateFormat("dd-MMM-yyyy hh:mm:ss aa");
+        DateFormat dateFormat = new SimpleDateFormat("dd-MMM-yy hh:mmaa");
         return dateFormat.format(new Date());
     }
     
