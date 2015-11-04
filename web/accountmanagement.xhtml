@@ -88,15 +88,12 @@
                     <h:message id="pwd-status" for="pwd" styleClass="errors"/>
                     <p:watermark for="pwd" value="Password"/>
 
-                
-                <h:panelGrid columns="2" cellspacing="2">
-                    <h:commandButton action="main" title="Back to previous page" 
-                                     style="width:85px" value="Back"
-                                     immediate="true"/>
-                    <h:commandButton action="#{userAccountBean.createUserAccount}" 
-                                     title="Create New Account" style="width:85px"
-                                     value="Create"/>                        
-                </h:panelGrid>
+                    <p:column colspan="3">
+                        <p:commandButton action="#{userAccountBean.createUserAccount}"
+                                         value="Create New Account" 
+                                         icon="ui-icon-plusthick" style="font-size: 10pt" 
+                                         styleClass="create-button"/>
+                    </p:column>
                 </h:panelGrid>
             </h:panelGrid>
             </h:form>
