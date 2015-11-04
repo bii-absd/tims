@@ -22,9 +22,10 @@
             </h:panelGroup>
 
             <p:menubar>
-                <p:submenu label="Admin" rendered="#{authenticationBean.adminRight}">
-                    <p:menuitem value="New Account" icon="fa fa-plus"/>
-                    <p:menuitem value="Change Password" icon="fa fa-pencil"/>
+                <p:submenu label="Admin">
+                    <p:menuitem value="Account Management" icon="fa fa-user" 
+                                action="accountmanagement"/>
+                    <p:menuitem value="CMD Management" icon="fa fa-flask"/>
                 </p:submenu>
                 <f:facet name="options">
                     <p:commandButton value="Logout" 
