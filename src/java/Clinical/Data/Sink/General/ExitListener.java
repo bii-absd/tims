@@ -90,7 +90,7 @@ public class ExitListener implements EventListener {
                 message.setText(
                     "Dear " + user.getFirst_name() + ",\n\n" +
                     "Pipeline execution has completed.\n\n" +
-                    "Output file is ready for download at Job Status page.\n\n\n" +
+                    "Output and report files are ready for download at Job Status page.\n\n\n" +
                     "Please do not reply to this message.");
             }
             else {
