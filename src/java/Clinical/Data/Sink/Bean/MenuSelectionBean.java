@@ -35,7 +35,9 @@ public class MenuSelectionBean implements Serializable{
     @ManagedProperty("#{param.command}")
     String command;
     
-    public MenuSelectionBean() {}
+    public MenuSelectionBean() {
+        logger.debug("MenuSelectionBean created.");
+    }
     
     // Setup the ArrayConfigBean for GEX Illumina pipeline processing.
     public String gexIllumina() {
