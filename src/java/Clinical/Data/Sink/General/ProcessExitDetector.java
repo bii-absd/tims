@@ -20,6 +20,7 @@ import org.apache.logging.log4j.LogManager;
  * 12-Oct-2015 - Created with one constructor, and two methods (getProcess and
  * run).
  * 02-Nov-2015 - Port to JSF 2.2
+ * 05-Nov-2015 - To receive and pass on the study ID of this job.
  */
 
 public class ProcessExitDetector extends Thread {
@@ -32,17 +33,20 @@ public class ProcessExitDetector extends Thread {
     private ExitListener listener;
     // The job ID that this process is associated with
     private int jobID;
+    // The Study ID of this job
+    private String studyID;
     
-    public ProcessExitDetector(int jobID, Process process, 
+    public ProcessExitDetector(int jobID, String studyID, Process process, 
             ExitListener listener) {
         try {
-            // Test if the process is finished
+            // Test if the process is finished. exitValue will throw
+            // IllegalThreadStateException if the process has not yet ended.
             int result = process.exitValue();
 
             // If exitValue return, this means the process has already ended.
             logger.error("Process already ended before creating detector.");
             // Update the job status according to the process exit value.
-            listener.processFinished(jobID, result);
+            listener.processFinished(jobID, studyID, result);
             // Throw an exception that will propagates beyond the run method
             throw new IllegalArgumentException(
                     "Process already ended before creating detector.");
@@ -50,6 +54,7 @@ public class ProcessExitDetector extends Thread {
             // This mean that the process has not yet complete i.e. we need to
             // detect it's end.
             this.jobID = jobID;
+            this.studyID = studyID;
             this.process = process;
             this.listener = listener;
             logger.debug("Process exit detector created.");
@@ -69,7 +74,7 @@ public class ProcessExitDetector extends Thread {
             // Invoke the listener
             logger.debug("Pipeline for job ID " + jobID + 
                     " has completed with exit status: " + result);
-            listener.processFinished(jobID, result);
+            listener.processFinished(jobID, studyID, result);
         }
         catch (InterruptedException e) {
             logger.error("InterruptedException encountered while monitoring "
