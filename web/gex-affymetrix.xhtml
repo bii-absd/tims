@@ -38,9 +38,13 @@
                               fileUploadListener="#{arrayConfigBean.inputFile.fileUploadListener}">
                 </p:fileUpload>
             </p:panel>
-            <p:panel id="annotfile" header="Upload Samples Annotation File">
-                <p:fileUpload mode="advanced" auto="true" update="uploadStatus" 
-                              label="Select Samples Annotation File" 
+            <p:panel id="annotfile" 
+                     header="Upload Samples Annotation File 
+                     (Please upload this file for the Phenotype Column and 
+                     Sample Averaging to be enable)">
+                <p:fileUpload mode="advanced" auto="true" 
+                              update="uploadStatus phenotype averaging"
+                              label="Select Samples Annotation File"
                               fileUploadListener="#{arrayConfigBean.sampleFile.fileUploadListener}"/>
             </p:panel>
             
@@ -64,11 +68,12 @@
                     </p:column>
                     <p:column>
                         <p:selectOneMenu id="phenotype" required="true" 
+                                         disabled="#{arrayConfigBean.isAnnotationListReady()}"
                                          title="#{msg['phenotype.column']}"
                                          value="#{arrayConfigBean.phenotype}">
                             <f:selectItem itemLabel="Phenotype Column"
                                           itemValue=""/>
-                            <f:selectItem itemLabel="Type" itemValue="Type"/>
+                            <f:selectItems value="#{arrayConfigBean.annotationList}"/>
                         </p:selectOneMenu>
                     </p:column>
                     <p:column>
@@ -85,11 +90,13 @@
             <p:panel id="furtherprocessing" header="Optional Processing">
                 <h:panelGrid columns="2" cellpadding="5">
                     <p:column>
-                        <p:selectOneMenu id="averaging" value="#{arrayConfigBean.sampleAverage}" 
+                        <p:selectOneMenu id="averaging" 
+                                         disabled="#{arrayConfigBean.isAnnotationListReady()}"
+                                         value="#{arrayConfigBean.sampleAverage}" 
                                          title="#{msg['sample.averaging']}">
                             <f:selectItem itemLabel="Sample Averaging"
                                           itemValue="none"/>
-                            <f:selectItem itemLabel="Sample" itemValue="Sample"/>
+                            <f:selectItems value="#{arrayConfigBean.annotationList}"/>
                         </p:selectOneMenu>
                     </p:column>
                     <p:column>
