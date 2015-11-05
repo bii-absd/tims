@@ -8,10 +8,13 @@ import Clinical.Data.Sink.Database.SubmittedJobDB;
 import Clinical.Data.Sink.General.Constants;
 import Clinical.Data.Sink.General.ExitListener;
 import Clinical.Data.Sink.General.ProcessExitDetector;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.lang.ProcessBuilder.Redirect;
 import java.sql.SQLException;
@@ -19,6 +22,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
 import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
@@ -71,6 +75,8 @@ import org.apache.logging.log4j.LogManager;
  * generated. Pipeline report module.
  * 02-Nov-2015 - Full porting to JSF 2.2 completed.
  * 03-Nov-2015 - Fixed the Probe Filtering text issue.
+ * 05-Nov-2015 - Use the sample annotation file uploaded to construct the 
+ * selection list for 'Phenotype Column' and 'Sample Averaging'.
  */
 
 @ManagedBean (name="arrayConfigBean")
@@ -100,8 +106,12 @@ public class ArrayConfigBean implements Serializable {
     private int job_id;
     // Pipeline output, report and config filename
     private String pipelineOutput, pipelineReport, pipelineConfig;
+    // Annotation list build from Sample Annotation file
+    private LinkedHashMap<String,String> annotationList = new LinkedHashMap<>();
 
-    public ArrayConfigBean() {}
+    public ArrayConfigBean() {
+        logger.debug("ArrayConfigBean created.");
+    }
 
     @PostConstruct
     public void initFiles() {
@@ -125,16 +135,53 @@ public class ArrayConfigBean implements Serializable {
         sampleFile = new FileUploadBean();
     }
     
+    // Read in the subject line (i.e. first line) from the uploaded sample
+    // annotation file, and build the selection list for "Phenotype Column"
+    // and "Sample Averaging".
+    public LinkedHashMap<String,String> getAnnotationList() {
+        // Only construct the selection list if the sample annotation file has
+        // been uploaded by the user and the selection list has yet to be build.
+        if (!sampleFile.filelistIsEmpty() && annotationList.isEmpty()) {
+            // Retrieve the sample annotation file from local drive
+            File file = new File(sampleFile.getLocalDirectoryPath() +
+                                sampleFile.getInputFilename());
+            
+            try (FileInputStream fis = new FileInputStream(file);
+                 BufferedReader br = new BufferedReader(new InputStreamReader(fis));) 
+            {
+                // We are only interested in the first line i.e. subject line
+                String line = br.readLine();
+                // All the subjects need to be separated by the TAB key
+                String[] annotList = line.split("\t");
+                
+                for (int i = 0; i < annotList.length; i++) {
+                    annotationList.put(annotList[i], annotList[i]);
+                }
+                logger.debug("Annotation List: " + annotationList.toString());
+            }
+            catch (IOException e) {
+                logger.debug("IOException when reading the first line of annotation file.");
+            }
+        }
+        return annotationList;
+    }
+    
+    // The enabled/disabled status of the 'Phenotype Column' and 'Sample
+    // Averaging' will depend on whether the annotation list is constructed 
+    // or not.
+    public Boolean isAnnotationListReady() {
+        return annotationList.isEmpty();
+    }
     // If any of the input files is not uploaded, user is not allowed to
     // submit the job for execution.
     public Boolean allowToSubmitJob() {
         if (pipelineType.compareTo(Constants.GEX_ILLUMINA) == 0) {
-            return !(inputFile.checkFileIsEmpty() ||
-                     sampleFile.checkFileIsEmpty() ||
-                     ctrlFile.checkFileIsEmpty());
+            return !(inputFile.filelistIsEmpty() ||
+                     sampleFile.filelistIsEmpty() ||
+                     ctrlFile.filelistIsEmpty());
         } else {
-            return !(inputFile.checkFileIsEmpty() ||
-                     sampleFile.checkFileIsEmpty());
+            return !(inputFile.filelistIsEmpty() ||
+                     sampleFile.filelistIsEmpty());
         }
     }
     
@@ -176,7 +223,6 @@ public class ArrayConfigBean implements Serializable {
 
         logger.debug("Pipeline output file: " + pipelineOutput);
         logger.debug("Pipeline report file: " + pipelineReport);
-        logger.debug("Pipeline log file: " + logFilePath);
 
         // Step to follow for pipeline execution:
         // 1. Create Config file
