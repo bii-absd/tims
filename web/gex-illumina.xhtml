@@ -33,11 +33,11 @@
                 <p:growl id="uploadStatus" life="2500" globalOnly="true"/>
                 <p:fileUpload mode="advanced" auto="true" update="uploadStatus" 
                               label="Select Sample File"
-                              fileUploadListener="#{arrayConfigBean.inputFile.fileUploadListener}">
+                              fileUploadListener="#{arrayConfigBean.inputFile.singleFileUploadListener}">
                 </p:fileUpload>
                 <p:fileUpload mode="advanced" auto="true" update="uploadStatus" 
                               label="Select Control File"
-                              fileUploadListener="#{arrayConfigBean.ctrlFile.fileUploadListener}"/>
+                              fileUploadListener="#{arrayConfigBean.ctrlFile.singleFileUploadListener}"/>
             </p:panel>
             <p:panel id="sample" 
                      header="Upload Samples Annotation File 
@@ -46,7 +46,7 @@
                 <p:fileUpload mode="advanced" auto="true" 
                               update="uploadStatus phenotype averaging"
                               label="Select Samples Annotation File"
-                              fileUploadListener="#{arrayConfigBean.sampleFile.fileUploadListener}"/>
+                              fileUploadListener="#{arrayConfigBean.sampleFile.singleFileUploadListener}"/>
             </p:panel>
 
             <p:panel id="processparameters" header="Processing Parameters">
