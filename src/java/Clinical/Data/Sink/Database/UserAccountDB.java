@@ -24,10 +24,12 @@ import org.mindrot.jbcrypt.BCrypt;
  * 09-Oct-2015 - First baseline with two static methods (checkPwd and 
  * insertAccount) created.
  * 13-Oct-2015 - Added new method getEmailAddress that return the email address
- * of the requestor.
+ * of the job requestor.
  * 04-Nov-2015 - Added the following new methods:
  * I. updateLastLogin to update the last login of the user.
  * II. updatePassword to allow user to change his/her password.
+ * 05-Nov-2015 - Added new method getUser that return the user account of the
+ * job requestor.
  */
 
 public class UserAccountDB {
@@ -38,32 +40,67 @@ public class UserAccountDB {
     
     UserAccountDB() {};
     
-    // Return the email address of the user that requested this job with 
-    // ID equal to jobID.
+    // Return the user account that requested this job.
+    public static UserAccount getUser(int jobID) {
+        UserAccount user = null;
+        String queryStr = "SELECT * FROM user_account WHERE user_id = ("
+                + "SELECT user_id FROM submitted_job WHERE job_id = "
+                + jobID + ")";
+        
+        try (PreparedStatement queryStm = conn.prepareStatement(queryStr))
+        {
+            ResultSet queryResult = queryStm.executeQuery();
+           
+            if (queryResult.next()) {
+                user = new UserAccount(queryResult.getString("user_id"),
+                                       queryResult.getInt("role_id"),
+                                       queryResult.getString("first_name"),
+                                       queryResult.getString("last_name"),
+                                       queryResult.getString("email"),
+                                       queryResult.getBoolean("active"),
+                                       "password",
+                                       queryResult.getString("department"),
+                                       queryResult.getString("institution"));
+                
+            }
+           
+            logger.debug("For Job ID " + jobID + " User ID is " +
+                    queryResult.getString("user_id"));
+        }
+        catch (SQLException e) {
+            logger.error("SQLException encountered while retrieving user "
+                    + "account for Job ID: " + jobID);
+            logger.error(e.getMessage());
+        }
+
+        return user;
+    }
+    
+    // Return the email address of the user that requested this job.
     public static String getEmailAddress(int jobID) {
-       String queryStr = "SELECT email FROM user_account WHERE user_id = ("
-               + "SELECT user_id FROM submitted_job WHERE job_id = "
-               + jobID + ")";
-       String email = null;
+        String queryStr = "SELECT email FROM user_account WHERE user_id = ("
+                + "SELECT user_id FROM submitted_job WHERE job_id = "
+                + jobID + ")";
+        String email = null;
        
-       try (PreparedStatement queryStm = conn.prepareStatement(queryStr))
-       {
-           ResultSet queryResult = queryStm.executeQuery();
+        try (PreparedStatement queryStm = conn.prepareStatement(queryStr))
+        {
+            ResultSet queryResult = queryStm.executeQuery();
            
-           if (queryResult.next()) {
-               email = queryResult.getString("email");
-           }
+            if (queryResult.next()) {
+                email = queryResult.getString("email");
+            }
            
-           logger.debug("For Job ID " + jobID + " user email address is " +
-                   email);
-       }
-       catch (SQLException e) {
-           logger.error("SQLException encountered while retrieving email "
+            logger.debug("For Job ID " + jobID + " user email address is " +
+                    email);
+        }
+        catch (SQLException e) {
+            logger.error("SQLException encountered while retrieving email "
                     + "address for Job ID: " + jobID);
-           logger.error(e.getMessage());
-       }
+            logger.error(e.getMessage());
+        }
        
-       return email;
+        return email;
     }
     
     // Check the password entered by the user, and if the password is valid, 
@@ -72,14 +109,13 @@ public class UserAccountDB {
         String queryStr = "SELECT * FROM user_account WHERE user_id = ?";
         String pwd_hash = null;
         UserAccount acct = null;
-        ResultSet queryResult = null;
 
         try (PreparedStatement queryPwd = conn.prepareStatement(queryStr)) 
         {
             // Build the query condition using the value from the parameter
             // user_id.
             queryPwd.setString(1, user_id);
-            queryResult = queryPwd.executeQuery();
+            ResultSet queryResult = queryPwd.executeQuery();
             
             if (queryResult.next()) {
                 pwd_hash = queryResult.getString("pwd");
