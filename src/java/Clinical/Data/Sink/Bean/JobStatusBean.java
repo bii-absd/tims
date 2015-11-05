@@ -66,6 +66,7 @@ public class JobStatusBean implements Serializable {
     private String type;
     
     public JobStatusBean() {
+        logger.debug("JobStatusBean created.");
         logger.info(AuthenticationBean.getUserName() + 
                 ": access Job Status page.");
         // Retrieve the job status definition from database
@@ -97,7 +98,6 @@ public class JobStatusBean implements Serializable {
     
     // Download the pipeline report for user.
     public void downloadReport(SubmittedJob job) {
-//        String report = getExternalContext().getRequestParameterMap().get("report");
         download(job.getReport());
     }
     
@@ -175,23 +175,6 @@ public class JobStatusBean implements Serializable {
         return jobSubmission;
     }
 
-    /* No longer in use, the same function will be provided by SubmittedJob.
-    // getAvailable will enable/disable the download link based on the job 
-    // status i.e. if job status is "Completed" enable, else disable.
-    public String getAvailable() {
-        // Get the job selected
-        SubmittedJob job = (SubmittedJob) jobStatusTable.getRowData();
-
-        if (status.compareTo("Completed") == 0)
-        {
-            return "false";
-        }
-        else {
-            return "true";
-        }
-    }
-    */
-    
     // Retrieve the faces context
     private FacesContext getFacesContext() {
 	return FacesContext.getCurrentInstance();
