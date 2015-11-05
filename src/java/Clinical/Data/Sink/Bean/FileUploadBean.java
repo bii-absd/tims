@@ -35,6 +35,7 @@ import org.apache.logging.log4j.LogManager;
  * file upload.
  * 02-Nov-2015 - Added one new variable, localDirectoryPath and it's getter and 
  * setter methods. Added one new method, createAllSystemDirectories.
+ * 05-Nov-2015 - Changed the localDirectoryPath to be static.
  */
 
 @ManagedBean (name="fileUploadBean")
@@ -47,7 +48,7 @@ public class FileUploadBean implements Serializable {
     private static String fileDirectory = null;
     // To store the local path of the input files folder (to be use during
     // config file creation).
-    private String localDirectoryPath = null;
+    private static String localDirectoryPath = null;
     private List<String> inputList = null;
     private LinkedHashMap<Integer,String> fileList = null;
 
@@ -167,7 +168,7 @@ public class FileUploadBean implements Serializable {
     }
     
     // Check whether any input file uploaded by the user.
-    public Boolean checkFileIsEmpty() {
+    public Boolean isFilelistEmpty() {
         return fileList.isEmpty();
     }
     
