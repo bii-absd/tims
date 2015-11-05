@@ -71,7 +71,9 @@ public class AuthenticationBean implements Serializable {
     private String password;
     private static UserAccount userAcct;
     
-    public AuthenticationBean() {}
+    public AuthenticationBean() {
+        logger.debug("AuthenticationBean created.");
+    }
     
     // Update log4j2 log filename
     // Use together with:
