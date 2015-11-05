@@ -33,7 +33,7 @@ import org.mindrot.jbcrypt.BCrypt;
 public class UserAccountDB {
     // Get the logger for Log4j
     private final static Logger logger = LogManager.
-            getLogger(SubmittedJobDB.class.getName());
+            getLogger(UserAccountDB.class.getName());
     private final static Connection conn = DBHelper.getDBConn();
     
     UserAccountDB() {};
