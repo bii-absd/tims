@@ -5,6 +5,7 @@ package Clinical.Data.Sink.General;
 
 import java.util.EventListener;
 import Clinical.Data.Sink.Database.SubmittedJobDB;
+import Clinical.Data.Sink.Database.UserAccount;
 import Clinical.Data.Sink.Database.UserAccountDB;
 import java.util.Properties;
 import javax.mail.Message;
@@ -31,6 +32,8 @@ import org.apache.logging.log4j.LogManager;
  * 14-Oct-2015 - For failed case, CC the email to the support team for 
  * investigation.
  * 02-Nov-2015 - Port to JSF 2.2
+ * 05-Nov-2015 - To receive the study ID of this job, and to retrieve the user
+ * account of the job requestor. Personalize the email sent to the user.
  */
 
 public class ExitListener implements EventListener {
@@ -42,25 +45,25 @@ public class ExitListener implements EventListener {
     
     // The pipeline has completed execution, update the job status according
     // to the process return status.
-    public void processFinished(int job_id, int result) {
+    public void processFinished(int job_id, String study_id, int result) {
         if (result == 0) {
             SubmittedJobDB.updateJobStatusToCompleted(job_id);
             logger.debug("Job status updated to completed. ID: " + job_id);
-            sendEmail(job_id, Constants.OK);
+            sendEmail(job_id, study_id, Constants.OK);
         }
         else {
             SubmittedJobDB.updateJobStatusToFailed(job_id);
             logger.debug("Job status updated to failed. ID: " + job_id);
-            sendEmail(job_id, Constants.NOT_OK);
+            sendEmail(job_id, study_id, Constants.NOT_OK);
         }
     }
     
-    // sendEmail will help to send a email to notify the user that the pipeline
-    // has completed execution. The success/failure of the execution will be
-    // indicated on the Subject line.
-    private void sendEmail(int job_id, Boolean status) {
-        // Retrieve the email address from user account based on Job ID
-        String to = UserAccountDB.getEmailAddress(job_id);
+    // Send a email to notify the user that the pipeline has completed 
+    // execution. The success/failure of the execution will be indicated on 
+    // the Subject line.
+    private void sendEmail(int job_id, String study_id, Boolean status) {
+        // Retrieve the user account of the job requestor
+        UserAccount user = UserAccountDB.getUser(job_id);
         String from = "datasink@bii.a-star.edu.sg";
         // Sending email from localhost
         String host = "localhost";
@@ -78,12 +81,14 @@ public class ExitListener implements EventListener {
             message.setFrom(new InternetAddress(from));
             // Set To: header field
             message.addRecipient(Message.RecipientType.TO,
-                    new InternetAddress(to));
+                    new InternetAddress(user.getEmail()));
             if (status) {
                 // Set the Subject and message content according to execution 
                 // return status.
-                message.setSubject("Pipeline execution successfully completed");
+                message.setSubject("Pipeline execution for " + study_id + 
+                                   " successfully completed");
                 message.setText(
+                    "Dear " + user.getFirst_name() + ",\n\n" +
                     "Pipeline execution has completed.\n\n" +
                     "Output file is ready for download at Job Status page.\n\n\n" +
                     "Please do not reply to this message.");
@@ -93,10 +98,11 @@ public class ExitListener implements EventListener {
                 // Temporarily hardcoded the support email to me
                 message.addRecipient(Message.RecipientType.CC, 
                     new InternetAddress("taywh@bii.a-star.edu.sg"));
-                message.setSubject("Pipeline execution (JOB " + job_id + 
-                        ") fail to complete.");
+                message.setSubject("Pipeline execution for " + study_id + 
+                        " failed to complete.");
                 message.setText(
-                    "Pipeline execution fail to complete.\n\n" +
+                    "Dear " + user.getFirst_name() + ",\n\n" +
+                    "Pipeline execution failed to complete.\n\n" +
                     "The team is looking at the root cause now.\n\n" +
                     "We will get back to you once we have any finding.\n\n" +
                     "Sorry for the inconvenience caused.\n\n\n" +
@@ -105,11 +111,11 @@ public class ExitListener implements EventListener {
             // Send the message
             Transport.send(message);
             
-            logger.debug("Email successfully sent to: " + to);
+            logger.debug("Email successfully sent to: " + user.getEmail());
         }
         catch (MessagingException me) {
             logger.error("MessagingException encountered while trying to send "
-                    + "email to: " + to);
+                    + "email to: " + user.getEmail());
             logger.error(me.getMessage());
         }
     }
