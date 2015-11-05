@@ -26,7 +26,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.ViewScoped;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
@@ -141,7 +140,7 @@ public class ArrayConfigBean implements Serializable {
     public LinkedHashMap<String,String> getAnnotationList() {
         // Only construct the selection list if the sample annotation file has
         // been uploaded by the user and the selection list has yet to be build.
-        if (!sampleFile.filelistIsEmpty() && annotationList.isEmpty()) {
+        if (!sampleFile.isFilelistEmpty() && annotationList.isEmpty()) {
             // Retrieve the sample annotation file from local drive
             File file = new File(sampleFile.getLocalDirectoryPath() +
                                 sampleFile.getInputFilename());
@@ -176,12 +175,12 @@ public class ArrayConfigBean implements Serializable {
     // submit the job for execution.
     public Boolean allowToSubmitJob() {
         if (pipelineType.compareTo(Constants.GEX_ILLUMINA) == 0) {
-            return !(inputFile.filelistIsEmpty() ||
-                     sampleFile.filelistIsEmpty() ||
-                     ctrlFile.filelistIsEmpty());
+            return !(inputFile.isFilelistEmpty() ||
+                     sampleFile.isFilelistEmpty() ||
+                     ctrlFile.isFilelistEmpty());
         } else {
-            return !(inputFile.filelistIsEmpty() ||
-                     sampleFile.filelistIsEmpty());
+            return !(inputFile.isFilelistEmpty() ||
+                     sampleFile.isFilelistEmpty());
         }
     }
     
