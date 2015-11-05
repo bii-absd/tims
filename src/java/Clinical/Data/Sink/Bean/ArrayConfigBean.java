@@ -75,7 +75,8 @@ import org.apache.logging.log4j.LogManager;
  * 02-Nov-2015 - Full porting to JSF 2.2 completed.
  * 03-Nov-2015 - Fixed the Probe Filtering text issue.
  * 05-Nov-2015 - Use the sample annotation file uploaded to construct the 
- * selection list for 'Phenotype Column' and 'Sample Averaging'.
+ * selection list for 'Phenotype Column' and 'Sample Averaging'. To pass on the
+ * study ID during creation of ProcessExitDetector object.
  */
 
 @ManagedBean (name="arrayConfigBean")
@@ -423,7 +424,7 @@ public class ArrayConfigBean implements Serializable {
             // the process
             try {
                 ProcessExitDetector exitDetector = new ProcessExitDetector(
-                                    job_id, process, new ExitListener());
+                                    job_id, studyID, process, new ExitListener());
                 // If the pipeline has completed, an IllegalArgumentException
                 // will be thrown and the exit detector will not get to run.
                 exitDetector.start();
