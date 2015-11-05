@@ -35,7 +35,8 @@ import org.apache.logging.log4j.LogManager;
  * file upload.
  * 02-Nov-2015 - Added one new variable, localDirectoryPath and it's getter and 
  * setter methods. Added one new method, createAllSystemDirectories.
- * 05-Nov-2015 - Changed the localDirectoryPath to be static.
+ * 05-Nov-2015 - Changed the localDirectoryPath to be static. Created individual
+ * file upload listener for single and multiple files upload.
  */
 
 @ManagedBean (name="fileUploadBean")
@@ -56,11 +57,23 @@ public class FileUploadBean implements Serializable {
         fileList = new LinkedHashMap<>();
     }
     
+    // Used for multiple files upload.
+    public void multipleFileUploadListener(FileUploadEvent event) {
+        fileList.put(++fileCount, fileUploadListener(event));
+    }
+    // Used for single file upload.
+    public void singleFileUploadListener(FileUploadEvent event) {
+        // For single file upload, we will always use the latest file.
+        if (fileList.isEmpty()) {
+            fileList.put(1, fileUploadListener(event));
+        }
+        else {
+            fileList.replace(1, fileUploadListener(event));            
+        }
+    }
     // fileUploadListener will get call for each file uploaded.
-    public void fileUploadListener(FileUploadEvent event) {
+    public String fileUploadListener(FileUploadEvent event) {
         UploadedFile uFile = event.getFile();
-        // Store the uploaded filename for configuration review later.
-        fileList.put(++fileCount, uFile.getFileName());
         File file = new File(fileDirectory + uFile.getFileName());
         setLocalDirectoryPath(file.getAbsolutePath());
         
@@ -85,7 +98,7 @@ public class FileUploadBean implements Serializable {
             logger.error(ex.getMessage());
         }
         
-        logger.debug("File list: " + fileList.toString());
+        return uFile.getFileName();
     }
     
     // Create all the system directories for the user.
