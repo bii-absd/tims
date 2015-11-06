@@ -28,6 +28,7 @@ import org.apache.logging.log4j.LogManager;
  * 23-Oct-2015 - Added new function that return the list of Role setup in the
  * database. Added 2 Hash Map to store the list of Role and Role ID settings.
  * 04-Nov-2015 - Port to JSF 2.2
+ * 06-Nov-2015 - Updated the query statement for getRoleList.
  */
 
 public class UserRole implements Serializable {
@@ -46,7 +47,7 @@ public class UserRole implements Serializable {
     public static LinkedHashMap<String, Integer> getRoleList() {
         // We will only build the roleList once
         if (roleList.isEmpty()) {
-            String queryStr = "SELECT * from user_role";
+            String queryStr = "SELECT * from user_role ORDER BY role_id";
             
             try (PreparedStatement queryRole = conn.prepareStatement(queryStr))
             {
