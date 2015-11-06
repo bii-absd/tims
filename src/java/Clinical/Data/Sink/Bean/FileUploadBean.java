@@ -37,10 +37,14 @@ import org.apache.logging.log4j.LogManager;
  * setter methods. Added one new method, createAllSystemDirectories.
  * 05-Nov-2015 - Changed the localDirectoryPath to be static. Created individual
  * file upload listener for single and multiple files upload.
+ * 06-Nov-2015 - Changed the way the localDirectoryPath is being setup, and 
+ * display an error message when the file failed to get uploaded.
  */
 
+/* Shouldn't need this for this class. Remove and monitor for a few days.
 @ManagedBean (name="fileUploadBean")
 @ViewScoped
+*/
 public class FileUploadBean implements Serializable {
     // Get the logger for Log4j
     private final static Logger logger = LogManager.
@@ -75,7 +79,6 @@ public class FileUploadBean implements Serializable {
     public String fileUploadListener(FileUploadEvent event) {
         UploadedFile uFile = event.getFile();
         File file = new File(fileDirectory + uFile.getFileName());
-        setLocalDirectoryPath(file.getAbsolutePath());
         
         try (FileOutputStream fop = new FileOutputStream(file);
              InputStream filecontent = uFile.getInputstream(); ) {
@@ -88,14 +91,17 @@ public class FileUploadBean implements Serializable {
         
             getFacesContext().addMessage(null, 
                     new FacesMessage(uFile.getFileName() + 
-                                     " uploaded successfully."));
-            
+                                     " uploaded successfully."));            
         }
         catch (IOException ex) {
             logger.error(AuthenticationBean.getUserName() +
                          ": encountered error in uploading file " +
                          uFile.getFileName());
             logger.error(ex.getMessage());
+            getFacesContext().addMessage(null, 
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                                     uFile.getFileName() + 
+                                     " failed to get uploaded.", ""));            
         }
         
         return uFile.getFileName();
@@ -136,13 +142,11 @@ public class FileUploadBean implements Serializable {
     
     // Setup and store the local path of the input files folder; to be use in
     // config file creation.
-    private void setLocalDirectoryPath(String fullpath) {
-        if (localDirectoryPath == null) {
-            int tmp = fullpath.lastIndexOf(Constants.getDIRECTORY_SEPARATOR());
-            localDirectoryPath = fullpath.substring(0, tmp+1);
-            logger.debug("Local input files directory: " + localDirectoryPath);
-        }
+    private static void setLocalDirectoryPath(String fullpath) {
+        localDirectoryPath = fullpath + File.separator;
+        logger.debug("Local input files directory: " + localDirectoryPath);
     }
+    
     // Return the local path of the input files folder.
     public String getLocalDirectoryPath() {
         return localDirectoryPath;
@@ -167,19 +171,22 @@ public class FileUploadBean implements Serializable {
     public static String getFileDirectory() {
         return fileDirectory;
     }
+    
     // Set the input files directory for this pipeline job.
+    // This will be called once by the ArrayConfigBean's initFiles() method 
+    // whenever the user enter the GEX pipeline view.
     public static Boolean setFileDirectory(String directory) {
         fileDirectory = AuthenticationBean.getHomeDir() + 
                         Constants.getINPUT_PATH() +
-                        directory + "//";
+                        directory + File.separator;
+        
+        File local = new File(fileDirectory);
+        // Set the local file path; to be use during config file creation.
+        setLocalDirectoryPath(local.getAbsolutePath());
         
         return createSystemDirectory(fileDirectory);
     }
-    // Reset the fileDirectory to null to get ready for the next pipeline job.
-    public static void resetFileDirectory() {
-        fileDirectory = null;
-    }
-    
+
     // Check whether any input file uploaded by the user.
     public Boolean isFilelistEmpty() {
         return fileList.isEmpty();
