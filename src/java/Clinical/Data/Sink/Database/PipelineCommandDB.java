@@ -3,6 +3,7 @@
  */
 package Clinical.Data.Sink.Database;
 
+import Clinical.Data.Sink.General.Constants;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -23,7 +24,8 @@ import org.apache.logging.log4j.LogManager;
  * Revision History
  * 05-Nov-2015 - First baseline with two static methods (getCommand and 
  * getAllCommand) created.
-
+ * 06-Nov-2015 - Added one new method updateCommand to update the pipeline
+ * command in database.
  */
 
 public class PipelineCommandDB {
@@ -78,5 +80,28 @@ public class PipelineCommandDB {
             }
         }
         return commandList;
+    }
+    
+    // Update the pipeline command in the database.
+    public static Boolean updateCommand(PipelineCommand cmd) {
+        Boolean result = Constants.OK;
+        String updateStr = "UPDATE pipeline_command SET command_code = ?, "
+                + "command_para = ? WHERE command_id = ?";
+        
+        try (PreparedStatement updateStm = conn.prepareStatement(updateStr)) {
+            updateStm.setString(1, cmd.getCommand_code());
+            updateStm.setString(2, cmd.getCommand_para());
+            updateStm.setString(3, cmd.getCommand_id());
+        
+            updateStm.executeUpdate();            
+        }
+        catch (SQLException e) {
+            logger.error("SQLException when updating pipeline command: "
+                    + cmd.getCommand_id());
+            logger.error(e.getMessage());
+            result = Constants.NOT_OK;
+        }
+        
+        return result;
     }
 }
