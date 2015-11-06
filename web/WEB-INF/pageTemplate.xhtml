@@ -8,6 +8,7 @@
 
     <h:head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <meta http-equiv="refresh" content="#{session.maxInactiveInterval};url=expired.xhtml"/>
         <h:outputStylesheet library="css" name="stylesheet.css"/>
         <title><ui:insert name="title">Page Template</ui:insert></title>
     </h:head>
@@ -48,6 +49,11 @@
         </h:form>
 
         <ui:insert name="content">Content</ui:insert>
+        <h:form id="clock">
+            <p:poll interval="1" update="dateTime"/>
+            <h:outputText id="dateTime" value="#{constants.displayDateTime}" 
+                          styleClass="clock"/>
+        </h:form>
         
         <hr class="underline"/>
         <div>
