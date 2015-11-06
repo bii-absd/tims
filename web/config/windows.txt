@@ -21,7 +21,4 @@ DIRECTORY_SEPARATOR \
 # The below defines the database name, database driver
 DATABASE_NAME jdbc:postgresql://localhost:5432/clinical
 DATABASE_DRIVER org.postgresql.Driver
-# The below defines the perl command to be run
-COMMAND1 Perl
-COMMAND2 C:\\Perl\\compound_interest.pl
 # This is the end of the line. There should not be any blank line in-between.
