@@ -16,8 +16,6 @@ LOGFILE_NAME log-
 LOGFILE_EXT .txt
 CONFIG_FILE_NAME config-
 CONFIG_FILE_EXT .txt
-# This identify the directory separator for the OS
-DIRECTORY_SEPARATOR /
 # The below defines the database name, database driver
 DATABASE_NAME jdbc:postgresql://localhost:5432/clinical
 DATABASE_DRIVER org.postgresql.Driver
