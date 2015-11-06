@@ -24,8 +24,10 @@
             <p:menubar>
                 <p:submenu label="Admin">
                     <p:menuitem value="Account Management" icon="fa fa-user" 
-                                action="accountmanagement"/>
-                    <p:menuitem value="CMD Management" icon="fa fa-flask"/>
+                                url="accountmanagement.xhtml"/>
+                    <p:menuitem value="CMD Management" icon="fa fa-flask"
+                                url="commandmanagement.xhtml" 
+                                rendered="#{authenticationBean.adminRight}"/>
                 </p:submenu>
                 <f:facet name="options">
                     <p:commandButton value="Logout" 
