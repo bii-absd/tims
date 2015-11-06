@@ -30,7 +30,7 @@
             </p:panel>
             
             <p:panel id="inputcontrol" header="Upload Sample and Control Probe Files">
-                <p:growl id="uploadStatus" life="2500" globalOnly="true"/>
+                <p:growl id="uploadStatus" sticky="true"/>
                 <p:fileUpload mode="advanced" auto="true" update="uploadStatus" 
                               label="Select Sample File"
                               fileUploadListener="#{arrayConfigBean.inputFile.singleFileUploadListener}">
