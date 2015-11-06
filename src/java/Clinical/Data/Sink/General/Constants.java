@@ -47,6 +47,7 @@ import org.apache.logging.log4j.LogManager;
  * 03-Nov-2015 - Added in one new method, getDateTime to return the current date
  * and time. Added one new constant NONE.
  * 04-Nov-2015 - Added one new constant, ACCOUNT_MANAGEMENT.
+ * 06-Nov-2015 - Removed COMMAND and DIRECTORY_SEPARATOR constants.
  */
 
 @ManagedBean (name = "constants")
@@ -97,14 +98,9 @@ public class Constants {
     private static String LOGFILE_EXT = null;
     private static String CONFIG_FILE_NAME = null;
     private static String CONFIG_FILE_EXT = null;
-    // Constants that identify the directory separator for OS
-    private static String DIRECTORY_SEPARATOR = null;
     // Constants used in database setup
     private static String DATABASE_NAME = null;
     private static String DATABASE_DRIVER = null;
-    // Commands for running pipeline
-    private static String COMMAND1 = null;
-    private static String COMMAND2 = null;
 
     public Constants() {}
     
@@ -150,11 +146,8 @@ public class Constants {
             LOGFILE_EXT = setup.get("LOGFILE_EXT");
             CONFIG_FILE_NAME = setup.get("CONFIG_FILE_NAME");
             CONFIG_FILE_EXT = setup.get("CONFIG_FILE_EXT");
-            DIRECTORY_SEPARATOR = setup.get("DIRECTORY_SEPARATOR");
             DATABASE_NAME = setup.get("DATABASE_NAME");
             DATABASE_DRIVER = setup.get("DATABASE_DRIVER");
-            COMMAND1 = setup.get("COMMAND1");
-            COMMAND2 = setup.get("COMMAND2");
         }
         
         return SUCCESS;
@@ -162,9 +155,14 @@ public class Constants {
     
     // To display the date and time.
     public static String getDateTime() {
-//        DateFormat dateFormat = new SimpleDateFormat("dd-MMM-yyyy hh:mm:ss aa");
         DateFormat dateFormat = new SimpleDateFormat("dd-MMM-yy hh:mmaa");
         return dateFormat.format(new Date());
+    }
+    
+    // Display date and time at the views.
+    public static String getDisplayDateTime() {
+        DateFormat dateFormat = new SimpleDateFormat("dd-MMM-yyyy hh:mm:ss aa");
+        return dateFormat.format(new Date());        
     }
     
     // Machine generated getters
@@ -185,9 +183,6 @@ public class Constants {
     public static String getLOGFILE_EXT() { return LOGFILE_EXT; }
     public static String getCONFIG_FILE_NAME() { return CONFIG_FILE_NAME; }
     public static String getCONFIG_FILE_EXT() { return CONFIG_FILE_EXT; }
-    public static String getDIRECTORY_SEPARATOR() { return DIRECTORY_SEPARATOR; }
     public static String getDATABASE_NAME() { return DATABASE_NAME; }
     public static String getDATABASE_DRIVER() { return DATABASE_DRIVER; }
-    public static String getCOMMAND1() { return COMMAND1; }
-    public static String getCOMMAND2() { return COMMAND2; }
 }
