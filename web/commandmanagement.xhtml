@@ -20,8 +20,6 @@
                          editable="true">
                 <p:ajax event="rowEdit" listener="#{cmdMgntBean.onRowEdit}" 
                         update=":cmdForm:cmdMsg"/>
-                <p:ajax event="rowEditCancel" listener="#{cmdMgntBean.onRowCancel}" 
-                        update=":cmdForm:cmdMsg"/>
                 <p:column headerText="Command ID">
                     <h:outputText value="#{cmd.command_id}"/>
                 </p:column>
