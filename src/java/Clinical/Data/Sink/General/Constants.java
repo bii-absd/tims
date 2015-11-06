@@ -160,7 +160,7 @@ public class Constants {
     }
     
     // Display date and time at the views.
-    public static String getDisplayDateTime() {
+    public String getDisplayDateTime() {
         DateFormat dateFormat = new SimpleDateFormat("dd-MMM-yyyy hh:mm:ss aa");
         return dateFormat.format(new Date());        
     }
