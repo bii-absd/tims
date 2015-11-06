@@ -261,8 +261,8 @@ public class ArrayConfigBean implements Serializable {
             // 3. Pipeline is ready to be run now
             result = executePipeline(logFilePath);
             // Create dummy pipeline files for user to download.
-            createDummyFile(outputFilePath);
-            createDummyFile(reportFilePath);
+//            createDummyFile(outputFilePath);
+//            createDummyFile(reportFilePath);
         }
         else {
             result = Constants.ERROR;
