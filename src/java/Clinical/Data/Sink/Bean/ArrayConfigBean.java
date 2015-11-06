@@ -3,8 +3,10 @@
  */
 package Clinical.Data.Sink.Bean;
 
+import Clinical.Data.Sink.Database.PipelineCommand;
 import Clinical.Data.Sink.Database.SubmittedJob;
 import Clinical.Data.Sink.Database.SubmittedJobDB;
+import Clinical.Data.Sink.Database.PipelineCommandDB;
 import Clinical.Data.Sink.General.Constants;
 import Clinical.Data.Sink.General.ExitListener;
 import Clinical.Data.Sink.General.ProcessExitDetector;
@@ -25,15 +27,17 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import javax.annotation.PostConstruct;
+import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
+import javax.faces.context.FacesContext;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 /**
- * ArrayConfigBean is used as the backing bean for the array.xhtml and 
- arrayConfigReview.xhtml views.
+ * ArrayConfigBean is used as the backing bean for the gex-affymetrix and
+ * gex-illumina views.
  * 
  * Author: Tay Wei Hong
  * Date: 22-Sep-2015
@@ -77,6 +81,9 @@ import org.apache.logging.log4j.LogManager;
  * 05-Nov-2015 - Use the sample annotation file uploaded to construct the 
  * selection list for 'Phenotype Column' and 'Sample Averaging'. To pass on the
  * study ID during creation of ProcessExitDetector object.
+ * 06-Nov-2015 - To display an error message when the system failed to create
+ * the input files directory, and when the system failed to create the 
+ * annotation list. The pipeline command will now be read in from the database.
  */
 
 @ManagedBean (name="arrayConfigBean")
@@ -123,9 +130,13 @@ public class ArrayConfigBean implements Serializable {
         if (!FileUploadBean.setFileDirectory(submitTimeInFilename)) {
             // System failed to create the input files directory for this job,
             // shouldn't allow the user to continue.
-            logger.error("Failed to create the input files directory");            
+            logger.error("Failed to create the input files directory");
+            getFacesContext().addMessage(null, new FacesMessage(
+                                FacesMessage.SEVERITY_ERROR,
+                                "System failed to create input directory!\n"
+                                + "Pipeline will not run!", ""));            
         }
-        
+
         if (pipelineType.compareTo(Constants.GEX_ILLUMINA) == 0) {
             // Only Illumina pipeline required the user to upload the 
             // control file
@@ -157,10 +168,14 @@ public class ArrayConfigBean implements Serializable {
                 for (int i = 0; i < annotList.length; i++) {
                     annotationList.put(annotList[i], annotList[i]);
                 }
+                logger.debug("Annotation subject line: " + line);
                 logger.debug("Annotation List: " + annotationList.toString());
             }
             catch (IOException e) {
                 logger.debug("IOException when reading the first line of annotation file.");
+                getFacesContext().addMessage(null, new FacesMessage(
+                                FacesMessage.SEVERITY_ERROR,
+                                "System failed to create annotation list!", ""));
             }
         }
         return annotationList;
@@ -391,15 +406,27 @@ public class ArrayConfigBean implements Serializable {
         String result = Constants.MAIN_PAGE;
         // Build the pipeline command
         List<String> command = new ArrayList<>();
+        PipelineCommand cmd = null;
         
-        if (Constants.getCOMMAND1().compareTo("NA") != 0) {
-            command.add(Constants.getCOMMAND1());
+        try {
+            // Retrieve the pipeline command and it's parameter from database.
+            cmd = PipelineCommandDB.getCommand(pipelineType);
+
+            logger.debug("Pipeline from database: " + cmd.toString());
+        }
+        catch (SQLException e) {
+            logger.error("SQLException while retriving pipeline command " +
+                    pipelineType);
+            logger.error(e.getMessage());
+            // Something is wrong, shouldn't let the user continue.
+            return Constants.ERROR;
         }
         
-        command.add(Constants.getCOMMAND2());
+        command.add(cmd.getCommand_code());
+        command.add(cmd.getCommand_para());
         command.add(pipelineConfig);
         
-        logger.debug("Pipeline command: " + command.toString());
+        logger.debug("Full pipeline command: " + command.toString());
         
         ProcessBuilder pb = new ProcessBuilder(command);
         // This outputFilePath might be use as the execution log from the pipeline.
@@ -413,7 +440,8 @@ public class ArrayConfigBean implements Serializable {
         try {
             // Start the pipeline
             process = pb.start();
-        } catch (IOException ioe) {
+        } 
+        catch (IOException ioe) {
             logger.error("IOException at executePipeline.");
             logger.error(ioe.getMessage());
             result = Constants.ERROR;
@@ -442,12 +470,7 @@ public class ArrayConfigBean implements Serializable {
 
     // booleanToYesNo helped to convert boolean (i.e. true/false) to yes/no
     private String booleanToYesNo(boolean parameter) {
-        if (parameter) {
-            return "yes";
-        }
-        else {
-            return "no";
-        }
+        return parameter?"yes":"no";
     }
 
     // Function to create the output/report file for testing purposes.
@@ -469,6 +492,11 @@ public class ArrayConfigBean implements Serializable {
         }
     }
 
+    // Retrieve the faces context
+    private FacesContext getFacesContext() {
+	return FacesContext.getCurrentInstance();
+    }
+    
     // Machine generated getters and setters
     public FileUploadBean getCtrlFile() {
         return ctrlFile;
