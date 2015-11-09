@@ -222,7 +222,7 @@ public class AuthenticationBean implements Serializable {
         */
         logger.info(loginName + ": logout from the system.");
         // User logoff from system, return to Login Page.
-        return Constants.LOGIN_PAGE + "?faces-redirect=true";
+        return Constants.LOGIN_PAGE;
     }
     
     // getAdminRight will return true if the role ID of the user is 1 
