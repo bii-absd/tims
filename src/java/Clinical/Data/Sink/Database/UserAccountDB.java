@@ -7,6 +7,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -30,6 +32,10 @@ import org.mindrot.jbcrypt.BCrypt;
  * II. updatePassword to allow user to change his/her password.
  * 05-Nov-2015 - Added new method getUser that return the user account of the
  * job requestor.
+ * 06-Nov-2015 - Added the following methods to support the 'update user 
+ * account' module:
+ * 1. getAllUser()
+ * 2. updateAccount(UserAccount user)
  */
 
 public class UserAccountDB {
@@ -37,8 +43,44 @@ public class UserAccountDB {
     private final static Logger logger = LogManager.
             getLogger(UserAccountDB.class.getName());
     private final static Connection conn = DBHelper.getDBConn();
+    private static List<UserAccount> userList = new ArrayList<>();
     
     UserAccountDB() {};
+    
+    // Return the list of user accounts that are currently in the system.
+    public static List<UserAccount> getAllUser() {
+        // Empty the current user list
+        userList.clear();
+        String queryStr = "SELECT user_id, first_name, last_name, email, "
+                + "role_id, institution, department, active, last_login FROM "
+                + "user_account ORDER BY user_id";
+        
+        try (PreparedStatement queryStm = conn.prepareStatement(queryStr)) {
+            ResultSet queryResult = queryStm.executeQuery();
+            
+            while (queryResult.next()) {
+                UserAccount user = new UserAccount(
+                                        queryResult.getString("user_id"),
+                                        queryResult.getInt("role_id"),
+                                        queryResult.getString("first_name"),
+                                        queryResult.getString("last_name"),
+                                        queryResult.getString("email"),
+                                        queryResult.getBoolean("active"),
+                                        "password",
+                                        queryResult.getString("department"),
+                                        queryResult.getString("institution"),
+                                        queryResult.getString("last_login"));
+                userList.add(user);
+            }
+            logger.debug("No of user account retrieved: " + userList.size());
+        }
+        catch (SQLException e) {
+            logger.error("SQLException while retrieving user accounts from database.");
+            logger.error(e.getMessage());
+        }
+        
+        return userList;
+    }
     
     // Return the user account that requested this job.
     public static UserAccount getUser(int jobID) {
@@ -47,8 +89,7 @@ public class UserAccountDB {
                 + "SELECT user_id FROM submitted_job WHERE job_id = "
                 + jobID + ")";
         
-        try (PreparedStatement queryStm = conn.prepareStatement(queryStr))
-        {
+        try (PreparedStatement queryStm = conn.prepareStatement(queryStr)) {
             ResultSet queryResult = queryStm.executeQuery();
            
             if (queryResult.next()) {
@@ -60,7 +101,8 @@ public class UserAccountDB {
                                        queryResult.getBoolean("active"),
                                        "password",
                                        queryResult.getString("department"),
-                                       queryResult.getString("institution"));
+                                       queryResult.getString("institution"),
+                                       queryResult.getString("last_login"));
                 
             }
            
@@ -125,16 +167,17 @@ public class UserAccountDB {
                 if (BCrypt.checkpw(pwd, pwd_hash)) {
                     logger.info(user_id + ": password valid.");
                     // Construct a UserAccount object based on the return result
-                    // BUT set the password to empty i.e. " ".
+                    // BUT set the password and last_login to empty i.e. " ".
                     acct = new UserAccount(queryResult.getString("user_id"),
                                         queryResult.getInt("role_id"),
                                         queryResult.getString("first_name"),
                                         queryResult.getString("last_name"),
                                         queryResult.getString("email"),
                                         queryResult.getBoolean("active"),
-                                        " ",
+                                        "password",
                                         queryResult.getString("department"),
-                                        queryResult.getString("institution"));
+                                        queryResult.getString("institution"),
+                                        "last-login");
                 }
             }
         } catch (SQLException e) {
@@ -209,6 +252,26 @@ public class UserAccountDB {
         updateStm.setString(1, pwd_hash);
         updateStm.setString(2, user_id);
         // Execute the UPDATE statement
+        updateStm.executeUpdate();
+    }
+    
+    // Update the account detail of this user.
+    public static void updateAccount(UserAccount user) throws SQLException {
+        String updateStr = "UPDATE user_account SET institution = ?, "
+                           + "department = ?, first_name = ?, last_name = ?, "
+                           + "email = ?, active = ?, role_id = ? WHERE "
+                           + "user_id = ?";
+        
+        PreparedStatement updateStm = conn.prepareStatement(updateStr);
+        updateStm.setString(1, user.getInstitution());
+        updateStm.setString(2, user.getDepartment());
+        updateStm.setString(3, user.getFirst_name());
+        updateStm.setString(4, user.getLast_name());
+        updateStm.setString(5, user.getEmail());
+        updateStm.setBoolean(6, user.getActive());
+        updateStm.setInt(7, user.getRole_id());
+        updateStm.setString(8, user.getUser_id());
+        // Excute the UPDATE statement
         updateStm.executeUpdate();
     }
 }
