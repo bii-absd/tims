@@ -41,7 +41,6 @@
                                  required="true" 
                                  value="#{authenticationBean.loginName}">
                     <f:validateLength minimum="5"/>
-                    <f:ajax event="blur" render="id-error"/>
                 </h:inputText>
                 <p:message id="id-error" for="username"/>
 
@@ -52,7 +51,6 @@
                                maxlength="20" required="true"
                                value="#{authenticationBean.password}">
                     <f:validateLength minimum="5"/>
-                    <f:ajax event="blur" render="pwd-error"/>
                 </h:inputSecret>
                 <p:message id="pwd-error" for="password"/>
                 
