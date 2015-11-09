@@ -209,6 +209,8 @@ public class AuthenticationBean implements Serializable {
     
     // logout will help to invalidate the session after the user logout.
     public String logout() {
+        getFacesContext().getExternalContext().invalidateSession();
+        /*
         FacesContext facesContext = getFacesContext();
         HttpSession session = (HttpSession)facesContext.
                 getExternalContext().getSession(false);
@@ -217,7 +219,7 @@ public class AuthenticationBean implements Serializable {
             session.invalidate();
             logger.debug("Session invalidated before logout.");
         }
-        
+        */
         logger.info(loginName + ": logout from the system.");
         // User logoff from system, return to Login Page.
         return Constants.LOGIN_PAGE + "?faces-redirect=true";
