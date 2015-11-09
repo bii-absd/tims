@@ -48,6 +48,8 @@ import org.apache.logging.log4j.LogManager;
  * and time. Added one new constant NONE.
  * 04-Nov-2015 - Added one new constant, ACCOUNT_MANAGEMENT.
  * 06-Nov-2015 - Removed COMMAND and DIRECTORY_SEPARATOR constants.
+ * 09-Nov-2015 - Added in faces-redirect = true for all the navigation strings.
+ * Removed ILLUMINA and AFFYMETRIX constants.
  */
 
 @ManagedBean (name = "constants")
@@ -72,18 +74,20 @@ public class Constants {
     public final static String TRUE = "true";
     public final static String FALSE = "false";
     public final static String NONE = "none";
-    // Vendor
-    public final static String ILLUMINA = "Illumina";
-    public final static String AFFYMETRIX = "Affymetrix";
-    // Navigation Strings
-    public final static String LOGIN_PAGE = "login";
-    public final static String MAIN_PAGE = "main";
+    // Pipeline Types
     public final static String GEX_ILLUMINA = "gex-illumina";
     public final static String GEX_AFFYMETRIX = "gex-affymetrix";
-    public final static String ACCOUNT_MANAGEMENT = "accountmanagement";
-    public final static String ARRAYCONFIG_PAGE = "arrayconfig";
-    public final static String NGS_PAGE = "ngs";
-    public final static String ERROR = "error";
+    // Navigation Strings
+    public final static String LOGIN_PAGE = "login?faces-redirect=true";
+    public final static String MAIN_PAGE = "main?faces-redirect=true";
+    public final static String GEX_ILLUMINA_PAGE = 
+                                "gex-illumina?faces-redirect=true";
+    public final static String GEX_AFFYMETRIX_PAGE = 
+                                "gex-affymetrix?faces-redirect=true";
+    public final static String ACCOUNT_MANAGEMENT = 
+                                "accountmanagement?faces-redirect=true";
+    public final static String NGS_PAGE = "ngs?faces-redirect=true";
+    public final static String ERROR = "error?faces-redirect=true";
     // Constants used in Array pipeline
     private static String SYSTEM_PATH = null;
     private static String OUTPUT_PATH = null;
@@ -166,10 +170,6 @@ public class Constants {
     }
     
     // Machine generated getters
-    public String getGEX_AFFYMETRIX() { return GEX_AFFYMETRIX; }
-    public String getGEX_ILLUMINA() { return GEX_ILLUMINA; }
-    public String getAFFYMETRIX() { return AFFYMETRIX; }
-    public String getILLUMINA() { return ILLUMINA; }
     public static String getSYSTEM_PATH() { return SYSTEM_PATH; }
     public static String getOUTPUT_PATH() { return OUTPUT_PATH; }
     public static String getINPUT_PATH() { return INPUT_PATH; }
