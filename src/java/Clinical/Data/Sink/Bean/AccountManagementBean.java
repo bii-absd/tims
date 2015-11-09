@@ -9,7 +9,10 @@ import Clinical.Data.Sink.Database.UserRole;
 import Clinical.Data.Sink.General.Constants;
 import java.io.Serializable;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
+import javax.annotation.PostConstruct;
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
@@ -17,6 +20,7 @@ import javax.faces.context.FacesContext;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.primefaces.event.RowEditEvent;
 
 /**
  * AccountManagementBean is the backing bean for the accountmanagement.xhtml.
@@ -32,6 +36,11 @@ import org.apache.logging.log4j.LogManager;
  * no longer defaulted to 'User'.
  * 04-Nov-2015 - Port to JSF 2.2. Added new method changePassword to allow user
  * to change his/her password.  Added 2 new variables, new_pwd and cfm_pwd.
+ * 09-Nov-2015 - Added the following methods to support the 'update user
+ * account' module:
+ * 1. init()
+ * 2. getUserList()
+ * 3. onRowEdit
  */
 
 @ManagedBean (name="accountManagementBean")
@@ -47,18 +56,50 @@ public class AccountManagementBean implements Serializable {
     private int role_id;
     private String department, institution;
     private String new_pwd, cfm_pwd;
+    private static List<UserAccount> userList = new ArrayList<>();
     
     public AccountManagementBean() {
         logger.debug("AccountManagementBean created.");
     }
     
+    @PostConstruct
+    public void init() {
+        if (AuthenticationBean.isAdministrator()) {
+            userList = UserAccountDB.getAllUser();
+        }
+    }
+    
+    // Return the list of user accounts currenlty in the system.
+    public List<UserAccount> getUserList() {
+        return userList;
+    }
+    
+    // Update the user account detail in the database.
+    public void onRowEdit(RowEditEvent event) {
+        try {
+            UserAccountDB.updateAccount((UserAccount) event.getObject());
+            logger.debug("User account: " + 
+                    ((UserAccount) event.getObject()).getUser_id() + 
+                    " updated.");
+            getFacesContext().addMessage(null, new FacesMessage(
+                    FacesMessage.SEVERITY_INFO, "User account updated.", ""));
+        }
+        catch (SQLException e) {
+            logger.error("User account update failed.");
+            getFacesContext().addMessage(null, new FacesMessage(
+                    FacesMessage.SEVERITY_ERROR, 
+                    "Failed to update user account!", ""));            
+        }
+    }
+
     // Create a new UserAccount object and call insertAccount to insert a new 
     // record into the user_account table.
     public String createUserAccount() {
         FacesContext facesContext = getFacesContext();
         // By default, all new account will be active upon creation
         UserAccount newAcct = new UserAccount(user_id, role_id, first_name, 
-                    last_name, email, true, pwd, department, institution);
+                    last_name, email, true, pwd, department, institution, 
+                    " ");
         
         try {
             // Insert the new account into database        
