@@ -23,6 +23,7 @@ import org.apache.logging.log4j.LogManager;
  * 09-Oct-2015 - Update the class to handle the additional 2 fields (institution
  * and department) in user_account table. Moved the two query methods to the
  * new class UserAccountDB.
+ * 09-Nov-2015 - Added one variable "last_login" to this class.
  */
 
 public class UserAccount {
@@ -34,11 +35,12 @@ public class UserAccount {
     private String user_id, first_name, last_name, email, pwd;
     private Boolean active;
     private int role_id;
-    private String department, institution;
+    private String department, institution, last_login;
 
     public UserAccount(String user_id, int role_id, String first_name, 
                        String last_name, String email, Boolean active, 
-                       String pwd, String department, String institution) {
+                       String pwd, String department, String institution,
+                       String last_login) {
         this.user_id = user_id;
         this.role_id = role_id;
         this.first_name = first_name;
@@ -48,6 +50,7 @@ public class UserAccount {
         this.pwd = pwd;
         this.department = department;
         this.institution = institution;
+        this.last_login = last_login;
     }
 
     //Machine generated setters
@@ -66,6 +69,9 @@ public class UserAccount {
     public void setInstitution(String institution) {
         this.institution = institution;
     }
+    public void setLast_login(String last_login) {
+        this.last_login = last_login;
+    }
     
     // Machine generated getters
     public String getUser_id() { return user_id; }
@@ -77,4 +83,5 @@ public class UserAccount {
     public int getRole_id() { return role_id; }
     public String getDepartment() { return department; }
     public String getInstitution() { return institution; }
+    public String getLast_login() { return last_login; }
 }
