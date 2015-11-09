@@ -58,6 +58,8 @@ import org.apache.logging.log4j.core.LoggerContext;
  * application is hosted on.
  * 04-Nov-2015 - To update the last login time of the user once he/she 
  * successfully login to the system.
+ * 09-Nov-2015 - Added one static method isAdministrator() to check whether is
+ * the current user a administrator.
  */
 
 @ManagedBean (name="authenticationBean")
@@ -227,6 +229,12 @@ public class AuthenticationBean implements Serializable {
         // For now, use a very basic way to control the access to user account
         // access. Role ID 1 is Admin; only Admin is allowed access.        
         return userAcct.getRole_id() == 1;
+    }
+    
+    // This function will be called by classes to determine whether the current
+    // user is a adminstrator.
+    public static Boolean isAdministrator() {
+       return userAcct.getRole_id() == 1;
     }
     
     // Retrieve the faces context
