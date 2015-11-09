@@ -23,7 +23,9 @@ import org.apache.logging.log4j.LogManager;
  * 09-Oct-2015 - Update the class to handle the additional 2 fields (institution
  * and department) in user_account table. Moved the two query methods to the
  * new class UserAccountDB.
- * 09-Nov-2015 - Added one variable "last_login" to this class.
+ * 09-Nov-2015 - Added one variable "last_login" to this class. Added two 
+ * methods getActiveString() and getRoleString() that return the active status
+ * and role ID in wording.
  */
 
 public class UserAccount {
@@ -71,6 +73,15 @@ public class UserAccount {
     }
     public void setLast_login(String last_login) {
         this.last_login = last_login;
+    }
+    
+    // Return the active status in wording
+    public String getActiveString() {
+        return active?"Enabled":"Disabled";
+    }
+    // Return the Role in wording
+    public String getRoleString() {
+        return UserRole.getRoleFromHash(role_id);
     }
     
     // Machine generated getters
