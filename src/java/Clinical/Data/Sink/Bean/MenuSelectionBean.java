@@ -46,7 +46,7 @@ public class MenuSelectionBean implements Serializable{
         logger.debug(AuthenticationBean.getUserName() + ": selected " +
                      command);
         
-        return Constants.GEX_ILLUMINA;
+        return Constants.GEX_ILLUMINA_PAGE;
     }
 
     // Setup the ArrayConfigBean for GEX Affymetrix pipeline processing.
@@ -56,7 +56,7 @@ public class MenuSelectionBean implements Serializable{
         logger.debug(AuthenticationBean.getUserName() + ": selected " +
                      command);
 
-        return Constants.GEX_AFFYMETRIX;
+        return Constants.GEX_AFFYMETRIX_PAGE;
     }
     
     // ngsPipeline will setup the NGSConfigBean according to the specific
