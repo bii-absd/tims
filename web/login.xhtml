@@ -42,7 +42,7 @@
                                  value="#{authenticationBean.loginName}">
                     <f:validateLength minimum="5"/>
                 </h:inputText>
-                <p:message id="id-error" for="username"/>
+                    <p:message id="id-error" for="username" display="text"/>
 
                 <h:outputLabel for="password">
                 <h:outputText value="Password:"/>
@@ -52,7 +52,7 @@
                                value="#{authenticationBean.password}">
                     <f:validateLength minimum="5"/>
                 </h:inputSecret>
-                <p:message id="pwd-error" for="password"/>
+                    <p:message id="pwd-error" for="password" display="text"/>
                 
                 <h:panelGroup/>
                 <h:commandButton action="#{authenticationBean.login}" 
