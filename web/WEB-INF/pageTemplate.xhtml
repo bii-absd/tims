@@ -49,11 +49,6 @@
         </h:form>
 
         <ui:insert name="content">Content</ui:insert>
-        <h:form id="clock">
-            <p:poll interval="1" update="dateTime"/>
-            <h:outputText id="dateTime" value="#{constants.displayDateTime}" 
-                          styleClass="clock"/>
-        </h:form>
         
         <hr class="underline"/>
         <div>
