@@ -50,8 +50,8 @@ import org.apache.logging.log4j.LogManager;
  * 06-Nov-2015 - Removed COMMAND and DIRECTORY_SEPARATOR constants.
  * 09-Nov-2015 - Added in faces-redirect = true for all the navigation strings.
  * Removed ILLUMINA and AFFYMETRIX constants.
- * 11-Nov-2015 - Added one new constant PAGES_DIR. Changed the return type of
- * setup method. Changed the value of LOGIN_PAGE.
+ * 11-Nov-2015 - Added two new constants PAGES_DIR and ACCOUNT_MANAGEMENT_STAY. 
+ * Changed the return type of setup method. Changed the value of LOGIN_PAGE.
  */
 
 @ManagedBean (name = "constants")
@@ -91,6 +91,7 @@ public class Constants {
                                 "gex-affymetrix?faces-redirect=true";
     public final static String ACCOUNT_MANAGEMENT = 
                                 "accountmanagement?faces-redirect=true";
+    public final static String ACCOUNT_MANAGEMENT_STAY = "accountmanagement";
     public final static String NGS_PAGE = "ngs?faces-redirect=true";
     public final static String ERROR = "error?faces-redirect=true";
     // Constants used in Array pipeline
