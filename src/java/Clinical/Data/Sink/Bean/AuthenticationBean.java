@@ -237,8 +237,8 @@ public class AuthenticationBean implements Serializable {
         getFacesContext().getExternalContext().getSessionMap().remove("User");
         
         logger.info(loginName + ": logout from the system.");
-        // User logoff from system, return to Login Page.
-        return Constants.LOGIN_PAGE;
+        // User logoff from system, redirect to Login Page.
+        return Constants.LOGIN_PAGE + "?faces-redirect=true";
     }
     
     // Return true if the role ID of the user is 1 (i.e. Admin), else it will 
