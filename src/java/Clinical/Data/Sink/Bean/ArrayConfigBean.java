@@ -84,6 +84,8 @@ import org.apache.logging.log4j.LogManager;
  * 06-Nov-2015 - To display an error message when the system failed to create
  * the input files directory, and when the system failed to create the 
  * annotation list. The pipeline command will now be read in from the database.
+ * 11-Nov-2015 - The file directory will only be created after the user 
+ * uploaded a file.
  */
 
 @ManagedBean (name="arrayConfigBean")
@@ -125,18 +127,9 @@ public class ArrayConfigBean implements Serializable {
         // Create the time stamp for the pipeline job once the user enter
         // the page.
         createJobTimestamp();
-        // Setup and create the input files directory for every entry to
-        // GEX pipeline.
-        if (!FileUploadBean.setFileDirectory(submitTimeInFilename)) {
-            // System failed to create the input files directory for this job,
-            // shouldn't allow the user to continue.
-            logger.error("Failed to create the input files directory");
-            getFacesContext().addMessage(null, new FacesMessage(
-                                FacesMessage.SEVERITY_ERROR,
-                                "System failed to create input directory!\n"
-                                + "Pipeline will not run!", ""));            
-        }
-
+        // Setup the file directory for this pipeline job.
+        FileUploadBean.setFileDirectory(submitTimeInFilename);
+        
         if (pipelineType.compareTo(Constants.GEX_ILLUMINA) == 0) {
             // Only Illumina pipeline required the user to upload the 
             // control file
