@@ -60,22 +60,26 @@
     </servlet>
     <servlet-mapping>
         <servlet-name>Faces Servlet</servlet-name>
-        <url-pattern>/faces/*</url-pattern>
+        <url-pattern>*.xhtml</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>20</session-timeout>
     </session-config>
     <welcome-file-list>
-        <welcome-file>faces/login.xhtml</welcome-file>
+        <welcome-file>login.xhtml</welcome-file>
     </welcome-file-list>
     
     <error-page>
         <exception-type>javax.faces.application.ViewExpiredException</exception-type>
-        <location>/faces/expired.xhtml</location>
+        <location>/expired.xhtml</location>
     </error-page>
     <error-page>
         <error-code>500</error-code>
-        <location>/faces/error.xhtml</location>
+        <location>/error.xhtml</location>
+    </error-page>
+    <error-page>
+        <error-code>404</error-code>
+        <location>/pagenotfound.xhtml</location>
     </error-page>
     
     <mime-mapping>
@@ -96,7 +100,7 @@
         <web-resource-collection>
             <web-resource-name>login</web-resource-name>
             <description>Login Page</description>
-            <url-pattern>/faces/login.xhtml</url-pattern>
+            <url-pattern>/login.xhtml</url-pattern>
         </web-resource-collection>
         <user-data-constraint>
             <description/>
