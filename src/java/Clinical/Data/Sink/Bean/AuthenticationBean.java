@@ -60,6 +60,8 @@ import org.apache.logging.log4j.core.LoggerContext;
  * successfully login to the system.
  * 09-Nov-2015 - Added one static method isAdministrator() to check whether is
  * the current user a administrator.
+ * 11-Nov-2015 - To add the credential upon user successful login, and to 
+ * remove the credential upon user logout.
  */
 
 @ManagedBean (name="authenticationBean")
@@ -88,8 +90,8 @@ public class AuthenticationBean implements Serializable {
         ctx.reconfigure();
     }
     
-    // setupConstants help to setup the database configuration, input and
-    // config file path according to the OS the application is hosted on.
+    // Setup the database configuration, input and config file path according 
+    // to the OS the application is hosted on.
     private String setupConstants(ServletContext context) {
         String setupFile;
         String OS = System.getProperty("os.name");
@@ -111,7 +113,7 @@ public class AuthenticationBean implements Serializable {
         return Constants.setup(context.getRealPath(setupFile));
     }
     
-    // setupMenuList help to setup all the menu list found in the system.
+    // Setup all the menu list found in the system.
     private String setupMenuList(ServletContext context) {
         // Load the itemlist filename from context-param
         String itemListFile = context.getInitParameter("itemlist");
@@ -122,8 +124,8 @@ public class AuthenticationBean implements Serializable {
         return SelectOneMenuList.setup(context.getRealPath(itemListFile));
     }
     
-    // login will setup the system, check the user login and password against 
-    // the database before letting the user use the system.
+    // Setup the system, check the user login and password against the 
+    // database before letting the user use the system.
     public String login()
     {
         // Setting up the database configuration, input, config file path, etc
@@ -170,6 +172,8 @@ public class AuthenticationBean implements Serializable {
         // application is first deployed.
         if ((loginName.compareTo("super")==0) && 
             (password.compareTo("super")==0)) {
+            getFacesContext().getExternalContext().getSessionMap().
+                    put("User", "User");
             return Constants.MAIN_PAGE;
         }
         
@@ -186,6 +190,8 @@ public class AuthenticationBean implements Serializable {
             // Follow by .../users/loginName directory
             if (FileUploadBean.createSystemDirectory(Constants.getSYSTEM_PATH())) {
                 if (FileUploadBean.createAllSystemDirectories(homeDir)) {
+                    getFacesContext().getExternalContext().getSessionMap().
+                            put("User", "User");
                     return Constants.MAIN_PAGE;
                 }
             }
@@ -207,27 +213,20 @@ public class AuthenticationBean implements Serializable {
         }
     }
     
-    // logout will help to invalidate the session after the user logout.
+    // To invalidate the session and remove the user credential after the 
+    // user logout.
     public String logout() {
         getFacesContext().getExternalContext().invalidateSession();
-        /*
-        FacesContext facesContext = getFacesContext();
-        HttpSession session = (HttpSession)facesContext.
-                getExternalContext().getSession(false);
+        getFacesContext().getExternalContext().getSessionMap().remove("User");
         
-        if (session != null) {
-            session.invalidate();
-            logger.debug("Session invalidated before logout.");
-        }
-        */
         logger.info(loginName + ": logout from the system.");
         // User logoff from system, return to Login Page.
         return Constants.LOGIN_PAGE;
     }
     
-    // getAdminRight will return true if the role ID of the user is 1 
-    // (i.e. Admin), else it will return false. The return value will be used
-    // to control the access to some control/link.
+    // Return true if the role ID of the user is 1 (i.e. Admin), else it will 
+    // return false. The return value will be used to control the access to 
+    // some control/link.
     public Boolean getAdminRight() {
         // For now, use a very basic way to control the access to user account
         // access. Role ID 1 is Admin; only Admin is allowed access.        
@@ -255,8 +254,7 @@ public class AuthenticationBean implements Serializable {
     // getHomeDir will return the home directory of the current user.
     public static String getHomeDir() { return homeDir; }
     
-    // getHeaderInstDept will supply the Institution-Department string to
-    // header.jsp view
+    // Supply the Institution-Department string to all the views.
     public static String getHeaderInstDept() { 
         if (loginName.compareTo("super") == 0) {
             return loginName;
@@ -265,7 +263,7 @@ public class AuthenticationBean implements Serializable {
             return userAcct.getInstitution() + " - " + userAcct.getDepartment();            
         }
     }
-    // getHeaderFullName will supply the Full Name string to header.jsp view
+    // Supply the Full Name string to all the views.
     public static String getHeaderFullName() { 
         if (loginName.compareTo("super") == 0) {
             return loginName;
