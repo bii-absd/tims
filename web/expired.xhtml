@@ -19,10 +19,11 @@
                 <p:column>
                     <dir>
                         <p> Your session has expired. </p>
-                        <p> Please login again. </p>
-                        <br/>
-                        <h:commandButton value="Login" action="login" 
-                                         title="Back to Login Page"/>
+                        <p> Please login again 
+                        <h:outputLink value="login.xhtml" title="Back to Login Page">
+                            here
+                        </h:outputLink>
+                        </p>
                     </dir>                    
                 </p:column>
             </h:panelGrid>            
