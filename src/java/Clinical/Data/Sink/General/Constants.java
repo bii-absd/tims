@@ -83,7 +83,7 @@ public class Constants {
     public final static String PAGES_DIR = "restricted/";
     // For Login page, we shouldn't redirect because most of the time the 
     // system is going from Login back to Login.
-    public final static String LOGIN_PAGE = "login";
+    public final static String LOGIN_PAGE = "/login";
     public final static String MAIN_PAGE = "main?faces-redirect=true";
     public final static String GEX_ILLUMINA_PAGE = 
                                 "gex-illumina?faces-redirect=true";
