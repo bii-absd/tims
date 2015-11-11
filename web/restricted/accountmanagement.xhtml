@@ -20,7 +20,6 @@
                     <p:inputText id="userid" size="32" maxlength="10" autocomplete="off"
                                  required="true" value="#{accountManagementBean.user_id}">
                         <f:validateLength minimum="5" maximum="10"/>
-                        <f:ajax event="blur" render="userid-status"/>
                     </p:inputText>
                     <h:message id="userid-status" for="userid" styleClass="errors"/>
                     <p:watermark for="userid" value="New User ID"/>
@@ -28,7 +27,6 @@
                     <p:inputText id="firstname" size="32" maxlength="50" autocomplete="off" 
                                  required="true" value="#{accountManagementBean.first_name}">
                         <f:validateLength minimum="1" maximum="50"/>
-                        <f:ajax event="blur" render="firstname-status"/>
                     </p:inputText>
                     <h:message id="firstname-status" for="firstname" 
                                styleClass="errors"/>
@@ -37,7 +35,6 @@
                     <p:inputText id="lastname" size="32" maxlength="50" autocomplete="off"
                                  required="true" value="#{accountManagementBean.last_name}">
                         <f:validateLength minimum="1" maximum="50"/>
-                        <f:ajax event="blur" render="lastname-status"/>
                     </p:inputText>
                     <h:message id="lastname-status" for="lastname" 
                                styleClass="errors"/>
@@ -74,7 +71,6 @@
                     <p:inputText id="email" size="32" maxlength="50" autocomplete="off"
                                  required="true" value="#{accountManagementBean.email}">
                         <f:validateLength minimum="5" maximum="50"/>
-                        <f:ajax event="blur" render="email-status"/>
                     </p:inputText>
                     <h:message id="email-status" for="email" styleClass="errors"/>
                     <p:watermark for="email" value="Email"/>
@@ -84,7 +80,6 @@
                                 onkeypress="if (event.keyCode == 13) {return false;}"
                                 required="true" value="#{accountManagementBean.pwd}">
                         <f:validateLength minimum="5" maximum="10"/>
-                        <f:ajax event="blur" render="pwd-status"/>
                     </p:password>
                     <h:message id="pwd-status" for="pwd" styleClass="errors"/>
                     <p:watermark for="pwd" value="Password"/>
@@ -209,7 +204,6 @@
                     <p:password id="newpwd" feedback="true" style="width: 170px"
                                 required="true" value="#{accountManagementBean.new_pwd}">
                         <f:validateLength minimum="5" maximum="10"/>
-                        <f:ajax event="blur" render="newpwd-status"/>
                     </p:password>
                     <h:message id="newpwd-status" for="newpwd" styleClass="errors"/>
                     <p:watermark for="newpwd" value="Enter New Password"/>
@@ -218,7 +212,6 @@
                                 onkeypress="if (event.keyCode == 13) {return false;}"
                                 required="true" value="#{accountManagementBean.cfm_pwd}">
                         <f:validateLength minimum="5" maximum="10"/>
-                        <f:ajax event="blur" render="cfmpwd-status"/>
                     </p:password>
                     <h:message id="cfm-status" for="cfmpwd" styleClass="errors"/>
                     <p:watermark for="cfmpwd" value="Retype New Password"/>
