@@ -60,7 +60,9 @@ import org.apache.logging.log4j.core.LoggerContext;
  * 09-Nov-2015 - Added one static method isAdministrator() to check whether is
  * the current user a administrator.
  * 11-Nov-2015 - To add the credential upon user successful login, and to 
- * remove the credential upon user logout.
+ * remove the credential upon user logout. Changed the return type of 
+ * setupConstants() and setupMenuList() methods. To have a common exit point
+ * for login() method.
  */
 
 @ManagedBean (name="authenticationBean")
@@ -91,7 +93,7 @@ public class AuthenticationBean implements Serializable {
     
     // Setup the database configuration, input and config file path according 
     // to the OS the application is hosted on.
-    private String setupConstants(ServletContext context) {
+    private Boolean setupConstants(ServletContext context) {
         String setupFile;
         String OS = System.getProperty("os.name");
         
@@ -113,7 +115,7 @@ public class AuthenticationBean implements Serializable {
     }
     
     // Setup all the menu list found in the system.
-    private String setupMenuList(ServletContext context) {
+    private Boolean setupMenuList(ServletContext context) {
         // Load the itemlist filename from context-param
         String itemListFile = context.getInitParameter("itemlist");
         logger.debug("Item list file located at: " + 
@@ -130,8 +132,7 @@ public class AuthenticationBean implements Serializable {
         // Setting up the database configuration, input, config file path, etc
         ServletContext context = getServletContext();
 
-        if ( (setupConstants(context).compareTo(Constants.ERROR) == 0) ||
-             (setupMenuList(context).compareTo(Constants.ERROR) == 0) )
+        if (!(setupConstants(context) && setupMenuList(context)) )
         {
             // System having issue, shouldn't let the user proceed.
             return Constants.ERROR;
@@ -173,34 +174,48 @@ public class AuthenticationBean implements Serializable {
             (password.compareTo("super")==0)) {
             getFacesContext().getExternalContext().getSessionMap().
                     put("User", "User");
-            // Going from login to /restricted folder
+            // "Super" user, no further check required. Proceed from 
+            // login to /restricted folder
             return Constants.PAGES_DIR + Constants.MAIN_PAGE;
         }
         
         userAcct = UserAccountDB.checkPwd(loginName, password);
+        // Next page to proceed to
+        String result = Constants.LOGIN_PAGE;
         
         if (userAcct != null) {
-            logger.info(loginName + ": login to the system.");
-            // Create user home directory once successfully login
-            homeDir = Constants.getSYSTEM_PATH() + loginName;
-            // Update the last login of this user            
-            UserAccountDB.updateLastLogin(loginName, Constants.getDateTime());
+            // Check is account enabled.
+            if (userAcct.getActive()) {
+                logger.info(loginName + ": login to the system.");
+                // Create user home directory once successfully login
+                homeDir = Constants.getSYSTEM_PATH() + loginName;
+                // Update the last login of this user            
+                UserAccountDB.updateLastLogin(loginName, Constants.getDateTime());
             
-            // Create the .../users directory 
-            // Follow by .../users/loginName directory
-            if (FileUploadBean.createSystemDirectory(Constants.getSYSTEM_PATH())) {
-                if (FileUploadBean.createAllSystemDirectories(homeDir)) {
-                    getFacesContext().getExternalContext().getSessionMap().
-                            put("User", "User");
-                    // Going from login to /restricted folder
-                    return Constants.PAGES_DIR + Constants.MAIN_PAGE;
+                // Create the .../users directory 
+                // Follow by .../users/loginName directory
+                if (FileUploadBean.createSystemDirectory(Constants.getSYSTEM_PATH()) &&
+                    (FileUploadBean.createAllSystemDirectories(homeDir))) {
+                        getFacesContext().getExternalContext().getSessionMap().
+                                put("User", "User");
+                        // Everything is fine, proceed from login to /restricted folder
+                        result =  Constants.PAGES_DIR + Constants.MAIN_PAGE;
+                }
+                else {
+                    logger.debug(loginName + ": failed to create system directories after login.");
+                    // If control reached here, it means some of the system directories
+                    // is not created, shouldn't allow user to proceed.
+                    result = Constants.ERROR;                    
                 }
             }
-            
-            logger.debug(loginName + ": failed to create system directories after login.");
-            // If control reached here, it means some of the system directories
-            // is not created, shouldn't allow user to proceed.
-            return Constants.ERROR;
+            else {
+                // Account is disabled, display error message to user.
+                getFacesContext().addMessage("global", 
+                        new FacesMessage(FacesMessage.SEVERITY_WARN,
+                        "Your account is disabled. Please check with the administrator.", ""));
+                logger.info(loginName + ": account is disabled.");
+                // Account disabled, return to login page.
+            }
         }
         else {
             FacesContext facesContext = getFacesContext();
@@ -210,8 +225,9 @@ public class AuthenticationBean implements Serializable {
                     "Invalid name or password.", ""));
             logger.info(loginName + ": failed to login to the system.");
             // User ID/Password invalid, return to login page.
-            return Constants.LOGIN_PAGE;
         }
+        
+        return result;
     }
     
     // To invalidate the session and remove the user credential after the 
