@@ -32,6 +32,7 @@ import org.apache.logging.log4j.LogManager;
  * 27-Oct-2015 - Moved the setup function out of the Constructor, and place it
  * in static function setup. The functions to get the Illumina and Affymetrix
  * types have also been made static.
+ * 11-Nov-2015 - Changed the return type of setup method.
  */
 
 @ManagedBean (name="selectOneMenuList")
@@ -53,7 +54,7 @@ public class SelectOneMenuList {
     
     // setup will help to setup all the item lists found in the system using
     // the config file passed in.
-    public static String setup(String uri) {
+    public static Boolean setup(String uri) {
         if (!setup) {
             try (BufferedReader br = new BufferedReader(new FileReader(uri)))
             {
@@ -106,11 +107,11 @@ public class SelectOneMenuList {
             } catch (IOException e) {
                 logger.error("IOException encountered while loading " + uri);
                 logger.error(e.getMessage());
-                return Constants.ERROR;
+                return Constants.NOT_OK;
             }
         }
         
-        return Constants.SUCCESS;
+        return Constants.OK;
     }
     
     // getVendorTypes will return the list of vendors.
