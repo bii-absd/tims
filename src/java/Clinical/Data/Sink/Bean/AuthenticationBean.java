@@ -14,7 +14,6 @@ import java.sql.SQLException;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.servlet.ServletContext;
-import javax.servlet.http.HttpSession;
 import javax.faces.bean.SessionScoped;
 import javax.faces.bean.ManagedBean;
 // Libraries for Log4j
@@ -174,7 +173,8 @@ public class AuthenticationBean implements Serializable {
             (password.compareTo("super")==0)) {
             getFacesContext().getExternalContext().getSessionMap().
                     put("User", "User");
-            return Constants.MAIN_PAGE;
+            // Going from login to /restricted folder
+            return Constants.PAGES_DIR + Constants.MAIN_PAGE;
         }
         
         userAcct = UserAccountDB.checkPwd(loginName, password);
@@ -192,7 +192,8 @@ public class AuthenticationBean implements Serializable {
                 if (FileUploadBean.createAllSystemDirectories(homeDir)) {
                     getFacesContext().getExternalContext().getSessionMap().
                             put("User", "User");
-                    return Constants.MAIN_PAGE;
+                    // Going from login to /restricted folder
+                    return Constants.PAGES_DIR + Constants.MAIN_PAGE;
                 }
             }
             
