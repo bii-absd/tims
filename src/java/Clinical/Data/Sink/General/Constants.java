@@ -50,7 +50,8 @@ import org.apache.logging.log4j.LogManager;
  * 06-Nov-2015 - Removed COMMAND and DIRECTORY_SEPARATOR constants.
  * 09-Nov-2015 - Added in faces-redirect = true for all the navigation strings.
  * Removed ILLUMINA and AFFYMETRIX constants.
- * 11-Nov-2015 - Added one new constant PAGES_DIR.
+ * 11-Nov-2015 - Added one new constant PAGES_DIR. Changed the return type of
+ * setup method. Changed the value of LOGIN_PAGE.
  */
 
 @ManagedBean (name = "constants")
@@ -80,7 +81,9 @@ public class Constants {
     public final static String GEX_AFFYMETRIX = "gex-affymetrix";
     // Navigation Strings
     public final static String PAGES_DIR = "restricted/";
-    public final static String LOGIN_PAGE = "/login?faces-redirect=true";
+    // For Login page, we shouldn't redirect because most of the time the 
+    // system is going from Login back to Login.
+    public final static String LOGIN_PAGE = "login";
     public final static String MAIN_PAGE = "main?faces-redirect=true";
     public final static String GEX_ILLUMINA_PAGE = 
                                 "gex-illumina?faces-redirect=true";
@@ -112,7 +115,7 @@ public class Constants {
     
     // No setters for the setup parameters will be provided.
     // Function setup will load the parameters value from the file passed in uri.
-    public static String setup(String uri) {
+    public static Boolean setup(String uri) {
         // The scope for this class is application, hence we can skip the 
         // loading from the setup file if it has already been done.
         if (DATABASE_DRIVER == null) {
@@ -135,7 +138,7 @@ public class Constants {
             } catch (IOException e) {
                 logger.error("IOException encountered while loading " + uri);
                 logger.error(e.getMessage());
-                return ERROR;
+                return NOT_OK;
             }
         
             // Setup the config parameters
@@ -156,7 +159,7 @@ public class Constants {
             DATABASE_DRIVER = setup.get("DATABASE_DRIVER");
         }
         
-        return SUCCESS;
+        return OK;
     }
     
     // To display the date and time.
