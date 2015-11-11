@@ -50,6 +50,8 @@ import org.apache.logging.log4j.LogManager;
  * 06-Nov-2015 - Removed COMMAND and DIRECTORY_SEPARATOR constants.
  * 09-Nov-2015 - Added in faces-redirect = true for all the navigation strings.
  * Removed ILLUMINA and AFFYMETRIX constants.
+ * 11-Nov-2015 - Added one new constant PAGES_DIR, and changed the content of 
+ * MAIN_PAGE.
  */
 
 @ManagedBean (name = "constants")
@@ -78,8 +80,9 @@ public class Constants {
     public final static String GEX_ILLUMINA = "gex-illumina";
     public final static String GEX_AFFYMETRIX = "gex-affymetrix";
     // Navigation Strings
-    public final static String LOGIN_PAGE = "login?faces-redirect=true";
-    public final static String MAIN_PAGE = "main?faces-redirect=true";
+    public final static String PAGES_DIR = "restricted/";
+    public final static String LOGIN_PAGE = "/login?faces-redirect=true";
+    public final static String MAIN_PAGE = PAGES_DIR + "main?faces-redirect=true";
     public final static String GEX_ILLUMINA_PAGE = 
                                 "gex-illumina?faces-redirect=true";
     public final static String GEX_AFFYMETRIX_PAGE = 
