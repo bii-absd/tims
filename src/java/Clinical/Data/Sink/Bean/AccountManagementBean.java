@@ -75,6 +75,7 @@ public class AccountManagementBean implements Serializable {
     }
     
     // Update the user account detail in the database.
+    // After edit, return to the same page but keep the current view scope alive.
     public void onRowEdit(RowEditEvent event) {
         try {
             UserAccountDB.updateAccount((UserAccount) event.getObject());
@@ -123,8 +124,8 @@ public class AccountManagementBean implements Serializable {
             facesContext.addMessage("newacctstatus", new FacesMessage(
                     FacesMessage.SEVERITY_ERROR, "Failed: " + errorMsg, ""));
         }
-        // Return to the same page, but recreate the AccountManagementBean.
-        return Constants.ACCOUNT_MANAGEMENT;
+        // Return to the same page, and recreate the AccountManagementBean.
+        return Constants.ACCOUNT_MANAGEMENT_STAY;
     }
     
     // Update the password of the current user if the two passwords entered 
@@ -158,8 +159,8 @@ public class AccountManagementBean implements Serializable {
                     FacesMessage.SEVERITY_ERROR, 
                     "The passwords entered are not the same", ""));
         }
-        // Return to the same page, but recreate the AccountManagementBean.        
-        return Constants.ACCOUNT_MANAGEMENT;
+        // Return to the same page, and recreate the AccountManagementBean.        
+        return Constants.ACCOUNT_MANAGEMENT_STAY;
     }
     
     // Return the list of Role setup in the database
