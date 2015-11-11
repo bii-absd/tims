@@ -150,7 +150,8 @@ public class AccountManagementBean implements Serializable {
                 logger.error(e.getMessage());
             facesContext.addMessage("changepwdstatus", new FacesMessage(
                     FacesMessage.SEVERITY_FATAL, 
-                    "Database Error, failed to update password!", ""));            }
+                    "Database Error, failed to update password!", ""));            
+            }
         }
         else {
             logger.info(AuthenticationBean.getUserName() + 
