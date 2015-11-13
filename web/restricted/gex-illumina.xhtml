@@ -8,21 +8,21 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
     
     <ui:define name="title">GEX Pipeline (Illumina)</ui:define>
-    <ui:param name="link" value="#{arrayConfigBean.pipelineName}"/>
+    <ui:param name="link" value="#{gexIlluminaBean.pipelineName}"/>
     <ui:define name="content">
         <h:form enctype="multipart/form-data">
             <p:panel id="inputpara" header="Input Parameters">
                 <h:panelGrid columns="3" cellpadding="5">
                     <p:column>
                         <p:inputText id="studyID" maxlength="20" required="true"
-                                     value="#{arrayConfigBean.studyID}"/>
+                                     value="#{gexIlluminaBean.studyID}"/>
                         <p:watermark for="studyID" value="Enter Study ID"/>
                     </p:column>
                     <p:column>
                         <p:selectOneMenu id="type" required="true" 
-                                         value="#{arrayConfigBean.type}">
+                                         value="#{gexIlluminaBean.type}">
                             <f:selectItem itemLabel="Select Type" itemValue=""/>
-                            <f:selectItems value="#{selectOneMenuList.illuminaType}"/>
+                            <f:selectItems value="#{gexIlluminaBean.typeList}"/>
                         </p:selectOneMenu>
                     </p:column>
                     <h:message for="studyID" styleClass="errors"/>
@@ -33,11 +33,11 @@
                 <p:growl id="uploadStatus" sticky="true"/>
                 <p:fileUpload mode="advanced" auto="true" update="uploadStatus" 
                               label="Select Sample File"
-                              fileUploadListener="#{arrayConfigBean.inputFile.singleFileUploadListener}">
+                              fileUploadListener="#{gexIlluminaBean.inputFile.singleFileUploadListener}">
                 </p:fileUpload>
                 <p:fileUpload mode="advanced" auto="true" update="uploadStatus" 
                               label="Select Control File"
-                              fileUploadListener="#{arrayConfigBean.ctrlFile.singleFileUploadListener}"/>
+                              fileUploadListener="#{gexIlluminaBean.ctrlFile.singleFileUploadListener}"/>
             </p:panel>
             <p:panel id="sample" 
                      header="Upload Samples Annotation File 
@@ -46,7 +46,7 @@
                 <p:fileUpload mode="advanced" auto="true" 
                               update="uploadStatus phenotype averaging"
                               label="Select Samples Annotation File"
-                              fileUploadListener="#{arrayConfigBean.sampleFile.singleFileUploadListener}"/>
+                              fileUploadListener="#{gexIlluminaBean.sampleFile.singleFileUploadListener}"/>
             </p:panel>
 
             <p:panel id="processparameters" header="Processing Parameters">
@@ -54,14 +54,14 @@
                     <p:column>
                         <p:outputLabel value="Probe Filtering" style="font-weight: bold" title="#{msg['probe.filtering']}"/>
                         <p:selectManyMenu id="probefilter" showCheckbox="true"
-                                          value="#{arrayConfigBean.probeFilters}">
+                                          value="#{gexIlluminaBean.probeFilters}">
                             <f:selectItem itemLabel="Low-expression" itemValue="low-expression"/>
                             <f:selectItem itemLabel="Non-unique" itemValue="non-unique"/>
                         </p:selectManyMenu>
                     </p:column>
                     <p:column>
-                        <p:selectOneMenu id="normalization" required="true"
-                                         value="#{arrayConfigBean.normalization}">
+                        <p:selectOneMenu id="normalization" required="true" 
+                                         value="#{gexIlluminaBean.normalization}">
                             <f:selectItem itemLabel="Select Normalization Method" 
                                           itemValue=""/>
                             <f:selectItem itemLabel="NEQC" itemValue="neqc"/>
@@ -69,18 +69,18 @@
                     </p:column>
                     <p:column>
                         <p:selectOneMenu id="phenotype" required="true" 
-                                         disabled="#{arrayConfigBean.isAnnotationListReady()}"
+                                         disabled="#{gexIlluminaBean.isAnnotationListReady()}"
                                          title="#{msg['phenotype.column']}"
-                                         value="#{arrayConfigBean.phenotype}">
+                                         value="#{gexIlluminaBean.phenotype}">
                             <f:selectItem itemLabel="Phenotype Column"
                                           itemValue=""/>
-                            <f:selectItems value="#{arrayConfigBean.annotationList}"/>
+                            <f:selectItems value="#{gexIlluminaBean.annotationList}"/>
                         </p:selectOneMenu>
                     </p:column>
                     <p:column>
                         <h:outputText value="Probe Selection: "/>
                         <p:selectBooleanButton id="probeselection" 
-                                               value="#{arrayConfigBean.probeSelect}" 
+                                               value="#{gexIlluminaBean.probeSelect}" 
                                                title="#{msg['probe.selection']}"
                                                onLabel="Yes" offLabel="No"/>
                     </p:column>
@@ -92,16 +92,16 @@
                 <h:panelGrid columns="2" cellpadding="5">
                     <p:column>
                         <p:selectOneMenu id="averaging" 
-                                         disabled="#{arrayConfigBean.isAnnotationListReady()}"
-                                         value="#{arrayConfigBean.sampleAverage}" 
+                                         disabled="#{gexIlluminaBean.isAnnotationListReady()}"
+                                         value="#{gexIlluminaBean.sampleAverage}" 
                                          title="#{msg['sample.averaging']}">
                             <f:selectItem itemLabel="Sample Averaging"
                                           itemValue="none"/>
-                            <f:selectItems value="#{arrayConfigBean.annotationList}"/>
+                            <f:selectItems value="#{gexIlluminaBean.annotationList}"/>
                         </p:selectOneMenu>
                     </p:column>
                     <p:column>
-                        <p:selectOneMenu id="stdlog2ratio" value="#{arrayConfigBean.stdLog2Ratio}">
+                        <p:selectOneMenu id="stdlog2ratio" value="#{gexIlluminaBean.stdLog2Ratio}">
                             <f:selectItem itemLabel="Standardization Method"
                                           itemValue="none"/>
                             <f:selectItem itemLabel="Standardize" itemValue="Standardize" 
@@ -122,41 +122,41 @@
                       resizable="false">
                 <p:panelGrid columns="2" id="display">
                     <h:outputText value="Study ID: "/>
-                    <h:outputText value="#{arrayConfigBean.studyID}"/>
+                    <h:outputText value="#{gexIlluminaBean.studyID}"/>
                     <h:outputText value="Type: "/>
-                    <h:outputText value="#{arrayConfigBean.type}"/> 
+                    <h:outputText value="#{gexIlluminaBean.type}"/> 
                     <h:outputText value="Sample File: "/>
-                    <h:outputText value="#{arrayConfigBean.inputFile.inputFilename}"/>
+                    <h:outputText value="#{gexIlluminaBean.inputFile.inputFilename}"/>
                     <h:outputText value="Control File: "/>
-                    <h:outputText value="#{arrayConfigBean.ctrlFile.inputFilename}"/>
+                    <h:outputText value="#{gexIlluminaBean.ctrlFile.inputFilename}"/>
                     <h:outputText value="Samples Annotation File: "/>
-                    <h:outputText value="#{arrayConfigBean.sampleFile.inputFilename}"/>
+                    <h:outputText value="#{gexIlluminaBean.sampleFile.inputFilename}"/>
                     <h:outputText value="Probe Filtering: "/>
-                    <p:dataList itemType="square" value="#{arrayConfigBean.probeFilters}" 
+                    <p:dataList itemType="square" value="#{gexIlluminaBean.probeFilters}" 
                                 var="probe" styleClass="datalist" type="none">
                         <h:outputText value="#{probe}"/><br/>
                     </p:dataList>
                     <h:outputText value="Normalization: "/>
-                    <h:outputText value="#{arrayConfigBean.normalization}"/>
+                    <h:outputText value="#{gexIlluminaBean.normalization}"/>
                     <h:outputText value="Phenotype Column: "/>
-                    <h:outputText value="#{arrayConfigBean.phenotype}"/>
+                    <h:outputText value="#{gexIlluminaBean.phenotype}"/>
                     <h:outputText value="Probe Selection: "/>
-                    <h:outputText value="#{arrayConfigBean.probeSelect?'Yes':'No'}"/>
+                    <h:outputText value="#{gexIlluminaBean.probeSelect?'Yes':'No'}"/>
                     <h:outputText value="Sample Averaging: "/>
-                    <h:outputText value="#{arrayConfigBean.sampleAverage}"/>
+                    <h:outputText value="#{gexIlluminaBean.sampleAverage}"/>
                     <h:outputText value="Standardization Method: "/>
-                    <h:outputText value="#{arrayConfigBean.stdLog2Ratio}"/>
+                    <h:outputText value="#{gexIlluminaBean.stdLog2Ratio}"/>
                 </p:panelGrid>
                 <p:separator style="height: 20px"/>
                 <h:form>
                     <h:panelGrid columns="2" cellspacing="2" cellpadding="2">
                         <p:commandButton value="Cancel" title="Redo the configuration"
                                          style="width: 130px" oncomplete="PF('dlg').hide()"
-                                         action="#{arrayConfigBean.cancelJob}"/>
+                                         action="#{gexIlluminaBean.cancelJob}"/>
                         <p:commandButton value="Confirm" title="Start the pipeline execution"
                                          style="width: 130px"
-                                         action="#{arrayConfigBean.submitJob}" 
-                                         rendered="#{arrayConfigBean.allowToSubmitJob()}"/>                        
+                                         action="#{gexIlluminaBean.submitJob}" 
+                                         rendered="#{gexIlluminaBean.allowToSubmitJob()}"/>                        
                     </h:panelGrid>
                 </h:form>
             </p:dialog>
