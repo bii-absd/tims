@@ -3,11 +3,6 @@
  */
 package Clinical.Data.Sink.Database;
 
-import java.sql.Connection;
-// Libraries for Log4j
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
-
 /**
  * UserAccount is used to represent the user_account table in the database.
  * 
@@ -26,13 +21,10 @@ import org.apache.logging.log4j.LogManager;
  * 09-Nov-2015 - Added one variable "last_login" to this class. Added two 
  * methods getActiveString() and getRoleString() that return the active status
  * and role ID in wording.
+ * 13-Nov-2015 - Removed the Log4j2 and SQL libraries from this class.
  */
 
 public class UserAccount {
-    // Get the logger for Log4j
-    private final static Logger logger = LogManager.
-            getLogger(UserAccount.class.getName());
-    private final static Connection conn = DBHelper.getDBConn();
     // UserAccount table fields
     private String user_id, first_name, last_name, email, pwd;
     private Boolean active;
