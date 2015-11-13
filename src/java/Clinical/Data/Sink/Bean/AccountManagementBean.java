@@ -5,7 +5,7 @@ package Clinical.Data.Sink.Bean;
 
 import Clinical.Data.Sink.Database.UserAccount;
 import Clinical.Data.Sink.Database.UserAccountDB;
-import Clinical.Data.Sink.Database.UserRole;
+import Clinical.Data.Sink.Database.UserRoleDB;
 import Clinical.Data.Sink.General.Constants;
 import java.io.Serializable;
 import java.sql.SQLException;
@@ -114,7 +114,7 @@ public class AccountManagementBean implements Serializable {
             UserAccountDB.insertAccount(newAcct);
             logger.info(AuthenticationBean.getUserName() + 
                     ": created new User ID " + user_id + 
-                    " with " + UserRole.getRoleFromHash(role_id) + " right.");
+                    " with " + UserRoleDB.getRoleFromHash(role_id) + " right.");
             facesContext.addMessage("newacctstatus", new FacesMessage(
                     FacesMessage.SEVERITY_INFO, "User Account: " 
                     + user_id + " successfully created.", ""));
@@ -181,7 +181,7 @@ public class AccountManagementBean implements Serializable {
     
     // Return the list of Role setup in the database
     public LinkedHashMap<String, Integer> getRoleList() {
-        return UserRole.getRoleList();
+        return UserRoleDB.getRoleList();
     }
     
     // Retrieve the faces context
