@@ -25,7 +25,7 @@ package Clinical.Data.Sink.Database;
  */
 
 public class UserAccount {
-    // UserAccount table fields
+    // user_account table fields
     private String user_id, first_name, last_name, email, pwd;
     private Boolean active;
     private int role_id;
