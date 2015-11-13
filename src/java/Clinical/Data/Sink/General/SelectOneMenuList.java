@@ -118,12 +118,16 @@ public class SelectOneMenuList {
     public LinkedHashMap<String,String> getVendorTypes() 
     {   return vendorList;      }
     
-    // getAffymetrixType will return the list of Affymetrix type.
+    // Return the list of Affymetrix type.
     public LinkedHashMap<String,String> getAffymetrixType() 
     {   return affymetrixTypeList;        }
+    public static LinkedHashMap<String,String> getAffymetrixTypeList()
+    {   return affymetrixTypeList;        }
 
-    // getIlluminaType will return the list of Illumina type.
+    // Return the list of Illumina type.
     public LinkedHashMap<String,String> getIlluminaType()
+    {   return illuminaTypeList;    }
+    public static LinkedHashMap<String,String> getIlluminaTypeList()
     {   return illuminaTypeList;    }
     
     // getInstitution will return the list of institution.
