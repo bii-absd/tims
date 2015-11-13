@@ -41,6 +41,8 @@ import org.primefaces.event.RowEditEvent;
  * 1. init()
  * 2. getUserList()
  * 3. onRowEdit
+ * 13-Nov-2015 - Allowing administrator to change the password of other user.
+ * Added one new method getAllUserID() that return all the user ID in the system.
  */
 
 @ManagedBean (name="accountManagementBean")
@@ -67,6 +69,11 @@ public class AccountManagementBean implements Serializable {
         if (AuthenticationBean.isAdministrator()) {
             userList = UserAccountDB.getAllUser();
         }
+    }
+    
+    // Return all the user ID currently in the system.
+    public LinkedHashMap<String,String> getAllUserID() {
+        return UserAccountDB.getAllUserID();
     }
     
     // Return the list of user accounts currenlty in the system.
@@ -134,19 +141,28 @@ public class AccountManagementBean implements Serializable {
         FacesContext facesContext = getFacesContext();
 
         if (new_pwd.compareTo(cfm_pwd) == 0) {
+            String id = AuthenticationBean.getUserName();
+            
+            // If this user is a administrator, he/she might be changing the
+            // password of another user.
+            if ( AuthenticationBean.isAdministrator() && 
+                 (user_id.compareTo("none") != 0) ) {
+                id = user_id;
+                logger.info(AuthenticationBean.getUserName() + ": changing "
+                        + "the password of " + id);
+            }
+            
             try {
                 // Update the password of the current user into the database
-                UserAccountDB.updatePassword(AuthenticationBean.getUserName(), 
-                        new_pwd);
-                logger.info(AuthenticationBean.getUserName() + 
-                        ": successfully updated password.");
+                UserAccountDB.updatePassword(id, new_pwd);
+                logger.info(id + " password successfully updated.");
                 facesContext.addMessage("changepwdstatus", new FacesMessage(
                         FacesMessage.SEVERITY_INFO,
                         "Password successfully updated.", ""));
             }
             catch (SQLException e) {
                 logger.error("SQLException while trying to update password of " 
-                        + AuthenticationBean.getUserName());
+                        + id);
                 logger.error(e.getMessage());
             facesContext.addMessage("changepwdstatus", new FacesMessage(
                     FacesMessage.SEVERITY_FATAL, 
@@ -154,8 +170,7 @@ public class AccountManagementBean implements Serializable {
             }
         }
         else {
-            logger.info(AuthenticationBean.getUserName() + 
-                    ": the two new passwords entered are not the same.");
+            logger.debug("The passwords entered are not the same.");
             facesContext.addMessage("changepwdstatus", new FacesMessage(
                     FacesMessage.SEVERITY_ERROR, 
                     "The passwords entered are not the same", ""));
