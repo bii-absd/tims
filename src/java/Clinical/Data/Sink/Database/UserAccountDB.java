@@ -8,6 +8,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
@@ -36,6 +37,8 @@ import org.mindrot.jbcrypt.BCrypt;
  * account' module:
  * 1. getAllUser()
  * 2. updateAccount(UserAccount user)
+ * 13-Nov-2015 - Added one new variable userIDList and one new method 
+ * getAllUserID(). Changed getAllUser() method to build up the userIDList.
  */
 
 public class UserAccountDB {
@@ -44,10 +47,22 @@ public class UserAccountDB {
             getLogger(UserAccountDB.class.getName());
     private final static Connection conn = DBHelper.getDBConn();
     private static List<UserAccount> userList = new ArrayList<>();
+    private static LinkedHashMap<String,String> userIDList = new LinkedHashMap<>();
     
     UserAccountDB() {};
     
-    // Return the list of user accounts that are currently in the system.
+    // Return the list of all the user ID currently in the system.
+    // This method should be called after getAllUser().
+    public static LinkedHashMap<String,String> getAllUserID() {
+        if (userList.isEmpty()) {
+            getAllUser();
+        }
+        
+        return userIDList;
+    }
+    
+    // Return the list of user accounts that are currently in the system, and
+    // build the list of user ID.
     public static List<UserAccount> getAllUser() {
         // Empty the current user list
         userList.clear();
@@ -57,10 +72,12 @@ public class UserAccountDB {
         
         try (PreparedStatement queryStm = conn.prepareStatement(queryStr)) {
             ResultSet queryResult = queryStm.executeQuery();
+            String user_id = null;
             
             while (queryResult.next()) {
+                user_id = queryResult.getString("user_id");
                 UserAccount user = new UserAccount(
-                                        queryResult.getString("user_id"),
+                                        user_id,
                                         queryResult.getInt("role_id"),
                                         queryResult.getString("first_name"),
                                         queryResult.getString("last_name"),
@@ -70,7 +87,9 @@ public class UserAccountDB {
                                         queryResult.getString("department"),
                                         queryResult.getString("institution"),
                                         queryResult.getString("last_login"));
+                
                 userList.add(user);
+                userIDList.put(user_id, user_id);
             }
             logger.debug("No of user account retrieved: " + userList.size());
         }
