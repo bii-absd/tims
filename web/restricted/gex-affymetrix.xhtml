@@ -8,21 +8,21 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
     
     <ui:define name="title">GEX Pipeline (Affymetrix)</ui:define>
-    <ui:param name="link" value="#{arrayConfigBean.pipelineName}"/>
+    <ui:param name="link" value="#{gexAffymetrixBean.pipelineName}"/>
     <ui:define name="content">
         <h:form enctype="multipart/form-data">
             <p:panel id="inputpara" header="Input Parameters">
                 <h:panelGrid columns="3" cellpadding="5">
                     <p:column>
                         <p:inputText id="studyID" maxlength="20" required="true"
-                                     value="#{arrayConfigBean.studyID}"/>
+                                     value="#{gexAffymetrixBean.studyID}"/>
                         <p:watermark for="studyID" value="Enter Study ID"/>
                     </p:column>
                     <p:column>
                         <p:selectOneMenu id="type" required="true" 
-                                         value="#{arrayConfigBean.type}">
+                                         value="#{gexAffymetrixBean.type}">
                             <f:selectItem itemLabel="Select Type" itemValue=""/>
-                            <f:selectItems value="#{selectOneMenuList.affymetrixType}"/>
+                            <f:selectItems value="#{gexAffymetrixBean.typeList}"/>
                         </p:selectOneMenu>
                     </p:column>
                     <h:message for="studyID" styleClass="errors"/>
@@ -35,7 +35,7 @@
                               auto="true" update="uploadStatus" 
                               label="Select Sample Files"
                               allowTypes="/(\.|\/)(CEL)$/"
-                              fileUploadListener="#{arrayConfigBean.inputFile.multipleFileUploadListener}">
+                              fileUploadListener="#{gexAffymetrixBean.inputFile.multipleFileUploadListener}">
                 </p:fileUpload>
             </p:panel>
             <p:panel id="annotfile" 
@@ -45,21 +45,21 @@
                 <p:fileUpload mode="advanced" auto="true" 
                               update="uploadStatus phenotype averaging"
                               label="Select Samples Annotation File"
-                              fileUploadListener="#{arrayConfigBean.sampleFile.singleFileUploadListener}"/>
+                              fileUploadListener="#{gexAffymetrixBean.sampleFile.singleFileUploadListener}"/>
             </p:panel>
             
             <p:panel id="processparameters" header="Processing Parameters">
                 <h:panelGrid columns="5" cellpadding="5">
                     <p:column>
                         <p:selectOneMenu id="probefilter"
-                                          value="#{arrayConfigBean.probeFilter}">
+                                          value="#{gexAffymetrixBean.probeFilter}">
                             <f:selectItem itemLabel="Probe Filtering" itemValue="none"/>
                             <f:selectItem itemLabel="Low-expression" itemValue="low-expression"/>
                         </p:selectOneMenu>
                     </p:column>
                     <p:column>
                         <p:selectOneMenu id="normalization" required="true"
-                                         value="#{arrayConfigBean.normalization}">
+                                         value="#{gexAffymetrixBean.normalization}">
                             <f:selectItem itemLabel="Select Normalization Method" 
                                           itemValue=""/>
                             <f:selectItem itemLabel="RMA" itemValue="rma"/>
@@ -68,18 +68,18 @@
                     </p:column>
                     <p:column>
                         <p:selectOneMenu id="phenotype" required="true" 
-                                         disabled="#{arrayConfigBean.isAnnotationListReady()}"
+                                         disabled="#{gexAffymetrixBean.isAnnotationListReady()}"
                                          title="#{msg['phenotype.column']}"
-                                         value="#{arrayConfigBean.phenotype}">
+                                         value="#{gexAffymetrixBean.phenotype}">
                             <f:selectItem itemLabel="Phenotype Column"
                                           itemValue=""/>
-                            <f:selectItems value="#{arrayConfigBean.annotationList}"/>
+                            <f:selectItems value="#{gexAffymetrixBean.annotationList}"/>
                         </p:selectOneMenu>
                     </p:column>
                     <p:column>
                         <h:outputText value="Probe Selection: "/>
                         <p:selectBooleanButton id="probeselection" 
-                                               value="#{arrayConfigBean.probeSelect}" 
+                                               value="#{gexAffymetrixBean.probeSelect}" 
                                                title="#{msg['probe.selection']}"
                                                onLabel="Yes" offLabel="No"/>
                     </p:column>
@@ -91,16 +91,16 @@
                 <h:panelGrid columns="2" cellpadding="5">
                     <p:column>
                         <p:selectOneMenu id="averaging" 
-                                         disabled="#{arrayConfigBean.isAnnotationListReady()}"
-                                         value="#{arrayConfigBean.sampleAverage}" 
+                                         disabled="#{gexAffymetrixBean.isAnnotationListReady()}"
+                                         value="#{gexAffymetrixBean.sampleAverage}" 
                                          title="#{msg['sample.averaging']}">
                             <f:selectItem itemLabel="Sample Averaging"
                                           itemValue="none"/>
-                            <f:selectItems value="#{arrayConfigBean.annotationList}"/>
+                            <f:selectItems value="#{gexAffymetrixBean.annotationList}"/>
                         </p:selectOneMenu>
                     </p:column>
                     <p:column>
-                        <p:selectOneMenu id="stdlog2ratio" value="#{arrayConfigBean.stdLog2Ratio}">
+                        <p:selectOneMenu id="stdlog2ratio" value="#{gexAffymetrixBean.stdLog2Ratio}">
                             <f:selectItem itemLabel="Standardization Method"
                                           itemValue="none"/>
                             <f:selectItem itemLabel="Standardize" itemValue="Standardize" 
@@ -114,47 +114,47 @@
             <p:separator style="height: 20px"/>
             <p:commandButton value="Submit" update="display @form"
                              oncomplete="PF('dlg').show()" 
-                             icon="ui-icon-check" action="#{arrayConfigBean.inputFile.createInputList}"/>
+                             icon="ui-icon-check" action="#{gexAffymetrixBean.inputFile.createInputList}"/>
             
             <p:dialog header="Pipeline Configuration Review"
                       widgetVar="dlg"
                       resizable="false">
                 <p:panelGrid columns="2" id="display">
                     <h:outputText value="Study ID: "/>
-                    <h:outputText value="#{arrayConfigBean.studyID}"/>
+                    <h:outputText value="#{gexAffymetrixBean.studyID}"/>
                     <h:outputText value="Type: "/>
-                    <h:outputText value="#{arrayConfigBean.type}"/> 
+                    <h:outputText value="#{gexAffymetrixBean.type}"/> 
                     <h:outputText value="Sample File: "/>
                     <p:dataList itemType="square" 
-                                value="#{arrayConfigBean.inputFile.inputFileList}"
+                                value="#{gexAffymetrixBean.inputFile.inputFileList}"
                                 var="filelist" styleClass="datalist" type="none">
                         <h:outputText value="#{filelist}"/><br/>
                     </p:dataList>
                     <h:outputText value="Samples Annotation File: "/>
-                    <h:outputText value="#{arrayConfigBean.sampleFile.inputFilename}"/>
+                    <h:outputText value="#{gexAffymetrixBean.sampleFile.inputFilename}"/>
                     <h:outputText value="Probe Filtering: "/>
-                    <h:outputText value="#{arrayConfigBean.probeFilter}"/>
+                    <h:outputText value="#{gexAffymetrixBean.probeFilter}"/>
                     <h:outputText value="Normalization: "/>
-                    <h:outputText value="#{arrayConfigBean.normalization}"/>
+                    <h:outputText value="#{gexAffymetrixBean.normalization}"/>
                     <h:outputText value="Phenotype Column: "/>
-                    <h:outputText value="#{arrayConfigBean.phenotype}"/>
+                    <h:outputText value="#{gexAffymetrixBean.phenotype}"/>
                     <h:outputText value="Probe Selection: "/>
-                    <h:outputText value="#{arrayConfigBean.probeSelect?'Yes':'No'}"/>
+                    <h:outputText value="#{gexAffymetrixBean.probeSelect?'Yes':'No'}"/>
                     <h:outputText value="Sample Averaging: "/>
-                    <h:outputText value="#{arrayConfigBean.sampleAverage}"/>
+                    <h:outputText value="#{gexAffymetrixBean.sampleAverage}"/>
                     <h:outputText value="Standardization Method: "/>
-                    <h:outputText value="#{arrayConfigBean.stdLog2Ratio}"/>
+                    <h:outputText value="#{gexAffymetrixBean.stdLog2Ratio}"/>
                 </p:panelGrid>
                 <p:separator style="height: 20px"/>
                 <h:form>
                     <h:panelGrid columns="2" cellspacing="2" cellpadding="2">
                         <p:commandButton value="Cancel" title="Redo the configuration"
                                          style="width: 130px" oncomplete="PF('dlg').hide()"
-                                         action="#{arrayConfigBean.cancelJob}"/>
+                                         action="#{gexAffymetrixBean.cancelJob}"/>
                         <p:commandButton value="Confirm" title="Start the pipeline execution"
                                          style="width: 130px"
-                                         action="#{arrayConfigBean.submitJob}" 
-                                         rendered="#{arrayConfigBean.allowToSubmitJob()}"/>                        
+                                         action="#{gexAffymetrixBean.submitJob}" 
+                                         rendered="#{gexAffymetrixBean.allowToSubmitJob()}"/>                        
                     </h:panelGrid>
                 </h:form>
             </p:dialog>
