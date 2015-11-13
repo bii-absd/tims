@@ -73,7 +73,7 @@ public class UserAccount {
     }
     // Return the Role in wording
     public String getRoleString() {
-        return UserRole.getRoleFromHash(role_id);
+        return UserRoleDB.getRoleFromHash(role_id);
     }
     
     // Machine generated getters
