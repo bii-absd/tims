@@ -201,6 +201,16 @@
                 <h:panelGrid styleClass="page-border">
                 <p:messages id="changepwd-msg" for="changepwdstatus" showDetail="true"/>
                 <h:panelGrid columns="3" border="0" cellpadding="5" cellspacing="3">
+                    
+                    <p:selectOneMenu value="#{accountManagementBean.user_id}" 
+                                     rendered="#{authenticationBean.adminRight}" 
+                                     style="width: 175px">
+                        <f:selectItem itemLabel="Select User ID" itemValue="none"/>
+                        <f:selectItems value="#{accountManagementBean.allUserID}"/>
+                    </p:selectOneMenu>
+                    <h:panelGroup/>
+                    <h:panelGroup/>
+                    
                     <p:password id="newpwd" feedback="true" style="width: 170px"
                                 required="true" value="#{accountManagementBean.new_pwd}">
                         <f:validateLength minimum="5" maximum="10"/>
