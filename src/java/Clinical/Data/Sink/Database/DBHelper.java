@@ -72,7 +72,7 @@ public class DBHelper {
             queryResult = queryStatement.executeQuery();
         }
         catch (SQLException e) {
-            logger.error("SQLException at runQuery.");
+            logger.error("SQLException at runQuery: " + query);
             logger.error(e.getMessage());
         }
         
