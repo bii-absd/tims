@@ -24,6 +24,8 @@ import org.apache.logging.log4j.LogManager;
  * to setup the pipeline backing bean.
  * 28-Oct-2015 - Split the gexPipeline function into 2 new functions, 
  * gexIllumina and gexAffymetrix.
+ * 13-Nov-2015 - Changes to methods, gexIllumina() and gexAffymetrix() after 
+ * refactoring ArrayConfigBean.
  */
 
 @ManagedBean (name="menuSelectionBean")
@@ -41,8 +43,7 @@ public class MenuSelectionBean implements Serializable{
     
     // Setup the ArrayConfigBean for GEX Illumina pipeline processing.
     public String gexIllumina() {
-        ArrayConfigBean.setPipelineName(command);
-        ArrayConfigBean.setPipelineType(Constants.GEX_ILLUMINA);
+        GEXIlluminaBean.setPipelineName(command);
         logger.debug(AuthenticationBean.getUserName() + ": selected " +
                      command);
         
@@ -51,8 +52,7 @@ public class MenuSelectionBean implements Serializable{
 
     // Setup the ArrayConfigBean for GEX Affymetrix pipeline processing.
     public String gexAffymetrix() {
-        ArrayConfigBean.setPipelineName(command);
-        ArrayConfigBean.setPipelineType(Constants.GEX_AFFYMETRIX);
+        GEXAffymetrixBean.setPipelineName(command);
         logger.debug(AuthenticationBean.getUserName() + ": selected " +
                      command);
 
