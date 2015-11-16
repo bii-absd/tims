@@ -26,6 +26,9 @@ import org.apache.logging.log4j.LogManager;
  * getAllCommand) created.
  * 06-Nov-2015 - Added one new method updateCommand to update the pipeline
  * command in database.
+ * 16-Nov-2015 - Added one new method insertPipelineCommand to insert a new
+ * pipeline command into database. Updated the name for all methods i.e. from
+ * Command to PipelineCommand.
  */
 
 public class PipelineCommandDB {
@@ -38,7 +41,7 @@ public class PipelineCommandDB {
     public PipelineCommandDB() {}
     
     // Return the command_code and command_para for this command_id.
-    public static PipelineCommand getCommand(String command_id) 
+    public static PipelineCommand getPipelineCommand(String command_id) 
             throws SQLException {
         PipelineCommand command = null;
         String queryStr = 
@@ -61,7 +64,8 @@ public class PipelineCommandDB {
     }
     
     // Return all the pipeline command currently setup in the database.
-    public static List<PipelineCommand> getAllCommand() throws SQLException {
+    public static List<PipelineCommand> getAllPipelineCommand() 
+            throws SQLException {
         // Only execute the query if the list is empty
         // To prevent the query from being run multiple times.
         if (commandList.isEmpty()) {
@@ -83,7 +87,7 @@ public class PipelineCommandDB {
     }
     
     // Update the pipeline command in the database.
-    public static Boolean updateCommand(PipelineCommand cmd) {
+    public static Boolean updatePipelineCommand(PipelineCommand cmd) {
         Boolean result = Constants.OK;
         String updateStr = "UPDATE pipeline_command SET command_code = ?, "
                 + "command_para = ? WHERE command_id = ?";
@@ -98,6 +102,32 @@ public class PipelineCommandDB {
         catch (SQLException e) {
             logger.error("SQLException when updating pipeline command: "
                     + cmd.getCommand_id());
+            logger.error(e.getMessage());
+            result = Constants.NOT_OK;
+        }
+        
+        return result;
+    }
+    
+    // Insert the new pipeline command into database.
+    public static Boolean insertPipelineCommand(PipelineCommand cmd) {
+        Boolean result = Constants.OK;
+        String insertStr = "INSERT INTO pipeline_command"
+                + "(command_id,command_code,command_para) VALUES(?,?,?)";
+        
+        try (PreparedStatement insertStm = conn.prepareStatement(insertStr)) {
+            insertStm.setString(1, cmd.getCommand_id());
+            insertStm.setString(2, cmd.getCommand_code());
+            insertStm.setString(3, cmd.getCommand_para());
+            
+            insertStm.executeUpdate();
+            // Clear the command list, so that it will be rebuild again.
+            commandList.clear();
+            logger.debug("New pipeline command inserted into database: " + 
+                    cmd.getCommand_id());
+        }
+        catch (SQLException e) {
+            logger.error("SQLException when inserting pipeline command.");
             logger.error(e.getMessage());
             result = Constants.NOT_OK;
         }
