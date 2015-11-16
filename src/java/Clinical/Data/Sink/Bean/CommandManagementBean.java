@@ -43,7 +43,7 @@ public class CommandManagementBean implements Serializable {
     
     public CommandManagementBean() {
         logger.debug("CommandManagementBean created.");
-        logger.debug(AuthenticationBean.getUserName() +
+        logger.info(AuthenticationBean.getUserName() +
                 ": access Pipeline Command Management page.");
     }
     
@@ -108,7 +108,6 @@ public class CommandManagementBean implements Serializable {
 	return FacesContext.getCurrentInstance();
     }
     
-
     // Machine generated getters and setters
     public String getCommand_id() {
         return command_id;
