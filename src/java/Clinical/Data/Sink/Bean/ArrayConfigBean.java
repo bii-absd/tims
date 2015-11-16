@@ -403,7 +403,7 @@ public class ArrayConfigBean implements Serializable {
         
         try {
             // Retrieve the pipeline command and it's parameter from database.
-            cmd = PipelineCommandDB.getCommand(pipelineType);
+            cmd = PipelineCommandDB.getPipelineCommand(pipelineType);
 
             logger.debug("Pipeline from database: " + cmd.toString());
         }
