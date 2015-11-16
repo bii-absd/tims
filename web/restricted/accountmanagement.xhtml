@@ -18,14 +18,14 @@
                 <h:panelGrid columns="3" border="0" cellpadding="5" 
                              cellspacing="3">
                     <p:inputText id="userid" size="32" maxlength="10" autocomplete="off"
-                                 required="true" value="#{accountManagementBean.user_id}">
+                                 required="true" value="#{acctMgntBean.user_id}">
                         <f:validateLength minimum="5" maximum="10"/>
                     </p:inputText>
                     <h:message id="userid-status" for="userid" styleClass="errors"/>
                     <p:watermark for="userid" value="New User ID"/>
 
                     <p:inputText id="firstname" size="32" maxlength="50" autocomplete="off" 
-                                 required="true" value="#{accountManagementBean.first_name}">
+                                 required="true" value="#{acctMgntBean.first_name}">
                         <f:validateLength minimum="1" maximum="50"/>
                     </p:inputText>
                     <h:message id="firstname-status" for="firstname" 
@@ -33,7 +33,7 @@
                     <p:watermark for="firstname" value="First Name"/>
 
                     <p:inputText id="lastname" size="32" maxlength="50" autocomplete="off"
-                                 required="true" value="#{accountManagementBean.last_name}">
+                                 required="true" value="#{acctMgntBean.last_name}">
                         <f:validateLength minimum="1" maximum="50"/>
                     </p:inputText>
                     <h:message id="lastname-status" for="lastname" 
@@ -42,7 +42,7 @@
 
                     <p:selectOneMenu id="institution" 
                                      style="width:180px" required="true"
-                                     value="#{accountManagementBean.institution}">
+                                     value="#{acctMgntBean.institution}">
                         <f:selectItem itemLabel="Select Institution" itemValue=""/>
                         <f:selectItems value="#{selectOneMenuList.institution}"/>
                     </p:selectOneMenu>
@@ -52,7 +52,7 @@
 
                     <p:selectOneMenu id="department" 
                                      style="width:180px" required="true"
-                                     value="#{accountManagementBean.department}">
+                                     value="#{acctMgntBean.department}">
                         <f:selectItem itemLabel="Select Department" itemValue=""/>
                         <f:selectItems value="#{selectOneMenuList.department}"/>
                     </p:selectOneMenu>
@@ -61,15 +61,15 @@
                 
                     <p:selectOneMenu id="role" 
                                      style="width:180px" required="true"
-                                     value="#{accountManagementBean.role_id}">
+                                     value="#{acctMgntBean.role_id}">
                         <f:selectItem itemLabel="Select Role" itemValue=""/>
-                        <f:selectItems value="#{accountManagementBean.roleList}"/>
+                        <f:selectItems value="#{acctMgntBean.roleList}"/>
                     </p:selectOneMenu>
                     <h:message for="role" styleClass="errors"/>
                     <h:panelGroup/>
                 
                     <p:inputText id="email" size="32" maxlength="50" autocomplete="off"
-                                 required="true" value="#{accountManagementBean.email}">
+                                 required="true" value="#{acctMgntBean.email}">
                         <f:validateLength minimum="5" maximum="50"/>
                     </p:inputText>
                     <h:message id="email-status" for="email" styleClass="errors"/>
@@ -78,13 +78,13 @@
                     <p:password id="pwd" feedback="true" inline="true" 
                                 style="width: 170px" 
                                 onkeypress="if (event.keyCode == 13) {return false;}"
-                                required="true" value="#{accountManagementBean.pwd}">
+                                required="true" value="#{acctMgntBean.pwd}">
                         <f:validateLength minimum="5" maximum="10"/>
                     </p:password>
                     <h:message id="pwd-status" for="pwd" styleClass="errors"/>
                     <p:watermark for="pwd" value="Password"/>
 
-                    <h:commandButton action="#{accountManagementBean.createUserAccount}"
+                    <h:commandButton action="#{acctMgntBean.createUserAccount}"
                                      value="Create New Account" 
                                      styleClass="panel-button"/>
                 </h:panelGrid>
@@ -97,12 +97,12 @@
             <h:form id="editAcctForm">
                 <p:growl id="editMsg"/>
                 <p:dataTable var="acct" rows="5" id="editTable" 
-                             value="#{accountManagementBean.userList}" 
+                             value="#{acctMgntBean.userList}" 
                              paginator="true"
                              paginatorTemplate="{FirstPageLink} {PreviousPageLink}
                              {CurrentPageReport} {NextPageLink} {LastPageLink}"
                              styleClass="table-odd-row table-even-row" editable="true">
-                    <p:ajax event="rowEdit" listener="#{accountManagementBean.onRowEdit}"
+                    <p:ajax event="rowEdit" listener="#{acctMgntBean.onRowEdit}"
                             update=":editAcctForm:editMsg"/>
                     <p:column headerText="User ID" sortBy="#{acct.user_id}">
                         <h:outputText value="#{acct.user_id}"/>
@@ -158,7 +158,7 @@
                             </f:facet>
                             <f:facet name="input">
                                 <p:selectOneMenu value="#{acct.role_id}" style="width: 100%">
-                                    <f:selectItems value="#{accountManagementBean.roleList}"/>
+                                    <f:selectItems value="#{acctMgntBean.roleList}"/>
                                 </p:selectOneMenu>
                             </f:facet>
                         </p:cellEditor>
@@ -202,17 +202,17 @@
                 <p:messages id="changepwd-msg" for="changepwdstatus" showDetail="true"/>
                 <h:panelGrid columns="3" border="0" cellpadding="5" cellspacing="3">
                     
-                    <p:selectOneMenu value="#{accountManagementBean.user_id}" 
+                    <p:selectOneMenu value="#{acctMgntBean.user_id}" 
                                      rendered="#{authenticationBean.adminRight}" 
                                      style="width: 175px">
                         <f:selectItem itemLabel="Select User ID" itemValue="none"/>
-                        <f:selectItems value="#{accountManagementBean.allUserID}"/>
+                        <f:selectItems value="#{acctMgntBean.allUserID}"/>
                     </p:selectOneMenu>
                     <h:panelGroup/>
                     <h:panelGroup/>
                     
                     <p:password id="newpwd" feedback="true" style="width: 170px"
-                                required="true" value="#{accountManagementBean.new_pwd}">
+                                required="true" value="#{acctMgntBean.new_pwd}">
                         <f:validateLength minimum="5" maximum="10"/>
                     </p:password>
                     <h:message id="newpwd-status" for="newpwd" styleClass="errors"/>
@@ -220,13 +220,13 @@
                     
                     <p:password id="cfmpwd" style="width: 170px" 
                                 onkeypress="if (event.keyCode == 13) {return false;}"
-                                required="true" value="#{accountManagementBean.cfm_pwd}">
+                                required="true" value="#{acctMgntBean.cfm_pwd}">
                         <f:validateLength minimum="5" maximum="10"/>
                     </p:password>
                     <h:message id="cfm-status" for="cfmpwd" styleClass="errors"/>
                     <p:watermark for="cfmpwd" value="Retype New Password"/>
                     
-                    <h:commandButton action="#{accountManagementBean.changePassword}"
+                    <h:commandButton action="#{acctMgntBean.changePassword}"
                                      value="Change Password" 
                                      styleClass="panel-button"/>
                 </h:panelGrid>
