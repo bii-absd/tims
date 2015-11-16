@@ -1,0 +1,72 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition template="/WEB-INF/pageTemplate.xhtml"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    
+    <ui:define name="title">Item List Management</ui:define>
+    <ui:param name="link" value="Item List Management"/>
+    <ui:define name="content">
+        <p:growl id="itemListMsg"/>
+        <p:panel id="qddInst" header="Add New Institution" toggleable="true">
+        <h:form id="addInstForm">
+            <h:panelGrid columns="3" border="0" cellpadding="5" cellspacing="3">
+                <p:inputText id="instcode" size="32" maxlength="10" autocomplete="off" 
+                             required="true" value="#{itemListMgntBean.inst_code}"/>
+                <h:message id="instcode-status" for="instcode" styleClass="errors"/>
+                <p:watermark for="instcode" value="New Institution Code"/>
+                
+                <p:inputText id="instname" size="32" maxlength="50" autocomplete="off" 
+                             required="true" value="#{itemListMgntBean.inst_name}"/>
+                <h:message id="instname-status" for="instname" styleClass="errors"/>
+                <p:watermark for="instname" value="Institution Name"/>
+                
+                <h:commandButton action="#{itemListMgntBean.createNewInstitution}" 
+                                 value="Create New Institution Code" 
+                                 styleClass="panel-button"/>
+            </h:panelGrid>
+        </h:form>
+        </p:panel>
+        <p:panel id="editInst" header="Edit Institution" toggleable="true">
+        <h:form id="editInstForm">
+            <p:dataTable var="inst" rows="10" id="instTable" 
+                         value="#{itemListMgntBean.instList}" paginator="true"
+                         paginatorTemplate="{FirstPageLink} {PreviousPageLink}
+                         {CurrentPageReport} {NextPageLink} {LastPageLink}"
+                         styleClass="table-odd-row table-even-row" 
+                         editable="true">
+                <p:ajax event="rowEdit" listener="#{itemListMgntBean.onInstRowEdit}"
+                        update="itemListMsg"/>
+                <p:column headerText="Institution Code">
+                    <p:cellEditor>
+                        <f:facet name="output">
+                            <h:outputText value="#{inst.institution_code}"/>                            
+                        </f:facet>
+                        <f:facet name="input">
+                            <h:inputText value="#{inst.institution_code}" 
+                                         style="width: 100%"/>
+                        </f:facet>
+                    </p:cellEditor>
+                </p:column>
+                <p:column headerText="Institution Name">
+                    <p:cellEditor>
+                        <f:facet name="output">
+                            <h:outputText value="#{inst.institution_name}"/>
+                        </f:facet>
+                        <f:facet name="input">
+                            <h:inputText value="#{inst.institution_name}" 
+                                         style="width: 100%"/>
+                        </f:facet>
+                    </p:cellEditor>
+                </p:column>
+                <p:column style="width: 32px">
+                    <p:rowEditor/>
+                </p:column>
+            </p:dataTable>
+        </h:form>
+        </p:panel>
+    </ui:define>
+</ui:composition>
