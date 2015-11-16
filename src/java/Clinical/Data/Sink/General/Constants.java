@@ -52,6 +52,8 @@ import org.apache.logging.log4j.LogManager;
  * Removed ILLUMINA and AFFYMETRIX constants.
  * 11-Nov-2015 - Added two new constants PAGES_DIR and ACCOUNT_MANAGEMENT_STAY. 
  * Changed the return type of setup method. Changed the value of LOGIN_PAGE.
+ * 16-Nov-2015 - Added one new constant PIPELINE_COMMAND_MANAGEMENT, and deleted
+ * constant ACCOUNT_MANAGEMENT_STAY.
  */
 
 @ManagedBean (name = "constants")
@@ -89,9 +91,9 @@ public class Constants {
                                 "gex-illumina?faces-redirect=true";
     public final static String GEX_AFFYMETRIX_PAGE = 
                                 "gex-affymetrix?faces-redirect=true";
-    public final static String ACCOUNT_MANAGEMENT = 
-                                "accountmanagement?faces-redirect=true";
-    public final static String ACCOUNT_MANAGEMENT_STAY = "accountmanagement";
+    public final static String ACCOUNT_MANAGEMENT = "accountmanagement";
+    public final static String PIPELINE_COMMAND_MANAGEMENT = 
+                                "commandmanagement";
     public final static String NGS_PAGE = "ngs?faces-redirect=true";
     public final static String ERROR = "error?faces-redirect=true";
     // Constants used in Array pipeline
