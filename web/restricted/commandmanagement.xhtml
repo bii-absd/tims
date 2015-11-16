@@ -10,8 +10,33 @@
     <ui:define name="title">Pipeline Commands Management</ui:define>
     <ui:param name="link" value="Pipeline Commands Management"/>
     <ui:define name="content">
-        <h:form id="cmdForm">
-            <p:growl id="cmdMsg"/>
+        <p:growl id="cmdMsg"/>
+        <p:panel id="addCmd" header="Add New Pipeline Command" toggleable="true">
+        <h:form id="addCmdForm">
+            <h:panelGrid columns="3" border="0" cellpadding="5" cellspacing="3">
+                <p:inputText id="commandID" size="32" maxlength="20" autocomplete="off" 
+                             required="true" value="#{cmdMgntBean.command_id}"/>
+                <h:message id="commandID-status" for="commandID" styleClass="errors"/>
+                <p:watermark for="commandID" value="New Command ID"/>
+                
+                <p:inputText id="commandcode" size="32" maxlength="100" autocomplete="off" 
+                             required="true" value="#{cmdMgntBean.command_code}"/>
+                <h:message id="commandcode-status" for="commandcode" styleClass="errors"/>
+                <p:watermark for="commandcode" value="Command Code"/>
+                
+                <p:inputText id="commandpara" size="32" maxlength="50" autocomplete="off" 
+                             value="#{cmdMgntBean.command_para}"/>
+                <h:message id="commandpara-status" for="commandpara" styleClass="errors"/>
+                <p:watermark for="commandpara" value="Command Parameter"/>
+                
+                <h:commandButton action="#{cmdMgntBean.createNewPipelineCommand}" 
+                                 value="Create New Pipeline Command" 
+                                 styleClass="panel-button"/>
+            </h:panelGrid>
+        </h:form>
+        </p:panel>
+        <p:panel id="editCmd" header="Edit Pipeline Command" toggleable="true">
+        <h:form id="editCmdForm">
             <p:dataTable var="cmd" rows="10" id="cmdTable" 
                          value="#{cmdMgntBean.cmdList}" paginator="true" 
                          paginatorTemplate="{FirstPageLink} {PreviousPageLink}
@@ -19,7 +44,7 @@
                          styleClass="table-odd-row table-even-row" 
                          editable="true">
                 <p:ajax event="rowEdit" listener="#{cmdMgntBean.onRowEdit}" 
-                        update=":cmdForm:cmdMsg"/>
+                        update="cmdMsg"/>
                 <p:column headerText="Command ID">
                     <h:outputText value="#{cmd.command_id}"/>
                 </p:column>
@@ -49,6 +74,7 @@
                     <p:rowEditor/>
                 </p:column>
             </p:dataTable>
-        </h:form>
+        </h:form>            
+        </p:panel>
     </ui:define>
 </ui:composition>
