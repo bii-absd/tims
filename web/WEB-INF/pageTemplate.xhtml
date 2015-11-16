@@ -30,6 +30,9 @@
                     <p:menuitem value="CMD Management" icon="fa fa-flask"
                                 url="commandmanagement.xhtml" 
                                 rendered="#{authenticationBean.adminRight}"/>
+                    <p:menuitem value="Item List Management" icon="fa fa-list-ul"
+                                url="itemlistmanagement.xhtml" 
+                                rendered="#{authenticationBean.adminRight}"/>
                 </p:submenu>
                 <f:facet name="options">
                     <p:commandButton value="Logout" 
