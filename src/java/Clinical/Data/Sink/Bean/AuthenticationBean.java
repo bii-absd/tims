@@ -4,6 +4,7 @@
 package Clinical.Data.Sink.Bean;
 
 import Clinical.Data.Sink.Database.DBHelper;
+import Clinical.Data.Sink.Database.InstitutionDB;
 import Clinical.Data.Sink.Database.UserAccount;
 import Clinical.Data.Sink.Database.UserAccountDB;
 import Clinical.Data.Sink.General.SelectOneMenuList;
@@ -63,6 +64,7 @@ import org.apache.logging.log4j.core.LoggerContext;
  * remove the credential upon user logout. Changed the return type of 
  * setupConstants() and setupMenuList() methods. To have a common exit point
  * for login() method.
+ * 16-Nov-2015 - To retrieve institution list from database after login.
  */
 
 @ManagedBean (name="authenticationBean")
@@ -167,6 +169,9 @@ public class AuthenticationBean implements Serializable {
             
             return Constants.ERROR;
         }
+        
+        // Retrieve the institution list from database
+        InstitutionDB.buildInstList();
         
         // Temporary hack to allow me to enter to create user when the 
         // application is first deployed.
