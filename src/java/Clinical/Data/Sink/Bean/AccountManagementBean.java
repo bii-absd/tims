@@ -45,7 +45,7 @@ import org.primefaces.event.RowEditEvent;
  * Added one new method getAllUserID() that return all the user ID in the system.
  */
 
-@ManagedBean (name="accountManagementBean")
+@ManagedBean (name="acctMgntBean")
 @ViewScoped
 public class AccountManagementBean implements Serializable {
     // Get the logger for Log4j
@@ -132,7 +132,7 @@ public class AccountManagementBean implements Serializable {
                     FacesMessage.SEVERITY_ERROR, "Failed: " + errorMsg, ""));
         }
         // Return to the same page, and recreate the AccountManagementBean.
-        return Constants.ACCOUNT_MANAGEMENT_STAY;
+        return Constants.ACCOUNT_MANAGEMENT;
     }
     
     // Update the password of the current user if the two passwords entered 
@@ -176,7 +176,7 @@ public class AccountManagementBean implements Serializable {
                     "The passwords entered are not the same", ""));
         }
         // Return to the same page, and recreate the AccountManagementBean.        
-        return Constants.ACCOUNT_MANAGEMENT_STAY;
+        return Constants.ACCOUNT_MANAGEMENT;
     }
     
     // Return the list of Role setup in the database
