@@ -84,20 +84,22 @@ public class CommandManagementBean implements Serializable {
        return Constants.PIPELINE_COMMAND_MANAGEMENT;
     }
     
-    // Update the pipeline command in the database too.
+    // Update the pipeline command in the database.
     public void onRowEdit(RowEditEvent event) {
+        FacesContext fc = getFacesContext();
+        
         if (PipelineCommandDB.updatePipelineCommand(
                 (PipelineCommand) event.getObject())) {
             logger.info(AuthenticationBean.getUserName() + 
                     ": updated pipeline command " + 
                     ((PipelineCommand) event.getObject()).getCommand_id());
-            getFacesContext().addMessage(null, new FacesMessage(
+            fc.addMessage(null, new FacesMessage(
                         FacesMessage.SEVERITY_INFO,
                         "Pipeline command updated.", ""));
         }
         else {
             logger.error("Pipeline command update failed.");
-            getFacesContext().addMessage(null, new FacesMessage(
+            fc.addMessage(null, new FacesMessage(
                         FacesMessage.SEVERITY_ERROR,
                         "Failed to update pipeline command!", ""));
         }
