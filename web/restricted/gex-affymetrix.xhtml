@@ -32,7 +32,7 @@
             <p:panel id="inputfile" header="Upload Sample Probe Files">
                 <p:growl id="uploadStatus" sticky="true"/>
                 <p:fileUpload mode="advanced" multiple="true"
-                              auto="true" update="uploadStatus" 
+                              update="uploadStatus" 
                               label="Select Sample Files"
                               allowTypes="/(\.|\/)(CEL)$/"
                               fileUploadListener="#{gexAffymetrixBean.inputFile.multipleFileUploadListener}">
@@ -42,7 +42,7 @@
                      header="Upload Samples Annotation File 
                      (Please upload this file for the Phenotype Column and 
                      Sample Averaging to be enable)">
-                <p:fileUpload mode="advanced" auto="true" 
+                <p:fileUpload mode="advanced"
                               update="uploadStatus phenotype averaging"
                               label="Select Samples Annotation File"
                               fileUploadListener="#{gexAffymetrixBean.sampleFile.singleFileUploadListener}"/>
@@ -113,8 +113,9 @@
             </p:panel>
             <p:separator style="height: 20px"/>
             <p:commandButton value="Submit" update="display @form"
-                             oncomplete="PF('dlg').show()" 
-                             icon="ui-icon-check" action="#{gexAffymetrixBean.inputFile.createInputList}"/>
+                             oncomplete="PF('dlg').show()"
+                             icon="ui-icon-check" 
+                             action="#{gexAffymetrixBean.updateJobSubmissionStatus()}"/>
             
             <p:dialog header="Pipeline Configuration Review"
                       widgetVar="dlg"
@@ -154,7 +155,7 @@
                         <p:commandButton value="Confirm" title="Start the pipeline execution"
                                          style="width: 130px"
                                          action="#{gexAffymetrixBean.submitJob}" 
-                                         rendered="#{gexAffymetrixBean.allowToSubmitJob()}"/>                        
+                                         rendered="#{gexAffymetrixBean.jobSubmissionStatus}"/>                        
                     </h:panelGrid>
                 </h:form>
             </p:dialog>
