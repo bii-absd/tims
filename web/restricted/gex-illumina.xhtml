@@ -31,11 +31,11 @@
             
             <p:panel id="inputcontrol" header="Upload Sample and Control Probe Files">
                 <p:growl id="uploadStatus" sticky="true"/>
-                <p:fileUpload mode="advanced" auto="true" update="uploadStatus" 
+                <p:fileUpload mode="advanced" update="uploadStatus" 
                               label="Select Sample File"
                               fileUploadListener="#{gexIlluminaBean.inputFile.singleFileUploadListener}">
                 </p:fileUpload>
-                <p:fileUpload mode="advanced" auto="true" update="uploadStatus" 
+                <p:fileUpload mode="advanced" update="uploadStatus" 
                               label="Select Control File"
                               fileUploadListener="#{gexIlluminaBean.ctrlFile.singleFileUploadListener}"/>
             </p:panel>
@@ -43,7 +43,7 @@
                      header="Upload Samples Annotation File 
                      (Please upload this file for the Phenotype Column and 
                      Sample Averaging to be enable)">
-                <p:fileUpload mode="advanced" auto="true" 
+                <p:fileUpload mode="advanced"
                               update="uploadStatus phenotype averaging"
                               label="Select Samples Annotation File"
                               fileUploadListener="#{gexIlluminaBean.sampleFile.singleFileUploadListener}"/>
@@ -115,7 +115,8 @@
             <p:separator style="height: 20px"/>
             <p:commandButton value="Submit" update="display @form"
                              oncomplete="PF('dlg').show()" 
-                             icon="ui-icon-check"/>
+                             icon="ui-icon-check" 
+                             action="#{gexIlluminaBean.updateJobSubmissionStatus}"/>
             
             <p:dialog header="Pipeline Configuration Review"
                       widgetVar="dlg"
@@ -156,7 +157,7 @@
                         <p:commandButton value="Confirm" title="Start the pipeline execution"
                                          style="width: 130px"
                                          action="#{gexIlluminaBean.submitJob}" 
-                                         rendered="#{gexIlluminaBean.allowToSubmitJob()}"/>                        
+                                         rendered="#{gexIlluminaBean.jobSubmissionStatus}"/>                        
                     </h:panelGrid>
                 </h:form>
             </p:dialog>
