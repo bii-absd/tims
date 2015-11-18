@@ -40,7 +40,10 @@ import org.apache.logging.log4j.LogManager;
  * 
  * Revision History
  * 13-Nov-2015 - Inital creation by refactoring from ArrayConfigBean.
- * 
+ * 18-Nov-2015 - Removed one abstract method allowToSubmitJob(), added one 
+ * variable jobSubmissionStatus, and one abstract method 
+ * updateJobSubmissionStatus() to resolve the issues surrounding the job
+ * submission's readiness status.
  */
 
 public abstract class ConfigBean implements Serializable {
@@ -64,15 +67,21 @@ public abstract class ConfigBean implements Serializable {
     protected String submitTimeInDB, submitTimeInFilename;
     // job_id of the inserted record
     private int job_id;
+    // jobSubmissionStatus will keep track of whether has all the input files
+    // been uploaded, all the required parameters been filled up, etc.
+    private Boolean jobSubmissionStatus;
     // Pipeline output, report and config filename
     protected String pipelineOutput, pipelineReport, pipelineConfig;
     // Annotation list build from Sample Annotation file
     private LinkedHashMap<String,String> annotationList = new LinkedHashMap<>();
 
-    // Methods to be implemented by the subclass.
-    abstract Boolean allowToSubmitJob();
     // Create the config file that will be used during pipeline execution.
     abstract Boolean createConfigFile();
+    // This method will only be trigger if all the inputs validation have 
+    // passed after the user clicked on Submit. As a result of this behaviour 
+    // (i.e. all the validations need to pass), we will update the
+    // jobSubmissionStatus here.
+    abstract void updateJobSubmissionStatus();
 
     public void init() {
         // Create the time stamp for the pipeline job once the user enter
@@ -83,6 +92,7 @@ public abstract class ConfigBean implements Serializable {
         
         inputFile = new FileUploadBean();
         sampleFile = new FileUploadBean();
+        jobSubmissionStatus = false;
     }
     
     // Read in the subject line (i.e. first line) from the uploaded sample
@@ -199,8 +209,10 @@ public abstract class ConfigBean implements Serializable {
     }
     
     // After reviewing the configuration, user decided not to proceed with
-    // the pipeline execution.
+    // the pipeline execution. 
     public void cancelJob() {
+        // Reset the jobSubmissionStatus.
+        jobSubmissionStatus = false;
         logger.info(AuthenticationBean.getUserName() + 
                 ": decided not to proceed with " + pipelineName);
     }
@@ -410,5 +422,11 @@ public abstract class ConfigBean implements Serializable {
     }
     public void setStdLog2Ratio(String stdLog2Ratio) {
         this.stdLog2Ratio = stdLog2Ratio;
+    }
+    public Boolean getJobSubmissionStatus() {
+        return jobSubmissionStatus;
+    }
+    public void setJobSubmissionStatus(Boolean jobSubmissionStatus) {
+        this.jobSubmissionStatus = jobSubmissionStatus;
     }
 }
