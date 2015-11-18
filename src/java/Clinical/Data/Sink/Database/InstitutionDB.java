@@ -27,6 +27,7 @@ import org.apache.logging.log4j.LogManager;
  * 13-Nov-2015 - Created with all the standard getters and setters.
  * 16-nov-2015 - Added 3 new methods, clearInstList(), buildInstList() and
  * insertInstitution(inst).
+ * 18-Nov-2015 - Added one new method, updateInstitution(inst).
  */
 
 public class InstitutionDB implements Serializable {
@@ -94,6 +95,29 @@ public class InstitutionDB implements Serializable {
         }
         catch (SQLException e) {
             logger.error("SQLException when inserting institution code.");
+            logger.error(e.getMessage());
+            result = Constants.NOT_OK;
+        }
+        
+        return result;
+    }
+    
+    // Update the insitution information in the database
+    public static Boolean updateInstitution(Institution inst) {
+        Boolean result = Constants.OK;
+        String updateStr = "UPDATE institution SET institution_code = ?, "
+                + "institution_name = ? WHERE institution_code = ?";
+        
+        try (PreparedStatement updateStm = conn.prepareStatement(updateStr)) {
+            updateStm.setString(1, inst.getInstitution_code());
+            updateStm.setString(2, inst.getInstitution_name());
+            updateStm.setString(3, inst.getInstitution_code());
+            
+            updateStm.executeUpdate();
+        }
+        catch (SQLException e) {
+            logger.error("SQLException when updating institution: "
+                    + inst.getInstitution_code());
             logger.error(e.getMessage());
             result = Constants.NOT_OK;
         }
