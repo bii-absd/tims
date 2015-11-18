@@ -28,6 +28,8 @@ import org.primefaces.event.RowEditEvent;
  * Revision History
  * 06-Nov-2015 - Created with all the standard getters and setters. Added new
  * method createNewInstitution() for creating new institution.
+ * 18-Nov-2015 - Added one new method onInstRowEdit() to allow user to edit
+ * the institution's information.
  */
 
 @ManagedBean (name="itemListMgntBean")
@@ -78,8 +80,21 @@ public class ItemListManagementBean implements Serializable {
     
     // Update the institution table in the database.
     public void onInstRowEdit(RowEditEvent event) {
-        logger.info(AuthenticationBean.getUserName() + 
-                ": updated Institution.");
+        FacesContext fc = getFacesContext();
+        
+        if (InstitutionDB.updateInstitution((Institution) event.getObject())) {
+            logger.info(AuthenticationBean.getUserName() + 
+                    ": updated Institution.");
+            fc.addMessage(null, new FacesMessage(
+                    FacesMessage.SEVERITY_INFO,
+                    "Institution updated.", ""));
+        }
+        else {
+            logger.error("Institution update failed.");
+            fc.addMessage(null, new FacesMessage(
+                    FacesMessage.SEVERITY_ERROR,
+                    "Failed to update institution!", ""));
+        }
     }
     
     // Update the department table in the database.
