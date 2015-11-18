@@ -13,8 +13,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import javax.faces.application.FacesMessage;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.UploadedFile;
@@ -43,10 +41,6 @@ import org.apache.logging.log4j.LogManager;
  * uploaded a file.
  */
 
-/* Shouldn't need this for this class. Remove and monitor for a few days.
-@ManagedBean (name="fileUploadBean")
-@ViewScoped
-*/
 public class FileUploadBean implements Serializable {
     // Get the logger for Log4j
     private final static Logger logger = LogManager.
@@ -173,8 +167,8 @@ public class FileUploadBean implements Serializable {
         return inputList;
     }
 
-    // Called when the user click on Submit button for GEX pipeline (Affymetrix)
-    // to create the input files list.
+    // Create the inputList for job submission confirmation by the user; use
+    // for multiple files upload.
     public void createInputList() {
         inputList = new ArrayList<>(fileList.values());
     }
