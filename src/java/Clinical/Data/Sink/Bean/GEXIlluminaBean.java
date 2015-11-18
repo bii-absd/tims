@@ -22,6 +22,8 @@ import javax.faces.bean.ViewScoped;
  * 
  * Revision History
  * 13-Nov-2015 - Initial creation by refactoring from ArrayConfigBean.
+ * 18-Nov-2015 - override the abstract method updateJobSubmissionStatus(), and 
+ * removed the abstract method allowToSubmitJob().
  */
 
 @ManagedBean (name="gexIlluminaBean")
@@ -41,15 +43,6 @@ public class GEXIlluminaBean extends ConfigBean {
         init();
     }
     
-    @Override
-    public Boolean allowToSubmitJob() {
-        // For now, we will make sure the input files are all uploaded before
-        // allowing the user to submit the pipeline job.
-        return !(inputFile.isFilelistEmpty() ||
-                 sampleFile.isFilelistEmpty() ||
-                 ctrlFile.isFilelistEmpty());
-    }
-
     @Override
     public Boolean createConfigFile() {
         Boolean result = Constants.OK;
@@ -119,6 +112,16 @@ public class GEXIlluminaBean extends ConfigBean {
         return result;
     }
     
+    @Override
+    public void updateJobSubmissionStatus() {
+        // Only update the jobSubmissionStatus if all the input files are 
+        // uploaded.        
+        if (!(inputFile.isFilelistEmpty() || sampleFile.isFilelistEmpty() ||
+              ctrlFile.isFilelistEmpty())) {
+            setJobSubmissionStatus(true);            
+        }
+    }
+
     // Return the list of Illumina type.
     public LinkedHashMap<String,String> getTypeList() {
         return SelectOneMenuList.getIlluminaTypeList();
