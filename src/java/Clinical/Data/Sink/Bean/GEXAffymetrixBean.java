@@ -21,6 +21,8 @@ import javax.faces.bean.ViewScoped;
  * 
  * Revision History
  * 13-Nov-2015 - Initial creation by refactoring from ArrayConfigBean.
+ * 18-Nov-2015 - override the abstract method updateJobSubmissionStatus(), and 
+ * removed the abstract method allowToSubmitJob().
  */
 
 @ManagedBean (name="gexAffymetrixBean")
@@ -36,11 +38,6 @@ public class GEXAffymetrixBean extends ConfigBean {
     @PostConstruct
     public void initFiles() {
         init();
-    }
-    
-    @Override
-    public Boolean allowToSubmitJob() {
-        return !(inputFile.isFilelistEmpty() || sampleFile.isFilelistEmpty());
     }
 
     @Override
@@ -96,6 +93,16 @@ public class GEXAffymetrixBean extends ConfigBean {
         }
         
         return result;
+    }
+    
+    @Override
+    public void updateJobSubmissionStatus() {
+        // Only update the jobSubmissionStatus if all the input files are 
+        // uploaded.
+        if (!(inputFile.isFilelistEmpty() || sampleFile.isFilelistEmpty())) {
+            inputFile.createInputList();
+            setJobSubmissionStatus(true);
+        }
     }
     
     // Return the list of Affymetrix type.
