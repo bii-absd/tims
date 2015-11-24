@@ -40,7 +40,7 @@
                          editable="true">
                 <p:ajax event="rowEdit" listener="#{itemListMgntBean.onInstRowEdit}"
                         update="itemListMsg"/>
-                <p:column headerText="Institution Code">
+                <p:column headerText="Institution Code" style="text-align: left">
                     <p:cellEditor>
                         <f:facet name="output">
                             <h:outputText value="#{inst.institution_code}"/>                            
@@ -51,7 +51,7 @@
                         </f:facet>
                     </p:cellEditor>
                 </p:column>
-                <p:column headerText="Institution Name">
+                <p:column headerText="Institution Name" style="text-align: left">
                     <p:cellEditor>
                         <f:facet name="output">
                             <h:outputText value="#{inst.institution_name}"/>
