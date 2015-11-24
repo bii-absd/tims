@@ -14,19 +14,21 @@ import java.sql.Date;
  * 
  * Revision History
  * 20-Nov-2015 - Created with all the standard getters and setters.
+ * 24-Nov-2015 - Added one variable pipeline_name;
  */
 
 public class PipelineRecord {
-    String tid, pid, study_id;
+    String tid, pid, study_id, pipeline_name;
     int array_index;
     Date rdate;
 
     // Machine generated code
     public PipelineRecord(String tid, String pid, String study_id, 
-            int array_index, Date rdate) {
+            String pipeline_name, int array_index, Date rdate) {
         this.tid = tid;
         this.pid = pid;
         this.study_id = study_id;
+        this.pipeline_name = pipeline_name;
         this.array_index = array_index;
         this.rdate = rdate;
     }
@@ -48,6 +50,12 @@ public class PipelineRecord {
     }
     public void setStudy_id(String study_id) {
         this.study_id = study_id;
+    }
+    public String getPipeline_name() {
+        return pipeline_name;
+    }
+    public void setPipeline_name(String pipeline_name) {
+        this.pipeline_name = pipeline_name;
     }
     public int getArray_index() {
         return array_index;
