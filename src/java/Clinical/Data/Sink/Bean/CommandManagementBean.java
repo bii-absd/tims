@@ -30,6 +30,8 @@ import org.primefaces.event.RowEditEvent;
  * method onRowEdit to handle pipeline command updating.
  * 16-Nov-2015 - Added one new method createNewPipelineCommand, to allow user
  * to create new pipeline command.
+ * 24-Nov-2015 - Changed variable name from command_id to pipeline_name. Added
+ * one variable tid (Technology ID).
  */
 
 @ManagedBean (name="cmdMgntBean")
@@ -38,7 +40,7 @@ public class CommandManagementBean implements Serializable {
     // Get the logger for Log4j
     private final static Logger logger = LogManager.
             getLogger(CommandManagementBean.class.getName());
-    private String command_id, command_code, command_para;
+    private String pipeline_name, tid, command_code, command_para;
     private List<PipelineCommand> cmdList;
     
     public CommandManagementBean() {
@@ -64,18 +66,18 @@ public class CommandManagementBean implements Serializable {
     // Create the new pipeline command.
     public String createNewPipelineCommand() {
        FacesContext fc = getFacesContext();
-       PipelineCommand newCmd = new PipelineCommand(command_id, command_code,
-                                    command_para);
+       PipelineCommand newCmd = new PipelineCommand(pipeline_name, tid, 
+                                    command_code, command_para);
        
        if (PipelineCommandDB.insertPipelineCommand(newCmd)) {
            logger.info(AuthenticationBean.getUserName() + 
-                   ": created new Pipeline Command: " + command_id);
+                   ": created new Pipeline Command: " + pipeline_name);
            fc.addMessage(null, new FacesMessage(
                     FacesMessage.SEVERITY_INFO,
                     "New pipeline command created.", ""));
        }
        else {
-           logger.error("Failed to create new pipeline command: " + command_id);
+           logger.error("Failed to create new pipeline command: " + pipeline_name);
            fc.addMessage(null, new FacesMessage(
                     FacesMessage.SEVERITY_ERROR,
                     "Failed to create new pipeline command!", ""));
@@ -92,7 +94,7 @@ public class CommandManagementBean implements Serializable {
                 (PipelineCommand) event.getObject())) {
             logger.info(AuthenticationBean.getUserName() + 
                     ": updated pipeline command " + 
-                    ((PipelineCommand) event.getObject()).getCommand_id());
+                    ((PipelineCommand) event.getObject()).getPipeline_name());
             fc.addMessage(null, new FacesMessage(
                         FacesMessage.SEVERITY_INFO,
                         "Pipeline command updated.", ""));
@@ -111,11 +113,17 @@ public class CommandManagementBean implements Serializable {
     }
     
     // Machine generated getters and setters
-    public String getCommand_id() {
-        return command_id;
+    public String getPipeline_name() {
+        return pipeline_name;
     }
-    public void setCommand_id(String command_id) {
-        this.command_id = command_id;
+    public void setPipeline_name(String pipeline_name) {
+        this.pipeline_name = pipeline_name;
+    }
+    public String getTid() {
+        return tid;
+    }
+    public void setTid(String tid) {
+        this.tid = tid;
     }
     public String getCommand_code() {
         return command_code;
