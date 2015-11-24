@@ -14,10 +14,18 @@
         <p:panel id="addCmd" header="Add New Pipeline Command" toggleable="true">
         <h:form id="addCmdForm">
             <h:panelGrid columns="3" border="0" cellpadding="5" cellspacing="3">
-                <p:inputText id="commandID" size="32" maxlength="20" autocomplete="off" 
-                             required="true" value="#{cmdMgntBean.command_id}"/>
-                <h:message id="commandID-status" for="commandID" styleClass="errors"/>
-                <p:watermark for="commandID" value="New Command ID"/>
+                <p:inputText id="pipelinename" size="32" maxlength="20" autocomplete="off" 
+                             required="true" value="#{cmdMgntBean.pipeline_name}"/>
+                <h:message id="pipelinename-status" for="pipelinename" styleClass="errors"/>
+                <p:watermark for="pipelinename" value="New Pipeline Name"/>
+                
+                <p:selectOneMenu id="tid" required="true" value="#{cmdMgntBean.tid}" 
+                                 style="width: 180px">
+                    <f:selectItem itemLabel="Select Technology" itemValue=""/>
+                    <f:selectItem itemLabel="Array" itemValue="Array"/>
+                </p:selectOneMenu>
+                <h:message id="tid-status" for="tid" styleClass="errors"/>
+                <h:panelGroup/>
                 
                 <p:inputText id="commandcode" size="32" maxlength="100" autocomplete="off" 
                              required="true" value="#{cmdMgntBean.command_code}"/>
@@ -45,10 +53,22 @@
                          editable="true">
                 <p:ajax event="rowEdit" listener="#{cmdMgntBean.onRowEdit}" 
                         update="cmdMsg"/>
-                <p:column headerText="Command ID">
-                    <h:outputText value="#{cmd.command_id}"/>
+                <p:column headerText="Pipeline Name" style="width: 300px; text-align: left">
+                    <h:outputText value="#{cmd.pipeline_name}"/>
                 </p:column>
-                <p:column headerText="Command Code">
+                <p:column headerText="Technology" style="width: 150px; text-align: left">
+                    <p:cellEditor>
+                        <f:facet name="output">
+                            <h:outputText value="#{cmd.tid}"/>
+                        </f:facet>
+                        <f:facet name="input">
+                            <p:selectOneMenu style="width: 100%" value="#{cmd.tid}">
+                                <f:selectItem itemLabel="Array" itemValue="Array"/>
+                            </p:selectOneMenu>
+                        </f:facet>
+                    </p:cellEditor>
+                </p:column>
+                <p:column headerText="Command Code" style="text-align: left">
                     <p:cellEditor>
                         <f:facet name="output">
                             <h:outputText value="#{cmd.command_code}"/>
@@ -59,7 +79,7 @@
                         </f:facet>
                     </p:cellEditor>
                 </p:column>
-                <p:column headerText="Parameter">
+                <p:column headerText="Parameter" style="width: 100px; text-align: left">
                     <p:cellEditor>
                         <f:facet name="output">
                             <h:outputText value="#{cmd.command_para}"/>
