@@ -78,7 +78,7 @@ public class Constants {
     public final static String TRUE = "true";
     public final static String FALSE = "false";
     public final static String NONE = "none";
-    // Pipeline Types
+    // Pipeline name
     public final static String GEX_ILLUMINA = "gex-illumina";
     public final static String GEX_AFFYMETRIX = "gex-affymetrix";
     // Navigation Strings
