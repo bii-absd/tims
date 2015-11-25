@@ -44,12 +44,14 @@ import org.apache.logging.log4j.LogManager;
  * variable jobSubmissionStatus, and one abstract method 
  * updateJobSubmissionStatus() to resolve the issues surrounding the job
  * submission's readiness status.
+ * 25-Nov-2015 - Renamed pipelineType to pipelineTech. Implementation for 
+ * database 2.0
  */
 
 public abstract class ConfigBean implements Serializable {
     // Get the logger for Log4j
     protected final static Logger logger = LogManager.
-            getLogger(ArrayConfigBean.class.getName());
+            getLogger(ConfigBean.class.getName());
     // Input Parameters
     private String studyID, type;
     // Common Processing Parameters. 
@@ -57,10 +59,12 @@ public abstract class ConfigBean implements Serializable {
     private boolean probeSelect;
     // Further Processing
     private String sampleAverage, stdLog2Ratio;
+    // The command link to be displayed 
+    private static String commandLink;
     // Pipeline name
-    private static String pipelineName;
-    // Pipeline type
-    protected static String pipelineType;
+    protected static String pipelineName;
+    // Pipeline technology
+    protected static String pipelineTech;
     // Common input files that will be uploaded by the users
     protected FileUploadBean inputFile, sampleFile;
     // Record the time this job was created
@@ -236,11 +240,10 @@ public abstract class ConfigBean implements Serializable {
         // job_id will not be used during insertion, just send in any value will
         // do e.g. 0
         // Insert the new job request into datbase; job status is 1 i.e. Waiting
-        SubmittedJob newJob = new SubmittedJob(0, 1, 
-                                               getStudyID(), 
-                                               submitTimeInDB, 
-                                               outputFilePath, 
-                                               reportFilePath);
+        SubmittedJob newJob = 
+                new SubmittedJob(0, studyID, pipelineTech, pipelineName, 1,
+                                 submitTimeInDB, outputFilePath, reportFilePath);
+        
         try {
             // Store the job_id of the inserted record
             job_id = SubmittedJobDB.insertJob(newJob);
@@ -269,13 +272,13 @@ public abstract class ConfigBean implements Serializable {
         
         try {
             // Retrieve the pipeline command and it's parameter from database.
-            cmd = PipelineCommandDB.getPipelineCommand(pipelineType);
+            cmd = PipelineCommandDB.getPipelineCommand(pipelineName);
 
             logger.debug("Pipeline from database: " + cmd.toString());
         }
         catch (SQLException e) {
             logger.error("SQLException while retriving pipeline command " +
-                    pipelineType);
+                    pipelineName);
             logger.error(e.getMessage());
             // Something is wrong, shouldn't let the user continue.
             return Constants.ERROR;
@@ -369,13 +372,19 @@ public abstract class ConfigBean implements Serializable {
     public void setInputFile(FileUploadBean inputFile) {
         this.inputFile = inputFile;
     }
-    public static String getPipelineType() {
-        return pipelineType;
+    public static String getPipelineTech() {
+        return pipelineTech;
     }
-    public static void setPipelineType(String pipelineType) {
-        ConfigBean.pipelineType = pipelineType;
+    public static void setPipelineTech(String pipelineTech) {
+        ConfigBean.pipelineTech = pipelineTech;
     }
-    public String getPipelineName() {
+    public String getCommandLink() {
+        return commandLink;
+    }
+    public static void setCommandLink(String commandLink) {
+        ConfigBean.commandLink = commandLink;
+    }
+    public static String getPipelineName() {
         return pipelineName;
     }    
     public static void setPipelineName(String pipelineName) {
