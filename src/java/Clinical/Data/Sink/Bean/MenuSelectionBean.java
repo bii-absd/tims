@@ -3,6 +3,7 @@
  */
 package Clinical.Data.Sink.Bean;
 
+import Clinical.Data.Sink.Database.ProcessedDataHelper;
 import Clinical.Data.Sink.General.Constants;
 import java.io.Serializable;
 import javax.faces.bean.ManagedBean;
@@ -26,6 +27,7 @@ import org.apache.logging.log4j.LogManager;
  * gexIllumina and gexAffymetrix.
  * 13-Nov-2015 - Changes to methods, gexIllumina() and gexAffymetrix() after 
  * refactoring ArrayConfigBean.
+ * 25-Nov-2015 - Implementation for database 2.0
  */
 
 @ManagedBean (name="menuSelectionBean")
@@ -43,7 +45,7 @@ public class MenuSelectionBean implements Serializable{
     
     // Setup the ArrayConfigBean for GEX Illumina pipeline processing.
     public String gexIllumina() {
-        GEXIlluminaBean.setPipelineName(command);
+        GEXIlluminaBean.setCommandLink(command);
         logger.debug(AuthenticationBean.getUserName() + ": selected " +
                      command);
         
@@ -52,7 +54,7 @@ public class MenuSelectionBean implements Serializable{
 
     // Setup the ArrayConfigBean for GEX Affymetrix pipeline processing.
     public String gexAffymetrix() {
-        GEXAffymetrixBean.setPipelineName(command);
+        GEXAffymetrixBean.setCommandLink(command);
         logger.debug(AuthenticationBean.getUserName() + ": selected " +
                      command);
 
@@ -62,6 +64,14 @@ public class MenuSelectionBean implements Serializable{
     // ngsPipeline will setup the NGSConfigBean according to the specific
     // pipeline selected.
     public String ngsPipeline() {
+        
+        return Constants.NGS_PAGE;
+    }
+    
+    // Temporarily for testing purpose
+    public String algoTest() {
+        ProcessedDataHelper uploadDataThread = new ProcessedDataHelper("Anything");
+        uploadDataThread.start();
         
         return Constants.NGS_PAGE;
     }
