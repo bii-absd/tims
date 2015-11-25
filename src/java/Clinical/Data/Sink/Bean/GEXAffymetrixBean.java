@@ -3,6 +3,7 @@
  */
 package Clinical.Data.Sink.Bean;
 
+import Clinical.Data.Sink.Database.PipelineCommandDB;
 import Clinical.Data.Sink.General.Constants;
 import Clinical.Data.Sink.General.SelectOneMenuList;
 import java.io.File;
@@ -23,6 +24,8 @@ import javax.faces.bean.ViewScoped;
  * 13-Nov-2015 - Initial creation by refactoring from ArrayConfigBean.
  * 18-Nov-2015 - override the abstract method updateJobSubmissionStatus(), and 
  * removed the abstract method allowToSubmitJob().
+ * 25-Nov-2015 - Renamed pipelineType to pipelineTech. Implementation for 
+ * database 2.0
  */
 
 @ManagedBean (name="gexAffymetrixBean")
@@ -31,7 +34,9 @@ public class GEXAffymetrixBean extends ConfigBean {
     private String probeFilter;
 
     public GEXAffymetrixBean() {
-        pipelineType = Constants.GEX_AFFYMETRIX;
+        pipelineName = Constants.GEX_AFFYMETRIX;
+        pipelineTech = PipelineCommandDB.getPipelineTechnology(pipelineName);
+        
         logger.debug("GEXAffymetrixBean created.");
     }
     
