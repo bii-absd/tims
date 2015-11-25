@@ -31,6 +31,7 @@ import org.apache.logging.log4j.LogManager;
  * Command to PipelineCommand.
  * 24-Nov-2015 - Changed variable name from command_id to pipeline_name. Added
  * one variable tid (Technology ID).
+ * 25-Nov-2015 - Added one new method getPipelineTechnology.
  */
 
 public class PipelineCommandDB {
@@ -42,7 +43,28 @@ public class PipelineCommandDB {
 
     public PipelineCommandDB() {}
     
-    // Return the command_code and command_para for this pipeline_name.
+    // Return the pipeline technology for this pipeline name.
+    public static String getPipelineTechnology(String pipeline_name) {
+        String queryStr = "SELECT tid FROM pipeline_command WHERE pipeline_name = ?";
+        String tid = null;
+        
+        try (PreparedStatement queryStm = conn.prepareStatement(queryStr)) {
+            queryStm.setString(1, pipeline_name);
+            ResultSet result = queryStm.executeQuery();
+            
+            if (result.next()) {
+                tid = result.getString("tid");
+            }
+        }
+        catch (SQLException e) {
+            logger.error("SQLException when query pipeline technology!");
+            logger.error(e.getMessage());
+        }
+        
+        return tid;
+    }
+    
+    // Return the command_code and command_para for this pipeline name.
     public static PipelineCommand getPipelineCommand(String pipeline_name) 
             throws SQLException {
         PipelineCommand command = null;
