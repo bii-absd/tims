@@ -8,28 +8,22 @@ import Clinical.Data.Sink.Database.SubmittedJob;
 import Clinical.Data.Sink.Database.SubmittedJobDB;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.List;
 import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
-import javax.faces.component.UIData;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
-import javax.faces.event.ActionEvent;
 import javax.servlet.ServletContext;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-import org.primefaces.model.DefaultStreamedContent;
-import org.primefaces.model.StreamedContent;
 
 /**
- * JobStatusBean is the backing bean for the jobstatus.xhtml view.
+ * JobStatusBean is the backing bean for the jobstatus view.
  * 
  * Author: Tay Wei Hong
  * Date: 02-Oct-2015
@@ -49,6 +43,7 @@ import org.primefaces.model.StreamedContent;
  * downloading for the users.
  * 02-Nov-2015 - Passing in the current submittedJob as method argument for 
  * downloadOuptut and downloadReport methods.
+ * 25-Nov-2015 - Comment out unused code. Implementation for database 2.0
  */
 
 @ManagedBean(name = "jobStatusBean")
@@ -60,10 +55,11 @@ public class JobStatusBean implements Serializable {
     // For JSF 2.2, since we are using @ViewScoped we cannot bind any UIComponent.
 //    private transient UIData jobStatusTable;
     private List<SubmittedJob> jobSubmission;
-    // These 2 variables are used during downloading of output and report. Not in
-    // use anymore.
+    /* No longer in use.
+    // These 2 variables are used during downloading of output and report. 
     private File file = null;
     private String type;
+    */
     
     public JobStatusBean() {
         logger.debug("JobStatusBean created.");
@@ -71,8 +67,6 @@ public class JobStatusBean implements Serializable {
                 ": access Job Status page.");
         // Retrieve the job status definition from database
         JobStatus.getJobStatusDef();
-        // Setup the default query condition everytime we enter the job status page
-        SubmittedJobDB.setQueryOrderBy();
     }
 
     @PostConstruct
@@ -80,14 +74,6 @@ public class JobStatusBean implements Serializable {
         // Need to assign the jobSubmission here, else the sorting will not work.
         jobSubmission = SubmittedJobDB.querySubmittedJob
                         (AuthenticationBean.getUserName());
-    }
-    
-    // No longer in use; will be using the sortBy function provided by 
-    // PrimeFaces instead.
-    public void sort(ActionEvent actionEvent) {
-        // Order the query result according to the column selected by the user.
-        // For Submission Date, order by job_id will be used.
-        SubmittedJobDB.setQueryOrderBy(actionEvent.getComponent().getId());
     }
     
     // Download the pipeline output for user.
@@ -101,33 +87,7 @@ public class JobStatusBean implements Serializable {
         download(job.getReport());
     }
     
-    // Setup the variables file and type according to the pipeline output.
-    public void preOutput() {
-        // Need to pass in the parameter from JSF
-        // <f:param name="output" value="#{submittedJob.output_file}"/>
-        String output = getExternalContext().getRequestParameterMap().get("output");
-        file = new File(output);
-        type = getFacesContext().getExternalContext().getMimeType(file.getName());
-    }
-    
-    // Setup the variables file and type according to the pipeline report.
-    public void preReport() {
-        String report = getExternalContext().getRequestParameterMap().get("report");        
-        file = new File(report);
-        type = getFacesContext().getExternalContext().getMimeType(file.getName());
-    }
-    
-    // Return the file to be downloaded.
-    public StreamedContent getFile() throws FileNotFoundException {
-        logger.info(AuthenticationBean.getUserName() + ": downloaded " +
-                    file.getName());
-        // Temporary hardcored to "text/plain"; should be using variable type
-        return new DefaultStreamedContent(new FileInputStream(file),
-                                          "text/plain",file.getName());
-    }
-    
-    // Allow the user to download the output/report file after the pipeline has
-    // completed execution.
+    // Download the output/report file.
     public void download(String downloadFile) {
         // Get ready the pipeline file for user to download
         File file = new File(downloadFile);
@@ -197,4 +157,40 @@ public class JobStatusBean implements Serializable {
         this.jobStatusTable = jobStatusTable;
     }
     */
+    
+    /* No longer in use; will be using the sortBy function provided by 
+    // PrimeFaces instead.
+    public void sort(ActionEvent actionEvent) {
+        // Order the query result according to the column selected by the user.
+        // For Submission Date, order by job_id will be used.
+        SubmittedJobDB.setQueryOrderBy(actionEvent.getComponent().getId());
+    }
+    */
+    
+    /* No longer in use.
+    // Setup the variables file and type according to the pipeline output.
+    public void preOutput() {
+        // Need to pass in the parameter from JSF
+        // <f:param name="output" value="#{submittedJob.output_file}"/>
+        String output = getExternalContext().getRequestParameterMap().get("output");
+        file = new File(output);
+        type = getFacesContext().getExternalContext().getMimeType(file.getName());
+    }
+    
+    // Setup the variables file and type according to the pipeline report.
+    public void preReport() {
+        String report = getExternalContext().getRequestParameterMap().get("report");        
+        file = new File(report);
+        type = getFacesContext().getExternalContext().getMimeType(file.getName());
+    }
+    
+    // Return the file to be downloaded.
+    public StreamedContent getFile() throws FileNotFoundException {
+        logger.info(AuthenticationBean.getUserName() + ": downloaded " +
+                    file.getName());
+        // Temporary hardcored to "text/plain"; should be using variable type
+        return new DefaultStreamedContent(new FileInputStream(file),
+                                          "text/plain",file.getName());
+    }
+    */    
 }
