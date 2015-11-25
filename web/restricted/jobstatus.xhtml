@@ -20,6 +20,9 @@
                 <p:column headerText="Study ID" sortBy="#{submittedJob.study_id}">
                     <h:outputText value="#{submittedJob.study_id}"/>
                 </p:column>
+                <p:column headerText="Pipeline" sortBy="#{submittedJob.pipeline_name}">
+                    <h:outputText value="#{submittedJob.pipeline_name}"/>
+                </p:column>
                 <p:column headerText="Submission Time" sortBy="#{submittedJob.submit_time}">
                     <h:outputText value="#{submittedJob.submit_time}"/>
                 </p:column>
