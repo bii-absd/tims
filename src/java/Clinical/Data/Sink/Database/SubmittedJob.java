@@ -23,24 +23,31 @@ import java.io.Serializable;
  * 12-Oct-2015 - Added job_id field.
  * 23-Oct-2015 - Added report field.
  * 30-Oct-2015 - Added one new function getAvailable.
+ * 25-Nov-2015 - Implementation for database 2.0
  */
 public class SubmittedJob implements Serializable {
     private int job_id;
-    private String user_id;
-    private int status_id;
     private String study_id;
+    private String user_id;
+    private String tid;
+    private String pipeline_name;
+    private int status_id;
     private String submit_time;
     private String output_file;
     private String report;
     // status_name will be used by the job status page
     private String status_name;
 
-    public SubmittedJob(int job_id, int status_id, String study_id, 
-            String submit_time, String output_file, String report) {
+    public SubmittedJob(int job_id, String study_id,String tid, 
+            String pipeline_name, int status_id, String submit_time, 
+            String output_file, String report) 
+    {
         this.job_id = job_id;
-        this.user_id = AuthenticationBean.getUserName();
-        this.status_id = status_id;
         this.study_id = study_id;
+        this.user_id = AuthenticationBean.getUserName();
+        this.tid = tid;
+        this.pipeline_name = pipeline_name;
+        this.status_id = status_id;
         this.submit_time = submit_time;
         this.output_file = output_file;
         this.report = report;
@@ -63,21 +70,59 @@ public class SubmittedJob implements Serializable {
         }
     }
     
-    // Machine generated setters
-    public void setJob_id(int job_id) { this.job_id = job_id; }
-    public void setUser_id(String user_id) { this.user_id = user_id; }
-    public void setStatus_id(int status_id) { this.status_id = status_id; }
-    public void setStudy_id(String study_id) { this.study_id = study_id; }
-    public void setSubmit_time(String submit_time) { this.submit_time = submit_time; }
-    public void setOutput_file(String output_file) { this.output_file = output_file; }
-    public void setReport(String report) { this.report = report; }
-    
-    // Machine generated geters
-    public int getJob_id() { return job_id; }
-    public String getUser_id() { return user_id; }
-    public int getStatus_id() { return status_id; }
-    public String getStudy_id() { return study_id; }
-    public String getSubmit_time() { return submit_time; }
-    public String getOutput_file() { return output_file; }
-    public String getReport() { return report; }
+    // Machine generated getters and setters
+    public int getJob_id() {
+        return job_id;
+    }
+    public void setJob_id(int job_id) {
+        this.job_id = job_id;
+    }
+    public String getStudy_id() {
+        return study_id;
+    }
+    public void setStudy_id(String study_id) {
+        this.study_id = study_id;
+    }
+    public String getUser_id() {
+        return user_id;
+    }
+    public void setUser_id(String user_id) {
+        this.user_id = user_id;
+    }
+    public String getTid() {
+        return tid;
+    }
+    public void setTid(String tid) {
+        this.tid = tid;
+    }
+    public String getPipeline_name() {
+        return pipeline_name;
+    }
+    public void setPipeline_name(String pipeline_name) {
+        this.pipeline_name = pipeline_name;
+    }
+    public int getStatus_id() {
+        return status_id;
+    }
+    public void setStatus_id(int status_id) {
+        this.status_id = status_id;
+    }
+    public String getSubmit_time() {
+        return submit_time;
+    }
+    public void setSubmit_time(String submit_time) {
+        this.submit_time = submit_time;
+    }
+    public String getOutput_file() {
+        return output_file;
+    }
+    public void setOutput_file(String output_file) {
+        this.output_file = output_file;
+    }
+    public String getReport() {
+        return report;
+    }
+    public void setReport(String report) {
+        this.report = report;
+    }
 }
