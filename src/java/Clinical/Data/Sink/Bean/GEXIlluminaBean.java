@@ -3,6 +3,7 @@
  */
 package Clinical.Data.Sink.Bean;
 
+import Clinical.Data.Sink.Database.PipelineCommandDB;
 import Clinical.Data.Sink.General.Constants;
 import Clinical.Data.Sink.General.SelectOneMenuList;
 import java.io.File;
@@ -24,6 +25,8 @@ import javax.faces.bean.ViewScoped;
  * 13-Nov-2015 - Initial creation by refactoring from ArrayConfigBean.
  * 18-Nov-2015 - override the abstract method updateJobSubmissionStatus(), and 
  * removed the abstract method allowToSubmitJob().
+ * 25-Nov-2015 - Renamed pipelineType to pipelineTech. Implementation for 
+ * database 2.0
  */
 
 @ManagedBean (name="gexIlluminaBean")
@@ -33,7 +36,9 @@ public class GEXIlluminaBean extends ConfigBean {
     private List<String> probeFilters;
 
     public GEXIlluminaBean() {
-        pipelineType = Constants.GEX_ILLUMINA;
+        pipelineName = Constants.GEX_ILLUMINA;
+        pipelineTech = PipelineCommandDB.getPipelineTechnology(pipelineName);
+
         logger.debug("GEXIlluminaBean created.");
     }
     
