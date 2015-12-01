@@ -42,19 +42,22 @@
 
                     <p:selectOneMenu id="institution" 
                                      style="width:180px" required="true"
-                                     value="#{acctMgntBean.institution}">
+                                     value="#{acctMgntBean.inst_id}">
                         <f:selectItem itemLabel="Select Institution" itemValue=""/>
-                        <f:selectItems value="#{selectOneMenuList.institution}"/>
+                        <f:selectItems value="#{acctMgntBean.instList}"/>
+                        <p:ajax listener="#{acctMgntBean.instChange()}" 
+                                update="department"/>
                     </p:selectOneMenu>
                     <h:message id="institution-status" for="institution" 
                                styleClass="errors"/>
                     <h:panelGroup/>
 
                     <p:selectOneMenu id="department" 
-                                     style="width:180px" required="true"
-                                     value="#{acctMgntBean.department}">
+                                     style="width:180px" required="true" 
+                                     disabled="#{acctMgntBean.isDeptListReady()}"
+                                     value="#{acctMgntBean.dept_id}">
                         <f:selectItem itemLabel="Select Department" itemValue=""/>
-                        <f:selectItems value="#{selectOneMenuList.department}"/>
+                        <f:selectItems value="#{acctMgntBean.deptList}"/>
                     </p:selectOneMenu>
                     <h:message for="department" styleClass="errors"/>
                     <h:panelGroup/>
@@ -127,26 +130,30 @@
                             </f:facet>
                         </p:cellEditor>
                     </p:column>
-                    <p:column headerText="Institution" sortBy="#{acct.institution}">
+                    <p:column headerText="Institution ID" sortBy="#{acct.inst_id}">
                         <p:cellEditor>
                             <f:facet name="output">
-                                <h:outputText value="#{acct.institution}"/>                                
+                                <h:outputText value="#{acct.inst_id}"/>                                
                             </f:facet>
                             <f:facet name="input">
-                                <p:selectOneMenu value="#{acct.institution}" style="width: 100%">
-                                    <f:selectItems value="#{selectOneMenuList.institution}"/>
+                                <p:selectOneMenu value="#{acct.inst_id}" style="width: 100%">
+                                    <f:selectItems value="#{acctMgntBean.instList}"/>
+                                    <p:ajax listener="#{acctMgntBean.instEditChange()}" 
+                                            update="deptID"/>
                                 </p:selectOneMenu>
                             </f:facet>
                         </p:cellEditor>
                     </p:column>
-                    <p:column headerText="Department">
+                    <p:column headerText="Department ID">
                         <p:cellEditor>
                             <f:facet name="output">
-                                <h:outputText value="#{acct.department}"/>                                
+                                <h:outputText value="#{acct.dept_id}"/>                                
                             </f:facet>
                             <f:facet name="input">
-                                <p:selectOneMenu value="#{acct.department}" style="width: 100%">
-                                    <f:selectItems value="#{selectOneMenuList.department}"/>
+                                <p:selectOneMenu id="deptID" 
+                                                 disabled="#{acctMgntBean.isDeptListReady()}" 
+                                                 value="#{acct.dept_id}" style="width: 100%">
+                                    <f:selectItems value="#{acctMgntBean.deptList}"/>
                                 </p:selectOneMenu>
                             </f:facet>
                         </p:cellEditor>
@@ -154,7 +161,7 @@
                     <p:column headerText="Role" sortBy="#{acct.role_id}">
                         <p:cellEditor>
                             <f:facet name="output">
-                                <h:outputText value="#{acct.roleString}"/>                                
+                                <h:outputText value="#{acct.roleName}"/>
                             </f:facet>
                             <f:facet name="input">
                                 <p:selectOneMenu value="#{acct.role_id}" style="width: 100%">
@@ -176,7 +183,7 @@
                     <p:column headerText="Status">
                         <p:cellEditor>
                             <f:facet name="output">
-                                <h:outputText value="#{acct.activeString}"/>                                
+                                <h:outputText value="#{acct.activeStatus}"/>                                
                             </f:facet>
                             <f:facet name="input">
                                 <p:selectOneMenu value="#{acct.active}" style="width: 100%">
