@@ -28,6 +28,7 @@ import org.apache.logging.log4j.LogManager;
  * 16-nov-2015 - Added 3 new methods, clearInstList(), buildInstList() and
  * insertInstitution(inst).
  * 18-Nov-2015 - Added one new method, updateInstitution(inst).
+ * 30-Nov-2015 - Implementation for database 2.0
  */
 
 public class InstitutionDB implements Serializable {
@@ -35,15 +36,18 @@ public class InstitutionDB implements Serializable {
     private final static Logger logger = LogManager.
             getLogger(InstitutionDB.class.getName());
     private final static Connection conn = DBHelper.getDBConn();
-    private final static LinkedHashMap<String, String> instHashMap = 
-                                                        new LinkedHashMap<>();
+    private final static LinkedHashMap<String, String> 
+            instNameHash = new LinkedHashMap<>();
+    private final static LinkedHashMap<String, String>
+            instIDHash = new LinkedHashMap<>();
     private final static List<Institution> instList = new ArrayList<>();
     
     public InstitutionDB() {}
     
-    // To clear the institution list, so that it will be rebuild again.
+    // Clear the institution list, so that it will be rebuild again.
     private static void clearInstList() {
-        instHashMap.clear();
+        instNameHash.clear();
+        instIDHash.clear();
         instList.clear();
     }
     
@@ -53,19 +57,20 @@ public class InstitutionDB implements Serializable {
         // Only build the institution list if it is empty.
         if (instList.isEmpty()) {
             ResultSet result = DBHelper.
-                runQuery("SELECT * from institution ORDER BY institution_name");
+                runQuery("SELECT * from inst ORDER BY inst_name");
 
             try {
                 while(result.next()) {
                     Institution inst = new Institution
-                                    (result.getString("institution_code"),
-                                     result.getString("institution_name"));
-                
-                    instHashMap.put(inst.getInstitution_name(),
-                                    inst.getInstitution_code());
+                                    (result.getString("inst_id"),
+                                     result.getString("inst_name"));
+                    // Build 2 Hash Map; One is Inst Name -> Inst ID,
+                    // the other is Inst ID -> Inst Name.
+                    instNameHash.put(inst.getInst_name(), inst.getInst_id());
+                    instIDHash.put(inst.getInst_id(), inst.getInst_name());
                     instList.add(inst);    
                 }
-                logger.debug("Institution List: " + instHashMap.toString());
+                logger.debug("Institution List: " + instNameHash.toString());
             }
             catch (SQLException e) {
                 logger.error("SQLException at buildInstList.");
@@ -79,22 +84,21 @@ public class InstitutionDB implements Serializable {
     // Insert the new institution code into database.
     public static Boolean insertInstitution(Institution inst) {
         Boolean result = Constants.OK;
-        String insertStr = "INSERT INTO institution"
-                + "(institution_code,institution_name) VALUES(?,?)";
+        String insertStr = "INSERT INTO inst(inst_id,inst_name) VALUES(?,?)";
         
         try (PreparedStatement insertStm = conn.prepareStatement(insertStr)) {
-            insertStm.setString(1, inst.getInstitution_code());
-            insertStm.setString(2, inst.getInstitution_name());
+            insertStm.setString(1, inst.getInst_id());
+            insertStm.setString(2, inst.getInst_name());
             
             insertStm.executeUpdate();
             // Clear and rebuild the institution list and hashmap.
             clearInstList();
             buildInstList();
-            logger.debug("New institution code inserted into database: " +
-                    inst.getInstitution_code());
+            logger.debug("New institution ID inserted into database: " +
+                    inst.getInst_id());
         }
         catch (SQLException e) {
-            logger.error("SQLException when inserting institution code.");
+            logger.error("SQLException when inserting institution ID.");
             logger.error(e.getMessage());
             result = Constants.NOT_OK;
         }
@@ -105,19 +109,19 @@ public class InstitutionDB implements Serializable {
     // Update the insitution information in the database
     public static Boolean updateInstitution(Institution inst) {
         Boolean result = Constants.OK;
-        String updateStr = "UPDATE institution SET institution_code = ?, "
-                + "institution_name = ? WHERE institution_code = ?";
+        String updateStr = "UPDATE inst SET inst_id = ?, "
+                + "inst_name = ? WHERE inst_id = ?";
         
         try (PreparedStatement updateStm = conn.prepareStatement(updateStr)) {
-            updateStm.setString(1, inst.getInstitution_code());
-            updateStm.setString(2, inst.getInstitution_name());
-            updateStm.setString(3, inst.getInstitution_code());
+            updateStm.setString(1, inst.getInst_id());
+            updateStm.setString(2, inst.getInst_name());
+            updateStm.setString(3, inst.getInst_id());
             
             updateStm.executeUpdate();
         }
         catch (SQLException e) {
             logger.error("SQLException when updating institution: "
-                    + inst.getInstitution_code());
+                    + inst.getInst_id());
             logger.error(e.getMessage());
             result = Constants.NOT_OK;
         }
@@ -131,7 +135,12 @@ public class InstitutionDB implements Serializable {
     }
     
     // Return the hashmap of Institution setup in the database.
-    public static LinkedHashMap<String, String> getInstHashMap() {
-        return instHashMap;
+    public static LinkedHashMap<String, String> getInstNameHash() {
+        return instNameHash;
+    }
+    
+    // Return the Institution Name for this instID.
+    public static String getInstName(String instID) {
+        return instIDHash.get(instID);
     }
 }
