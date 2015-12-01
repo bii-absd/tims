@@ -65,6 +65,7 @@ import org.apache.logging.log4j.core.LoggerContext;
  * setupConstants() and setupMenuList() methods. To have a common exit point
  * for login() method.
  * 16-Nov-2015 - To retrieve institution list from database after login.
+ * 01-Dec-2015 - Implementation for database 2.0
  */
 
 @ManagedBean (name="authenticationBean")
@@ -145,26 +146,9 @@ public class AuthenticationBean implements Serializable {
             dbHandle = new DBHelper();
         }
         // Shouldn't let the user proceed if the DBHelper cannot be created.
-        catch (ClassNotFoundException e) {
-            logger.error("Postgres driver not found.");
-            logger.error(e.getMessage());
-            
-            return Constants.ERROR;
-        }
-        catch (InstantiationException e) {
-            logger.error("InstantiationException while creating DBhelper.");
-            logger.error(e.getMessage());
-            
-            return Constants.ERROR;
-        }
-        catch (SQLException e) {
-            logger.error("SQLException while creating DBHelper.");
-            logger.error(e.getMessage());
-            
-            return Constants.ERROR;
-        }
-        catch (IllegalAccessException e) {
-            logger.error("IllegalAccessException while creating DBHelper.");
+        catch (ClassNotFoundException|InstantiationException|
+               SQLException|IllegalAccessException e) {
+            logger.error("Exception when creating DBHelper!");
             logger.error(e.getMessage());
             
             return Constants.ERROR;
@@ -207,10 +191,10 @@ public class AuthenticationBean implements Serializable {
                         result =  Constants.PAGES_DIR + Constants.MAIN_PAGE;
                 }
                 else {
-                    logger.debug(loginName + ": failed to create system directories after login.");
+                    logger.debug(loginName + ": failed to create system dirs after login.");
                     // If control reached here, it means some of the system directories
                     // is not created, shouldn't allow user to proceed.
-                    result = Constants.ERROR;                    
+                    result = Constants.PAGES_DIR + Constants.ERROR;                    
                 }
             }
             else {
@@ -250,15 +234,25 @@ public class AuthenticationBean implements Serializable {
     // return false. The return value will be used to control the access to 
     // some control/link.
     public Boolean getAdminRight() {
-        // For now, use a very basic way to control the access to user account
-        // access. Role ID 1 is Admin; only Admin is allowed access.        
-        return userAcct.getRole_id() == 1;
+        if (loginName.compareTo("super") == 0) {
+            return Constants.OK;
+        }
+        else {
+            // For now, use a very basic way to control the access to user account
+            // access. Role ID 1 is Admin; only Admin is allowed access.        
+            return userAcct.getRole_id() == 1;            
+        }
     }
     
     // This function will be called by classes to determine whether the current
     // user is a adminstrator.
     public static Boolean isAdministrator() {
-       return userAcct.getRole_id() == 1;
+        if (loginName.compareTo("super") == 0) {
+            return Constants.OK;
+        }
+        else {
+            return userAcct.getRole_id() == 1;
+        }
     }
     
     // Retrieve the faces context
@@ -282,7 +276,8 @@ public class AuthenticationBean implements Serializable {
             return loginName;
         }
         else {
-            return userAcct.getInstitution() + " - " + userAcct.getDepartment();            
+            return InstitutionDB.getInstName(userAcct.getInst_id()) + " - " 
+                    + userAcct.getDept_id();            
         }
     }
     // Supply the Full Name string to all the views.
