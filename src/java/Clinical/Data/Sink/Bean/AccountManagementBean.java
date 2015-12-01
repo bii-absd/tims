@@ -3,6 +3,8 @@
  */
 package Clinical.Data.Sink.Bean;
 
+import Clinical.Data.Sink.Database.DepartmentDB;
+import Clinical.Data.Sink.Database.InstitutionDB;
 import Clinical.Data.Sink.Database.UserAccount;
 import Clinical.Data.Sink.Database.UserAccountDB;
 import Clinical.Data.Sink.Database.UserRoleDB;
@@ -43,6 +45,7 @@ import org.primefaces.event.RowEditEvent;
  * 3. onRowEdit
  * 13-Nov-2015 - Allowing administrator to change the password of other user.
  * Added one new method getAllUserID() that return all the user ID in the system.
+ * 01-Dec-2015 - Implementation for database 2.0
  */
 
 @ManagedBean (name="acctMgntBean")
@@ -56,9 +59,10 @@ public class AccountManagementBean implements Serializable {
     private String email, pwd;
     private Boolean active;
     private int role_id;
-    private String department, institution;
+    private String dept_id, inst_id;
     private String new_pwd, cfm_pwd;
     private static List<UserAccount> userList = new ArrayList<>();
+    private LinkedHashMap<String,String> deptList = new LinkedHashMap<>();
     
     public AccountManagementBean() {
         logger.debug("AccountManagementBean created.");
@@ -106,15 +110,14 @@ public class AccountManagementBean implements Serializable {
         FacesContext facesContext = getFacesContext();
         // By default, all new account will be active upon creation
         UserAccount newAcct = new UserAccount(user_id, role_id, first_name, 
-                    last_name, email, true, pwd, department, institution, 
-                    " ");
+                    last_name, email, true, pwd, dept_id, inst_id, " ");
         
         try {
             // Insert the new account into database        
             UserAccountDB.insertAccount(newAcct);
             logger.info(AuthenticationBean.getUserName() + 
                     ": created new User ID " + user_id + 
-                    " with " + UserRoleDB.getRoleFromHash(role_id) + " right.");
+                    " with " + UserRoleDB.getRoleNameFromHash(role_id) + " right.");
             facesContext.addMessage("newacctstatus", new FacesMessage(
                     FacesMessage.SEVERITY_INFO, "User Account: " 
                     + user_id + " successfully created.", ""));
@@ -181,7 +184,37 @@ public class AccountManagementBean implements Serializable {
     
     // Return the list of Role setup in the database
     public LinkedHashMap<String, Integer> getRoleList() {
-        return UserRoleDB.getRoleList();
+        return UserRoleDB.getRoleNameList();
+    }
+    
+    // Return the list of Institution setup in the database
+    public LinkedHashMap<String, String> getInstList() {
+        return InstitutionDB.getInstNameHash();
+    }
+    
+    // Return the list of Dept ID belonging to the selected Institution
+    public LinkedHashMap<String, String> getDeptList() {
+        return deptList;
+    }
+    
+    // The enabled/disabled status of "Select Department" will depend on
+    // whether the institution has been selected or not.
+    public Boolean isDeptListReady() {
+        return deptList.isEmpty();
+    }
+    
+    // Listener for institution selection change, it's job is to update the deptList
+    public void instChange() {
+        deptList = DepartmentDB.getDeptHashMap(inst_id);
+    }
+    
+    // Listener for institution selection change in the 'Edit User Account' panel.
+    public void instEditChange() {
+        UserAccount user = getFacesContext().getApplication().
+                evaluateExpressionGet(getFacesContext(), "#{acct}", 
+                UserAccount.class);
+        
+        deptList = DepartmentDB.getDeptHashMap(user.getInst_id());        
     }
     
     // Retrieve the faces context
@@ -197,10 +230,10 @@ public class AccountManagementBean implements Serializable {
     public void setActive(Boolean active) { this.active = active; }
     public void setPwd(String pwd) { this.pwd = pwd; }
     public void setRole_id(int role_id) { this.role_id = role_id; }
-    public void setDepartment(String department) 
-    {   this.department = department;   }
-    public void setInstitution(String institution) 
-    {   this.institution = institution; }
+    public void setDept_id(String dept_id) 
+    {   this.dept_id = dept_id;   }
+    public void setInst_id(String inst_id) 
+    {   this.inst_id = inst_id; }
     public void setNew_pwd(String new_pwd) { this.new_pwd = new_pwd; }
     public void setCfm_pwd(String cfm_pwd) { this.cfm_pwd = cfm_pwd; }
 
@@ -212,8 +245,8 @@ public class AccountManagementBean implements Serializable {
     public Boolean getActive() { return active; }
     public String getPwd() { return pwd; }
     public int getRole_id() { return role_id; }
-    public String getDepartment() { return department; }
-    public String getInstitution() { return institution; }
+    public String getDept_id() { return dept_id; }
+    public String getInst_id() { return inst_id; }
     public String getNew_pwd() { return new_pwd; }
     public String getCfm_pwd() { return cfm_pwd; }
 }
