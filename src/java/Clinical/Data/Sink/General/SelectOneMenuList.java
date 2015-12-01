@@ -33,6 +33,7 @@ import org.apache.logging.log4j.LogManager;
  * in static function setup. The functions to get the Illumina and Affymetrix
  * types have also been made static.
  * 11-Nov-2015 - Changed the return type of setup method.
+ * 01-Dec-2015 - Removed the setup for vendor, institution and department.
  */
 
 @ManagedBean (name="selectOneMenuList")
@@ -42,11 +43,11 @@ public class SelectOneMenuList {
     private final static Logger logger = LogManager.
             getLogger(SelectOneMenuList.class.getName());
     // Used LinkedHashMap in order to maintains the insertion order
-    private static final LinkedHashMap<String,String> vendorList = new LinkedHashMap<>();
+//    private static final LinkedHashMap<String,String> vendorList = new LinkedHashMap<>();
     private static final LinkedHashMap<String,String> affymetrixTypeList = new LinkedHashMap<>();    
     private static final LinkedHashMap<String,String> illuminaTypeList = new LinkedHashMap<>();    
-    private static final LinkedHashMap<String,String> institutionList = new LinkedHashMap<>();
-    private static final LinkedHashMap<String,String> departmentList = new LinkedHashMap<>();
+//    private static final LinkedHashMap<String,String> institutionList = new LinkedHashMap<>();
+//    private static final LinkedHashMap<String,String> departmentList = new LinkedHashMap<>();
     // Setup indicator
     private static Boolean setup = false;
 
@@ -75,21 +76,21 @@ public class SelectOneMenuList {
                     // Only take in the values if they are in pair
                     if (itemPair.length == 2) {
                         switch(switchStr) {
-                            case "VENDOR":
-                                vendorList.put(itemPair[0], itemPair[1]);
-                                break;
+//                            case "VENDOR":
+//                                vendorList.put(itemPair[0], itemPair[1]);
+//                                break;
                             case "AFFYMETRIX":
                                 affymetrixTypeList.put(itemPair[0], itemPair[1]);
                                 break;
                             case "ILLUMINA":
                                 illuminaTypeList.put(itemPair[0], itemPair[1]);
                                 break;
-                            case "INSTITUTION":
-                                institutionList.put(itemPair[0], itemPair[1]);
-                                break;
-                            case "DEPARTMENT":
-                                departmentList.put(itemPair[0], itemPair[1]);
-                                break;
+//                            case "INSTITUTION":
+//                                institutionList.put(itemPair[0], itemPair[1]);
+//                                break;
+//                            case "DEPARTMENT":
+//                                departmentList.put(itemPair[0], itemPair[1]);
+//                                break;
                             default:
                                 // something is wrong with the item list file
                                 break;
@@ -99,11 +100,11 @@ public class SelectOneMenuList {
             
                 setup = true;
                 logger.debug(uri + " loaded.");
-                logger.debug(vendorList.values());
+//                logger.debug(vendorList.values());
                 logger.debug(affymetrixTypeList.values());
                 logger.debug(illuminaTypeList.values());
-                logger.debug(institutionList.values());
-                logger.debug(departmentList.values());
+//                logger.debug(institutionList.values());
+//                logger.debug(departmentList.values());
             } catch (IOException e) {
                 logger.error("IOException encountered while loading " + uri);
                 logger.error(e.getMessage());
@@ -115,8 +116,8 @@ public class SelectOneMenuList {
     }
     
     // getVendorTypes will return the list of vendors.
-    public LinkedHashMap<String,String> getVendorTypes() 
-    {   return vendorList;      }
+//    public LinkedHashMap<String,String> getVendorTypes() 
+//    {   return vendorList;      }
     
     // Return the list of Affymetrix type.
     public LinkedHashMap<String,String> getAffymetrixType() 
@@ -131,12 +132,12 @@ public class SelectOneMenuList {
     {   return illuminaTypeList;    }
     
     // getInstitution will return the list of institution.
-    public LinkedHashMap<String,String> getInstitution() 
-    {   return institutionList; }
+//    public LinkedHashMap<String,String> getInstitution() 
+//    {   return institutionList; }
     
     // getDepartment will return the list of department
-    public LinkedHashMap<String,String> getDepartment() 
-    {   return departmentList;  }
+//    public LinkedHashMap<String,String> getDepartment() 
+//    {   return departmentList;  }
     
     // Retrieve the servlet context
     private ServletContext getServletContext() {
