@@ -67,6 +67,9 @@ public class JobStatusBean implements Serializable {
                 ": access Job Status page.");
         // Retrieve the job status definition from database
         JobStatus.getJobStatusDef();
+        // Retrieve the submitted job from database everytime we enter job
+        // status page.
+        SubmittedJobDB.clearSubmittedJobs();
     }
 
     @PostConstruct
@@ -158,16 +161,13 @@ public class JobStatusBean implements Serializable {
     }
     */
     
-    /* No longer in use; will be using the sortBy function provided by 
-    // PrimeFaces instead.
+    /* No longer in use.
     public void sort(ActionEvent actionEvent) {
         // Order the query result according to the column selected by the user.
         // For Submission Date, order by job_id will be used.
         SubmittedJobDB.setQueryOrderBy(actionEvent.getComponent().getId());
     }
-    */
-    
-    /* No longer in use.
+
     // Setup the variables file and type according to the pipeline output.
     public void preOutput() {
         // Need to pass in the parameter from JSF
