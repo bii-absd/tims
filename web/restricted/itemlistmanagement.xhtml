@@ -17,15 +17,15 @@
                 <p:inputText id="instcode" size="32" maxlength="10" autocomplete="off" 
                              required="true" value="#{itemListMgntBean.inst_code}"/>
                 <h:message id="instcode-status" for="instcode" styleClass="errors"/>
-                <p:watermark for="instcode" value="New Institution Code"/>
+                <p:watermark for="instcode" value="New Institution ID"/>
                 
                 <p:inputText id="instname" size="32" maxlength="50" autocomplete="off" 
                              required="true" value="#{itemListMgntBean.inst_name}"/>
                 <h:message id="instname-status" for="instname" styleClass="errors"/>
-                <p:watermark for="instname" value="Institution Name"/>
+                <p:watermark for="instname" value="New Institution Name"/>
                 
                 <h:commandButton action="#{itemListMgntBean.createNewInstitution}" 
-                                 value="Create New Institution Code" 
+                                 value="Create New Institution ID" 
                                  styleClass="panel-button"/>
             </h:panelGrid>
         </h:form>
@@ -40,13 +40,13 @@
                          editable="true">
                 <p:ajax event="rowEdit" listener="#{itemListMgntBean.onInstRowEdit}"
                         update="itemListMsg"/>
-                <p:column headerText="Institution Code" style="text-align: left">
+                <p:column headerText="Institution ID" style="text-align: left">
                     <p:cellEditor>
                         <f:facet name="output">
-                            <h:outputText value="#{inst.institution_code}"/>                            
+                            <h:outputText value="#{inst.inst_id}"/>                            
                         </f:facet>
                         <f:facet name="input">
-                            <h:inputText value="#{inst.institution_code}" 
+                            <h:inputText value="#{inst.inst_id}" 
                                          style="width: 100%"/>
                         </f:facet>
                     </p:cellEditor>
@@ -54,10 +54,10 @@
                 <p:column headerText="Institution Name" style="text-align: left">
                     <p:cellEditor>
                         <f:facet name="output">
-                            <h:outputText value="#{inst.institution_name}"/>
+                            <h:outputText value="#{inst.inst_name}"/>
                         </f:facet>
                         <f:facet name="input">
-                            <h:inputText value="#{inst.institution_name}" 
+                            <h:inputText value="#{inst.inst_name}" 
                                          style="width: 100%"/>
                         </f:facet>
                     </p:cellEditor>
