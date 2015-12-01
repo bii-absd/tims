@@ -4,11 +4,14 @@
 package Clinical.Data.Sink.Bean;
 
 import Clinical.Data.Sink.Database.PipelineCommandDB;
+import Clinical.Data.Sink.Database.SubmittedJob;
+import Clinical.Data.Sink.Database.SubmittedJobDB;
 import Clinical.Data.Sink.General.Constants;
 import Clinical.Data.Sink.General.SelectOneMenuList;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import javax.annotation.PostConstruct;
@@ -34,6 +37,7 @@ import javax.faces.bean.ViewScoped;
 public class GEXIlluminaBean extends ConfigBean {
     private FileUploadBean ctrlFile;
     private List<String> probeFilters;
+    private String probeFilter;
 
     public GEXIlluminaBean() {
         pipelineName = Constants.GEX_ILLUMINA;
@@ -62,21 +66,21 @@ public class GEXIlluminaBean extends ConfigBean {
         logger.debug("Pipeline config file: " + pipelineConfig);
 
         try (FileWriter fw = new FileWriter(configFile)) {
-            String input = inputFile.getLocalDirectoryPath() +
-                           inputFile.getInputFilename();
-            String ctrl = ctrlFile.getLocalDirectoryPath() + 
-                          ctrlFile.getInputFilename();
-            String sample = sampleFile.getLocalDirectoryPath() + 
-                            sampleFile.getInputFilename();
-            String probeFiltering = Constants.NONE;
+            input = inputFile.getLocalDirectoryPath() +
+                    inputFile.getInputFilename();
+            ctrl = ctrlFile.getLocalDirectoryPath() + 
+                   ctrlFile.getInputFilename();
+            sample = sampleFile.getLocalDirectoryPath() + 
+                     sampleFile.getInputFilename();
+            probeFilter = Constants.NONE;
             // Create config file
             configFile.createNewFile();
 
             if (probeFilters.size() > 0) {
-                probeFiltering = probeFilters.get(0);
+                probeFilter = probeFilters.get(0);
                 for (int i = 1; i < probeFilters.size(); i++) {
-                    probeFiltering += ";";
-                    probeFiltering += probeFilters.get(i);
+                    probeFilter += ";";
+                    probeFilter += probeFilters.get(i);
                 }
             }
             
@@ -91,7 +95,7 @@ public class GEXIlluminaBean extends ConfigBean {
 
             fw.write("### PROCESSING parameters\n" +
                      "NORMALIZATION\t=\t" + getNormalization() +
-                     "\nPROBE_Filtering\t=\t" + probeFiltering +
+                     "\nPROBE_Filtering\t=\t" + probeFilter +
                      "\nPROBE_SELECTION\t=\t" + booleanToYesNo(isProbeSelect()) +
                      "\nPHENOTYPE_COLUMN\t=\t" + getPhenotype() + "\n\n");
 
@@ -125,6 +129,39 @@ public class GEXIlluminaBean extends ConfigBean {
               ctrlFile.isFilelistEmpty())) {
             setJobSubmissionStatus(true);            
         }
+    }
+
+    @Override
+    public Boolean insertJob(String outputFilePath, String reportFilePath) {
+        Boolean result = Constants.OK;
+        // job_id will not be used during insertion, just send in any value will
+        // do e.g. 0
+        // Insert the new job request into datbase; job status is 1 i.e. Waiting
+        // DB 2.0 - For attributes summarization and region, set them to "NA".
+        SubmittedJob newJob = 
+                new SubmittedJob(0, getStudyID(), pipelineName, 1,
+                                 submitTimeInDB, getType(), ctrl, sample, 
+                                 getNormalization(), probeFilter, 
+                                 isProbeSelect(), getPhenotype(), "NA", 
+                                 outputFilePath, getSampleAverage(), 
+                                 getStdLog2Ratio(), "NA", reportFilePath);
+        
+        try {
+            // Store the job_id of the inserted record
+            job_id = SubmittedJobDB.insertJob(newJob);
+            // insertJob will return the job_id of the inserted job request
+            // NOTE: need to keep the job_id for further processing. KIV
+            logger.info(AuthenticationBean.getUserName() + 
+                    ": insert new job request into database. ID: " + job_id);
+        }
+        catch (SQLException e) {
+            logger.error(AuthenticationBean.getUserName() + 
+                    ": encountered SQLException at insertJob.");
+            logger.error(e.getMessage());
+            result = Constants.NOT_OK;
+        }
+        // The insert operation will have failed if the control reaches here.
+        return result;
     }
 
     // Return the list of Illumina type.
