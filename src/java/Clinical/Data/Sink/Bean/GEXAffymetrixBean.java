@@ -4,11 +4,14 @@
 package Clinical.Data.Sink.Bean;
 
 import Clinical.Data.Sink.Database.PipelineCommandDB;
+import Clinical.Data.Sink.Database.SubmittedJob;
+import Clinical.Data.Sink.Database.SubmittedJobDB;
 import Clinical.Data.Sink.General.Constants;
 import Clinical.Data.Sink.General.SelectOneMenuList;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
@@ -59,8 +62,8 @@ public class GEXAffymetrixBean extends ConfigBean {
         logger.debug("Pipeline config file: " + pipelineConfig);
 
         try (FileWriter fw = new FileWriter(configFile)) {
-            String input = inputFile.getLocalDirectoryPath();
-            String sample = sampleFile.getLocalDirectoryPath() + 
+            input = inputFile.getLocalDirectoryPath();
+            sample = sampleFile.getLocalDirectoryPath() + 
                             sampleFile.getInputFilename();
             // Create the config file
             configFile.createNewFile();
@@ -70,6 +73,7 @@ public class GEXAffymetrixBean extends ConfigBean {
                      "STUDY_ID\t=\t" + getStudyID() + "_" + submitTimeInFilename +
                      "\nTYPE\t=\t" + getType() +
                      "\nINPUT_FILE\t=\t" + input +
+                     "\nCTRL_FILE\t=\t" +
                      "\nSAMPLES_ANNOT_FILE\t=\t" + sample + "\n\n");
 
             fw.write("### PROCESSING parameters\n" +
@@ -110,6 +114,39 @@ public class GEXAffymetrixBean extends ConfigBean {
         }
     }
     
+    @Override
+    public Boolean insertJob(String outputFilePath, String reportFilePath) {
+        Boolean result = Constants.OK;
+        // job_id will not be used during insertion, just send in any value will
+        // do e.g. 0
+        // Insert the new job request into datbase; job status is 1 i.e. Waiting
+        // DB 2.0 - For attributes summarization and region, set them to "NA".
+        SubmittedJob newJob = 
+                new SubmittedJob(0, getStudyID(), pipelineName, 1,
+                                 submitTimeInDB, getType(), ctrl, sample, 
+                                 getNormalization(), probeFilter, 
+                                 isProbeSelect(), getPhenotype(), "NA", 
+                                 outputFilePath, getSampleAverage(), 
+                                 getStdLog2Ratio(), "NA", reportFilePath);
+        
+        try {
+            // Store the job_id of the inserted record
+            job_id = SubmittedJobDB.insertJob(newJob);
+            // insertJob will return the job_id of the inserted job request
+            // NOTE: need to keep the job_id for further processing. KIV
+            logger.info(AuthenticationBean.getUserName() + 
+                    ": insert new job request into database. ID: " + job_id);
+        }
+        catch (SQLException e) {
+            logger.error(AuthenticationBean.getUserName() + 
+                    ": encountered SQLException at insertJob.");
+            logger.error(e.getMessage());
+            result = Constants.NOT_OK;
+        }
+        // The insert operation will have failed if the control reaches here.
+        return result;
+    }
+
     // Return the list of Affymetrix type.
     public LinkedHashMap<String,String> getTypeList() {
         return SelectOneMenuList.getAffymetrixTypeList();
