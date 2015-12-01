@@ -23,36 +23,73 @@ import java.io.Serializable;
  * 12-Oct-2015 - Added job_id field.
  * 23-Oct-2015 - Added report field.
  * 30-Oct-2015 - Added one new function getAvailable.
- * 25-Nov-2015 - Implementation for database 2.0
+ * 30-Nov-2015 - Implementation for database 2.0
  */
 public class SubmittedJob implements Serializable {
+    // Additional attributes (study_id, pipeline_name, chip_type, 
+    // ctrl_file, normalization, probe_filtering, probe_select, 
+    // phenotype_column, summarization, sample_average, standardization & 
+    // region) added for DB 2.0
     private int job_id;
     private String study_id;
     private String user_id;
-    private String tid;
     private String pipeline_name;
     private int status_id;
     private String submit_time;
+    private String chip_type, ctrl_file, annot_file, normalization, probe_filtering;
+    private Boolean probe_select;
+    private String phenotype_column, summarization;
     private String output_file;
+    private String sample_average, standardization, region;
     private String report;
     // status_name will be used by the job status page
     private String status_name;
 
-    public SubmittedJob(int job_id, String study_id,String tid, 
+    // Full constructor
+    public SubmittedJob(int job_id, String study_id, 
+            String pipeline_name, int status_id, String submit_time, 
+            String chip_type, String ctrl_file, String annot_file, 
+            String normalization, String probe_filtering, Boolean probe_select, 
+            String phenotype_column, String summarization, String output_file, 
+            String sample_average, String standardization, String region, 
+            String report) 
+    {
+        this.job_id = job_id;
+        this.study_id = study_id;
+        this.user_id = AuthenticationBean.getUserName();
+        this.pipeline_name = pipeline_name;
+        this.status_id = status_id;
+        this.submit_time = submit_time;
+        this.chip_type = chip_type;
+        this.ctrl_file = ctrl_file;
+        this.annot_file = annot_file;
+        this.normalization = normalization;
+        this.probe_filtering = probe_filtering;
+        this.probe_select = probe_select;
+        this.phenotype_column = phenotype_column;
+        this.summarization = summarization;
+        this.output_file = output_file;
+        this.sample_average = sample_average;
+        this.standardization = standardization;
+        this.region = region;
+        this.report = report;
+    }
+    
+    // Simplify constructor for data table.
+    public SubmittedJob(int job_id, String study_id, 
             String pipeline_name, int status_id, String submit_time, 
             String output_file, String report) 
     {
         this.job_id = job_id;
         this.study_id = study_id;
         this.user_id = AuthenticationBean.getUserName();
-        this.tid = tid;
         this.pipeline_name = pipeline_name;
         this.status_id = status_id;
         this.submit_time = submit_time;
         this.output_file = output_file;
         this.report = report;
     }
-
+    
     // Return the job status name of this submitted job.
     public String getStatus_name() {
         return JobStatus.getStatusName(status_id);
@@ -89,12 +126,6 @@ public class SubmittedJob implements Serializable {
     public void setUser_id(String user_id) {
         this.user_id = user_id;
     }
-    public String getTid() {
-        return tid;
-    }
-    public void setTid(String tid) {
-        this.tid = tid;
-    }
     public String getPipeline_name() {
         return pipeline_name;
     }
@@ -113,11 +144,77 @@ public class SubmittedJob implements Serializable {
     public void setSubmit_time(String submit_time) {
         this.submit_time = submit_time;
     }
+    public String getChip_type() {
+        return chip_type;
+    }
+    public void setChip_type(String chip_type) {
+        this.chip_type = chip_type;
+    }
+    public String getCtrl_file() {
+        return ctrl_file;
+    }
+    public void setCtrl_file(String ctrl_file) {
+        this.ctrl_file = ctrl_file;
+    }
+    public String getAnnot_file() {
+        return annot_file;
+    }
+    public void setAnnot_file(String annot_file) {
+        this.annot_file = annot_file;
+    }
+    public String getNormalization() {
+        return normalization;
+    }
+    public void setNormalization(String normalization) {
+        this.normalization = normalization;
+    }
+    public String getProbe_filtering() {
+        return probe_filtering;
+    }
+    public void setProbe_filtering(String probe_filtering) {
+        this.probe_filtering = probe_filtering;
+    }
+    public Boolean getProbe_select() {
+        return probe_select;
+    }
+    public void setProbe_select(Boolean probe_select) {
+        this.probe_select = probe_select;
+    }
+    public String getPhenotype_column() {
+        return phenotype_column;
+    }
+    public void setPhenotype_column(String phenotype_column) {
+        this.phenotype_column = phenotype_column;
+    }
+    public String getSummarization() {
+        return summarization;
+    }
+    public void setSummarization(String summarization) {
+        this.summarization = summarization;
+    }
     public String getOutput_file() {
         return output_file;
     }
     public void setOutput_file(String output_file) {
         this.output_file = output_file;
+    }
+    public String getSample_average() {
+        return sample_average;
+    }
+    public void setSample_average(String sample_average) {
+        this.sample_average = sample_average;
+    }
+    public String getStandardization() {
+        return standardization;
+    }
+    public void setStandardization(String standardization) {
+        this.standardization = standardization;
+    }
+    public String getRegion() {
+        return region;
+    }
+    public void setRegion(String region) {
+        this.region = region;
     }
     public String getReport() {
         return report;
