@@ -94,8 +94,8 @@ public class Constants {
     public final static String GEX_AFFYMETRIX_PAGE = 
                                 "gex-affymetrix?faces-redirect=true";
     public final static String ACCOUNT_MANAGEMENT = "accountmanagement";
-    public final static String PIPELINE_COMMAND_MANAGEMENT = 
-                                "commandmanagement";
+    public final static String PIPELINE_MANAGEMENT = 
+                                "pipelinemanagement";
     public final static String ITEM_LIST_MANAGEMENT = 
                                 "itemlistmanagement";
     public final static String NGS_PAGE = "ngs?faces-redirect=true";
