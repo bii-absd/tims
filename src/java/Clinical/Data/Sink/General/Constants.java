@@ -54,6 +54,8 @@ import org.apache.logging.log4j.LogManager;
  * Changed the return type of setup method. Changed the value of LOGIN_PAGE.
  * 16-Nov-2015 - Added w new constants PIPELINE_COMMAND_MANAGEMENT and 
  * ITEM_LIST_MANAGEMENT, and deleted constant ACCOUNT_MANAGEMENT_STAY.
+ * 01-Dec-2015 - Changed the value of DATABASE_INVALID_STR from null to "NOT
+ * FOUND!".
  */
 
 @ManagedBean (name = "constants")
@@ -64,7 +66,7 @@ public class Constants {
             getLogger(Constants.class.getName());
     // Database return status
     public final static int DATABASE_INVALID_ID = -1;
-    public final static String DATABASE_INVALID_STR = null;
+    public final static String DATABASE_INVALID_STR = "NOT FOUND!";
     public final static Boolean CHECK_VALID = true;
     public final static Boolean CHECK_INVALID = false;
     public final static Boolean INSERT_SUCCESS = true;
@@ -141,7 +143,7 @@ public class Constants {
                 }
                 logger.debug(uri + " loaded.");
             } catch (IOException e) {
-                logger.error("IOException encountered while loading " + uri);
+                logger.error("IOException while loading " + uri);
                 logger.error(e.getMessage());
                 return NOT_OK;
             }
