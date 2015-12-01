@@ -11,36 +11,37 @@ package Clinical.Data.Sink.Database;
  * 
  * Revision History
  * 13-Nov-2015 - Created with all the standard getters and setters.
+ * 01-Dec-2015 - Implementation for database 2.0
  */
 
 public class Department {
     // department table fields
-    private String institution_code, department_code, department_name;
+    private String inst_id, dept_id, dept_name;
 
-    public Department(String institution_code, String department_code, 
-            String department_name) {
-        this.institution_code = institution_code;
-        this.department_code = department_code;
-        this.department_name = department_name;
+    public Department(String inst_id, String dept_id, 
+            String dept_name) {
+        this.inst_id = inst_id;
+        this.dept_id = dept_id;
+        this.dept_name = dept_name;
     }
 
     // Machine generated getters and setters
-    public String getInstitution_code() {
-        return institution_code;
+    public String getInst_id() {
+        return inst_id;
     }
-    public void setInstitution_code(String institution_code) {
-        this.institution_code = institution_code;
+    public void setInst_id(String inst_id) {
+        this.inst_id = inst_id;
     }
-    public String getDepartment_code() {
-        return department_code;
+    public String getDept_id() {
+        return dept_id;
     }
-    public void setDepartment_code(String department_code) {
-        this.department_code = department_code;
+    public void setDept_id(String dept_id) {
+        this.dept_id = dept_id;
     }
-    public String getDepartment_name() {
-        return department_name;
+    public String getDept_name() {
+        return dept_name;
     }
-    public void setDepartment_name(String department_name) {
-        this.department_name = department_name;
+    public void setDept_name(String dept_name) {
+        this.dept_name = dept_name;
     }   
 }
