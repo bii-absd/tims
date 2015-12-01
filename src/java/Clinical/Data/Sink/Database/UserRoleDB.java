@@ -31,13 +31,14 @@ import org.apache.logging.log4j.LogManager;
  * 04-Nov-2015 - Port to JSF 2.2
  * 06-Nov-2015 - Updated the query statement for getRoleList.
  * 13-Nov-2015 - Changes the class name from UserRole to UserRoleDB.
+ * 30-Nov-2015 - Implementation for database 2.0
  */
 
 public class UserRoleDB implements Serializable {
     // Get the logger for Log4j
     private final static Logger logger = LogManager.
             getLogger(UserRoleDB.class.getName());
-    private final static LinkedHashMap<String, Integer> roleList = 
+    private final static LinkedHashMap<String, Integer> roleNameList = 
                                                         new LinkedHashMap<>();
     private final static LinkedHashMap<Integer, String> roleIDList = 
                                                         new LinkedHashMap<>();
@@ -46,44 +47,41 @@ public class UserRoleDB implements Serializable {
     public UserRoleDB() {}
 
     // Return the list of Role setup in the database
-    public static LinkedHashMap<String, Integer> getRoleList() {
+    public static LinkedHashMap<String, Integer> getRoleNameList() {
         // We will only build the roleList once
-        if (roleList.isEmpty()) {
-            String queryStr = "SELECT * from user_role ORDER BY role_id";
-            
-            try (PreparedStatement queryRole = conn.prepareStatement(queryStr))
-            {
-                ResultSet queryResult = queryRole.executeQuery();
-                
-                while (queryResult.next()) {
-                    // Build the 2 Hash Map; One is Role ID -> Role, the other
-                    // is Role -> Role ID.
-                    roleList.put(queryResult.getString("role"),
-                            queryResult.getInt("role_id"));
-                    roleIDList.put(queryResult.getInt("role_id"), 
-                            queryResult.getString("role"));
+        if (roleNameList.isEmpty()) {
+            ResultSet result = DBHelper.runQuery
+                    ("SELECT * from user_role ORDER BY role_id");
+            try {
+                while (result.next()) {
+                    // Build the 2 Hash Map; One is Role ID -> Role Name, 
+                    // the other is Role Name -> Role ID.
+                    roleNameList.put(result.getString("role_name"),
+                            result.getInt("role_id"));
+                    roleIDList.put(result.getInt("role_id"), 
+                            result.getString("role_name"));
                 }
-                logger.debug("Role List: " + roleList.toString());
-            } catch (SQLException ex) {
-                logger.error("SQLException at getRoleList.");
-                logger.error(ex.getMessage());
+                logger.debug("Role List: " + roleNameList.toString());
+            } catch (SQLException e) {
+                logger.error("SQLException when retrieving from user_role table!");
+                logger.error(e.getMessage());
             }
         }
         
-        return roleList;
+        return roleNameList;
     }
     
     // Return the Role ID using the value stored in HashMap roleList (Don't 
     // need to access the database).
-    public static int getRoleIDFromHash(String role) {
-        if (roleList.isEmpty()) {
+    public static int getRoleIDFromHash(String roleName) {
+        if (roleNameList.isEmpty()) {
             return Constants.DATABASE_INVALID_ID;
         }
-        return roleList.get(role);            
+        return roleNameList.get(roleName);            
     }
     // Return the Role using the value stored in HashMap roleIDList (Don't 
     // need to access the database).
-    public static String getRoleFromHash(int roleID) {
+    public static String getRoleNameFromHash(int roleID) {
         if (roleIDList.isEmpty()) {
             return Constants.DATABASE_INVALID_STR;
         }
@@ -91,54 +89,42 @@ public class UserRoleDB implements Serializable {
     }
     
     // Return the role_id for the role passed in.
-    public static int getRoleID(String role) throws SQLException {
-        String queryStr = "SELECT role_id from user_role WHERE role = ?";
-        ResultSet queryResult = null;
+    // Replaced by getRoleIDFromHash.
+    public static int getRoleID(String roleName) {
+        String queryStr = "SELECT role_id from user_role WHERE role_name = ?";
         
-        try {
-            PreparedStatement queryRoleID = conn.prepareStatement(queryStr);
-            queryRoleID.setString(1, role);
-            queryResult = queryRoleID.executeQuery();
+        try (PreparedStatement queryRoleID = conn.prepareStatement(queryStr)) {            
+            queryRoleID.setString(1, roleName);
+            ResultSet result = queryRoleID.executeQuery();
             
-            if (queryResult.next()) {
-                return queryResult.getInt("role_id");
+            if (result.next()) {
+                return result.getInt("role_id");
             }
-        } catch (SQLException ex) {
-            logger.error("SQLException at getRoleID.");
-            logger.error(ex.getMessage());
-        } finally {
-            if (queryResult != null) {
-                queryResult.close();
-            }
+        } catch (SQLException e) {
+            logger.error("SQLException when getting Role ID from database!");
+            logger.error(e.getMessage());
         }
         
-        logger.debug("Role " + role + " is not found in the database.");
         return Constants.DATABASE_INVALID_ID;
     }
     
     // Return the role for the roleID passed in.
-    public static String getRole(int roleID) throws SQLException {
-        String queryStr = "SELECT role from user_role WHERE role_id = ?";
-        ResultSet queryResult = null;
+    // Replaced by getRoleNameFromHash.
+    public static String getRoleName(int roleID) {
+        String queryStr = "SELECT role_name from user_role WHERE role_id = ?";
         
-        try {
-            PreparedStatement queryRoleID = conn.prepareStatement(queryStr);
-            queryRoleID.setInt(1, roleID);
-            queryResult = queryRoleID.executeQuery();
+        try (PreparedStatement queryStm = conn.prepareStatement(queryStr)) {
+            queryStm.setInt(1, roleID);
+            ResultSet result = queryStm.executeQuery();
             
-            if (queryResult.next()) {
-                return queryResult.getString("role");
-            }            
-        } catch (SQLException ex) {
-            logger.error("SQLException at getRoleID.");
-            logger.error(ex.getMessage());
-        } finally {
-            if (queryResult != null) {
-                queryResult.close();
+            if (result.next()) {
+                return result.getString("role_name");
             }
+        } catch (SQLException e) {
+            logger.error("SQLException when getting Role Name from database!");
+            logger.error(e.getMessage());
         }
-        logger.debug("Role ID " + String.valueOf(roleID) + 
-                " is not found in the database.");
+        
         return Constants.DATABASE_INVALID_STR;
     }
 }
