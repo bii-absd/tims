@@ -35,7 +35,7 @@ import org.apache.logging.log4j.LogManager;
  * 08-Oct-2015 - Add methods to update the status_id of submitted job.
  * 12-Oct-2015 - Added job_id field during query. Log the exception message.
  * 23-Oct-2015 - Added report field during query.
- * 25-Nov-2015 - Commented out unused code. Implementation for database 2.0
+ * 30-Nov-2015 - Commented out unused code. Implementation for database 2.0
  */
 
 public class SubmittedJobDB {
@@ -58,20 +58,33 @@ public class SubmittedJobDB {
     // handled by the caller.
     public static int insertJob(SubmittedJob job) throws SQLException {
         String insertStr = "INSERT INTO submitted_job"
-                + "(study_id, user_id, tid, pipeline_name, status_id, "
-                + "submit_time, output_file, report) "
-                + "VALUES(?,?,?,?,?,?,?,?)";
+                + "(study_id, user_id, pipeline_name, status_id, "
+                + "submit_time, chip_type, ctrl_file, annot_file, "
+                + "normalization, probe_filtering, probe_select, "
+                + "phenotype_column, summarization, output_file, "
+                + "sample_average, standardization, region, report) "
+                + "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
         PreparedStatement insertStm = conn.prepareStatement(insertStr);
         // Build the INSERT statement using the variables retrieved from the
         // SubmittedJob object (i.e. job) passed in.
         insertStm.setString(1, job.getStudy_id());
         insertStm.setString(2, job.getUser_id());
-        insertStm.setString(3, job.getTid());
-        insertStm.setString(4, job.getPipeline_name());
-        insertStm.setInt(5, job.getStatus_id());
-        insertStm.setString(6, job.getSubmit_time());
-        insertStm.setString(7, job.getOutput_file());
-        insertStm.setString(8, job.getReport());
+        insertStm.setString(3, job.getPipeline_name());
+        insertStm.setInt(4, job.getStatus_id());
+        insertStm.setString(5, job.getSubmit_time());
+        insertStm.setString(6, job.getChip_type());
+        insertStm.setString(7, job.getCtrl_file());
+        insertStm.setString(8, job.getAnnot_file());
+        insertStm.setString(9, job.getNormalization());
+        insertStm.setString(10, job.getProbe_filtering());
+        insertStm.setBoolean(11, job.getProbe_select());
+        insertStm.setString(12, job.getPhenotype_column());
+        insertStm.setString(13, job.getSummarization());
+        insertStm.setString(14, job.getOutput_file());
+        insertStm.setString(15, job.getSample_average());
+        insertStm.setString(16, job.getStandardization());
+        insertStm.setString(17, job.getRegion());
+        insertStm.setString(18, job.getReport());
         // Execute the INSERT statement
         insertStm.executeUpdate();
         // Retrieve and store the last inserted Job ID
@@ -142,7 +155,7 @@ public class SubmittedJobDB {
         if (submittedJobs.isEmpty()) {
             ResultSet result;
         
-            String queryStr = "SELECT job_id, study_id, tid, pipeline_name, "
+            String queryStr = "SELECT job_id, study_id, pipeline_name, "
                     + "status_id, submit_time, output_file, report FROM "
                     + "submitted_job WHERE user_id = ? ORDER BY job_id DESC"; 
 
@@ -166,7 +179,6 @@ public class SubmittedJobDB {
                     SubmittedJob job = new SubmittedJob(
                                     result.getInt("job_id"),
                                     result.getString("study_id"),
-                                    result.getString("tid"),
                                     result.getString("pipeline_name"),
                                     result.getInt("status_id"),
                                     result.getString("submit_time"),
@@ -188,7 +200,7 @@ public class SubmittedJobDB {
     }
 
     // Clear the HashMap, so that the query to the database will be run again.
-    private static void clearSubmittedJobs() {
+    public static void clearSubmittedJobs() {
         submittedJobs.clear();
     }
     
