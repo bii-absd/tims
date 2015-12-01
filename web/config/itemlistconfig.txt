@@ -1,6 +1,3 @@
-#VENDOR
-Affymetrix$Affymetrix
-Illumina$Illumina
 #AFFYMETRIX
 HG-U113-Plus2.0$HG-U113-Plus2.0
 HG-U123-Plus2.0$HG-U123-Plus2.0
@@ -10,14 +7,3 @@ HumanHT12v3$HumanHT12v3
 HumanHT12v4$HumanHT12v4
 HumanWG6v1$HumanWG6v1
 HumanWG6v2$HumanWG6v2
-#NORMALIZATION_AFFYMETRIX
-RMA$RMA
-DABG$DABG
-#NORMALIZATION_ILLUMINA
-NEQC$NEQC
-#INSTITUTION
-Bioinformatics Institute$Bioinformatics Institute
-Khoo Teck Puat Hospital$Khoo Teck Puat Hospital
-#DEPARTMENT
-ABSD$ABSD
-CRU$CRU
