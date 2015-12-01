@@ -27,6 +27,7 @@ import org.apache.logging.log4j.LogManager;
  * 16-Nov-2015 - Added 2 new methods, getAllDeptList() to get the full 
  * department list and getDeptHashMap(inst_code) to get the department list 
  * for the respective institution.
+ * 30-Nov-2015 - Implementation for database 2.0
  */
 
 public class DepartmentDB implements Serializable {
@@ -44,14 +45,14 @@ public class DepartmentDB implements Serializable {
         // To prevent the query from being run multiple times.
         if (deptList.isEmpty()) {
             ResultSet result = DBHelper.runQuery
-                ("SELECT * FROM department ORDER BY institution_code");
+                ("SELECT * FROM dept ORDER BY inst_id");
             
             try {
                 while (result.next()) {
                     Department dept = new Department(
-                                        result.getString("institution_code"),
-                                        result.getString("department_code"),
-                                        result.getString("department_name"));
+                                        result.getString("inst_id"),
+                                        result.getString("dept_id"),
+                                        result.getString("dept_name"));
                     deptList.add(dept);
                 }
             }
@@ -64,30 +65,29 @@ public class DepartmentDB implements Serializable {
         return deptList;
     }
     
-    // Return the list of departments setup under the specific institution
-    public static LinkedHashMap<String, String> getDeptHashMap
-        (String inst_code) 
+    // Return the list of departments setup under the specific inst_id.
+    public static LinkedHashMap<String, String> getDeptHashMap(String inst_id)
     {
-        LinkedHashMap<String, String> departmentList = new LinkedHashMap<>();
-        String queryStr = "SELECT department_code, department_name FROM "
-                    + "department WHERE institution_code = ?";
+        LinkedHashMap<String, String> deptList = new LinkedHashMap<>();
+        String queryStr = "SELECT dept_id, dept_name FROM "
+                    + "dept WHERE inst_id = ?";
 
         try (PreparedStatement queryStm = conn.prepareStatement(queryStr)) {
-            queryStm.setString(1, inst_code);
+            queryStm.setString(1, inst_id);
             ResultSet result = queryStm.executeQuery();
             
             while (result.next()) {
-                departmentList.put(result.getString("department_code"), 
-                                   result.getString("department_name"));
+                deptList.put(result.getString("dept_id"), 
+                             result.getString("dept_id"));
             }
-            logger.debug("Department list for " + inst_code + ": " +
-                    departmentList.toString());
+            logger.debug("Department list for " + inst_id + ": " +
+                    deptList.toString());
         }
         catch (SQLException e) {
-            logger.error("SQLException at getDeptHashMap: " + inst_code);
+            logger.error("SQLException at getDeptHashMap: " + inst_id);
             logger.error(e.getMessage());
         }
         
-        return departmentList;
+        return deptList;
     }
 }
