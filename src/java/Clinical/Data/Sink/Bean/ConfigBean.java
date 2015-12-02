@@ -46,7 +46,8 @@ import org.apache.logging.log4j.LogManager;
  * submission's readiness status.
  * 25-Nov-2015 - Renamed pipelineType to pipelineTech. Implementation for 
  * database 2.0
- * 02-Dec-2015 - Streamline the createConfigFile method.
+ * 02-Dec-2015 - Streamline the createConfigFile method. Implemented the changes
+ * in the input folder directory.
  */
 
 public abstract class ConfigBean implements Serializable {
@@ -94,9 +95,20 @@ public abstract class ConfigBean implements Serializable {
     public void init() {
         // Create the time stamp for the pipeline job once the user enter
         // the page.
-        createJobTimestamp();
-        // Setup the file directory for this pipeline job.
-        FileUploadBean.setFileDirectory(submitTimeInFilename);
+        createJobTimestamp();        
+        // Setup the input file directory for this pipeline job.
+        // PS: Temporarily will use the submitTimeInFilename first
+        // UNTIL database 2.0 have been implemented for study table
+        /*
+        FileUploadBean.setFileDirectory(Constants.getSYSTEM_PATH() + 
+                                        Constants.getINPUT_PATH() +
+                                        getStudyID() + "_" + submitTimeInFilename + 
+                                        File.separator);
+        */
+        FileUploadBean.setFileDirectory(Constants.getSYSTEM_PATH() + 
+                                        Constants.getINPUT_PATH() +
+                                        submitTimeInFilename + 
+                                        File.separator);
         
         inputFile = new FileUploadBean();
         sampleFile = new FileUploadBean();
