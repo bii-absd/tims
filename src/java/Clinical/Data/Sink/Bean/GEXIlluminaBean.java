@@ -3,14 +3,11 @@
  */
 package Clinical.Data.Sink.Bean;
 
-import Clinical.Data.Sink.Database.PipelineCommandDB;
+import Clinical.Data.Sink.Database.PipelineDB;
 import Clinical.Data.Sink.Database.SubmittedJob;
 import Clinical.Data.Sink.Database.SubmittedJobDB;
 import Clinical.Data.Sink.General.Constants;
 import Clinical.Data.Sink.General.SelectOneMenuList;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -30,6 +27,7 @@ import javax.faces.bean.ViewScoped;
  * removed the abstract method allowToSubmitJob().
  * 25-Nov-2015 - Renamed pipelineType to pipelineTech. Implementation for 
  * database 2.0
+ * 02-Dec-2015 - Streamline the createConfigFile method.
  */
 
 @ManagedBean (name="gexIlluminaBean")
@@ -37,11 +35,10 @@ import javax.faces.bean.ViewScoped;
 public class GEXIlluminaBean extends ConfigBean {
     private FileUploadBean ctrlFile;
     private List<String> probeFilters;
-    private String probeFilter;
 
     public GEXIlluminaBean() {
         pipelineName = Constants.GEX_ILLUMINA;
-        pipelineTech = PipelineCommandDB.getPipelineTechnology(pipelineName);
+        pipelineTech = PipelineDB.getPipelineTechnology(pipelineName);
 
         logger.debug("GEXIlluminaBean created.");
     }
@@ -50,75 +47,6 @@ public class GEXIlluminaBean extends ConfigBean {
     public void initFiles() {
         ctrlFile = new FileUploadBean();            
         init();
-    }
-    
-    @Override
-    public Boolean createConfigFile() {
-        Boolean result = Constants.OK;
-        String configDir = AuthenticationBean.getHomeDir() +
-                Constants.getCONFIG_PATH();
-        // configFile will be send to the pipeline during execution
-        File configFile = new File(configDir + 
-                Constants.getCONFIG_FILE_NAME() + submitTimeInFilename + 
-                Constants.getCONFIG_FILE_EXT());
-
-        pipelineConfig = configFile.getAbsolutePath();
-        logger.debug("Pipeline config file: " + pipelineConfig);
-
-        try (FileWriter fw = new FileWriter(configFile)) {
-            input = inputFile.getLocalDirectoryPath() +
-                    inputFile.getInputFilename();
-            ctrl = ctrlFile.getLocalDirectoryPath() + 
-                   ctrlFile.getInputFilename();
-            sample = sampleFile.getLocalDirectoryPath() + 
-                     sampleFile.getInputFilename();
-            probeFilter = Constants.NONE;
-            // Create config file
-            configFile.createNewFile();
-
-            if (probeFilters.size() > 0) {
-                probeFilter = probeFilters.get(0);
-                for (int i = 1; i < probeFilters.size(); i++) {
-                    probeFilter += ";";
-                    probeFilter += probeFilters.get(i);
-                }
-            }
-            
-            // Write to the config file according to the format needed 
-            // by the pipeline.
-            fw.write("### INPUT parameters\n" +
-                     "STUDY_ID\t=\t" + getStudyID() + "_" + submitTimeInFilename +
-                     "\nTYPE\t=\t" + getType() +
-                     "\nINPUT_FILE\t=\t" + input +
-                     "\nCTRL_FILE\t=\t" + ctrl +
-                     "\nSAMPLES_ANNOT_FILE\t=\t" + sample + "\n\n");
-
-            fw.write("### PROCESSING parameters\n" +
-                     "NORMALIZATION\t=\t" + getNormalization() +
-                     "\nPROBE_Filtering\t=\t" + probeFilter +
-                     "\nPROBE_SELECTION\t=\t" + booleanToYesNo(isProbeSelect()) +
-                     "\nPHENOTYPE_COLUMN\t=\t" + getPhenotype() + "\n\n");
-
-            fw.write("### Output file after normalization and processing\n" +
-                     "OUTPUT\t=\t" + pipelineOutput + "\n\n");
-
-            fw.write("### Further Processing\n" +
-                     "SAMPLE_AVERAGING\t=\t" + getSampleAverage() +
-                     "\nSTANDARDIZATION\t=\t" + getStdLog2Ratio() + "\n\n");
-
-            fw.write("### Report Generation\n" +
-                     "REP_FILENAME\t=\t" + pipelineReport + "\n\n");
-
-            logger.debug("Pipeline config file created at " + pipelineConfig);
-        }
-        catch (IOException e) {
-            logger.error(AuthenticationBean.getUserName() + 
-                        ": encountered error when writing pipeline config file.");
-
-            result = Constants.NOT_OK;
-        }
-        
-        return result;
     }
     
     @Override
@@ -164,6 +92,26 @@ public class GEXIlluminaBean extends ConfigBean {
         return result;
     }
 
+    // Make the necessary setup to those attributes that are relevant to this
+    // pipeline, and then call the base class method to create the Config File.
+    public Boolean createConfigFile() {
+        input = inputFile.getLocalDirectoryPath() + inputFile.getInputFilename();
+        ctrl = ctrlFile.getLocalDirectoryPath() + ctrlFile.getInputFilename();
+        sample = sampleFile.getLocalDirectoryPath() + sampleFile.getInputFilename();
+        probeFilter = Constants.NONE;
+
+        if (probeFilters.size() > 0) {
+            probeFilter = probeFilters.get(0);
+
+            for (int i = 1; i < probeFilters.size(); i++) {
+                probeFilter += ";";
+                probeFilter += probeFilters.get(i);
+            }
+        }
+        // Call the base class method to create the Config File.
+        return super.createConfigFile();
+    }
+    
     // Return the list of Illumina type.
     public LinkedHashMap<String,String> getTypeList() {
         return SelectOneMenuList.getIlluminaTypeList();
