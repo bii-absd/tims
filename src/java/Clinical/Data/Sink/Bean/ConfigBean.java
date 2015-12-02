@@ -337,13 +337,13 @@ public abstract class ConfigBean implements Serializable {
             fw.write("### INPUT parameters\n" +
                      "STUDY_ID\t=\t" + getStudyID() + "_" + submitTimeInFilename +
                      "\nTYPE\t=\t" + getType() +
-                     "\nINPUT_FILE\t=\t" + input +
+                     "\nINPUT\t=\t" + input +
                      "\nCTRL_FILE\t=\t" + ctrl +
                      "\nSAMPLES_ANNOT_FILE\t=\t" + sample + "\n\n");
 
             fw.write("### PROCESSING parameters\n" +
                      "NORMALIZATION\t=\t" + getNormalization() +
-                     "\nPROBE_Filtering\t=\t" + getProbeFilter() +
+                     "\nPROBE_FILTERING\t=\t" + getProbeFilter() +
                      "\nPROBE_SELECTION\t=\t" + booleanToYesNo(isProbeSelect()) +
                      "\nPHENOTYPE_COLUMN\t=\t" + getPhenotype() + "\n\n");
 
