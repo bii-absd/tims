@@ -56,6 +56,7 @@ import org.apache.logging.log4j.LogManager;
  * ITEM_LIST_MANAGEMENT, and deleted constant ACCOUNT_MANAGEMENT_STAY.
  * 01-Dec-2015 - Changed the value of DATABASE_INVALID_STR from null to "NOT
  * FOUND!".
+ * 02-Dec-2015 - Implemented the changes in the input folder directory.
  */
 
 @ManagedBean (name = "constants")
@@ -100,8 +101,9 @@ public class Constants {
                                 "itemlistmanagement";
     public final static String NGS_PAGE = "ngs?faces-redirect=true";
     public final static String ERROR = "error?faces-redirect=true";
-    // Constants used in Array pipeline
+    // Constants read in from setup file.
     private static String SYSTEM_PATH = null;
+    private static String USERS_PATH = null;
     private static String OUTPUT_PATH = null;
     private static String INPUT_PATH = null;
     private static String CONFIG_PATH = null;
@@ -150,6 +152,7 @@ public class Constants {
         
             // Setup the config parameters
             SYSTEM_PATH = setup.get("SYSTEM_PATH");
+            USERS_PATH = setup.get("USERS_PATH");
             OUTPUT_PATH = setup.get("OUTPUT_PATH");
             INPUT_PATH = setup.get("INPUT_PATH");
             CONFIG_PATH = setup.get("CONFIG_PATH");
@@ -183,6 +186,7 @@ public class Constants {
     
     // Machine generated getters
     public static String getSYSTEM_PATH() { return SYSTEM_PATH; }
+    public static String getUSERS_PATH() { return USERS_PATH; }
     public static String getOUTPUT_PATH() { return OUTPUT_PATH; }
     public static String getINPUT_PATH() { return INPUT_PATH; }
     public static String getCONFIG_PATH() { return CONFIG_PATH; }
