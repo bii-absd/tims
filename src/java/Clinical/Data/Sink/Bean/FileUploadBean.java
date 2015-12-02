@@ -39,6 +39,7 @@ import org.apache.logging.log4j.LogManager;
  * display an error message when the file failed to get uploaded.
  * 11-Nov-2015 - The file directory will only be created after the user 
  * uploaded a file.
+ * 02-Dec-2015 - Implemented the changes in the input folder directory.
  */
 
 public class FileUploadBean implements Serializable {
@@ -114,11 +115,19 @@ public class FileUploadBean implements Serializable {
         return uFile.getFileName();
     }
     
-    // Create all the system directories for the user.
-    public static Boolean createAllSystemDirectories(String homeDir) {
+    // Create all the relevant system directories.
+    public static Boolean createSystemDirectories(String systemDir) {
+        Boolean result = 
+                createSystemDirectory(systemDir + Constants.getUSERS_PATH()) &&
+                createSystemDirectory(systemDir + Constants.getINPUT_PATH());
+        
+        return result;
+    }
+    
+    // Create all the relevant system directories for the user.
+    public static Boolean createUsersDirectories(String homeDir) {
         Boolean result = 
                 createSystemDirectory(homeDir) && 
-                createSystemDirectory(homeDir + Constants.getINPUT_PATH()) &&
                 createSystemDirectory(homeDir + Constants.getOUTPUT_PATH()) &&
                 createSystemDirectory(homeDir + Constants.getCONFIG_PATH()) &&
                 createSystemDirectory(homeDir + Constants.getLOG_PATH());
@@ -134,11 +143,10 @@ public class FileUploadBean implements Serializable {
         if (!dir.exists()) {
             // System directory didn't exists
             if (dir.mkdir()) {
-                logger.debug("System directory " + systemDir + " created.");
+                logger.debug("Directory " + systemDir + " created.");
             }
             else {
-                logger.error("Failed to create system directory " +
-                        systemDir);
+                logger.error("Failed to create directory " + systemDir);
                 result = Constants.NOT_OK;
             }
         }
@@ -182,10 +190,7 @@ public class FileUploadBean implements Serializable {
     // This will be called once by the ArrayConfigBean's initFiles() method 
     // whenever the user enter the GEX pipeline view.
     public static void setFileDirectory(String directory) {
-        fileDirectory = AuthenticationBean.getHomeDir() + 
-                        Constants.getINPUT_PATH() +
-                        directory + File.separator;
-        
+        fileDirectory = directory;
         File local = new File(fileDirectory);
         // Set the local file path; to be use during config file creation.
         setLocalDirectoryPath(local.getAbsolutePath());
