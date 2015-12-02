@@ -4,8 +4,8 @@
 package Clinical.Data.Sink.Bean;
 
 // Libraries for Log4j
-import Clinical.Data.Sink.Database.PipelineCommand;
-import Clinical.Data.Sink.Database.PipelineCommandDB;
+import Clinical.Data.Sink.Database.Pipeline;
+import Clinical.Data.Sink.Database.PipelineDB;
 import Clinical.Data.Sink.Database.SubmittedJobDB;
 import Clinical.Data.Sink.General.Constants;
 import Clinical.Data.Sink.General.ExitListener;
@@ -14,6 +14,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Serializable;
@@ -38,13 +39,14 @@ import org.apache.logging.log4j.LogManager;
  * Date: 13-Nov-2015
  * 
  * Revision History
- * 13-Nov-2015 - Inital creation by refactoring from ArrayConfigBean.
+ * 13-Nov-2015 - Initial creation by refactoring from ArrayConfigBean.
  * 18-Nov-2015 - Removed one abstract method allowToSubmitJob(), added one 
  * variable jobSubmissionStatus, and one abstract method 
  * updateJobSubmissionStatus() to resolve the issues surrounding the job
  * submission's readiness status.
  * 25-Nov-2015 - Renamed pipelineType to pipelineTech. Implementation for 
  * database 2.0
+ * 02-Dec-2015 - Streamline the createConfigFile method.
  */
 
 public abstract class ConfigBean implements Serializable {
@@ -54,7 +56,7 @@ public abstract class ConfigBean implements Serializable {
     // Input Parameters
     private String studyID, type;
     // Common Processing Parameters. 
-    private String normalization, phenotype;
+    protected String normalization, probeFilter, phenotype;
     private boolean probeSelect;
     // Further Processing
     private String sampleAverage, stdLog2Ratio;
@@ -80,8 +82,6 @@ public abstract class ConfigBean implements Serializable {
     // Annotation list build from Sample Annotation file
     private LinkedHashMap<String,String> annotationList = new LinkedHashMap<>();
 
-    // Create the config file that will be used during pipeline execution.
-    abstract Boolean createConfigFile();
     // This method will only be trigger if all the inputs validation have 
     // passed after the user clicked on Submit. As a result of this behaviour 
     // (i.e. all the validations need to pass), we will update the
@@ -243,11 +243,11 @@ public abstract class ConfigBean implements Serializable {
         String result = Constants.MAIN_PAGE;
         // Build the pipeline command
         List<String> command = new ArrayList<>();
-        PipelineCommand cmd = null;
+        Pipeline cmd = null;
         
         try {
             // Retrieve the pipeline command and it's parameter from database.
-            cmd = PipelineCommandDB.getPipelineCommand(pipelineName);
+            cmd = PipelineDB.getPipeline(pipelineName);
 
             logger.debug("Pipeline from database: " + cmd.toString());
         }
@@ -259,8 +259,8 @@ public abstract class ConfigBean implements Serializable {
             return Constants.ERROR;
         }
         
-        command.add(cmd.getCommand_code());
-        command.add(cmd.getCommand_para());
+        command.add(cmd.getCode());
+        command.add(cmd.getParameter());
         command.add(pipelineConfig);
         
         logger.debug("Full pipeline command: " + command.toString());
@@ -302,6 +302,58 @@ public abstract class ConfigBean implements Serializable {
             result = Constants.ERROR;
         }
         
+        return result;
+    }
+
+    // Create the config file that will be used during pipeline execution.
+    protected Boolean createConfigFile() {
+        Boolean result = Constants.OK;
+        String configDir = AuthenticationBean.getHomeDir() +
+                Constants.getCONFIG_PATH();
+        // Config File will be send to the pipeline during execution
+        File configFile = new File(configDir + 
+                Constants.getCONFIG_FILE_NAME() + submitTimeInFilename + 
+                Constants.getCONFIG_FILE_EXT());
+
+        pipelineConfig = configFile.getAbsolutePath();
+
+        try (FileWriter fw = new FileWriter(configFile)) {
+            // Create config file
+            configFile.createNewFile();
+            // Write to the config file according to the format needed 
+            // by the pipeline.
+            fw.write("### INPUT parameters\n" +
+                     "STUDY_ID\t=\t" + getStudyID() + "_" + submitTimeInFilename +
+                     "\nTYPE\t=\t" + getType() +
+                     "\nINPUT_FILE\t=\t" + input +
+                     "\nCTRL_FILE\t=\t" + ctrl +
+                     "\nSAMPLES_ANNOT_FILE\t=\t" + sample + "\n\n");
+
+            fw.write("### PROCESSING parameters\n" +
+                     "NORMALIZATION\t=\t" + getNormalization() +
+                     "\nPROBE_Filtering\t=\t" + getProbeFilter() +
+                     "\nPROBE_SELECTION\t=\t" + booleanToYesNo(isProbeSelect()) +
+                     "\nPHENOTYPE_COLUMN\t=\t" + getPhenotype() + "\n\n");
+
+            fw.write("### Output file after normalization and processing\n" +
+                     "OUTPUT\t=\t" + pipelineOutput + "\n\n");
+
+            fw.write("### Further Processing\n" +
+                     "SAMPLE_AVERAGING\t=\t" + getSampleAverage() +
+                     "\nSTANDARDIZATION\t=\t" + getStdLog2Ratio() + "\n\n");
+
+            fw.write("### Report Generation\n" +
+                     "REP_FILENAME\t=\t" + pipelineReport + "\n\n");
+
+            logger.debug("Pipeline config file created at " + pipelineConfig);
+        }
+        catch (IOException e) {
+            logger.error(AuthenticationBean.getUserName() + 
+                        ": encountered error when writing pipeline config file.");
+
+            result = Constants.NOT_OK;
+        }
+
         return result;
     }
 
@@ -382,6 +434,12 @@ public abstract class ConfigBean implements Serializable {
     }
     public void setNormalization(String normalization) {
         this.normalization = normalization;
+    }
+    public String getProbeFilter() {
+        return probeFilter;
+    }
+    public void setProbeFilter(String probeFilter) {
+        this.probeFilter = probeFilter;
     }
     public String getPhenotype() {
         return phenotype;
