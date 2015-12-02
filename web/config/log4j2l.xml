@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="trace">
     <Appenders>
-        <RollingRandomAccessFile name="RollingRandomAccessFile" fileName="/var/datasink/log/app.log" filePattern="/var/datasink/log/app-%d{MMM-yyyy}-%i.log.gz">
+        <RollingRandomAccessFile name="RollingRandomAccessFile" fileName="/var/iCOMIC2S/log/app.log" filePattern="/var/iCOMIC2S/log/app-%d{MMM-yyyy}-%i.log.gz">
             <PatternLayout>
                 <Pattern>%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n</Pattern>
             </PatternLayout>
