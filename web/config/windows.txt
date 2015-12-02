@@ -1,6 +1,7 @@
 # The below defines the path, filename, filename extention of the input, output, 
 # log and config file, etc
-SYSTEM_PATH C://temp//datasink//users//
+SYSTEM_PATH C://temp//iCOMIC2S
+USERS_PATH //users//
 OUTPUT_PATH //output//
 INPUT_PATH //input//
 CONFIG_PATH //config//
