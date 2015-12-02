@@ -66,6 +66,7 @@ import org.apache.logging.log4j.core.LoggerContext;
  * for login() method.
  * 16-Nov-2015 - To retrieve institution list from database after login.
  * 01-Dec-2015 - Implementation for database 2.0
+ * 02-Dec-2015 - Implemented the changes in the input folder directory.
  */
 
 @ManagedBean (name="authenticationBean")
@@ -177,14 +178,14 @@ public class AuthenticationBean implements Serializable {
             if (userAcct.getActive()) {
                 logger.info(loginName + ": login to the system.");
                 // Create user home directory once successfully login
-                homeDir = Constants.getSYSTEM_PATH() + loginName;
+                homeDir = Constants.getSYSTEM_PATH() + 
+                          Constants.getUSERS_PATH() + loginName;
                 // Update the last login of this user            
                 UserAccountDB.updateLastLogin(loginName, Constants.getDateTime());
             
-                // Create the .../users directory 
-                // Follow by .../users/loginName directory
-                if (FileUploadBean.createSystemDirectory(Constants.getSYSTEM_PATH()) &&
-                    (FileUploadBean.createAllSystemDirectories(homeDir))) {
+                // Create system directories, follow by .../users/loginName directories
+                if ( FileUploadBean.createSystemDirectories(Constants.getSYSTEM_PATH()) &&
+                    (FileUploadBean.createUsersDirectories(homeDir))) {
                         getFacesContext().getExternalContext().getSessionMap().
                                 put("User", "User");
                         // Everything is fine, proceed from login to /restricted folder
