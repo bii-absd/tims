@@ -3,6 +3,7 @@
  */
 package Clinical.Data.Sink.Database;
 
+import Clinical.Data.Sink.Bean.AuthenticationBean;
 import Clinical.Data.Sink.General.Constants;
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -24,8 +25,9 @@ import org.apache.logging.log4j.LogManager;
  * Date: 19-Nov-2015
  * 
  * Revision History
- * 19-Nov-2015 - Created with all the standard getters and setters.
- * 24-Nov-2015 - DataDepositor will be run as a thread. 
+ * 19-Nov-2015 - Created with the necessary methods implemented.
+ * 24-Nov-2015 - DataDepositor will be run as a thread.
+ * 03-Dec-2015 - Retrieve all the necessary info from the database.
  */
 
 public class DataDepositor extends Thread {
@@ -33,21 +35,91 @@ public class DataDepositor extends Thread {
     private final static Logger logger = LogManager.
             getLogger(DataDepositor.class.getName());
     private final static Connection conn = DBHelper.getDBConn();
-    // Temporarily fix the job_id, department ID, filepath and gene annotation version
-    private String annot_ver = "HG19-2H2015";
-    private String fileUri = "C:\\\\temp\\\\output-trial-23Oct2015_0329PM.txt";
-    private String dept_id = "ABSD";
-    private int job_id = 2;
+    // job_id, dept_id, fileUri and annot_ver will be retrieved from database.
+    private String annot_ver;
+    private String fileUri;
+    private String dept_id;
+    private int job_id;
     
-    public DataDepositor(String fileUri) {
-//        this.fileUri = fileUri;
-        logger.debug("DataDepositor to upload data file: " + fileUri);
+    public DataDepositor(int job_id) {
+        this.job_id = job_id;
+        annot_ver = getAnnotVersion(job_id);
+        fileUri = getOutputPath(job_id);
+        dept_id = getDeptID(AuthenticationBean.getUserName());
+        logger.debug("DataDepositor created for job_id: " + job_id);
     }
     
     @Override
     public void run() {
         logger.debug("DataDepositor start running.");
         insertFinalizedDataIntoDB();
+    }
+    
+    // Retrieve the gene annotation version used in the study where this
+    // job_id belongs to.
+    private String getAnnotVersion(int jobID) {
+        String annotVer = Constants.DATABASE_INVALID_STR;
+        String query = "SELECT annot_ver FROM study NATURAL JOIN "
+                + "submitted_job WHERE job_id = " + jobID;
+        ResultSet rs = DBHelper.runQuery(query);
+        
+        try {
+            if (rs.next()) {
+                annotVer = rs.getString("annot_ver");
+                logger.debug("Annotation version used in job_id " + jobID + 
+                             " is " + annotVer);
+            }
+        } 
+        catch (SQLException e) {
+            logger.error("SQLException when retrieving annotation version!");
+            logger.error(e.getMessage());
+        }
+        
+        return annotVer;
+    }
+    
+    // Retrieve the output filepath for this submiited job.
+    private String getOutputPath(int jobID) {
+        String path = Constants.DATABASE_INVALID_STR;
+        String query = "SELECT output_file FROM submitted_job WHERE job_id = " + jobID;
+        ResultSet rs = DBHelper.runQuery(query);
+        
+        try {
+            if (rs.next()) {
+                path = rs.getString("output_file");
+                logger.debug("Output file for job_id " + jobID + " stored at " +
+                             path);
+            }
+        }
+        catch (SQLException e) {
+            logger.error("SQLException when retrieving output filepath!");
+            logger.error(e.getMessage());
+        }
+        
+        return path;
+    }
+    
+    // Retrieve the department ID where this user belong to.
+    private String getDeptID(String userID) {
+        String dept = Constants.DATABASE_INVALID_STR;
+        String queryStr = "SELECT dept_id FROM user_account WHERE user_id = ?";
+        
+        try (PreparedStatement queryStm = conn.prepareStatement(queryStr)) {
+            queryStm.setString(1, userID);
+            ResultSet rs = queryStm.executeQuery();
+            
+            if (rs.next()) {
+                dept = rs.getString("dept_id");
+                logger.debug("User ID " + userID + " belongs to department " +
+                             dept);
+            }
+        }
+        catch (SQLException e) {
+            logger.error("SQLException when retrieving department ID!");
+            logger.error(e.getMessage());
+        }
+        
+        return dept;
     }
     
     // Update data_depository's data field (at array_index) with the value 
@@ -154,10 +226,11 @@ public class DataDepositor extends Thread {
     // Check whether the subject Meta info exists in the database or not.
     private Boolean subjectExistInDB(String subject_id) {
         Boolean subjectExist = Constants.OK;
-        String queryStr = "SELECT * FROM subject WHERE subject_id = ?";
+        String queryStr = "SELECT * FROM subject WHERE subject_id = ? AND dept_id = ?";
         
         try (PreparedStatement queryStm = conn.prepareStatement(queryStr)) {
             queryStm.setString(1, subject_id);
+            queryStm.setString(2, dept_id);
             ResultSet result = queryStm.executeQuery();
             
             // Check whether does this subject_id exist in the database
@@ -205,7 +278,7 @@ public class DataDepositor extends Thread {
                     processedRecord++;
                     FinalizedOutput record = new FinalizedOutput(values[i], job_id);
                     // Insert the finalized output record, and store the index returned.
-                    arrayIndex[i] = insertFinalizedOutput(record);
+//                    arrayIndex[i] = insertFinalizedOutput(record);
                 }
                 else {
                     if (studentNotFound == null) {
@@ -241,7 +314,7 @@ public class DataDepositor extends Thread {
                         // Only process those data with valid PID
                         if (arrayIndex[i] != Constants.DATABASE_INVALID_ID) {
                             // Update data table.
-                            updateDataArray(genename,arrayIndex[i],values[i]);
+//                            updateDataArray(genename,arrayIndex[i],values[i]);
                         }
                     }
                 }
