@@ -153,13 +153,15 @@ public class DataDepositor extends Thread {
     private int insertFinalizedOutput(FinalizedOutput record) {
         int ind = Constants.DATABASE_INVALID_ID;
         
-        String insertStr = "INSERT INTO finalized_output(job_id,subject_id) "
-                           + "VALUES(?,?)";
+        String insertStr = "INSERT INTO finalized_output(array_index,annot_ver,job_id,subject_id) "
+                           + "VALUES(?,?,?,?)";
         
         try (PreparedStatement insertStm = conn.prepareStatement(insertStr,
                 Statement.RETURN_GENERATED_KEYS)) {
-            insertStm.setInt(1, record.getJob_id());
-            insertStm.setString(2, record.getSubject_id());
+            insertStm.setInt(1, record.getArray_index());
+            insertStm.setString(2, record.getAnnot_ver());
+            insertStm.setInt(3, record.getJob_id());
+            insertStm.setString(4, record.getSubject_id());
             insertStm.executeUpdate();
             ResultSet rs = insertStm.getGeneratedKeys();
             
@@ -179,12 +181,13 @@ public class DataDepositor extends Thread {
     }
     
     // Return the next array index to be use for this record.
-    // NOT IN USE.
     private int getNextArrayInd() {
         int count = Constants.DATABASE_INVALID_ID;
-        String queryStr = "SELECT MAX(array_index) FROM finalized_output";
+        String queryStr = "SELECT MAX(array_index) FROM finalized_output "
+                + "WHERE annot_ver = ?";
 
         try (PreparedStatement queryStm = conn.prepareStatement(queryStr)) {
+            queryStm.setString(1, annot_ver);
             ResultSet result = queryStm.executeQuery();
             
             while (result.next()) {
@@ -276,9 +279,11 @@ public class DataDepositor extends Thread {
                 // available in the database.
                 if (subjectExistInDB(values[i])) {
                     processedRecord++;
-                    FinalizedOutput record = new FinalizedOutput(values[i], job_id);
-                    // Insert the finalized output record, and store the index returned.
-//                    arrayIndex[i] = insertFinalizedOutput(record);
+                    arrayIndex[i] = getNextArrayInd() + 1;
+                    FinalizedOutput record = new FinalizedOutput(arrayIndex[i],
+                            annot_ver,values[i], job_id);
+                    // Insert the finalized output record.
+                    insertFinalizedOutput(record);
                 }
                 else {
                     if (studentNotFound == null) {
@@ -314,7 +319,7 @@ public class DataDepositor extends Thread {
                         // Only process those data with valid PID
                         if (arrayIndex[i] != Constants.DATABASE_INVALID_ID) {
                             // Update data table.
-//                            updateDataArray(genename,arrayIndex[i],values[i]);
+                            updateDataArray(genename,arrayIndex[i],values[i]);
                         }
                     }
                 }
