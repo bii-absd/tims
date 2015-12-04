@@ -335,7 +335,7 @@ public abstract class ConfigBean implements Serializable {
             // Write to the config file according to the format needed 
             // by the pipeline.
             fw.write("### INPUT parameters\n" +
-                     "STUDY_ID\t=\t" + getStudyID() + "_" + submitTimeInFilename +
+                     "STUDY_ID\t=\t" + getStudyID() + "-" + submitTimeInFilename +
                      "\nTYPE\t=\t" + getType() +
                      "\nINPUT\t=\t" + input +
                      "\nCTRL_FILE\t=\t" + ctrl +
