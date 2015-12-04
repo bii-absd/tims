@@ -12,7 +12,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -148,16 +147,12 @@ public class DataDepositor extends Thread {
         return result;
     }
     
-    // Insert a new finalized_output record into the database, and return 
-    // auto generated key i.e. array_index.
-    private int insertFinalizedOutput(FinalizedOutput record) {
-        int ind = Constants.DATABASE_INVALID_ID;
-        
+    // Insert a new finalized_output record into the database.
+    private void insertFinalizedOutput(FinalizedOutput record) {
         String insertStr = "INSERT INTO finalized_output(array_index,annot_ver,job_id,subject_id) "
                            + "VALUES(?,?,?,?)";
         
-        try (PreparedStatement insertStm = conn.prepareStatement(insertStr,
-                Statement.RETURN_GENERATED_KEYS)) {
+        try (PreparedStatement insertStm = conn.prepareStatement(insertStr)) {
             insertStm.setInt(1, record.getArray_index());
             insertStm.setString(2, record.getAnnot_ver());
             insertStm.setInt(3, record.getJob_id());
@@ -165,19 +160,13 @@ public class DataDepositor extends Thread {
             insertStm.executeUpdate();
             ResultSet rs = insertStm.getGeneratedKeys();
             
-            if (rs.next()) {
-                ind = rs.getInt(1);
-            }
-
             logger.debug("Finalized output for " + record.getSubject_id() + 
-                         " inserted with array_index: " + ind);
+                         " inserted with array_index: " + record.getArray_index());
         }
         catch (SQLException e) {
             logger.error("SQLException when inserting new finalized output!");
             logger.error(e.getMessage());
         }
-        
-        return ind;
     }
     
     // Return the next array index to be use for this record.
@@ -283,7 +272,7 @@ public class DataDepositor extends Thread {
                     FinalizedOutput record = new FinalizedOutput(arrayIndex[i],
                             annot_ver,values[i], job_id);
                     // Insert the finalized output record.
-                    insertFinalizedOutput(record);
+//                    insertFinalizedOutput(record);
                 }
                 else {
                     if (studentNotFound == null) {
@@ -319,7 +308,7 @@ public class DataDepositor extends Thread {
                         // Only process those data with valid PID
                         if (arrayIndex[i] != Constants.DATABASE_INVALID_ID) {
                             // Update data table.
-                            updateDataArray(genename,arrayIndex[i],values[i]);
+//                            updateDataArray(genename,arrayIndex[i],values[i]);
                         }
                     }
                 }
