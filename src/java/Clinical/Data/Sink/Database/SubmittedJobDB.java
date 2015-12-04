@@ -3,10 +3,12 @@
  */
 package Clinical.Data.Sink.Database;
 
+import Clinical.Data.Sink.General.Constants;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -36,6 +38,8 @@ import org.apache.logging.log4j.LogManager;
  * 12-Oct-2015 - Added job_id field during query. Log the exception message.
  * 23-Oct-2015 - Added report field during query.
  * 30-Nov-2015 - Commented out unused code. Implementation for database 2.0
+ * 04-Dec-2015 - Removed unused code. Modify method insertJob() to return the
+ * job_id of the newly inserted job.
  */
 
 public class SubmittedJobDB {
@@ -64,7 +68,8 @@ public class SubmittedJobDB {
                 + "phenotype_column, summarization, output_file, "
                 + "sample_average, standardization, region, report) "
                 + "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-        PreparedStatement insertStm = conn.prepareStatement(insertStr);
+        PreparedStatement insertStm = conn.prepareStatement(insertStr, 
+                Statement.RETURN_GENERATED_KEYS);
         // Build the INSERT statement using the variables retrieved from the
         // SubmittedJob object (i.e. job) passed in.
         insertStm.setString(1, job.getStudy_id());
@@ -88,7 +93,12 @@ public class SubmittedJobDB {
         // Execute the INSERT statement
         insertStm.executeUpdate();
         // Retrieve and store the last inserted Job ID
-        int job_id = getLastInsertedJob();
+        ResultSet rs = insertStm.getGeneratedKeys();
+        int job_id = Constants.DATABASE_INVALID_ID;
+        
+        if (rs.next()) {
+            job_id = rs.getInt(1);
+        }
         
         logger.debug("New job request inserted into database. ID: " + job_id);
         
@@ -98,6 +108,7 @@ public class SubmittedJobDB {
 
     // getLastInsertedJob will return the job_id of the most recently inserted
     // job request.
+    // NOT IN USE!
     public static int getLastInsertedJob() throws SQLException {
         ResultSet lastJobID;
         int job_id = 0;
@@ -121,8 +132,11 @@ public class SubmittedJobDB {
     public static void updateJobStatusToCompleted(int job_id) {
         updateJobStatus(job_id, 3);
     }
+    public static void updateJobStatusToFinalizing(int job_id) {
+        updateJobStatus(job_id,4);
+    }
     public static void updateJobStatusToFinalized(int job_id) {
-        updateJobStatus(job_id, 4);
+        updateJobStatus(job_id, 5);
     }
     public static void updateJobStatusToFailed(int job_id) {
         updateJobStatus(job_id, 5);
@@ -203,42 +217,4 @@ public class SubmittedJobDB {
     public static void clearSubmittedJobs() {
         submittedJobs.clear();
     }
-    
-    /* No longer in use
-    // Machine generated getters and setters
-    public static String getQueryOrderBy() { return queryOrderBy; }
-    public static String getOrderIn() { return orderIn; }
-    public static void setOrderIn(String orderIn) {
-        SubmittedJobDB.orderIn = orderIn;
-    }
-    
-    // setQueryOrderBy will sort the result return by query according to the
-    // parameter passed in. The order (e.g. ASC/DESC) will be based on the
-    // order by type.
-    public static void setQueryOrderBy(String queryOrderBy) {
-        if (queryOrderBy.equals("study_id")) {
-            // For order by study_id, the order will be in ASC
-            setOrderIn("ASC");
-            SubmittedJobDB.queryOrderBy = queryOrderBy;            
-            // Clear away the result of the last query operation
-            clearSubmittedJobs();
-        }
-        else {
-            setQueryOrderBy();
-        }
-        
-        logger.info(AuthenticationBean.getUserName() + 
-                ": setup job submission query - ORDER BY " + 
-                getQueryOrderBy() + " " + getOrderIn());
-    }
-    
-    // setQueryOrderBy without parameter will set the default order by and
-    // order in condition.
-    public static void setQueryOrderBy() {
-        queryOrderBy = "job_id";
-        setOrderIn("DESC");
-        // Clear away the result of the last query operation
-        clearSubmittedJobs();
-    }
-    */
 }
