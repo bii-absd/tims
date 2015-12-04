@@ -39,7 +39,8 @@ import org.apache.logging.log4j.LogManager;
  * 23-Oct-2015 - Added report field during query.
  * 30-Nov-2015 - Commented out unused code. Implementation for database 2.0
  * 04-Dec-2015 - Removed unused code. Modify method insertJob() to return the
- * job_id of the newly inserted job.
+ * job_id of the newly inserted job. Fix: querySubmittedJob should not return
+ * those jobs that are either finalizing or finalized.
  */
 
 public class SubmittedJobDB {
@@ -171,7 +172,8 @@ public class SubmittedJobDB {
         
             String queryStr = "SELECT job_id, study_id, pipeline_name, "
                     + "status_id, submit_time, output_file, report FROM "
-                    + "submitted_job WHERE user_id = ? ORDER BY job_id DESC"; 
+                    + "submitted_job WHERE user_id = ? AND status_id NOT IN (4,5) "
+                    + "ORDER BY job_id DESC"; 
 
             // Additional logging to get the logger context
             /*
