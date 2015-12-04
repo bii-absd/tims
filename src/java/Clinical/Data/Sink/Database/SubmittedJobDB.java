@@ -139,7 +139,7 @@ public class SubmittedJobDB {
         updateJobStatus(job_id, 5);
     }
     public static void updateJobStatusToFailed(int job_id) {
-        updateJobStatus(job_id, 5);
+        updateJobStatus(job_id, 6);
     }
     
     // Internal helper function for updateJobStatusToXXX
