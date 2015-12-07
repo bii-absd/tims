@@ -15,9 +15,10 @@ import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
+import org.primefaces.event.RowEditEvent;
+// Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-import org.primefaces.event.RowEditEvent;
 
 /**
  * ItemListManagementBean is the backing bean for the itemlistmanagement view.
@@ -46,7 +47,7 @@ public class ItemListManagementBean implements Serializable {
     private List<Department> deptList;
     
     public ItemListManagementBean() {
-        logger.debug("ItemListManagementBean created");
+        logger.debug("ItemListManagementBean created.");
         logger.info(AuthenticationBean.getUserName() + 
                 ": access Item List Management page.");
     }
