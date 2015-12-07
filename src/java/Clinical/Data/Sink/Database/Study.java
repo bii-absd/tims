@@ -4,7 +4,6 @@
 package Clinical.Data.Sink.Database;
 
 import java.sql.Date;
-import java.util.Calendar;
 
 /**
  * Study is used to represent the study table in the database.
