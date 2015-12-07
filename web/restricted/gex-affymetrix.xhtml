@@ -38,14 +38,14 @@
                               fileUploadListener="#{gexAffymetrixBean.inputFile.multipleFileUploadListener}">
                 </p:fileUpload>
             </p:panel>
-            <p:panel id="annotfile" 
+            <p:panel id="annotfile"
                      header="Upload Samples Annotation File 
                      (Please upload this file for the Phenotype Column and 
                      Sample Averaging to be enable)">
                 <p:fileUpload mode="advanced"
                               update="uploadStatus phenotype averaging"
                               label="Select Samples Annotation File"
-                              fileUploadListener="#{gexAffymetrixBean.sampleFile.singleFileUploadListener}"/>
+                              fileUploadListener="#{gexAffymetrixBean.sampleAnnotFileUploadListener}"/>
             </p:panel>
             
             <p:panel id="processparameters" header="Processing Parameters">
