@@ -30,6 +30,7 @@ import javax.faces.context.FacesContext;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.primefaces.event.FileUploadEvent;
 
 /**
  * ConfigBean is an abstract class, and it will be extended by all the pipeline
@@ -48,6 +49,8 @@ import org.apache.logging.log4j.LogManager;
  * database 2.0
  * 02-Dec-2015 - Streamline the createConfigFile method. Implemented the changes
  * in the input folder directory.
+ * 07-Dec-2015 - Recreate the annotationList every time a new sample annotation
+ * file is uploaded.
  */
 
 public abstract class ConfigBean implements Serializable {
@@ -157,6 +160,14 @@ public abstract class ConfigBean implements Serializable {
         return annotationList.isEmpty();
     }
     
+    // Special handling for sample annotation file because we need to build
+    // the drop down list after the file has been uploaded.
+    public void sampleAnnotFileUploadListener(FileUploadEvent event) {
+        // Clear the annotationList, so that it get rebuild again.
+        annotationList.clear();
+        sampleFile.singleFileUploadListener(event);
+    }
+
     // After reviewing the configuration, if user decided to proceed with 
     // the pipeline execution and click on Confirm button, submitJob will be
     // called. A series of operations will then occur:
