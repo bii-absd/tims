@@ -52,11 +52,14 @@ import org.apache.logging.log4j.LogManager;
  * Removed ILLUMINA and AFFYMETRIX constants.
  * 11-Nov-2015 - Added two new constants PAGES_DIR and ACCOUNT_MANAGEMENT_STAY. 
  * Changed the return type of setup method. Changed the value of LOGIN_PAGE.
- * 16-Nov-2015 - Added w new constants PIPELINE_COMMAND_MANAGEMENT and 
+ * 16-Nov-2015 - Added two new constants PIPELINE_COMMAND_MANAGEMENT and 
  * ITEM_LIST_MANAGEMENT, and deleted constant ACCOUNT_MANAGEMENT_STAY.
  * 01-Dec-2015 - Changed the value of DATABASE_INVALID_STR from null to "NOT
  * FOUND!".
  * 02-Dec-2015 - Implemented the changes in the input folder directory.
+ * 07-Dec-2015 - Added one new constant, STUDY_MANAGEMENT. Deleted six 
+ * constants, INSERT_SUCCESS, INSERT_FAIL, SUCCESS, FAILURE, CHECK_VALID and 
+ * CHECK_INVALID.
  */
 
 @ManagedBean (name = "constants")
@@ -68,15 +71,9 @@ public class Constants {
     // Database return status
     public final static int DATABASE_INVALID_ID = -1;
     public final static String DATABASE_INVALID_STR = "NOT FOUND!";
-    public final static Boolean CHECK_VALID = true;
-    public final static Boolean CHECK_INVALID = false;
-    public final static Boolean INSERT_SUCCESS = true;
-    public final static Boolean INSERT_FAIL = false;
     public final static Boolean OK = true;
     public final static Boolean NOT_OK = false;
     // General return status
-    public final static String SUCCESS = "success";
-    public final static String FAILURE = "failure";
     public final static String LOGOFF = "logoff";
     public final static String TRUE = "true";
     public final static String FALSE = "false";
@@ -99,6 +96,7 @@ public class Constants {
                                 "pipelinemanagement";
     public final static String ITEM_LIST_MANAGEMENT = 
                                 "itemlistmanagement";
+    public final static String STUDY_MANAGEMENT = "studymanagement";
     public final static String NGS_PAGE = "ngs?faces-redirect=true";
     public final static String ERROR = "error?faces-redirect=true";
     // Constants read in from setup file.
