@@ -22,15 +22,15 @@ public class Study {
     private Date sqlDate;
     private Boolean completed;
 
-    public Study(String study_id, String user_id, String annot_ver, String description) {
+    public Study(String study_id, String user_id, String annot_ver, 
+            String description, Date sqlDate) {
         this.study_id = study_id;
         this.user_id = user_id;
         this.annot_ver = annot_ver;
         this.description = description;
-        sqlDate = new Date(Calendar.getInstance().getTime().getTime());
+        this.sqlDate = sqlDate;
         // The study is not completed until it has been finalized.
         completed = false;
-        System.out.println("Study ID: " + study_id + " created on " + sqlDate);
     }
     
     // Machine generated getters and setters
