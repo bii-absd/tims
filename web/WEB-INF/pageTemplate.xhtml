@@ -27,6 +27,9 @@
                 <p:submenu label="Admin">
                     <p:menuitem value="Account Management" icon="fa fa-user" 
                                 url="accountmanagement.xhtml"/>
+                    <p:menuitem value="Study ID Management" icon="fa fa-book" 
+                                url="studymanagement.xhtml" 
+                                rendered="#{authenticationBean.adminRight}"/>
                     <p:menuitem value="Pipeline Management" icon="fa fa-flask"
                                 url="pipelinemanagement.xhtml" 
                                 rendered="#{authenticationBean.adminRight}"/>
