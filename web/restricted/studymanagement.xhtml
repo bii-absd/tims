@@ -1,0 +1,42 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition template="/WEB-INF/pageTemplate.xhtml"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    
+    <ui:define name="title">Study ID Management</ui:define>
+    <ui:param name="link" value="Study ID Management"/>
+    <ui:define name="content">
+        <p:growl id="studyMsg"/>
+        <p:panel id="addStudy" header="Create New Study" toggleable="true">
+        <h:form id="addStudyForm">
+            <h:panelGrid columns="3" border="0" cellpadding="5" cellspacing="3">
+                <p:inputText id="studyid" size="32" autocomplete="off" 
+                             required="true" value="#{studyMgntBean.study_id}"/>
+                <h:message id="studyid-status" for="studyid" styleClass="errors"/>
+                <p:watermark for="studyid" value="New Study ID"/>
+                
+                <p:selectOneMenu id="annot" required="true" 
+                                 value="#{studyMgntBean.annot_ver}" 
+                                 style="width: 180px">
+                    <f:selectItem itemLabel="Select Annotation Version" itemValue=""/>
+                    <f:selectItems value="#{studyMgntBean.annotList}"/>
+                </p:selectOneMenu>
+                <h:message id="annot-status" for="annot" styleClass="errors"/>
+                <h:panelGroup/>
+                
+                <p:inputTextarea id="descript" cols="32" rows="3" value="#{studyMgntBean.description}"/>
+                <p:watermark for="descript" value="Enter description of this study here"/>
+                <h:panelGroup/>
+                
+                <h:commandButton action="#{studyMgntBean.createNewStudy}" 
+                                 value="Create New Study" 
+                                 styleClass="panel-button"/>
+            </h:panelGrid>
+        </h:form>
+        </p:panel>
+    </ui:define>
+</ui:composition>
