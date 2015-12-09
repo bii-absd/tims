@@ -30,7 +30,7 @@ import org.apache.logging.log4j.LogManager;
  * 18-Nov-2015 - Added one new method, updateInstitution(inst).
  * 30-Nov-2015 - Implementation for database 2.0
  * 09-Dec-2015 - To clear and rebuild the institution list and hashmap after 
- * update.
+ * update. Will not allow updating of inst_id through UI.
  */
 
 public class InstitutionDB implements Serializable {
@@ -83,7 +83,7 @@ public class InstitutionDB implements Serializable {
         return status;
     }
     
-    // Insert the new institution code into database.
+    // Insert the new institution ID into database.
     public static Boolean insertInstitution(Institution inst) {
         Boolean result = Constants.OK;
         String insertStr = "INSERT INTO inst(inst_id,inst_name) VALUES(?,?)";
@@ -100,7 +100,7 @@ public class InstitutionDB implements Serializable {
                     inst.getInst_id());
         }
         catch (SQLException e) {
-            logger.error("SQLException when inserting institution ID.");
+            logger.error("SQLException when inserting institution ID!");
             logger.error(e.getMessage());
             result = Constants.NOT_OK;
         }
@@ -108,22 +108,20 @@ public class InstitutionDB implements Serializable {
         return result;
     }
     
-    // Update the insitution information in the database
+    // Update the insitution information in the database.
     public static Boolean updateInstitution(Institution inst) {
         Boolean result = Constants.OK;
-        String updateStr = "UPDATE inst SET inst_id = ?, "
-                + "inst_name = ? WHERE inst_id = ?";
+        String updateStr = "UPDATE inst SET inst_name = ? WHERE inst_id = ?";
         
         try (PreparedStatement updateStm = conn.prepareStatement(updateStr)) {
-            updateStm.setString(1, inst.getInst_id());
-            updateStm.setString(2, inst.getInst_name());
-            updateStm.setString(3, inst.getInst_id());
+            updateStm.setString(1, inst.getInst_name());
+            updateStm.setString(2, inst.getInst_id());
             
             updateStm.executeUpdate();
             // Clear and rebuild the institution list and hashmap.
             clearInstList();
             buildInstList();
-            logger.debug("Institution " + inst + " updated.");
+            logger.debug("Institution " + inst.getInst_id() + " updated.");
         }
         catch (SQLException e) {
             logger.error("SQLException when updating institution: "
