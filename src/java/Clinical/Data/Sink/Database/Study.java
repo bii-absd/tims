@@ -13,17 +13,19 @@ import java.sql.Date;
  * 
  * Revision History
  * 07-Dec-2015 - Created with all the standard getters and setters.
+ * 09-Dec-2015 - Added one attribute, dept_id.
  */
 
 public class Study {
     // study table attributes
-    private String study_id, user_id, annot_ver, description;
+    private String study_id, dept_id, user_id, annot_ver, description;
     private Date sqlDate;
     private Boolean completed;
 
-    public Study(String study_id, String user_id, String annot_ver, 
-            String description, Date sqlDate) {
+    public Study(String study_id, String dept_id, String user_id, 
+            String annot_ver, String description, Date sqlDate) {
         this.study_id = study_id;
+        this.dept_id = dept_id;
         this.user_id = user_id;
         this.annot_ver = annot_ver;
         this.description = description;
@@ -38,6 +40,12 @@ public class Study {
     }
     public void setStudy_id(String study_id) {
         this.study_id = study_id;
+    }
+    public String getDept_id() {
+        return dept_id;
+    }
+    public void setDept_id(String dept_id) {
+        this.dept_id = dept_id;
     }
     public String getUser_id() {
         return user_id;
