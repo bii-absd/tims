@@ -28,6 +28,8 @@ import org.apache.logging.log4j.LogManager;
  * department list and getDeptHashMap(inst_code) to get the department list 
  * for the respective institution.
  * 30-Nov-2015 - Implementation for database 2.0
+ * 09-Dec-2015 - Added new method getDeptIDList, to return the list of dept_id 
+ * setup under the specific institution.
  */
 
 public class DepartmentDB implements Serializable {
@@ -35,7 +37,7 @@ public class DepartmentDB implements Serializable {
     private final static Logger logger = LogManager.
             getLogger(DepartmentDB.class.getName());
     private final static Connection conn = DBHelper.getDBConn();
-    private final static List<Department> deptList = new ArrayList<>();
+    private final static List<Department> AllDeptList = new ArrayList<>();
 
     public DepartmentDB() {}
     
@@ -43,7 +45,7 @@ public class DepartmentDB implements Serializable {
     public static List<Department> getAllDeptList() {
         // Only execute the query if the list is empty.
         // To prevent the query from being run multiple times.
-        if (deptList.isEmpty()) {
+        if (AllDeptList.isEmpty()) {
             ResultSet result = DBHelper.runQuery
                 ("SELECT * FROM dept ORDER BY inst_id");
             
@@ -53,7 +55,7 @@ public class DepartmentDB implements Serializable {
                                         result.getString("inst_id"),
                                         result.getString("dept_id"),
                                         result.getString("dept_name"));
-                    deptList.add(dept);
+                    AllDeptList.add(dept);
                 }
             }
             catch (SQLException e) {
@@ -62,13 +64,35 @@ public class DepartmentDB implements Serializable {
             }
         }
         
-        return deptList;
+        return AllDeptList;
     }
     
-    // Return the list of departments setup under the specific inst_id.
-    public static LinkedHashMap<String, String> getDeptHashMap(String inst_id)
-    {
-        LinkedHashMap<String, String> deptList = new LinkedHashMap<>();
+    // Return the list of dept_id setup under this inst_id.
+    public static List<String> getDeptIDList(String inst_id) {
+        List<String> deptIDList = new ArrayList<>();
+        String queryStr = "SELECT dept_id FROM dept WHERE inst_id = ?";
+        
+        try (PreparedStatement queryStm = conn.prepareStatement(queryStr)) {
+            queryStm.setString(1, inst_id);
+            ResultSet rs = queryStm.executeQuery();
+            
+            while (rs.next()) {
+                deptIDList.add(rs.getString("dept_id"));
+            }
+            logger.debug("Department list for instituion " + inst_id + " is " 
+                    + deptIDList.toString());
+        }
+        catch (SQLException e) {
+            logger.error("SQLException when retrieving department ID!");
+            logger.error(e.getMessage());
+        }
+        
+        return deptIDList;
+    }
+    
+    // Return the HashMap of departments setup under the specific inst_id.
+    public static LinkedHashMap<String, String> getDeptHashMap(String inst_id) {
+        LinkedHashMap<String, String> deptHashMap = new LinkedHashMap<>();
         String queryStr = "SELECT dept_id, dept_name FROM "
                     + "dept WHERE inst_id = ?";
 
@@ -77,17 +101,17 @@ public class DepartmentDB implements Serializable {
             ResultSet result = queryStm.executeQuery();
             
             while (result.next()) {
-                deptList.put(result.getString("dept_id"), 
+                deptHashMap.put(result.getString("dept_id"), 
                              result.getString("dept_id"));
             }
             logger.debug("Department list for " + inst_id + ": " +
-                    deptList.toString());
+                    deptHashMap.toString());
         }
         catch (SQLException e) {
             logger.error("SQLException at getDeptHashMap: " + inst_id);
             logger.error(e.getMessage());
         }
         
-        return deptList;
+        return deptHashMap;
     }
 }
