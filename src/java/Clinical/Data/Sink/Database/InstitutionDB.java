@@ -29,6 +29,8 @@ import org.apache.logging.log4j.LogManager;
  * insertInstitution(inst).
  * 18-Nov-2015 - Added one new method, updateInstitution(inst).
  * 30-Nov-2015 - Implementation for database 2.0
+ * 09-Dec-2015 - To clear and rebuild the institution list and hashmap after 
+ * update.
  */
 
 public class InstitutionDB implements Serializable {
@@ -118,6 +120,10 @@ public class InstitutionDB implements Serializable {
             updateStm.setString(3, inst.getInst_id());
             
             updateStm.executeUpdate();
+            // Clear and rebuild the institution list and hashmap.
+            clearInstList();
+            buildInstList();
+            logger.debug("Institution " + inst + " updated.");
         }
         catch (SQLException e) {
             logger.error("SQLException when updating institution: "
