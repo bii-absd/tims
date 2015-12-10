@@ -10,23 +10,25 @@
     <ui:define name="title">User Account Management</ui:define>
     <ui:param name="link" value="Account Management"/>
     <ui:define name="content">
-        <p:panel id="newaccount" header="Create New User Account" toggleable="true" 
-                 rendered="#{authenticationBean.adminRight}" collapsed="true">
+    <p:growl id="acctMsg"/>
+        <p:accordionPanel>
+            <p:tab id="newaccount" title="Create New User Account" 
+                   titleStyleClass="tab-title"
+                   rendered="#{authenticationBean.adminRight}">
             <h:form id="newacct">
-            <h:panelGrid styleClass="page-border">
-                <p:messages id="newacct-msg" for="newacctstatus" showDetail="true"/>
-                <h:panelGrid columns="3" border="0" cellpadding="5" 
-                             cellspacing="3">
+            <p:messages id="newacct-msg" for="newacctstatus" showDetail="true"/>
+                <h:panelGrid columns="3" border="0" cellpadding="4" 
+                             cellspacing="2">
                     <p:inputText id="userid" size="32" maxlength="10" autocomplete="off"
                                  required="true" value="#{acctMgntBean.user_id}">
-                        <f:validateLength minimum="5" maximum="10"/>
+                        <f:validateLength minimum="5" maximum="20"/>
                     </p:inputText>
                     <h:message id="userid-status" for="userid" styleClass="errors"/>
                     <p:watermark for="userid" value="New User ID"/>
 
                     <p:inputText id="firstname" size="32" maxlength="50" autocomplete="off" 
                                  required="true" value="#{acctMgntBean.first_name}">
-                        <f:validateLength minimum="1" maximum="50"/>
+                        <f:validateLength minimum="2" maximum="50"/>
                     </p:inputText>
                     <h:message id="firstname-status" for="firstname" 
                                styleClass="errors"/>
@@ -34,7 +36,7 @@
 
                     <p:inputText id="lastname" size="32" maxlength="50" autocomplete="off"
                                  required="true" value="#{acctMgntBean.last_name}">
-                        <f:validateLength minimum="1" maximum="50"/>
+                        <f:validateLength minimum="2" maximum="50"/>
                     </p:inputText>
                     <h:message id="lastname-status" for="lastname" 
                                styleClass="errors"/>
@@ -89,16 +91,16 @@
 
                     <h:commandButton action="#{acctMgntBean.createUserAccount}"
                                      value="Create New Account" 
-                                     styleClass="panel-button"/>
+                                     styleClass="panel-button" 
+                                     style="font-size: 12px"/>
                 </h:panelGrid>
-            </h:panelGrid>
             </h:form>
-        </p:panel>
+            </p:tab>
 
-        <p:panel id="editaccount" header="Edit User Account" toggleable="true" 
-                 collapsed="true" rendered="#{authenticationBean.adminRight}">
+            <p:tab id="editaccount" title="Edit User Account" 
+                   rendered="#{authenticationBean.adminRight}" 
+                   titleStyleClass="tab-title">
             <h:form id="editAcctForm">
-                <p:growl id="editMsg"/>
                 <p:dataTable var="acct" rows="5" id="editTable" 
                              value="#{acctMgntBean.userList}" 
                              paginator="true"
@@ -106,7 +108,7 @@
                              {CurrentPageReport} {NextPageLink} {LastPageLink}"
                              styleClass="table-odd-row table-even-row" editable="true">
                     <p:ajax event="rowEdit" listener="#{acctMgntBean.onRowEdit}"
-                            update=":editAcctForm:editMsg"/>
+                            update="acctMsg"/>
                     <p:column headerText="User ID" sortBy="#{acct.user_id}">
                         <h:outputText value="#{acct.user_id}"/>
                     </p:column>
@@ -201,14 +203,13 @@
                     </p:column>
                 </p:dataTable>
             </h:form>
-        </p:panel>
-        
-        <p:panel id="changepassword" header="Change Password" toggleable="true">
+            </p:tab>
+
+            <p:tab id="changepassword" title="Change Password" 
+                   titleStyleClass="tab-title">
             <h:form id="changepwd">
-                <h:panelGrid styleClass="page-border">
-                <p:messages id="changepwd-msg" for="changepwdstatus" showDetail="true"/>
-                <h:panelGrid columns="3" border="0" cellpadding="5" cellspacing="3">
-                    
+            <p:messages id="changepwd-msg" for="changepwdstatus" showDetail="true"/>
+                <h:panelGrid columns="3" border="0" cellpadding="4" cellspacing="2">
                     <p:selectOneMenu value="#{acctMgntBean.user_id}" 
                                      rendered="#{authenticationBean.adminRight}" 
                                      style="width: 175px">
@@ -235,10 +236,11 @@
                     
                     <h:commandButton action="#{acctMgntBean.changePassword}"
                                      value="Change Password" 
-                                     styleClass="panel-button"/>
+                                     styleClass="panel-button" 
+                                     style="font-size: 12px"/>
                 </h:panelGrid>
-                </h:panelGrid>
-            </h:form>
-        </p:panel>
+            </h:form>                
+            </p:tab>
+        </p:accordionPanel>
     </ui:define>
 </ui:composition>
