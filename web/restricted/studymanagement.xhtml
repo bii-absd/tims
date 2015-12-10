@@ -10,10 +10,11 @@
     <ui:define name="title">Study ID Management</ui:define>
     <ui:param name="link" value="Study ID Management"/>
     <ui:define name="content">
-        <p:growl id="studyMsg"/>
-        <p:panel id="addStudy" header="Create New Study" toggleable="true">
+    <p:growl id="studyMsg"/>
+    <p:accordionPanel>
+        <p:tab id="addStudy" title="Create New Study" titleStyleClass="tab-title">
         <h:form id="addStudyForm">
-            <h:panelGrid columns="3" border="0" cellpadding="5" cellspacing="3">
+            <h:panelGrid columns="3" border="0" cellpadding="4" cellspacing="2">
                 <p:inputText id="studyid" size="32" autocomplete="off" 
                              required="true" value="#{studyMgntBean.study_id}"/>
                 <h:message id="studyid-status" for="studyid" styleClass="errors"/>
@@ -42,9 +43,11 @@
                 
                 <h:commandButton action="#{studyMgntBean.createNewStudy}" 
                                  value="Create New Study" 
-                                 styleClass="panel-button"/>
+                                 styleClass="panel-button" 
+                                 style="font-size: 12px"/>
             </h:panelGrid>
         </h:form>
-        </p:panel>
+        </p:tab>
+    </p:accordionPanel>
     </ui:define>
 </ui:composition>
