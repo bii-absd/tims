@@ -18,8 +18,9 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 /**
- * SubmittedJobDB is not mean to be instantiate, its main job is to perform
- * SQL operations on the submitted_job table in the database.
+ * SubmittedJobDB is an abstract class and not mean to be instantiate, its 
+ * main job is to perform SQL operations on the submitted_job table in the 
+ * database.
  * 
  * Author: Tay Wei Hong
  * Date: 2-Oct-2015
@@ -41,19 +42,16 @@ import org.apache.logging.log4j.LogManager;
  * 04-Dec-2015 - Removed unused code. Modify method insertJob() to return the
  * job_id of the newly inserted job. Fix: querySubmittedJob should not return
  * those jobs that are either finalizing or finalized.
+ * 10-Dec-2015 - Changed to abstract class. Removed unused code. Improve the
+ * method getLastInsertedJob().
  */
 
-public class SubmittedJobDB {
+public abstract class SubmittedJobDB {
     // Get the logger for Log4j
     private final static Logger logger = LogManager.
             getLogger(SubmittedJobDB.class.getName());
     private final static Connection conn = DBHelper.getDBConn();
     private static Map<Integer,SubmittedJob> submittedJobs = new HashMap<>();
-    /* No longer in use
-    // By default, the query will be order by job_id DESC
-    private static String queryOrderBy = "job_id";
-    private static String orderIn = "DESC";
-    */
     
     SubmittedJobDB() {}
     
@@ -107,26 +105,20 @@ public class SubmittedJobDB {
         return job_id;
     }
 
-    // getLastInsertedJob will return the job_id of the most recently inserted
-    // job request.
+    // Return the job_id of the most recently inserted job request.
     // NOT IN USE!
     public static int getLastInsertedJob() throws SQLException {
-        ResultSet lastJobID;
-        int job_id = 0;
+        int job_id = Constants.DATABASE_INVALID_ID;
+        ResultSet rs = DBHelper.runQuery("SELECT MAX(job_id) FROM submitted_job");
         
-        String queryLast = "SELECT job_id FROM submitted_job "
-                + "ORDER BY job_id DESC LIMIT 1";
-        PreparedStatement queryStm = conn.prepareStatement(queryLast);
-        lastJobID = queryStm.executeQuery();
-        
-        if (lastJobID.next()) {
-            job_id = lastJobID.getInt("job_id");
+        if (rs.next()) {
+            job_id = rs.getInt(1);
         }
         
         return job_id;
     }
     
-    // The following 3 functions will update the status_id of the submitted_job
+    // The following functions update the status_id of the submitted_job
     public static void updateJobStatusToInprogress(int job_id) {
         updateJobStatus(job_id, 2);
     }    
@@ -149,8 +141,7 @@ public class SubmittedJobDB {
     private static void updateJobStatus(int job_id, int status_id) {
         String updateStr = "UPDATE submitted_job SET status_id = " + status_id 
                            + " WHERE job_id = " + job_id;
-        
-        logger.debug(updateStr);
+
         try (PreparedStatement updateStatus = conn.prepareStatement(updateStr))
         {
             updateStatus.executeUpdate();
@@ -169,7 +160,8 @@ public class SubmittedJobDB {
         // This is to prevent the query from being run multiple times.
         if (submittedJobs.isEmpty()) {
             ResultSet result;
-        
+            // Don't retrieve those jobs which are in finalizing or finalized
+            // stages.
             String queryStr = "SELECT job_id, study_id, pipeline_name, "
                     + "status_id, submit_time, output_file, report FROM "
                     + "submitted_job WHERE user_id = ? AND status_id NOT IN (4,5) "
@@ -203,7 +195,7 @@ public class SubmittedJobDB {
                     // Add the object to the HashMap
                     submittedJobs.put(id++, job);
                 }
-                logger.debug("querySubmittedJob success.");
+                logger.debug("Query submitted job completed.");
             } catch (SQLException e) {
                 logger.error("SQLException when query submitted job!");
                 logger.error(e.getMessage());
