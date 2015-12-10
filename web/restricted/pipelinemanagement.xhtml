@@ -10,14 +10,16 @@
     <ui:define name="title">Pipeline Management</ui:define>
     <ui:param name="link" value="Pipeline Management"/>
     <ui:define name="content">
-        <p:growl id="cmdMsg"/>
-        <p:panel id="addCmd" header="Add New Pipeline" toggleable="true">
+    <p:growl id="cmdMsg"/>
+    <p:accordionPanel>
+        <p:tab id="addCmd" title="Add New Pipeline" titleStyleClass="tab-title">
         <h:form id="addCmdForm">
-            <h:panelGrid columns="3" border="0" cellpadding="5" cellspacing="3">
-                <p:inputText id="pipelinename" size="32" maxlength="20" autocomplete="off" 
-                             required="true" value="#{plMgntBean.pipeline_name}"/>
-                <h:message id="pipelinename-status" for="pipelinename" styleClass="errors"/>
-                <p:watermark for="pipelinename" value="New Pipeline Name"/>
+            <h:panelGrid columns="3" border="0" cellpadding="4" cellspacing="2">
+                <p:inputText id="plname" size="32" maxlength="20" 
+                             autocomplete="off" required="true" 
+                             value="#{plMgntBean.pipeline_name}"/>
+                <h:message id="plname-status" for="plname" styleClass="errors"/>
+                <p:watermark for="plname" value="New Pipeline Name"/>
                 
                 <p:selectOneMenu id="tid" required="true" value="#{plMgntBean.tid}" 
                                  style="width: 180px">
@@ -33,18 +35,20 @@
                 <h:message id="code-status" for="code" styleClass="errors"/>
                 <p:watermark for="code" value="Command"/>
                 
-                <p:inputText id="parameter" size="32" maxlength="50" autocomplete="off" 
+                <p:inputText id="para" size="32" maxlength="50" autocomplete="off" 
                              value="#{plMgntBean.parameter}"/>
-                <h:message id="parameter-status" for="parameter" styleClass="errors"/>
-                <p:watermark for="parameter" value="Parameter"/>
+                <p:watermark for="para" value="Parameter"/>
+                <h:panelGroup/>
                 
                 <h:commandButton action="#{plMgntBean.createNewPipeline}" 
                                  value="Create New Pipeline" 
-                                 styleClass="panel-button"/>
+                                 styleClass="panel-button" 
+                                 style="font-size: 12px"/>
             </h:panelGrid>
         </h:form>
-        </p:panel>
-        <p:panel id="editCmd" header="Edit Pipeline" toggleable="true">
+        </p:tab>
+        
+        <p:tab id="editCmd" title="Edit Pipeline" titleStyleClass="tab-title">
         <h:form id="editCmdForm">
             <p:dataTable var="cmd" rows="10" id="cmdTable" 
                          value="#{plMgntBean.plList}" paginator="true" 
@@ -96,6 +100,7 @@
                 </p:column>
             </p:dataTable>
         </h:form>
-        </p:panel>
+        </p:tab>
+    </p:accordionPanel>
     </ui:define>
 </ui:composition>
