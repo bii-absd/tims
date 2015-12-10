@@ -23,15 +23,15 @@ public class Study {
     private Boolean completed;
 
     public Study(String study_id, String dept_id, String user_id, 
-            String annot_ver, String description, Date sqlDate) {
+            String annot_ver, String description, Date sqlDate, 
+            Boolean completed) {
         this.study_id = study_id;
         this.dept_id = dept_id;
         this.user_id = user_id;
         this.annot_ver = annot_ver;
         this.description = description;
         this.sqlDate = sqlDate;
-        // The study is not completed until it has been finalized.
-        completed = false;
+        this.completed = completed;
     }
     
     // Machine generated getters and setters
