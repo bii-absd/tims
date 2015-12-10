@@ -15,8 +15,8 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 /**
- * PipelineDB is not mean to be instantiate, its main job is to perform
- * SQL operations on the pipeline table in the database.
+ * PipelineDB is an abstract class and not mean to be instantiate, its main 
+ * job is to perform SQL operations on the pipeline table in the database.
  * 
  * Author: Tay Wei Hong
  * Date: 5-Nov-2015
@@ -33,17 +33,16 @@ import org.apache.logging.log4j.LogManager;
  * variable tid (Technology ID).
  * 25-Nov-2015 - Added one new method getPipelineTechnology.
  * 01-Dec-2015 - Implementation for database 2.0
+ * 10-Dec-2015 - Changed to abstract class.
  */
 
-public class PipelineDB {
+public abstract class PipelineDB {
     // Get the logger for Log4j
     private final static Logger logger = LogManager.
             getLogger(PipelineDB.class.getName());
     private final static Connection conn = DBHelper.getDBConn();
     private final static List<Pipeline> pipelineList = new ArrayList<>();
 
-    public PipelineDB() {}
-    
     // Return the pipeline technology for this pipeline name.
     public static String getPipelineTechnology(String pipeline_name) {
         String queryStr = "SELECT tid FROM pipeline WHERE name = ?";
@@ -123,7 +122,8 @@ public class PipelineDB {
             updateStm.setString(3, cmd.getTid());
             updateStm.setString(4, cmd.getName());
         
-            updateStm.executeUpdate();            
+            updateStm.executeUpdate();
+            logger.debug("Updated pipeline: " + cmd.getName());
         }
         catch (SQLException e) {
             logger.error("SQLException when updating pipeline: "
