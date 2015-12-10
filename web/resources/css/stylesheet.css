@@ -32,7 +32,6 @@
 }
 
 .app-name {
-//    font-family: Arial, sans-serif;
     font-family: "Comic Sans MS", cursive, sans-serif;
     font-weight: 900;
     font-size: 18pt;
@@ -60,8 +59,12 @@
     font-size: 10pt;
 }
 
+.tab-title {
+    font-family: "Comic Sans MS", cursive, sans-serif;
+}
+
 .panel-button {
-    margin-top: 1em;
+    margin-top: 0.5em;
     width: 180px;
 }
 
@@ -109,7 +112,8 @@
 }
 
 .subheading {
-    font-size: 10pt;
+    font-family: "Comic Sans MS", cursive, sans-serif;
+    font-size: 11pt;
 }
 
 .page {
