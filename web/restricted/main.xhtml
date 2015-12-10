@@ -7,65 +7,63 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
     
-    <ui:define name="title">Clinical Data Sink - Main</ui:define>
+    <ui:define name="title">iCOMIC2S</ui:define>
     <ui:define name="content">
-        <h:form>
-            <p:panel id="ngs" header="NGS Data" toggleable="true" 
-                     widgetVar="ngs" collapsed="true">
-                <h:panelGrid cellpadding="2">
-                    <h:commandLink action="#{menuSelectionBean.ngsPipeline}" 
-                                   value="#{msg['rnaseq']}"/>
-                    <h:commandLink action="#{menuSelectionBean.ngsPipeline}" 
-                                   value="#{msg['dnaseq']}"/>
-                    <h:commandLink action="#{menuSelectionBean.ngsPipeline}" 
-                                   value="#{msg['chipseq']}"/>
-                </h:panelGrid>
-            </p:panel>
+    <h:form>
+    <p:accordionPanel>
+        <p:tab id="array" title="Array Data" titleStyleClass="tab-title">
+            <h:panelGrid cellpadding="1">
+                <h:commandLink action="#{menuSelectionBean.gexIllumina}" 
+                               value="#{msg['gex.illumina']}">
+                    <f:param name="command" value="#{msg['gex.illumina']}"/>
+                </h:commandLink>
+                <h:commandLink action="#{menuSelectionBean.gexAffymetrix}" 
+                               value="#{msg['gex.affymetrix']}">
+                    <f:param name="command" value="#{msg['gex.affymetrix']}"/>
+                </h:commandLink>
+                <h:commandLink action="#{menuSelectionBean.dataDepositor()}" 
+                               value="#{msg['meth']}"/>
+                <h:commandLink action="#{menuSelectionBean.dataRetriever()}" 
+                               value="#{msg['geno']}"/>
+            </h:panelGrid>
+        </p:tab>
             
-            <p:panel id="array" header="Array Data" toggleable="true" 
-                     widgetVar="array">
-                <h:panelGrid cellpadding="2">
-                    <h:commandLink action="#{menuSelectionBean.gexIllumina}" 
-                                   value="#{msg['gex.illumina']}">
-                        <f:param name="command" value="#{msg['gex.illumina']}"/>
-                    </h:commandLink>
-                    <h:commandLink action="#{menuSelectionBean.gexAffymetrix}" 
-                                   value="#{msg['gex.affymetrix']}">
-                        <f:param name="command" value="#{msg['gex.affymetrix']}"/>
-                    </h:commandLink>
-                    <h:commandLink value="#{msg['meth']}"/>
-                    <h:commandLink value="#{msg['geno']}"/>
-                </h:panelGrid>
-            </p:panel>
+        <p:tab id="ngs" title="NGS Data" titleStyleClass="tab-title">
+            <h:panelGrid>
+                <h:commandLink action="#{menuSelectionBean.ngsPipeline}" 
+                               value="#{msg['rnaseq']}"/>
+                <h:commandLink action="#{menuSelectionBean.ngsPipeline}" 
+                               value="#{msg['dnaseq']}"/>
+                <h:commandLink action="#{menuSelectionBean.ngsPipeline}" 
+                               value="#{msg['chipseq']}"/>
+            </h:panelGrid>
+        </p:tab>
             
-            <p:panel id="proteome" header="Proteome Data" toggleable="true" 
-                     widgetVar="proteome" collapsed="true">
-                <h:panelGrid cellpadding="2">
-                    <h:commandLink value="Proteome Pipeline 1"/>
-                    <h:commandLink value="Proteome Pipeline 2"/>
-                </h:panelGrid>
-            </p:panel>
+        <p:tab id="proteome" title="Proteome Data" titleStyleClass="tab-title">
+            <h:panelGrid cellpadding="1">
+                <h:commandLink value="Proteome Pipeline 1"/>
+                <h:commandLink value="Proteome Pipeline 2"/>
+            </h:panelGrid>
+        </p:tab>
             
-            <p:panel id="imaging" header="Imaging Data" toggleable="true" 
-                     widgetVar="imaging" collapsed="true">
-                <h:panelGrid cellpadding="2">
-                    <h:commandLink value="Imaging Pipeline 1"/>
-                </h:panelGrid>
-            </p:panel>
+        <p:tab id="imaging" title="Imaging Data" titleStyleClass="tab-title">
+            <h:panelGrid cellpadding="1">
+                <h:commandLink value="Imaging Pipeline 1"/>
+            </h:panelGrid>
+        </p:tab>
             
-            <p:panel id="pathlogy" header="Clinical Pathlogy Data" 
-                     toggleable="true" widgetVar="pathlogy" collapsed="true">
-                <h:panelGrid cellpadding="2">
-                    <h:commandLink value="Patient Data"/>
-                </h:panelGrid>
-            </p:panel>
+        <p:tab id="pathlogy" title="Clinical Pathlogy Data" 
+               titleStyleClass="tab-title">
+            <h:panelGrid cellpadding="1">
+                <h:commandLink value="Patient Data"/>
+            </h:panelGrid>
+        </p:tab>
             
-            <p:panel id="job" header="My Job Submission" toggleable="true" 
-                     widgetVar="job">
-                <h:outputLink title="View my job submission status" 
+        <p:tab id="job" title="My Job Submission" titleStyleClass="tab-title">
+            <h:outputLink title="View my job submission status" 
                               value="jobstatus.xhtml">Job Status</h:outputLink>
-            </p:panel>
-        </h:form>
-        
+        </p:tab>
+    </p:accordionPanel>
+    </h:form>
     </ui:define>
 </ui:composition>
