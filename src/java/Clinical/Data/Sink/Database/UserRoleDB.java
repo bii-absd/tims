@@ -5,8 +5,6 @@ package Clinical.Data.Sink.Database;
 
 import Clinical.Data.Sink.General.Constants;
 import java.io.Serializable;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.LinkedHashMap;
@@ -32,17 +30,17 @@ import org.apache.logging.log4j.LogManager;
  * 06-Nov-2015 - Updated the query statement for getRoleList.
  * 13-Nov-2015 - Changes the class name from UserRole to UserRoleDB.
  * 30-Nov-2015 - Implementation for database 2.0
+ * 11-Dec-2015 - Changed to abstract class. Removed unused code.
  */
 
-public class UserRoleDB implements Serializable {
+public abstract class UserRoleDB implements Serializable {
     // Get the logger for Log4j
     private final static Logger logger = LogManager.
             getLogger(UserRoleDB.class.getName());
-    private final static LinkedHashMap<String, Integer> roleNameList = 
-                                                        new LinkedHashMap<>();
-    private final static LinkedHashMap<Integer, String> roleIDList = 
-                                                        new LinkedHashMap<>();
-    private final static Connection conn = DBHelper.getDBConn();
+    private final static LinkedHashMap<String, Integer> 
+            roleNameList = new LinkedHashMap<>();
+    private final static LinkedHashMap<Integer, String> 
+            roleIDList = new LinkedHashMap<>();
     
     public UserRoleDB() {}
 
@@ -71,60 +69,19 @@ public class UserRoleDB implements Serializable {
         return roleNameList;
     }
     
-    // Return the Role ID using the value stored in HashMap roleList (Don't 
-    // need to access the database).
+    // Return the Role ID using the value stored in HashMap roleList.
     public static int getRoleIDFromHash(String roleName) {
         if (roleNameList.isEmpty()) {
             return Constants.DATABASE_INVALID_ID;
         }
         return roleNameList.get(roleName);            
     }
-    // Return the Role using the value stored in HashMap roleIDList (Don't 
-    // need to access the database).
+    
+    // Return the Role using the value stored in HashMap roleIDList.
     public static String getRoleNameFromHash(int roleID) {
         if (roleIDList.isEmpty()) {
             return Constants.DATABASE_INVALID_STR;
         }
         return roleIDList.get(roleID);
-    }
-    
-    // Return the role_id for the role passed in.
-    // Replaced by getRoleIDFromHash.
-    public static int getRoleID(String roleName) {
-        String queryStr = "SELECT role_id from user_role WHERE role_name = ?";
-        
-        try (PreparedStatement queryRoleID = conn.prepareStatement(queryStr)) {            
-            queryRoleID.setString(1, roleName);
-            ResultSet result = queryRoleID.executeQuery();
-            
-            if (result.next()) {
-                return result.getInt("role_id");
-            }
-        } catch (SQLException e) {
-            logger.error("SQLException when getting Role ID from database!");
-            logger.error(e.getMessage());
-        }
-        
-        return Constants.DATABASE_INVALID_ID;
-    }
-    
-    // Return the role for the roleID passed in.
-    // Replaced by getRoleNameFromHash.
-    public static String getRoleName(int roleID) {
-        String queryStr = "SELECT role_name from user_role WHERE role_id = ?";
-        
-        try (PreparedStatement queryStm = conn.prepareStatement(queryStr)) {
-            queryStm.setInt(1, roleID);
-            ResultSet result = queryStm.executeQuery();
-            
-            if (result.next()) {
-                return result.getString("role_name");
-            }
-        } catch (SQLException e) {
-            logger.error("SQLException when getting Role Name from database!");
-            logger.error(e.getMessage());
-        }
-        
-        return Constants.DATABASE_INVALID_STR;
-    }
+    }    
 }
