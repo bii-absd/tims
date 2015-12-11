@@ -3,7 +3,7 @@
  */
 package Clinical.Data.Sink.Bean;
 
-import Clinical.Data.Sink.Database.JobStatus;
+import Clinical.Data.Sink.Database.JobStatusDB;
 import Clinical.Data.Sink.Database.SubmittedJob;
 import Clinical.Data.Sink.Database.SubmittedJobDB;
 import java.io.File;
@@ -66,7 +66,7 @@ public class JobStatusBean implements Serializable {
         logger.info(AuthenticationBean.getUserName() + 
                 ": access Job Status page.");
         // Retrieve the job status definition from database
-        JobStatus.getJobStatusDef();
+        JobStatusDB.getJobStatusDef();
         // Retrieve the submitted job from database everytime we enter job
         // status page.
         SubmittedJobDB.clearSubmittedJobs();
