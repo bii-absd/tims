@@ -14,9 +14,11 @@
             <p:panel id="inputpara" header="Input Parameters">
                 <h:panelGrid columns="3" cellpadding="5">
                     <p:column>
-                        <p:inputText id="studyID" maxlength="20" required="true"
-                                     value="#{gexAffymetrixBean.studyID}"/>
-                        <p:watermark for="studyID" value="Enter Study ID"/>
+                        <p:selectOneMenu id="studyID" required="true" 
+                                         value="#{gexAffymetrixBean.studyID}">
+                            <f:selectItem itemLabel="Select Study ID" itemValue=""/>
+                            <f:selectItems value="#{gexAffymetrixBean.studyList}"/>
+                        </p:selectOneMenu>
                     </p:column>
                     <p:column>
                         <p:selectOneMenu id="type" required="true" 
