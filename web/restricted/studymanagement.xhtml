@@ -48,6 +48,65 @@
             </h:panelGrid>
         </h:form>
         </p:tab>
+        
+        <p:tab id="editStudy" title="Edit Study" titleStyleClass="tab-title">
+        <h:form id="editStudyForm">
+            <p:dataTable var="study" rows="10" id="studyTable" 
+                         value="#{studyMgntBean.studyList}" paginator="true"
+                         paginatorTemplate="{FirstPageLink} {PreviousPageLink}
+                         {CurrentPageReport} {NextPageLink} {LastPageLink}"
+                         styleClass="table-odd-row table-even-row" 
+                         editable="true">
+                <p:ajax event="rowEdit" listener="#{studyMgntBean.onRowEdit}" 
+                        update="studyMsg"/>
+                <p:column headerText="Study ID" style="width: 100px; text-align: left">
+                    <h:outputText value="#{study.study_id}"/>
+                </p:column>
+                <p:column headerText="Department ID" style="width: 90px; text-align: left">
+                    <p:cellEditor>
+                        <f:facet name="output">
+                            <h:outputText value="#{study.dept_id}"/>
+                        </f:facet>
+                        <f:facet name="input">
+                            <p:selectOneMenu value="#{study.dept_id}" style="width: 100%">
+                                <f:selectItems value="#{studyMgntBean.deptList}"/>
+                            </p:selectOneMenu>
+                        </f:facet>
+                    </p:cellEditor>
+                </p:column>
+                <p:column headerText="Annotation Version" style="width: 110px; text-align: left">
+                    <h:outputText value="#{study.annot_ver}"/>
+                </p:column>
+                <p:column headerText="Description" style="text-align: left">
+                    <p:cellEditor>
+                        <f:facet name="output">
+                            <h:outputText value="#{study.description}"/>
+                        </f:facet>
+                        <f:facet name="input">
+                            <p:inputText value="#{study.description}" style="width: 100%"/>
+                        </f:facet>
+                    </p:cellEditor>
+                </p:column>
+                <p:column headerText="Date" style="width: 90px; text-align: left">
+                    <p:cellEditor>
+                        <f:facet name="output">
+                            <h:outputText value="#{study.sqlDate}"/>
+                        </f:facet>
+                        <f:facet name="input">
+                            <p:calendar value="#{studyMgntBean.utilDate}" 
+                                        pattern="yyyy-MM-dd"/>
+                        </f:facet>
+                    </p:cellEditor>
+                </p:column>
+                <p:column headerText="Completed" style="width: 70px; text-align: left">
+                    <h:outputText value="#{study.completed?'Yes':'No'}"/>
+                </p:column>
+                <p:column style="width: 32px">
+                    <p:rowEditor/>
+                </p:column>
+            </p:dataTable>
+        </h:form>
+        </p:tab>
     </p:accordionPanel>
     </ui:define>
 </ui:composition>
