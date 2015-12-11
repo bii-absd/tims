@@ -6,6 +6,7 @@ package Clinical.Data.Sink.Bean;
 // Libraries for Log4j
 import Clinical.Data.Sink.Database.Pipeline;
 import Clinical.Data.Sink.Database.PipelineDB;
+import Clinical.Data.Sink.Database.StudyDB;
 import Clinical.Data.Sink.Database.SubmittedJobDB;
 import Clinical.Data.Sink.General.Constants;
 import Clinical.Data.Sink.General.ExitListener;
@@ -27,10 +28,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
+import org.primefaces.event.FileUploadEvent;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-import org.primefaces.event.FileUploadEvent;
 
 /**
  * ConfigBean is an abstract class, and it will be extended by all the pipeline
@@ -51,6 +52,8 @@ import org.primefaces.event.FileUploadEvent;
  * in the input folder directory.
  * 07-Dec-2015 - Recreate the annotationList every time a new sample annotation
  * file is uploaded.
+ * 11-Dec-2015 - Added method getStudyList that return the list of Study ID 
+ * setup for the user's department.
  */
 
 public abstract class ConfigBean implements Serializable {
@@ -409,6 +412,10 @@ public abstract class ConfigBean implements Serializable {
 	return FacesContext.getCurrentInstance();
     }
     
+    // Return the list of Study ID setup for this user's department.
+    public LinkedHashMap<String, String> getStudyList() {
+        return StudyDB.getStudyList(AuthenticationBean.getUserName());
+    }
     // Machine generated getters and setters
     public FileUploadBean getSampleFile() {
         return sampleFile;
