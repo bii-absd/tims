@@ -32,6 +32,8 @@ import org.apache.logging.log4j.LogManager;
  * 09-Dec-2015 - Added new method getDeptIDList, to return the list of dept_id 
  * setup under the specific institution. Added in the module for adding and
  * updating department info.
+ * 11-Dec-2015 - Added new attribute deptHash, that stores the full list of
+ * Department ID that have been setup in the system.
  */
 
 public class DepartmentDB implements Serializable {
@@ -40,6 +42,7 @@ public class DepartmentDB implements Serializable {
             getLogger(DepartmentDB.class.getName());
     private final static Connection conn = DBHelper.getDBConn();
     private final static List<Department> deptList = new ArrayList<>();
+    private final static LinkedHashMap<String,String> deptHash = new LinkedHashMap<>();
 
     public DepartmentDB() {}
     
@@ -48,7 +51,8 @@ public class DepartmentDB implements Serializable {
         deptList.clear();
     }
     
-    // Return the full list of Department setup in the system.
+    // Return the full list of Department setup in the system, and setup the 
+    // deptHash.
     public static List<Department> getDeptList() {
         // Only execute the query if the list is empty.
         // To prevent the query from being run multiple times.
@@ -63,6 +67,8 @@ public class DepartmentDB implements Serializable {
                                         result.getString("dept_id"),
                                         result.getString("dept_name"));
                     deptList.add(dept);
+                    deptHash.put(result.getString("dept_id"), 
+                            result.getString("dept_id"));
                 }
             }
             catch (SQLException e) {
@@ -172,5 +178,10 @@ public class DepartmentDB implements Serializable {
         }
         
         return deptHashMap;
+    }
+
+    // Return the HashMap of all the department IDs setup in the system.
+    public static LinkedHashMap<String, String> getDeptHash() {
+        return deptHash;
     }
 }
