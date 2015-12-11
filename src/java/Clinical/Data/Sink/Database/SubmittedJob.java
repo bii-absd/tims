@@ -92,13 +92,13 @@ public class SubmittedJob implements Serializable {
     
     // Return the job status name of this submitted job.
     public String getStatus_name() {
-        return JobStatus.getStatusName(status_id);
+        return JobStatusDB.getStatusName(status_id);
     }
     
     // Based on the job status, the download link at jobstatus.xhtml will be
     // enabled or disabled accordingly.
     public String getAvailable() {
-        if (JobStatus.getStatusName(status_id).compareTo("Completed") == 0)
+        if (JobStatusDB.getStatusName(status_id).compareTo("Completed") == 0)
         {
             return Constants.FALSE;
         }
