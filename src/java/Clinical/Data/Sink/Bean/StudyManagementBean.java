@@ -25,6 +25,7 @@ import javax.faces.model.SelectItemGroup;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.primefaces.event.RowEditEvent;
 
 /**
  * StudyManagementBean is the backing bean for the studymanagement view.
@@ -37,6 +38,7 @@ import org.apache.logging.log4j.LogManager;
  * static methods createNewStudy() and getAnnotList().
  * 09-Dec-2015 - Added one attribute, dept_id. Added new method setupGrouping(),
  * to build the MultiSelectListbox options for Institution -> Departments.
+ * 11-Dec-2015 - Added the module to edit study detail.
  */
 
 @ManagedBean (name="studyMgntBean")
@@ -48,13 +50,17 @@ public class StudyManagementBean implements Serializable {
     // Attributes for Study object
     private String study_id, dept_id, user_id, annot_ver, description;
     private Date sqlDate;
+    private java.util.Date utilDate;
     private Boolean completed;
     private LinkedHashMap<String, String> annotList;
     private List<SelectItem> grouping;
+    private List<Study> studyList;
     
     public StudyManagementBean() {
         user_id = AuthenticationBean.getUserName();
         sqlDate = new Date(Calendar.getInstance().getTime().getTime());
+        // Clear the study list everytime the user enter this page.
+        StudyDB.clearStudyList();
         logger.debug("StudyManagementBean created.");
         logger.debug(user_id + ": access Study ID Management page.");
     }
@@ -63,10 +69,39 @@ public class StudyManagementBean implements Serializable {
     public void init() {
         annotList = new LinkedHashMap<>();
         grouping = new ArrayList<>();
+        studyList = new ArrayList<>();
         annotList = StudyDB.getAnnotHashMap();
+        studyList = StudyDB.queryStudy();
         setupGrouping();
+        // Setup the department HashMap.
+        DepartmentDB.getDeptList();
     }
     
+    // Update the study table in database.
+    public void onRowEdit(RowEditEvent event) {
+        FacesContext fc = getFacesContext();
+        // Because the system is receiving the date as java.util.Date hence
+        // we need to perform a conversion here before storing it into database.
+        if (utilDate != null) {
+            ((Study) event.getObject()).setSqlDate(new Date(utilDate.getTime()));            
+        }
+
+        if (StudyDB.updateStudy((Study) event.getObject())) {
+            logger.debug(AuthenticationBean.getUserName() + 
+                    ": updated study " + 
+                    ((Study) event.getObject()).getStudy_id());
+            fc.addMessage(null, new FacesMessage(
+                    FacesMessage.SEVERITY_INFO, 
+                    "Study updated.", ""));
+        }
+        else {
+            logger.error("Study update failed!");
+            fc.addMessage(null, new FacesMessage(
+                    FacesMessage.SEVERITY_ERROR, 
+                    "Failed to update study!", ""));
+        }
+    }
+
     // Setup the MultiSelectListbox options i.e. Insitution -> Departments.
     private void setupGrouping() {
         List<Institution> instList = InstitutionDB.getInstList();
@@ -94,8 +129,9 @@ public class StudyManagementBean implements Serializable {
     // Create new Study
     public String createNewStudy() {
         FacesContext fc = getFacesContext();
+        // Study will always be created with completed status as false.
         Study study = new Study(study_id, dept_id, user_id, annot_ver, 
-                                description, sqlDate);
+                                description, sqlDate, false);
         
         if (StudyDB.insertStudy(study)) {
             logger.info(user_id + ": created new Study ID: " + study_id);
@@ -127,8 +163,19 @@ public class StudyManagementBean implements Serializable {
     private FacesContext getFacesContext() {
 	return FacesContext.getCurrentInstance();
     }
-
+    
+    // Return the full list of departments setup in the system.
+    public LinkedHashMap<String, String> getDeptList() {
+        return DepartmentDB.getDeptHash();
+    }
+    
     // Machine generated getters and setters
+    public List<Study> getStudyList() {
+        return studyList;
+    }
+    public void setStudyList(List<Study> studyList) {    
+        this.studyList = studyList;
+    }
     public String getStudy_id() {
         return study_id;
     }
@@ -161,5 +208,13 @@ public class StudyManagementBean implements Serializable {
     }
     public Boolean getCompleted() {
         return completed;
+    }
+    // utilDate is used as a temporary placement for attribute sqlDate during
+    // edit operation.
+    public java.util.Date getUtilDate() {
+        return utilDate;
+    }
+    public void setUtilDate(java.util.Date utilDate) {
+        this.utilDate = utilDate;
     }
 }
