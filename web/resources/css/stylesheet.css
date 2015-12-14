@@ -144,3 +144,7 @@
     font-size: 10pt;
     background-color: rgb(233, 249, 244);
 }
+
+.label {
+    font-size: 14px;
+}
