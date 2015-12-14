@@ -13,8 +13,8 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 /**
- * UserRoleDB is not mean to be instantiate, its main job is to perform
- * SQL operations on the user_role table in the database.
+ * UserRoleDB is an abstract class and not mean to be instantiate, its main 
+ * job is to perform SQL operations on the user_role table in the database.
  * 
  * Author: Tay Wei Hong
  * Date: 23-Sep-2015
