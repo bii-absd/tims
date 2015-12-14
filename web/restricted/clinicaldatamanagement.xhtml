@@ -1,0 +1,110 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition template="/WEB-INF/pageTemplate.xhtml"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    
+    <ui:define name="title">Clinical Data Management</ui:define>
+    <ui:param name="link" value="Clinical Data Management"/>
+    <ui:define name="content">
+    <p:growl id="clDataMsg"/>
+    <p:accordionPanel>
+        <p:tab id="editData" title="Edit Meta Data" titleStyleClass="tab-title">
+            <h:form id="editDataForm">
+                <p:dataTable var="cldata" rows="10" id="dataTable" 
+                             value="#{clDataMgntBean.subjectList}" paginator="true" 
+                             paginatorTemplate="{FirstPageLink} {PreviousPageLink}
+                             {CurrentPageReport} {NextPageLink} {LastPageLink}"
+                             styleClass="table-odd-row table-even-row" 
+                             editable="true">
+                    <p:ajax event="rowEdit" listener="#{clDataMgntBean.onRowEdit}" 
+                            update="clDataMsg"/>
+                    <p:column headerText="Subject ID" style="text-align: left">
+                        <h:outputText value="#{cldata.subject_id}"/>
+                    </p:column>
+                    <p:column headerText="Age at Diagnosis" style="text-align: left">
+                        <h:outputText value="#{cldata.age_at_diagnosis}"/>
+                    </p:column>
+                    <p:column headerText="Gender" style="text-align: left">
+                        <h:outputText value="#{cldata.gender}"/>
+                    </p:column>
+                    <p:column headerText="Race" style="text-align: left">
+                        <h:outputText value="#{cldata.race}"/>
+                    </p:column>
+                    <p:column headerText="Height" style="text-align: left">
+                        <h:outputText value="#{cldata.height}"/>
+                    </p:column>
+                    <p:column headerText="weight" style="text-align: left">
+                        <h:outputText value="#{cldata.weight}"/>
+                    </p:column>
+                    <p:column style="width: 32px">
+                        <p:rowEditor/>
+                    </p:column>
+                </p:dataTable>
+            </h:form>
+        </p:tab>
+        
+        <p:tab id="uploadData" title="Upload New Meta Data (Format of Meta Data: 
+               Subject_ID|Age_at_diagnosis|Gender|Race|Height|Weight)" 
+               titleStyleClass="tab-title">
+            <h:form id="uploadDataForm" enctype="multipart/form-data">
+                <p:fileUpload mode="advanced" update="clDataMsg" 
+                              label="Select Meta Data File" 
+                              fileUploadListener="#{clDataMgntBean.metaDataUpload}"/>
+            </h:form>
+        </p:tab>
+        
+        <p:tab id="addData" title="Add New Meta Data" titleStyleClass="tab-title">
+            <h:form id="addDataForm">
+                <h:panelGrid columns="3" border="0" cellpadding="4" cellspacing="2">
+                    <h:outputText value="Subject ID" styleClass="label"/>
+                    <p:inputText id="subjectid" size="18" autocomplete="off" 
+                                 required="true" value="#{clDataMgntBean.subject_id}"/>
+                    <h:message id="subjectid-status" for="subjectid" styleClass="errors"/>
+                
+                    <h:outputText value="Age at Diagnosis" styleClass="label"/>
+                    <p:inputText id="agediagnosis" size="18" maxlength="3" 
+                                 autocomplete="off" 
+                                 value="#{clDataMgntBean.age_at_diagnosis}"/>                    
+                    <h:message id="agediagnosis-status" for="agediagnosis" styleClass="errors"/>
+                
+                    <h:outputText value="Gender" styleClass="label"/>
+                    <p:selectOneRadio id="gender" value="#{clDataMgntBean.gender}">
+                        <f:selectItem itemLabel="Male" itemValue="M"/>
+                        <f:selectItem itemLabel="Female" itemValue="F"/>
+                    </p:selectOneRadio>
+                    <h:panelGroup/>
+                
+                    <h:outputText value="Race" styleClass="label"/>
+                    <p:selectOneMenu id="race" value="#{clDataMgntBean.race}">
+                        <f:selectItem itemLabel="Select Race" itemValue=""/>
+                        <f:selectItem itemLabel="Chinese" itemValue="CHN"/>
+                        <f:selectItem itemLabel="Malay" itemValue="MAL"/>
+                        <f:selectItem itemLabel="Indian" itemValue="IND"/>
+                        <f:selectItem itemLabel="Eurasian" itemValue="ERA"/>
+                    </p:selectOneMenu>
+                    <h:panelGroup/>
+                    
+                    <h:outputText value="Height" styleClass="label"/>
+                    <p:inputText id="height" size="18" autocomplete="off" 
+                                 value="#{clDataMgntBean.height}"/>
+                    <h:panelGroup/>
+                    
+                    <h:outputText value="Weight" styleClass="label"/>
+                    <p:inputText id="weight" size="18" autocomplete="off" 
+                                 value="#{clDataMgntBean.weight}"/>
+                    <h:panelGroup/>
+                </h:panelGrid>
+
+                <p:spacer height="40" width="2"/>
+                <h:commandButton action="#{clDataMgntBean.insertMetaData}" 
+                                 value="Insert Meta Data" 
+                                 style="font-size: 12px"/>
+            </h:form>
+        </p:tab>        
+    </p:accordionPanel>
+    </ui:define>
+</ui:composition>
