@@ -11,6 +11,8 @@ package Clinical.Data.Sink.Database;
  * 
  * Revision History
  * 10-Dec-2015 - Created with all the standard getters and setters.
+ * 14-Dec-2015 - Override the method toString() to return the string
+ * representation of the subject meta data.
  */
 
 public class Subject {
@@ -21,15 +23,23 @@ public class Subject {
     private float height, weight;
 
     // Machine generated constructor
-    public Subject(String subject_id, String dept_id, String race, char gender, 
-            int age_at_diagnosis, float height, float weight) {
+    public Subject(String subject_id, int age_at_diagnosis, char gender, 
+            String race, float height, float weight, String dept_id) {
         this.subject_id = subject_id;
-        this.dept_id = dept_id;
-        this.race = race;
-        this.gender = gender;
         this.age_at_diagnosis = age_at_diagnosis;
+        this.gender = gender;
+        this.race = race;
         this.height = height;
         this.weight = weight;
+        this.dept_id = dept_id;
+    }
+    
+    // Return the string representation of this subject in the format of:
+    // Subject_ID|Age_at_diagnosis|Gender|Race|Height|Weight|Department_ID
+    @Override
+    public String toString() {
+        return subject_id + "|" + age_at_diagnosis + "|" + gender + "|" +
+               race + "|" + height + "|" + weight + "|" + dept_id;
     }
     
     // Machine generated getters and setters
