@@ -24,6 +24,7 @@ import org.apache.logging.log4j.LogManager;
  * Revision History
  * 10-Dec-2015 - First baseline with 3 static methods, insertSubject, 
  * querySubject and clearSubList().
+ * 14-Dec-2015 - Added new method, updateSubject.
  */
 
 public abstract class SubjectDB {
@@ -33,7 +34,7 @@ public abstract class SubjectDB {
     private final static Connection conn = DBHelper.getDBConn();
     private static List<Subject> subList = new ArrayList<>();
 
-    // Insert the new subject into database
+    // Insert the new subject meta data into database
     public static Boolean insertSubject(Subject subject) {
         Boolean result = Constants.OK;
         String insertStr = "INSERT INTO subject(subject_id,dept_id,"
@@ -48,8 +49,9 @@ public abstract class SubjectDB {
             insertStm.setString(5, subject.getRace());
             insertStm.setFloat(6, subject.getHeight());
             insertStm.setFloat(7, subject.getWeight());
-            insertStm.executeUpdate();
             
+            insertStm.executeUpdate();
+            // Clear the subject list as there is new meta data inserted into database.
             logger.debug("New Subject ID inserted into database: " +
                     subject.getSubject_id());
         }
@@ -61,43 +63,60 @@ public abstract class SubjectDB {
         return result;
     }
     
-    // Query the subject table using the deptID as a match condition.
-    public static List<Subject> querySubject(String deptID) {
-        // Only execute the query if the list is empty.
-        // This is to prevent the query from being run multiple times.
-        if (subList.isEmpty()) {
-            String queryStr = "SELECT * from subject WHERE dept_id = ?";
+    // Update subject meta data in database.
+    // Only allow changes to age_at_diagnosis, gender, race, height and weight.
+    public static Boolean updateSubject(Subject subject) {
+        Boolean result = Constants.OK;
+        String updateStr = "UPDATE subject SET age_at_diagnosis = ?, "
+                         + "gender = ?, race = ?, height = ?, weight = ? "
+                         + "WHERE subject_id = ?";
+        
+        try (PreparedStatement updateStm = conn.prepareStatement(updateStr)) {
+            updateStm.setInt(1, subject.getAge_at_diagnosis());
+            updateStm.setString(2, String.valueOf(subject.getGender()));
+            updateStm.setString(3, subject.getRace());
+            updateStm.setFloat(4, subject.getHeight());
+            updateStm.setFloat(5, subject.getWeight());
             
-            try (PreparedStatement queryStm = conn.prepareStatement(queryStr)) {
-                queryStm.setString(1, deptID);
-                ResultSet rs = queryStm.executeQuery();
-                
-                while (rs.next()) {
-                    Subject tmp = new Subject(
-                            rs.getString("subject_id"),
-                            rs.getString("dept_id"),
-                            rs.getString("race"),
-                            rs.getString("gender").charAt(0),
-                            rs.getInt("age_at_diagnosis"),
-                            rs.getFloat("height"),
-                            rs.getFloat("weight"));
-                    // Add the object to the List.
-                    subList.add(tmp);
-                }
-                logger.debug("Query subject completed.");
-            }
-            catch (SQLException e) {
-                logger.error("SQLException when query subject!");
-                logger.error(e.getMessage());
-                // Exception has occurred, return back a empty list.
-                return new ArrayList<>(0);
-            }
+            updateStm.executeUpdate();
+            logger.debug("Updated subject meta data: " + subject.getSubject_id());
+        }
+        catch (SQLException e) {
+            logger.error("SQLException when updating subject meta data!");
+            logger.error(e.getMessage());
+            result = Constants.NOT_OK;
         }
         
+        return result;
+    }
+    
+    // Query the subject table using the deptID as a match condition.
+    // Exception thrown here need to be handle by the caller.
+    public static List<Subject> querySubject(String deptID) throws SQLException {
+        String queryStr = "SELECT * from subject WHERE dept_id = ?";
+        PreparedStatement queryStm = conn.prepareStatement(queryStr);
+        queryStm.setString(1, deptID);
+        ResultSet rs = queryStm.executeQuery();
+                
+        while (rs.next()) {
+            Subject tmp = new Subject(
+                            rs.getString("subject_id"),
+                            rs.getInt("age_at_diagnosis"),
+                            rs.getString("gender").charAt(0),
+                            rs.getString("race"),
+                            rs.getFloat("height"),
+                            rs.getFloat("weight"),
+                            rs.getString("dept_id"));
+            // Add the object to the List.
+            subList.add(tmp);
+        }
+
+        logger.debug("Query subject completed.");
         return subList;
     }
     
-    // Clear the subject list, so that the query to the database get to run again.
+    // Clear the subject list to make sure that the latest list of subject meta
+    // data will be build.
     public static void clearSubList() {
         subList.clear();
     }
