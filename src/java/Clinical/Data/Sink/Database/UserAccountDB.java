@@ -3,6 +3,7 @@
  */
 package Clinical.Data.Sink.Database;
 
+import Clinical.Data.Sink.General.Constants;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -17,8 +18,8 @@ import org.apache.logging.log4j.LogManager;
 import org.mindrot.jbcrypt.BCrypt;
 
 /**
- * UserAccountDB is not mean to be instantiate, its main job is to perform
- * SQL operations on the user_account table in the database.
+ * UserAccountDB is an abstract class and not mean to be instantiate, its main 
+ * job is to perform SQL operations on the user_account table in the database.
  * 
  * Author: Tay Wei Hong
  * Date: 09-Oct-2015
@@ -40,9 +41,10 @@ import org.mindrot.jbcrypt.BCrypt;
  * 13-Nov-2015 - Added one new variable userIDList and one new method 
  * getAllUserID(). Changed getAllUser() method to build up the userIDList.
  * 30-Nov-2015 - Implementation for database 2.0
+ * 14-Dec-2015 - Changed the class to abstract. Added new method, getDeptID.
  */
 
-public class UserAccountDB {
+public abstract class UserAccountDB {
     // Get the logger for Log4j
     private final static Logger logger = LogManager.
             getLogger(UserAccountDB.class.getName());
@@ -286,5 +288,27 @@ public class UserAccountDB {
         updateStm.setString(7, user.getUser_id());
         // Excute the UPDATE statement
         updateStm.executeUpdate();
+    }
+    
+    // Return the department ID for this user.
+    public static String getDeptID(String userID) {
+        String result = Constants.DATABASE_INVALID_STR;
+        String queryStr = "SELECT dept_id FROM user_account WHERE user_id = ?";
+        
+        try (PreparedStatement queryStm = conn.prepareStatement(queryStr)) {
+            queryStm.setString(1, userID);
+            ResultSet rs = queryStm.executeQuery();
+            
+            if (rs.next()) {
+                result = rs.getString("dept_id");
+                logger.debug("Department ID for " + userID + " is " + result);
+            }
+        }
+        catch (SQLException e) {
+            logger.error("SQLException when query user_account for dept_id!");
+            logger.error(e.getMessage());
+        }
+        
+        return result;
     }
 }
