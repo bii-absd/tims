@@ -72,21 +72,24 @@
                     <h:message id="agediagnosis-status" for="agediagnosis" styleClass="errors"/>
                 
                     <h:outputText value="Gender" styleClass="label"/>
-                    <p:selectOneRadio id="gender" value="#{clDataMgntBean.gender}">
+                    <p:selectOneRadio id="gender" required="true" 
+                                      value="#{clDataMgntBean.gender}">
                         <f:selectItem itemLabel="Male" itemValue="M"/>
                         <f:selectItem itemLabel="Female" itemValue="F"/>
                     </p:selectOneRadio>
-                    <h:panelGroup/>
+                    <h:message for="gender" styleClass="errors"/>
                 
                     <h:outputText value="Race" styleClass="label"/>
-                    <p:selectOneMenu id="race" value="#{clDataMgntBean.race}">
+                    <p:selectOneMenu id="race" required="true" 
+                                     value="#{clDataMgntBean.race}">
                         <f:selectItem itemLabel="Select Race" itemValue=""/>
                         <f:selectItem itemLabel="Chinese" itemValue="CHN"/>
                         <f:selectItem itemLabel="Malay" itemValue="MAL"/>
                         <f:selectItem itemLabel="Indian" itemValue="IND"/>
                         <f:selectItem itemLabel="Eurasian" itemValue="ERA"/>
+                        <f:selectItem itemLabel="Others" itemValue="OTH"/>
                     </p:selectOneMenu>
-                    <h:panelGroup/>
+                    <h:message for="race" styleClass="errors"/>
                     
                     <h:outputText value="Height" styleClass="label"/>
                     <p:inputText id="height" size="18" autocomplete="off" 
