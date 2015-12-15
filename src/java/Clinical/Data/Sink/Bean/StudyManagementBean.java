@@ -22,10 +22,11 @@ import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
 import javax.faces.model.SelectItemGroup;
+// Libraries for primefaces
+import org.primefaces.event.RowEditEvent;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-import org.primefaces.event.RowEditEvent;
 
 /**
  * StudyManagementBean is the backing bean for the studymanagement view.
@@ -39,6 +40,7 @@ import org.primefaces.event.RowEditEvent;
  * 09-Dec-2015 - Added one attribute, dept_id. Added new method setupGrouping(),
  * to build the MultiSelectListbox options for Institution -> Departments.
  * 11-Dec-2015 - Added the module to edit study detail.
+ * 15-Dec-2015 - To create a separate input directory for each Study ID created.
  */
 
 @ManagedBean (name="studyMgntBean")
@@ -134,6 +136,8 @@ public class StudyManagementBean implements Serializable {
                                 description, sqlDate, false);
         
         if (StudyDB.insertStudy(study)) {
+            // Create a separate input directory for the newly created Study ID.
+            FileUploadBean.createStudyDirectory(study_id);
             logger.info(user_id + ": created new Study ID: " + study_id);
             fc.addMessage(null, new FacesMessage(
                     FacesMessage.SEVERITY_INFO,
