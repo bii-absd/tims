@@ -9,7 +9,7 @@ LOG_PATH //log//
 # All input files (i.e. input, ctrl and sample) will be stored in the /input
 # directory (with their original name unchange).
 # All output files (i.e. output and report) will be stored in the /output dir
-OUTPUTFILE_NAME output-
+OUTPUTFILE_NAME output_
 OUTPUTFILE_EXT .txt
 REPORTFILE_NAME report_
 REPORTFILE_EXT .pdf
