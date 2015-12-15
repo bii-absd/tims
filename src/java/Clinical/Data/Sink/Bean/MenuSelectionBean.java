@@ -9,6 +9,7 @@ import Clinical.Data.Sink.Database.StudyDB;
 import Clinical.Data.Sink.General.Constants;
 import java.io.Serializable;
 import java.util.LinkedHashMap;
+import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
 // Libraries for Log4j
@@ -32,7 +33,8 @@ import org.apache.logging.log4j.LogManager;
  * 25-Nov-2015 - Implementation for database 2.0
  * 15-Dec-2015 - Changed from RequestScoped to ViewScoped. Removed param 
  * command. Implemented the new workflow (i.e. User to select Study ID before 
- * proceeding to pipeline configuration.
+ * proceeding to pipeline configuration. To construct the Study List during
+ * PostConstruct phase.
  */
 
 @ManagedBean (name="menuSelectionBean")
@@ -42,9 +44,15 @@ public class MenuSelectionBean implements Serializable{
     private final static Logger logger = LogManager.
             getLogger(MenuSelectionBean.class.getName());
     private String study_id, config_page;
+    private LinkedHashMap<String, String> studyList;
     
     public MenuSelectionBean() {
         logger.debug("MenuSelectionBean created.");
+    }
+    
+    @PostConstruct
+    public void init() {
+        studyList = StudyDB.getStudyList(AuthenticationBean.getUserName());
     }
     
     // Setup the ConfigBean for GEX Illumina pipeline processing.
@@ -85,7 +93,7 @@ public class MenuSelectionBean implements Serializable{
     
     // Return the list of Study ID setup for this user's department.
     public LinkedHashMap<String, String> getStudyList() {
-        return StudyDB.getStudyList(AuthenticationBean.getUserName());
+        return studyList;
     }
 
     // Setup the NGSConfigBean according to the specific pipeline selected.
