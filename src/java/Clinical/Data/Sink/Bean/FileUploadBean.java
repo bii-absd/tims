@@ -40,6 +40,9 @@ import org.apache.logging.log4j.LogManager;
  * 11-Nov-2015 - The file directory will only be created after the user 
  * uploaded a file.
  * 02-Dec-2015 - Implemented the changes in the input folder directory.
+ * 15-Dec-2015 - Added new method createStudyDirectory, to create level two
+ * system directory for each Study. Modified method setFileDirectory to 
+ * construct the directory name using the Study ID and Submission time.
  */
 
 public class FileUploadBean implements Serializable {
@@ -62,6 +65,7 @@ public class FileUploadBean implements Serializable {
     public void multipleFileUploadListener(FileUploadEvent event) {
         fileList.put(++fileCount, fileUploadListener(event));
     }
+    
     // Used for single file upload.
     public void singleFileUploadListener(FileUploadEvent event) {
         // For single file upload, we will always use the latest file.
@@ -72,6 +76,7 @@ public class FileUploadBean implements Serializable {
             fileList.replace(1, fileUploadListener(event));            
         }
     }
+    
     // fileUploadListener will get call for each file uploaded.
     public String fileUploadListener(FileUploadEvent event) {
         UploadedFile uFile = event.getFile();
@@ -115,7 +120,8 @@ public class FileUploadBean implements Serializable {
         return uFile.getFileName();
     }
     
-    // Create all the relevant system directories.
+    // Create level one system directories i.e. .../iCOMIC2S/users
+    // .../iCOMIC2S/input
     public static Boolean createSystemDirectories(String systemDir) {
         Boolean result = 
                 createSystemDirectory(systemDir + Constants.getUSERS_PATH()) &&
@@ -124,7 +130,10 @@ public class FileUploadBean implements Serializable {
         return result;
     }
     
-    // Create all the relevant system directories for the user.
+    // Create level two system directories for each user i.e.
+    // .../iCOMIC2S/users/whtay/output
+    // .../iCOMIC2S/users/whtay/config
+    // .../iCOMIC2S/users/whtay/log
     public static Boolean createUsersDirectories(String homeDir) {
         Boolean result = 
                 createSystemDirectory(homeDir) && 
@@ -133,6 +142,13 @@ public class FileUploadBean implements Serializable {
                 createSystemDirectory(homeDir + Constants.getLOG_PATH());
         
         return result;
+    }
+    
+    // Create level two system directory for each Study i.e.
+    // .../iCOMIC2S/input/Bayer
+    public static Boolean createStudyDirectory(String study_id) {
+        return createSystemDirectory(Constants.getSYSTEM_PATH() + 
+                                     Constants.getINPUT_PATH() + study_id);
     }
     
     // Create the system directory used for storing input files.
@@ -186,11 +202,16 @@ public class FileUploadBean implements Serializable {
         return fileDirectory;
     }
     
-    // Set the input files directory for this pipeline job.
+    // Set the input files directory for this pipeline job i.e.
+    // .../iCOMIC2S/input/Bayer/20151210_1502
     // This will be called once by the ArrayConfigBean's initFiles() method 
     // whenever the user enter the GEX pipeline view.
-    public static void setFileDirectory(String directory) {
-        fileDirectory = directory;
+    public static void setFileDirectory(String study_id, String submitTime) {
+        fileDirectory = Constants.getSYSTEM_PATH() + 
+                        Constants.getINPUT_PATH() +
+                        study_id + File.separator +
+                        submitTime + File.separator;
+        
         File local = new File(fileDirectory);
         // Set the local file path; to be use during config file creation.
         setLocalDirectoryPath(local.getAbsolutePath());
