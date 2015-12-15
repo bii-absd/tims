@@ -13,57 +13,77 @@
     <p:accordionPanel>
         <p:tab id="array" title="Array Data" titleStyleClass="tab-title">
             <h:panelGrid cellpadding="1">
-                <h:commandLink action="#{menuSelectionBean.gexIllumina}" 
-                               value="#{msg['gex.illumina']}">
-                    <f:param name="command" value="#{msg['gex.illumina']}"/>
-                </h:commandLink>
-                <h:commandLink action="#{menuSelectionBean.gexAffymetrix}" 
-                               value="#{msg['gex.affymetrix']}">
-                    <f:param name="command" value="#{msg['gex.affymetrix']}"/>
-                </h:commandLink>
-                <h:commandLink action="#{menuSelectionBean.dataDepositor()}" 
-                               value="#{msg['meth']}"/>
-                <h:commandLink action="#{menuSelectionBean.dataRetriever()}" 
-                               value="#{msg['geno']}"/>
+                <p:commandLink action="#{menuSelectionBean.gexIllumina}"
+                               value="#{msg['gex.illumina']}" 
+                               style="font-size: 16px" oncomplete="PF('dlg').show()"/>
+                <p:commandLink action="#{menuSelectionBean.gexAffymetrix}" 
+                               value="#{msg['gex.affymetrix']}" 
+                               style="font-size: 16px" oncomplete="PF('dlg').show()"/>
+                <p:commandLink action="#{menuSelectionBean.dataDepositor}" 
+                               value="#{msg['meth']}" style="font-size: 16px"/>
+                <p:commandLink action="#{menuSelectionBean.dataRetriever}" 
+                               value="#{msg['geno']}" style="font-size: 16px"/>
             </h:panelGrid>
         </p:tab>
             
         <p:tab id="ngs" title="NGS Data" titleStyleClass="tab-title">
             <h:panelGrid>
-                <h:commandLink action="#{menuSelectionBean.ngsPipeline}" 
-                               value="#{msg['rnaseq']}"/>
-                <h:commandLink action="#{menuSelectionBean.ngsPipeline}" 
-                               value="#{msg['dnaseq']}"/>
-                <h:commandLink action="#{menuSelectionBean.ngsPipeline}" 
-                               value="#{msg['chipseq']}"/>
+                <p:commandLink action="#{menuSelectionBean.ngsPipeline}" 
+                               value="#{msg['rnaseq']}" style="font-size: 16px"/>
+                <p:commandLink action="#{menuSelectionBean.ngsPipeline}" 
+                               value="#{msg['dnaseq']}" style="font-size: 16px"/>
+                <p:commandLink action="#{menuSelectionBean.ngsPipeline}" 
+                               value="#{msg['chipseq']}" style="font-size: 16px"/>
             </h:panelGrid>
         </p:tab>
             
         <p:tab id="proteome" title="Proteome Data" titleStyleClass="tab-title">
             <h:panelGrid cellpadding="1">
-                <h:commandLink value="Proteome Pipeline 1"/>
-                <h:commandLink value="Proteome Pipeline 2"/>
+                <p:commandLink value="Proteome Pipeline 1" style="font-size: 16px"/>
+                <p:commandLink value="Proteome Pipeline 2" style="font-size: 16px"/>
             </h:panelGrid>
         </p:tab>
             
         <p:tab id="imaging" title="Imaging Data" titleStyleClass="tab-title">
             <h:panelGrid cellpadding="1">
-                <h:commandLink value="Imaging Pipeline 1"/>
+                <p:commandLink value="Imaging Pipeline 1" style="font-size: 16px"/>
             </h:panelGrid>
         </p:tab>
             
         <p:tab id="pathlogy" title="Clinical Pathlogy Data" 
                titleStyleClass="tab-title">
-            <h:panelGrid cellpadding="1">
-                <h:commandLink value="Patient Data"/>
-            </h:panelGrid>
+            <h:outputLink title="Upload or edit clinical data" 
+                          value="clinicaldatamanagement.xhtml" style="font-size: 16px">
+                Clinical Data Management
+            </h:outputLink>
         </p:tab>
             
         <p:tab id="job" title="My Job Submission" titleStyleClass="tab-title">
             <h:outputLink title="View my job submission status" 
-                              value="jobstatus.xhtml">Job Status</h:outputLink>
+                          value="jobstatus.xhtml" style="font-size: 16px">
+                Job Status
+            </h:outputLink>
         </p:tab>
     </p:accordionPanel>
     </h:form>
+        
+    <p:dialog modal="true" header="Select Study to work on" 
+              widgetVar="dlg" resizable="false">
+        <h:form>
+        <p:selectOneMenu id="studyID" value="#{menuSelectionBean.study_id}">
+            <f:selectItem itemLabel="Select Study" itemValue=""/>
+            <f:selectItems value="#{menuSelectionBean.studyList}"/>
+            <p:ajax update="selPanel"/>
+        </p:selectOneMenu>
+        <p:separator style="height: 20px"/>
+        <h:panelGrid id="selPanel" columns="2" cellspacing="2" cellpadding="2">
+            <p:commandButton value="Cancel" oncomplete="PF('dlg').hide()" 
+                             action="#{menuSelectionBean.backToMainMenu}"/>
+            <p:commandButton value="Proceed" 
+                             rendered="#{menuSelectionBean.studySelectedStatus}" 
+                             action="#{menuSelectionBean.proceedToConfig}"/>
+        </h:panelGrid>
+        </h:form>
+    </p:dialog>
     </ui:define>
 </ui:composition>
