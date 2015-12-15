@@ -11,11 +11,11 @@ LOG_PATH //log//
 # All output files (i.e. output and report) will be stored in the /output dir
 OUTPUTFILE_NAME output-
 OUTPUTFILE_EXT .txt
-REPORTFILE_NAME report-
+REPORTFILE_NAME report_
 REPORTFILE_EXT .pdf
-LOGFILE_NAME log-
+LOGFILE_NAME log_
 LOGFILE_EXT .txt
-CONFIG_FILE_NAME config-
+CONFIG_FILE_NAME config_
 CONFIG_FILE_EXT .txt
 # The below defines the database name, database driver
 DATABASE_NAME jdbc:postgresql://localhost:5432/clinical
