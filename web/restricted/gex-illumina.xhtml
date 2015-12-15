@@ -8,29 +8,9 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
     
     <ui:define name="title">GEX Pipeline (Illumina)</ui:define>
-    <ui:param name="link" value="#{gexIlluminaBean.commandLink}"/>
+    <ui:param name="link" value="#{gexIlluminaBean.breadCrumbLink}"/>
     <ui:define name="content">
         <h:form enctype="multipart/form-data">
-            <p:panel id="inputpara" header="Input Parameters">
-                <h:panelGrid columns="3" cellpadding="5">
-                    <p:column>
-                        <p:selectOneMenu id="studyID" required="true" 
-                                         value="#{gexIlluminaBean.studyID}">
-                            <f:selectItem itemLabel="Select Study ID" itemValue=""/>
-                            <f:selectItems value="#{gexIlluminaBean.studyList}"/>
-                        </p:selectOneMenu>
-                    </p:column>
-                    <p:column>
-                        <p:selectOneMenu id="type" required="true" 
-                                         value="#{gexIlluminaBean.type}">
-                            <f:selectItem itemLabel="Select Type" itemValue=""/>
-                            <f:selectItems value="#{gexIlluminaBean.typeList}"/>
-                        </p:selectOneMenu>
-                    </p:column>
-                    <h:message for="studyID" styleClass="errors"/>
-                </h:panelGrid>
-            </p:panel>
-            
             <p:panel id="inputcontrol" header="Upload Sample and Control Probe Files">
                 <p:growl id="uploadStatus" sticky="true"/>
                 <p:fileUpload mode="advanced" update="uploadStatus" 
@@ -52,7 +32,14 @@
             </p:panel>
 
             <p:panel id="processparameters" header="Processing Parameters">
-                <h:panelGrid columns="5" cellpadding="5">
+                <h:panelGrid columns="6" cellpadding="5">
+                    <p:column>
+                        <p:selectOneMenu id="type" required="true" 
+                                         value="#{gexIlluminaBean.type}">
+                            <f:selectItem itemLabel="Select Type" itemValue=""/>
+                            <f:selectItems value="#{gexIlluminaBean.typeList}"/>
+                        </p:selectOneMenu>
+                    </p:column>
                     <p:column>
                         <p:outputLabel value="Probe Filtering" style="font-weight: bold" title="#{msg['probe.filtering']}"/>
                         <p:selectManyMenu id="probefilter" showCheckbox="true"
@@ -86,7 +73,7 @@
                                                title="#{msg['probe.selection']}"
                                                onLabel="Yes" offLabel="No"/>
                     </p:column>
-                    <h:message for="normalization" styleClass="errors"/>
+                    <h:message for="type" styleClass="errors"/>
                 </h:panelGrid>
             </p:panel>
             
