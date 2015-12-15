@@ -8,29 +8,9 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
     
     <ui:define name="title">GEX Pipeline (Affymetrix)</ui:define>
-    <ui:param name="link" value="#{gexAffymetrixBean.commandLink}"/>
+    <ui:param name="link" value="#{gexAffymetrixBean.breadCrumbLink}"/>
     <ui:define name="content">
         <h:form enctype="multipart/form-data">
-            <p:panel id="inputpara" header="Input Parameters">
-                <h:panelGrid columns="3" cellpadding="5">
-                    <p:column>
-                        <p:selectOneMenu id="studyID" required="true" 
-                                         value="#{gexAffymetrixBean.studyID}">
-                            <f:selectItem itemLabel="Select Study ID" itemValue=""/>
-                            <f:selectItems value="#{gexAffymetrixBean.studyList}"/>
-                        </p:selectOneMenu>
-                    </p:column>
-                    <p:column>
-                        <p:selectOneMenu id="type" required="true" 
-                                         value="#{gexAffymetrixBean.type}">
-                            <f:selectItem itemLabel="Select Type" itemValue=""/>
-                            <f:selectItems value="#{gexAffymetrixBean.typeList}"/>
-                        </p:selectOneMenu>
-                    </p:column>
-                    <h:message for="studyID" styleClass="errors"/>
-                </h:panelGrid>
-            </p:panel>
-            
             <p:panel id="inputfile" header="Upload Sample Probe Files">
                 <p:growl id="uploadStatus" sticky="true"/>
                 <p:fileUpload mode="advanced" multiple="true"
@@ -51,7 +31,14 @@
             </p:panel>
             
             <p:panel id="processparameters" header="Processing Parameters">
-                <h:panelGrid columns="5" cellpadding="5">
+                <h:panelGrid columns="6" cellpadding="5">
+                    <p:column>
+                        <p:selectOneMenu id="type" required="true" 
+                                         value="#{gexAffymetrixBean.type}">
+                            <f:selectItem itemLabel="Select Type" itemValue=""/>
+                            <f:selectItems value="#{gexAffymetrixBean.typeList}"/>
+                        </p:selectOneMenu>
+                    </p:column>
                     <p:column>
                         <p:selectOneMenu id="probefilter"
                                           value="#{gexAffymetrixBean.probeFilter}">
@@ -85,7 +72,7 @@
                                                title="#{msg['probe.selection']}"
                                                onLabel="Yes" offLabel="No"/>
                     </p:column>
-                    <h:message for="normalization" styleClass="errors"/>
+                    <h:message for="type" styleClass="errors"/>
                 </h:panelGrid>
             </p:panel>
             
