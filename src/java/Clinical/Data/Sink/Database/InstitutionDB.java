@@ -17,8 +17,8 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 /**
- * InstitutionDB is not mean to be instantiate, its main job is to perform
- * SQL operations on the institution table in the database.
+ * InstitutionDB is an abstract class and not mean to be instantiate, its main 
+ * job is to perform SQL operations on the institution table in the database.
  * 
  * Author: Tay Wei Hong
  * Date: 13-Nov-2015
@@ -31,6 +31,7 @@ import org.apache.logging.log4j.LogManager;
  * 30-Nov-2015 - Implementation for database 2.0
  * 09-Dec-2015 - To clear and rebuild the institution list and hashmap after 
  * update. Will not allow updating of inst_id through UI.
+ * 16-Dec-2015 - Changed to abstract class.
  */
 
 public class InstitutionDB implements Serializable {
@@ -44,9 +45,7 @@ public class InstitutionDB implements Serializable {
             instIDHash = new LinkedHashMap<>();
     private final static List<Institution> instList = new ArrayList<>();
     
-    public InstitutionDB() {}
-    
-    // Clear the institution list, so that it will be rebuild again.
+    // Clear the institution list, so that it will be rebuild.
     private static void clearInstList() {
         instNameHash.clear();
         instIDHash.clear();
@@ -108,7 +107,7 @@ public class InstitutionDB implements Serializable {
         return result;
     }
     
-    // Update the insitution information in the database.
+    // Only allow update to the institution name.
     public static Boolean updateInstitution(Institution inst) {
         Boolean result = Constants.OK;
         String updateStr = "UPDATE inst SET inst_name = ? WHERE inst_id = ?";
