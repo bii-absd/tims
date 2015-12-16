@@ -57,13 +57,16 @@ import org.apache.logging.log4j.LogManager;
  * Removed the submission time from study id (in the config file). Implemented 
  * the new workflow (i.e. User to select Study ID before proceeding to pipeline 
  * configuration.
+ * 16-Dec-2015 - Added one attribute inputFileDesc, and one abstract method
+ * saveSampleFileDetail(). To save the sample file detail to database, and
+ * rename the sample annotation file before executing the pipeline.
  */
 
 public abstract class ConfigBean implements Serializable {
     // Get the logger for Log4j
     protected final static Logger logger = LogManager.
             getLogger(ConfigBean.class.getName());
-    private static String studyID;
+    protected static String studyID;
     // Common Processing Parameters. 
     protected String type, normalization, probeFilter, phenotype;
     private boolean probeSelect;
@@ -71,12 +74,12 @@ public abstract class ConfigBean implements Serializable {
     private String sampleAverage, stdLog2Ratio;
     // The command link setup by the main menu backing bean.
     private static String commandLink;
-    // Pipeline name
-    protected static String pipelineName;
-    // Pipeline technology
-    protected static String pipelineTech;
+    // Pipeline name and technology
+    protected static String pipelineName, pipelineTech;
     // Common input files that will be uploaded by the users
     protected FileUploadBean inputFile, sampleFile;
+    // Brief description of the input file
+    protected String inputFileDesc;
     // Record the time this job was created
     protected String submitTimeInDB, submitTimeInFilename;
     // job_id of the inserted record
@@ -99,7 +102,9 @@ public abstract class ConfigBean implements Serializable {
     // Insert the current job request into the submitted_job table. The status
     // of the insertion operation will be return.
     abstract Boolean insertJob(String outputFilePath, String reportFilePath);
-
+    // Save the input data detail into the database.
+    abstract void saveSampleFileDetail();
+    
     public void init() {
         // Create the time stamp for the pipeline job.
         createJobTimestamp();        
@@ -203,7 +208,8 @@ public abstract class ConfigBean implements Serializable {
         // Step to follow for pipeline execution:
         // 1. Create Config file
         // 2. Insert new job request into database
-        // 3. Update job status to in-progress
+        // 3. Update job status to in-progress, save sample file detail and 
+        // rename sample annotation file.
         // 4. Execute the pipeline
         //      4.1 Create the process to run the pipeline using the 
         //      ProcessBuilder.
@@ -216,10 +222,15 @@ public abstract class ConfigBean implements Serializable {
         // 1. Create the config file; to be use by the pipeline during execution.
         // 2. Insert this new job request into the submitted_job table
         if (createConfigFile() && insertJob(outputFilePath,reportFilePath)) {
+            // 3. Update job status to in-progress
             SubmittedJobDB.updateJobStatusToInprogress(job_id);
             logger.debug("Pipeline run and job status updated to in-progress. ID: " 
                         + job_id);
-            // 3. Pipeline is ready to be run now
+            // Save the Sample File detail into database
+            saveSampleFileDetail();        
+            // Rename the sample annotation file to a common name for future use.
+            sampleFile.renameAnnotFile();
+            // 4. Pipeline is ready to be run now
             result = executePipeline(logFilePath);
             // Create dummy pipeline files for user to download.
 //            createDummyFile(outputFilePath);
@@ -259,7 +270,7 @@ public abstract class ConfigBean implements Serializable {
         String result = Constants.MAIN_PAGE;
         // Build the pipeline command
         List<String> command = new ArrayList<>();
-        Pipeline cmd = null;
+        Pipeline cmd;
         
         try {
             // Retrieve the pipeline command and it's parameter from database.
@@ -337,7 +348,8 @@ public abstract class ConfigBean implements Serializable {
             // Create config file
             configFile.createNewFile();
             // Write to the config file according to the format needed 
-            // by the pipeline.
+            // by the pipeline. Sample annotation file will be having the same
+            // common name for all pipelines.
             fw.write("### INPUT parameters\n" +
                      "STUDY_ID\t=\t" + getStudyID() +
                      "\nTYPE\t=\t" + getType() +
@@ -420,6 +432,12 @@ public abstract class ConfigBean implements Serializable {
     }
     public void setInputFile(FileUploadBean inputFile) {
         this.inputFile = inputFile;
+    }
+    public String getInputFileDesc() {
+        return inputFileDesc;
+    }
+    public void setInputFileDesc(String inputFileDesc) {
+        this.inputFileDesc = inputFileDesc;
     }
     public static String getPipelineTech() {
         return pipelineTech;
