@@ -17,6 +17,12 @@
                               label="Select Sample File"
                               fileUploadListener="#{gexIlluminaBean.inputFile.singleFileUploadListener}">
                 </p:fileUpload>
+                <p:inputText id="inputdescription" 
+                             value="#{gexIlluminaBean.inputFileDesc}" 
+                             autocomplete="off" size="200" style="width: 99%"/>
+                <p:watermark for="inputdescription" 
+                             value="Enter a brief description of the Sample File here."/>
+                <p:separator style="height: 15px"/>
                 <p:fileUpload mode="advanced" update="uploadStatus" 
                               label="Select Control File"
                               fileUploadListener="#{gexIlluminaBean.ctrlFile.singleFileUploadListener}"/>
