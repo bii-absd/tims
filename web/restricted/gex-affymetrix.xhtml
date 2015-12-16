@@ -19,6 +19,11 @@
                               allowTypes="/(\.|\/)(CEL)$/"
                               fileUploadListener="#{gexAffymetrixBean.inputFile.multipleFileUploadListener}">
                 </p:fileUpload>
+                <p:inputText id="inputdescription" 
+                             value="#{gexAffymetrixBean.inputFileDesc}" 
+                             autocomplete="off" size="150" style="width: 99%"/>
+                <p:watermark for="inputdescription" 
+                             value="Enter a brief description of the Sample File here."/>
             </p:panel>
             <p:panel id="annotfile"
                      header="Upload Samples Annotation File 
