@@ -3,6 +3,9 @@
  */
 package Clinical.Data.Sink.Bean;
 
+import static Clinical.Data.Sink.Bean.ConfigBean.studyID;
+import Clinical.Data.Sink.Database.InputData;
+import Clinical.Data.Sink.Database.InputDataDB;
 import Clinical.Data.Sink.Database.PipelineDB;
 import Clinical.Data.Sink.Database.SubmittedJob;
 import Clinical.Data.Sink.Database.SubmittedJobDB;
@@ -28,6 +31,8 @@ import javax.faces.bean.ViewScoped;
  * 25-Nov-2015 - Renamed pipelineType to pipelineTech. Implementation for 
  * database 2.0
  * 02-Dec-2015 - Streamline the createConfigFile method.
+ * 16-Dec-2015 - Implemented the new abstract method saveSampleFileDetail(). 
+ * Sample annotation file will be having the same common name for all pipelines.
  */
 
 @ManagedBean (name="gexIlluminaBean")
@@ -77,14 +82,10 @@ public class GEXIlluminaBean extends ConfigBean {
         try {
             // Store the job_id of the inserted record
             job_id = SubmittedJobDB.insertJob(newJob);
-            // insertJob will return the job_id of the inserted job request
-            // NOTE: need to keep the job_id for further processing. KIV
-            logger.info(AuthenticationBean.getUserName() + 
-                    ": insert new job request into database. ID: " + job_id);
+            logger.info("New job request inserted. ID: " + job_id);
         }
         catch (SQLException e) {
-            logger.error(AuthenticationBean.getUserName() + 
-                    ": encountered SQLException at insertJob.");
+            logger.error("SQLException when inserting job.");
             logger.error(e.getMessage());
             result = Constants.NOT_OK;
         }
@@ -92,12 +93,34 @@ public class GEXIlluminaBean extends ConfigBean {
         return result;
     }
 
+    @Override
+    public void saveSampleFileDetail() {
+        int sn;
+        
+        try {
+            sn = InputDataDB.getNextSn(studyID);
+            // For Affymetrix, we will only store the filepath.
+            InputData newdata = new InputData(studyID, 
+                    inputFile.getInputFilename(), 
+                    inputFile.getLocalDirectoryPath(),
+                    inputFileDesc, sn, submitTimeInDB);
+            InputDataDB.insertInputData(newdata);
+        }
+        catch (SQLException e) {
+            logger.error("Failed to insert input data detail!");
+            logger.error(e.getMessage());
+        }
+    }
+
     // Make the necessary setup to those attributes that are relevant to this
     // pipeline, and then call the base class method to create the Config File.
+    @Override
     public Boolean createConfigFile() {
         input = inputFile.getLocalDirectoryPath() + inputFile.getInputFilename();
         ctrl = ctrlFile.getLocalDirectoryPath() + ctrlFile.getInputFilename();
-        sample = sampleFile.getLocalDirectoryPath() + sampleFile.getInputFilename();
+        sample = sampleFile.getLocalDirectoryPath() + 
+                 Constants.getSAMPLE_ANNOT_FILE_NAME() + 
+                 Constants.getSAMPLE_ANNOT_FILE_EXT();
         probeFilter = Constants.NONE;
 
         if (probeFilters.size() > 0) {
