@@ -61,6 +61,8 @@ import org.apache.logging.log4j.LogManager;
  * constants, INSERT_SUCCESS, INSERT_FAIL, SUCCESS, FAILURE, CHECK_VALID and 
  * CHECK_INVALID.
  * 14-Dec-2015 - Added one new constant, CLINICAL_DATA_MANAGEMENT.
+ * 16-Dec-2015 - Added two new constants, SAMPLE_ANNOT_FILE_NAME and
+ * SAMPLE_ANNOT_FILE_EXT.
  */
 
 @ManagedBean (name = "constants")
@@ -117,6 +119,8 @@ public class Constants {
     private static String LOGFILE_EXT = null;
     private static String CONFIG_FILE_NAME = null;
     private static String CONFIG_FILE_EXT = null;
+    private static String SAMPLE_ANNOT_FILE_NAME = null;
+    private static String SAMPLE_ANNOT_FILE_EXT = null;
     // Constants used in database setup
     private static String DATABASE_NAME = null;
     private static String DATABASE_DRIVER = null;
@@ -166,6 +170,8 @@ public class Constants {
             LOGFILE_EXT = setup.get("LOGFILE_EXT");
             CONFIG_FILE_NAME = setup.get("CONFIG_FILE_NAME");
             CONFIG_FILE_EXT = setup.get("CONFIG_FILE_EXT");
+            SAMPLE_ANNOT_FILE_NAME = setup.get("SAMPLE_ANNOT_FILE_NAME");
+            SAMPLE_ANNOT_FILE_EXT = setup.get("SAMPLE_ANNOT_FILE_EXT");
             DATABASE_NAME = setup.get("DATABASE_NAME");
             DATABASE_DRIVER = setup.get("DATABASE_DRIVER");
         }
@@ -200,6 +206,10 @@ public class Constants {
     public static String getLOGFILE_EXT() { return LOGFILE_EXT; }
     public static String getCONFIG_FILE_NAME() { return CONFIG_FILE_NAME; }
     public static String getCONFIG_FILE_EXT() { return CONFIG_FILE_EXT; }
+    public static String getSAMPLE_ANNOT_FILE_NAME() 
+    { return SAMPLE_ANNOT_FILE_NAME; }
+    public static String getSAMPLE_ANNOT_FILE_EXT() 
+    { return SAMPLE_ANNOT_FILE_EXT; }
     public static String getDATABASE_NAME() { return DATABASE_NAME; }
     public static String getDATABASE_DRIVER() { return DATABASE_DRIVER; }
 }
