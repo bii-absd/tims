@@ -17,6 +17,8 @@ LOGFILE_NAME log_
 LOGFILE_EXT .txt
 CONFIG_FILE_NAME config_
 CONFIG_FILE_EXT .txt
+SAMPLE_ANNOT_FILE_NAME ANNOTATION
+SAMPLE_ANNOT_FILE_EXT .txt
 # The below defines the database name, database driver
 DATABASE_NAME jdbc:postgresql://localhost:5432/clinical
 DATABASE_DRIVER org.postgresql.Driver
