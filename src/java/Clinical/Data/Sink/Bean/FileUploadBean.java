@@ -9,6 +9,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -43,6 +46,8 @@ import org.apache.logging.log4j.LogManager;
  * 15-Dec-2015 - Added new method createStudyDirectory, to create level two
  * system directory for each Study. Modified method setFileDirectory to 
  * construct the directory name using the Study ID and Submission time.
+ * 16-Dec-2015 - Added new method renameAnnotFile(), to rename the sample
+ * annotation file to a common name.
  */
 
 public class FileUploadBean implements Serializable {
@@ -85,7 +90,7 @@ public class FileUploadBean implements Serializable {
         if (createSystemDirectory(fileDirectory)) {
             try (FileOutputStream fop = new FileOutputStream(file);
                 InputStream filecontent = uFile.getInputstream(); ) {
-                int bytesRead = 0;
+                int bytesRead;
                 byte[] content = new byte[4096];    // 4K buffer
             
                 while ((bytesRead = filecontent.read(content)) != -1) {
@@ -230,6 +235,26 @@ public class FileUploadBean implements Serializable {
         }
         else {
             return fileList.get(1);            
+        }
+    }
+    
+    // Rename the sample annotation file to a common filename 
+    // (i.e. ANNOTATION.txt)
+    public void renameAnnotFile() {
+        Path from = FileSystems.getDefault().getPath
+            (localDirectoryPath + getInputFilename());
+        Path to = FileSystems.getDefault().getPath
+            (localDirectoryPath + 
+                Constants.getSAMPLE_ANNOT_FILE_NAME() + 
+                Constants.getSAMPLE_ANNOT_FILE_EXT());
+        // Rename the filename (from -> to).
+        try {
+            Files.move(from, to);
+            logger.debug("Sample annotation file renamed.");
+        }
+        catch (IOException ioe) {
+            logger.error("Failed to rename sample annotation file!");
+            logger.error(ioe.getMessage());
         }
     }
     
