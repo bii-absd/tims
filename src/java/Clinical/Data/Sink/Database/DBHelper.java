@@ -29,6 +29,8 @@ import org.apache.logging.log4j.LogManager;
  * database access.
  * 15-Oct-2015 - Critical error handling. All the exceptions encountered
  * while getting the database connection should be handle by the caller.
+ * 17-Dec-2015 - Added 2 static methods, setDBTransactionIsolation and
+ * checkDBTransactionIsolation().
  */
 
 @SessionScoped
@@ -53,14 +55,13 @@ public class DBHelper {
                  uname, pword);
     }
     
-    // getDBConn will return the connection to be use by the application
-    // to access the database.
+    // Return the database connection to be use by the application.
     public static Connection getDBConn() {
         return dbConn;
     }
     
-    // runQuery will execute any query string passed in. The result will be
-    // returned to the caller using a ResultSet object.
+    // Execute the query string passed in, and return the result.
+    // Important: Caller need to close the result after use!
     public static ResultSet runQuery(String query) {
         ResultSet queryResult = null;
         
@@ -83,5 +84,51 @@ public class DBHelper {
     private ServletContext getServletContext() {
         return (ServletContext) FacesContext.getCurrentInstance().
                 getExternalContext().getContext();
+    }
+    
+    // Set the database transaction isolation level.
+    public static void setDBTransactionIsolation(int level) {
+        try {
+            dbConn.setTransactionIsolation(level);
+        }
+        catch (SQLException e) {
+            logger.error("SQLException when setting DB transaction isolation level!");
+            logger.error(e.getMessage());
+        }
+    } 
+    
+    // Check the current database transaction isolation level.
+    public static int checkDBTransactionIsolation() {
+        int txIso = Constants.DATABASE_INVALID_ID;
+        
+        try {
+            txIso = dbConn.getTransactionIsolation();
+            
+            switch (txIso) {
+                case Connection.TRANSACTION_NONE:
+                    System.out.println("TRANSACTION_NONE");
+                    break;
+                case Connection.TRANSACTION_READ_COMMITTED:
+                    System.out.println("TRANSACTION_READ_COMMITTED");
+                    break;
+                case Connection.TRANSACTION_READ_UNCOMMITTED:
+                    System.out.println("TRANSACTION_READ_UNCOMMITTED");
+                    break;
+                case Connection.TRANSACTION_REPEATABLE_READ:
+                    System.out.println("TRANSACTION_REPEATABLE_READ");
+                    break;
+                case Connection.TRANSACTION_SERIALIZABLE:
+                    System.out.println("TRANSACTION_SERIALIZABLE");
+                    break;
+                default:
+                    System.out.println("UNKNOWN TRANSACTION ISOLATION.");
+            }
+        }
+        catch (SQLException e) {
+            logger.error("SQLException when checking DB transaction isolation level!");
+            logger.error(e.getMessage());
+        }
+        
+        return txIso;
     }
 }
