@@ -26,6 +26,10 @@ import org.apache.logging.log4j.LogManager;
  * Revision History
  * 04-Dec-2015 - Created with the necessary methods implemented.
  * 07-Dec-2015 - Added in the code for time logging.
+ * 17-Dec-2015 - Improve on the logic to retrieve the finalized data and output
+ * them to a text file. Using StringBuilder to build the data line for each 
+ * record. Big improvement in the timing for retrieving and outputting 44 
+ * records of 26,424 gene values; from 304 sec to 12 sec.
  */
 
 public class DataRetriever extends Thread {
@@ -33,15 +37,19 @@ public class DataRetriever extends Thread {
     private final static Logger logger = LogManager.
             getLogger(DataRetriever.class.getName());
     private final static Connection conn = DBHelper.getDBConn();
-    private String study_id;
-    private List<OutputItems> opList = new ArrayList<>();
-    private List<String> geneList = new ArrayList<>();
+    private final String study_id, annot_ver;
+    private final List<OutputItems> opItemsList;
+    private final List<String> geneList;
     private String header = "Subject|Technology";
     
     // Using the study_id received, DataRetriever will retrieve the finalized
     // data from the database.
     public DataRetriever(String study_id) {
         this.study_id = study_id;
+        annot_ver = StudyDB.getAnnotVer(study_id);
+        // Retrieve the list of OutputItems (i.e. Subject|Technology|Index)
+        opItemsList = getOpItemsList();
+        geneList = getGeneList();
         logger.debug("DataRetriever created for study_id: " + study_id);
     }
     
@@ -56,31 +64,31 @@ public class DataRetriever extends Thread {
         // For time logging purpose.
         long elapsedTime;
         long startTime = System.nanoTime();
-        String data = item.getSubject_id() + "|" + item.getTid();
+        StringBuilder data = new StringBuilder();
+        data.append(item.getSubject_id() + "|" + item.getTid());
         String queryStr = 
                 "SELECT data[?] FROM data_depository " +
-                "WHERE annot_ver = (SELECT annot_ver FROM study " +
-                "WHERE study_id = ?) ORDER BY genename";
+                "WHERE annot_ver = ? ORDER BY genename";
         
         try (PreparedStatement queryStm = conn.prepareStatement(queryStr)) {
             queryStm.setInt(1, item.getArray_index());
-            queryStm.setString(2, study_id);
+            queryStm.setString(2, annot_ver);
             ResultSet rs = queryStm.executeQuery();
             
             while (rs.next()) {
-                data += "|" + rs.getString(1);
+                data.append("|" + rs.getString(1));
             }
             
             elapsedTime = System.nanoTime() - startTime;
             logger.debug(item.getSubject_id() + ": " + 
-                    (elapsedTime / 1000000000.0) + " sec");
+                    (elapsedTime / 1000000.0) + " msec");
         }
         catch (SQLException e) {
             logger.error("SQLException when retrieving subject data!");
             logger.error(e.getMessage());
         }
         
-        return data;
+        return data.toString();
     }
     
     // Write the finalized data to a text file.
@@ -95,7 +103,7 @@ public class DataRetriever extends Thread {
             ps.println(header);
             // Loop through the output items and write the subject output one
             // at a time.
-            for (OutputItems item : opList) {
+            for (OutputItems item : opItemsList) {
                 ps.println(getSubjectData(item));
             }
             elapsedTime = System.nanoTime() - startTime;
@@ -111,38 +119,39 @@ public class DataRetriever extends Thread {
     // Retrieve the list of genename that is relevant to the annotation 
     // version used in the study.
     private List<String> getGeneList() {
+        List<String> gene = new ArrayList<>();
         // For time logging purpose.
         long elapsedTime;
         long startTime = System.nanoTime();
         String queryStr = 
                 "SELECT genename FROM data_depository " +
-                "WHERE annot_ver = (SELECT annot_ver FROM study " +
-                "WHERE study_id = ?) ORDER BY genename";
+                "WHERE annot_ver = ? ORDER BY genename";
         
         try (PreparedStatement queryStm = conn.prepareStatement(queryStr)) {
-            queryStm.setString(1, study_id);
+            queryStm.setString(1, annot_ver);
             ResultSet rs = queryStm.executeQuery();
             
             while (rs.next()) {
-                geneList.add(rs.getString("genename"));
+                gene.add(rs.getString("genename"));
                 header += "|" + rs.getString("genename");
             }
             
             elapsedTime = System.nanoTime() - startTime;
-            logger.debug("No of genename retrieved: " + geneList.size());
-            logger.debug("Time taken: " + (elapsedTime / 1000000000.0) + " sec.");
+            logger.debug("No of genename retrieved: " + gene.size());
+            logger.debug("Time taken: " + (elapsedTime / 1000000.0) + " msec.");
         }
         catch (SQLException e) {
             logger.error("SQLException when retrieving genename!");
             logger.error(e.getMessage());
         }
         
-        return geneList;
+        return gene;
     }
     
     // Retrieve the output row information (i.e. subject_id|tid|array_index 
     // where gene's values are stored) from the database.
-    private List<OutputItems> getOpList() {
+    private List<OutputItems> getOpItemsList() {
+        List<OutputItems> opList = new ArrayList<>();
         String queryStr = 
                 "SELECT y.subject_id, x.tid, y.array_index FROM " +
                 "(SELECT tid, job_id FROM submitted_job sj INNER JOIN pipeline pl " +
@@ -151,14 +160,13 @@ public class DataRetriever extends Thread {
                 "NATURAL JOIN " +
                 "(SELECT * FROM finalized_output WHERE job_id IN " +
                 "(SELECT job_id FROM submitted_job WHERE study_id = ? AND status_id = 5) " +
-                "AND annot_ver = " +
-                "(SELECT annot_ver FROM study WHERE study_id = ?)) y " +
+                "AND annot_ver = ?) y " +
                 "ORDER BY y.subject_id, y.array_index";
         
         try (PreparedStatement queryStm = conn.prepareStatement(queryStr)) {
             queryStm.setString(1, study_id);
             queryStm.setString(2, study_id);
-            queryStm.setString(3, study_id);
+            queryStm.setString(3, annot_ver);
             ResultSet rs = queryStm.executeQuery();
             
             while (rs.next()) {
@@ -182,10 +190,7 @@ public class DataRetriever extends Thread {
     // Retrieve the finalized data from the database, consolidate and output
     // them to a text file.
     private void consolidateFinalizedData() {
-        // Retrieve the list of OutputItems (i.e. Subject|Technology|Index)
-        getOpList();
-        getGeneList();
-        writeToFile("C://temp//iCOMIC2S//finalizedOP.txt");
+        writeToFile("C://temp//iCOMIC2S//finalizedOP5.txt");
 
         /*
         // NOTE: When using System.out.println the last character CANNOT be a "|"
