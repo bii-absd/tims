@@ -11,7 +11,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.sql.Date;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -28,6 +27,8 @@ import org.apache.logging.log4j.LogManager;
  * getAnnotHashMap.
  * 11-Dec-2015 - Changed to abstract class. Added 4 methods, updateStudy, 
  * getStudyList, queryStudy and clearStudyList().
+ * 17-Dec-2015 - Added new method getAnnotVer, to return the Annotation Version
+ * used in the study.
  */
 
 public abstract class StudyDB {
@@ -114,7 +115,7 @@ public abstract class StudyDB {
     // Return the list of Study ID setup for the department that this
     // user ID belongs to.
     public static LinkedHashMap<String, String> getStudyList(String userID) {
-        LinkedHashMap<String, String> studyList = new LinkedHashMap<>();
+        LinkedHashMap<String, String> studyHash = new LinkedHashMap<>();
         String queryStr = "SELECT study_id FROM study WHERE dept_id = "
                         + "(SELECT dept_id FROM user_account WHERE user_id = ?)";
         
@@ -123,7 +124,7 @@ public abstract class StudyDB {
             ResultSet rs = queryStm.executeQuery();
             
             while (rs.next()) {
-                studyList.put(rs.getString("study_id"), rs.getString("study_id"));
+                studyHash.put(rs.getString("study_id"), rs.getString("study_id"));
             }
             logger.debug("Study list for " + userID + "'s department retrieved.");
         }
@@ -131,7 +132,7 @@ public abstract class StudyDB {
             logger.error("SQLException when query study!");
             logger.error(e.getMessage());
         }
-        return studyList;
+        return studyHash;
     }
     
     // Return the list of Study ID setup in the system.
@@ -166,6 +167,27 @@ public abstract class StudyDB {
         }
         
         return studyList;
+    }
+    
+    // Return the annotation version used in this study.
+    public static String getAnnotVer(String studyID) {
+        String annot_ver = Constants.DATABASE_INVALID_STR;
+        String queryStr = "SELECT annot_ver FROM study WHERE study_id = ?";
+        
+        try (PreparedStatement queryStm = conn.prepareStatement(queryStr)) {
+            queryStm.setString(1, studyID);
+            ResultSet rs = queryStm.executeQuery();
+            
+            if (rs.next()) {
+                annot_ver = rs.getString("annot_ver");
+            }
+        }
+        catch (SQLException e) {
+            logger.error("SQLException when retrieving annot_ver from study!");
+            logger.error(e.getMessage());
+        }
+        
+        return annot_ver;
     }
     
     // Clear the study list, so that the query to the database get to run again.
