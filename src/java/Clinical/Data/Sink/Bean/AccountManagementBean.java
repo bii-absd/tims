@@ -22,10 +22,11 @@ import javax.faces.context.FacesContext;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+// Libraries for PrimeFaces
 import org.primefaces.event.RowEditEvent;
 
 /**
- * AccountManagementBean is the backing bean for the accountmanagement.xhtml.
+ * AccountManagementBean is the backing bean for the accountmanagement view.
  * 
  * Author: Tay Wei Hong
  * Date: 28-Sep-2015
@@ -46,6 +47,8 @@ import org.primefaces.event.RowEditEvent;
  * 13-Nov-2015 - Allowing administrator to change the password of other user.
  * Added one new method getAllUserID() that return all the user ID in the system.
  * 01-Dec-2015 - Implementation for database 2.0
+ * 22-Dec-2015 - Updated due to changes in some of the method name from 
+ * Database Classes.
  */
 
 @ManagedBean (name="acctMgntBean")
@@ -97,7 +100,7 @@ public class AccountManagementBean implements Serializable {
                     FacesMessage.SEVERITY_INFO, "User account updated.", ""));
         }
         catch (SQLException e) {
-            logger.error("User account update failed.");
+            logger.error("User account update failed!");
             getFacesContext().addMessage(null, new FacesMessage(
                     FacesMessage.SEVERITY_ERROR, 
                     "Failed to update user account!", ""));            
@@ -116,8 +119,8 @@ public class AccountManagementBean implements Serializable {
             // Insert the new account into database        
             UserAccountDB.insertAccount(newAcct);
             logger.info(AuthenticationBean.getUserName() + 
-                    ": created new User ID " + user_id + 
-                    " with " + UserRoleDB.getRoleNameFromHash(role_id) + " right.");
+                    ": created new User ID " + user_id + " with " + 
+                    UserRoleDB.getRoleNameFromHash(role_id) + " right.");
             facesContext.addMessage("newacctstatus", new FacesMessage(
                     FacesMessage.SEVERITY_INFO, "User Account: " 
                     + user_id + " successfully created.", ""));
@@ -164,19 +167,18 @@ public class AccountManagementBean implements Serializable {
                         "Password successfully updated.", ""));
             }
             catch (SQLException e) {
-                logger.error("SQLException while trying to update password of " 
-                        + id);
+                logger.error("SQLException while trying to update password!");
                 logger.error(e.getMessage());
-            facesContext.addMessage("changepwdstatus", new FacesMessage(
-                    FacesMessage.SEVERITY_FATAL, 
-                    "Database Error, failed to update password!", ""));            
+                facesContext.addMessage("changepwdstatus", new FacesMessage(
+                        FacesMessage.SEVERITY_FATAL, 
+                        "Database Error, failed to update password!", ""));            
             }
         }
         else {
             logger.debug("The passwords entered are not the same.");
             facesContext.addMessage("changepwdstatus", new FacesMessage(
                     FacesMessage.SEVERITY_ERROR, 
-                    "The passwords entered are not the same", ""));
+                    "The passwords entered are not the same!", ""));
         }
         // Return to the same page, and recreate the AccountManagementBean.        
         return Constants.ACCOUNT_MANAGEMENT;
@@ -184,7 +186,7 @@ public class AccountManagementBean implements Serializable {
     
     // Return the list of Role setup in the database
     public LinkedHashMap<String, Integer> getRoleList() {
-        return UserRoleDB.getRoleNameList();
+        return UserRoleDB.getRoleNameHash();
     }
     
     // Return the list of Institution setup in the database
@@ -203,18 +205,20 @@ public class AccountManagementBean implements Serializable {
         return deptList.isEmpty();
     }
     
-    // Listener for institution selection change, it's job is to update the deptList
+    // Listener for institution selection change, it's job is to update 
+    // the deptList.
     public void instChange() {
-        deptList = DepartmentDB.getDeptHashMap(inst_id);
+        deptList = DepartmentDB.getDeptHash(inst_id);
     }
     
-    // Listener for institution selection change in the 'Edit User Account' panel.
+    // Listener for institution selection change in the 'Edit User Account' 
+    // panel.
     public void instEditChange() {
         UserAccount user = getFacesContext().getApplication().
                 evaluateExpressionGet(getFacesContext(), "#{acct}", 
                 UserAccount.class);
         
-        deptList = DepartmentDB.getDeptHashMap(user.getInst_id());        
+        deptList = DepartmentDB.getDeptHash(user.getInst_id());        
     }
     
     // Retrieve the faces context
