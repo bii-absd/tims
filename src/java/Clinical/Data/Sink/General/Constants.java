@@ -63,6 +63,8 @@ import org.apache.logging.log4j.LogManager;
  * 14-Dec-2015 - Added one new constant, CLINICAL_DATA_MANAGEMENT.
  * 16-Dec-2015 - Added two new constants, SAMPLE_ANNOT_FILE_NAME and
  * SAMPLE_ANNOT_FILE_EXT.
+ * 22-Dec-2015 - Added two new constants, CONTROL_PROBE_FILE_NAME and 
+ * CONTROL_PROBE_FILE_EXT.
  */
 
 @ManagedBean (name = "constants")
@@ -121,6 +123,8 @@ public class Constants {
     private static String CONFIG_FILE_EXT = null;
     private static String SAMPLE_ANNOT_FILE_NAME = null;
     private static String SAMPLE_ANNOT_FILE_EXT = null;
+    private static String CONTROL_PROBE_FILE_NAME = null;
+    private static String CONTROL_PROBE_FILE_EXT = null;
     // Constants used in database setup
     private static String DATABASE_NAME = null;
     private static String DATABASE_DRIVER = null;
@@ -172,6 +176,8 @@ public class Constants {
             CONFIG_FILE_EXT = setup.get("CONFIG_FILE_EXT");
             SAMPLE_ANNOT_FILE_NAME = setup.get("SAMPLE_ANNOT_FILE_NAME");
             SAMPLE_ANNOT_FILE_EXT = setup.get("SAMPLE_ANNOT_FILE_EXT");
+            CONTROL_PROBE_FILE_NAME = setup.get("CONTROL_PROBE_FILE_NAME");
+            CONTROL_PROBE_FILE_EXT = setup.get("CONTROL_PROBE_FILE_EXT");
             DATABASE_NAME = setup.get("DATABASE_NAME");
             DATABASE_DRIVER = setup.get("DATABASE_DRIVER");
         }
@@ -210,6 +216,10 @@ public class Constants {
     { return SAMPLE_ANNOT_FILE_NAME; }
     public static String getSAMPLE_ANNOT_FILE_EXT() 
     { return SAMPLE_ANNOT_FILE_EXT; }
+    public static String getCONTROL_PROBE_FILE_NAME() 
+    { return CONTROL_PROBE_FILE_NAME; }
+    public static String getCONTROL_PROBE_FILE_EXT() 
+    { return CONTROL_PROBE_FILE_EXT; }
     public static String getDATABASE_NAME() { return DATABASE_NAME; }
     public static String getDATABASE_DRIVER() { return DATABASE_DRIVER; }
 }
