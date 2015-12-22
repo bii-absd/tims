@@ -40,16 +40,17 @@ public class DataRetriever extends Thread {
     private final String study_id, annot_ver;
     private final List<OutputItems> opItemsList;
     private final List<String> geneList;
-    private String header = "Subject|Technology";
+    private StringBuilder opHeader = new StringBuilder();
     
     // Using the study_id received, DataRetriever will retrieve the finalized
     // data from the database.
     public DataRetriever(String study_id) {
         this.study_id = study_id;
         annot_ver = StudyDB.getAnnotVer(study_id);
+        opHeader.append("Subject|Technology");
+        geneList = getGeneList();
         // Retrieve the list of OutputItems (i.e. Subject|Technology|Index)
         opItemsList = getOpItemsList();
-        geneList = getGeneList();
         logger.debug("DataRetriever created for study_id: " + study_id);
     }
     
@@ -65,7 +66,7 @@ public class DataRetriever extends Thread {
         long elapsedTime;
         long startTime = System.nanoTime();
         StringBuilder data = new StringBuilder();
-        data.append(item.getSubject_id() + "|" + item.getTid());
+        data.append(item.getSubject_id()).append("|").append(item.getTid());
         String queryStr = 
                 "SELECT data[?] FROM data_depository " +
                 "WHERE annot_ver = ? ORDER BY genename";
@@ -76,7 +77,7 @@ public class DataRetriever extends Thread {
             ResultSet rs = queryStm.executeQuery();
             
             while (rs.next()) {
-                data.append("|" + rs.getString(1));
+                data.append("|").append(rs.getString(1));
             }
             
             elapsedTime = System.nanoTime() - startTime;
@@ -100,12 +101,12 @@ public class DataRetriever extends Thread {
         try {
             PrintStream ps = new PrintStream(new File(filename));
             // Write the header/subject line first
-            ps.println(header);
+            ps.println(opHeader);
             // Loop through the output items and write the subject output one
             // at a time.
-            for (OutputItems item : opItemsList) {
+            opItemsList.stream().forEach((item) -> {
                 ps.println(getSubjectData(item));
-            }
+            });
             elapsedTime = System.nanoTime() - startTime;
             logger.debug("Total time taken to write output: " + 
                     (elapsedTime / 1000000000.0) + " sec.");
@@ -133,7 +134,7 @@ public class DataRetriever extends Thread {
             
             while (rs.next()) {
                 gene.add(rs.getString("genename"));
-                header += "|" + rs.getString("genename");
+                opHeader.append("|").append(rs.getString("genename"));
             }
             
             elapsedTime = System.nanoTime() - startTime;
@@ -190,7 +191,7 @@ public class DataRetriever extends Thread {
     // Retrieve the finalized data from the database, consolidate and output
     // them to a text file.
     private void consolidateFinalizedData() {
-        writeToFile("C://temp//iCOMIC2S//finalizedOP5.txt");
+        writeToFile("C://temp//iCOMIC2S//finalizedOP8.txt");
 
         /*
         // NOTE: When using System.out.println the last character CANNOT be a "|"
