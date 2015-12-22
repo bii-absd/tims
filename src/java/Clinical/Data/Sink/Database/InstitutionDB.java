@@ -32,9 +32,10 @@ import org.apache.logging.log4j.LogManager;
  * 09-Dec-2015 - To clear and rebuild the institution list and hashmap after 
  * update. Will not allow updating of inst_id through UI.
  * 16-Dec-2015 - Changed to abstract class.
+ * 22-Dec-2015 - To close the ResultSet after use.
  */
 
-public class InstitutionDB implements Serializable {
+public abstract class InstitutionDB implements Serializable {
     // Get the logger for Log4j
     private final static Logger logger = LogManager.
             getLogger(InstitutionDB.class.getName());
@@ -57,24 +58,25 @@ public class InstitutionDB implements Serializable {
         Boolean status = Constants.OK;
         // Only build the institution list if it is empty.
         if (instList.isEmpty()) {
-            ResultSet result = DBHelper.
+            ResultSet rs = DBHelper.
                 runQuery("SELECT * from inst ORDER BY inst_name");
 
             try {
-                while(result.next()) {
+                while(rs.next()) {
                     Institution inst = new Institution
-                                    (result.getString("inst_id"),
-                                     result.getString("inst_name"));
+                                    (rs.getString("inst_id"),
+                                     rs.getString("inst_name"));
                     // Build 2 Hash Map; One is Inst Name -> Inst ID,
                     // the other is Inst ID -> Inst Name.
                     instNameHash.put(inst.getInst_name(), inst.getInst_id());
                     instIDHash.put(inst.getInst_id(), inst.getInst_name());
                     instList.add(inst);    
                 }
+                rs.close();
                 logger.debug("Institution List: " + instNameHash.toString());
             }
             catch (SQLException e) {
-                logger.error("SQLException at buildInstList.");
+                logger.error("SQLException when query institution!");
                 logger.error(e.getMessage());
                 status = Constants.NOT_OK;
             }            
@@ -99,7 +101,7 @@ public class InstitutionDB implements Serializable {
                     inst.getInst_id());
         }
         catch (SQLException e) {
-            logger.error("SQLException when inserting institution ID!");
+            logger.error("SQLException when inserting new institution record!");
             logger.error(e.getMessage());
             result = Constants.NOT_OK;
         }
@@ -123,8 +125,7 @@ public class InstitutionDB implements Serializable {
             logger.debug("Institution " + inst.getInst_id() + " updated.");
         }
         catch (SQLException e) {
-            logger.error("SQLException when updating institution: "
-                    + inst.getInst_id());
+            logger.error("SQLException when updating institution!");
             logger.error(e.getMessage());
             result = Constants.NOT_OK;
         }
