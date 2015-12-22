@@ -25,6 +25,7 @@ import org.apache.logging.log4j.LogManager;
  * 07-Oct-2015 - Changed to connection based for database access.
  * 11-Dec-2015 - Changed to abstract class. Change class name from JobStatus to
  * JobStatusDB. Improve the method getJobStatusDef.
+ * 22-Dec-2015 - To close the ResultSet after use.
  */
 
 public abstract class JobStatusDB {
@@ -33,8 +34,7 @@ public abstract class JobStatusDB {
             getLogger(JobStatusDB.class.getName());    
     private static HashMap<Integer, String> job_status = new HashMap<>();
 
-    // getStatusName will return the job status name based on the 
-    // status_id passed in.
+    // Return the job status name based on the status_id passed in.
     public static String getStatusName(int status_id) {
         return job_status.get(status_id);
     }
@@ -44,13 +44,14 @@ public abstract class JobStatusDB {
     public static void getJobStatusDef() {
         // Only execute the query if the list is empty
         if (job_status.isEmpty()) {
-            ResultSet result = DBHelper.runQuery(
+            ResultSet rs = DBHelper.runQuery(
                     "SELECT status_id, status_name FROM job_status");
             try {
-                while (result.next()) {
-                    job_status.put(result.getInt("status_id"), 
-                               result.getString("status_name"));
+                while (rs.next()) {
+                    job_status.put(rs.getInt("status_id"), 
+                                   rs.getString("status_name"));
                 }
+                rs.close();
                 logger.debug("Job Status Definition: " + job_status.values());                
             }
             catch (SQLException e) {
