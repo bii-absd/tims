@@ -1,0 +1,28 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition template="/WEB-INF/pageTemplate.xhtml"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    
+    <ui:define name="title">Finalize Study</ui:define>
+    <ui:param name="link" value="Finalize Study"/>
+    <ui:define name="content">
+    <p:growl id="finalizeMsg"/>
+    <h:form id="studyForm">
+        <p:panel header="Select Study to finalize (Subject meta data need to be setup before finalization.)">
+            <p:selectOneMenu id="studyID" required="true" value="#{finalizedBean.study_id}">
+                <f:selectItem itemLabel="Select Study" itemValue=""/>
+                <f:selectItems value="#{finalizedBean.studyHash}"/>
+                <p:ajax update="jobsPanel"/>
+            </p:selectOneMenu>
+        </p:panel>
+        <p:panel id="jobsPanel" visible="#{finalizedBean.studySelectedStatus}" 
+                 header="Select job to finalize for each pipeline technology">
+            
+        </p:panel>
+    </h:form>
+    </ui:define>
+</ui:composition>
