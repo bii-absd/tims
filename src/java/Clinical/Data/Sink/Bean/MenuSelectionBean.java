@@ -17,7 +17,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 /**
- * MenuSelectionBean is used as the backing bean for the main.xhtml
+ * MenuSelectionBean is used as the backing bean for the main view.
  * 
  * Author: Tay Wei Hong
  * Date: 23-Oct-2015
@@ -35,6 +35,8 @@ import org.apache.logging.log4j.LogManager;
  * command. Implemented the new workflow (i.e. User to select Study ID before 
  * proceeding to pipeline configuration. To construct the Study List during
  * PostConstruct phase.
+ * 22-Dec-2015 - Added one attribute haveNewData, to indicate whether user
+ * have new data to upload or not.
  */
 
 @ManagedBean (name="menuSelectionBean")
@@ -44,6 +46,7 @@ public class MenuSelectionBean implements Serializable{
     private final static Logger logger = LogManager.
             getLogger(MenuSelectionBean.class.getName());
     private String study_id, config_page;
+    private Boolean haveNewData;
     private LinkedHashMap<String, String> studyList;
     
     public MenuSelectionBean() {
@@ -52,7 +55,7 @@ public class MenuSelectionBean implements Serializable{
     
     @PostConstruct
     public void init() {
-        studyList = StudyDB.getStudyList(AuthenticationBean.getUserName());
+        studyList = StudyDB.getStudyHash(AuthenticationBean.getUserName());
     }
     
     // Setup the ConfigBean for GEX Illumina pipeline processing.
@@ -79,8 +82,11 @@ public class MenuSelectionBean implements Serializable{
     public String proceedToConfig() {
         // Setup Study ID in pipeline configuration
         ConfigBean.setStudyID(study_id);
+        ConfigBean.setHaveNewData(haveNewData);
         logger.debug(AuthenticationBean.getUserName() + ": selected " +
                      config_page);
+        logger.debug(haveNewData?"User have new data to upload.":
+                     "No new data to upload.");
         // Proceed to pipeline configuration page.
         return config_page;
     }
@@ -106,7 +112,7 @@ public class MenuSelectionBean implements Serializable{
     public String dataDepositor() {
         // Pass in the job_id of the submitted job that is going to be finalize.
         // For testing purpose, assume we are going to finalize job_id 2,3 and 15 and 16.
-        DataDepositor depositorThread = new DataDepositor(3);
+        DataDepositor depositorThread = new DataDepositor(2);
         depositorThread.start();
 
         return Constants.NGS_PAGE;
@@ -126,4 +132,8 @@ public class MenuSelectionBean implements Serializable{
     // Machine generated getters and setters
     public String getStudy_id() { return study_id; }
     public void setStudy_id(String study_id) { this.study_id = study_id; }
+    public Boolean getHaveNewData() 
+    { return haveNewData; }
+    public void setHaveNewData(Boolean haveNewData) 
+    { this.haveNewData = haveNewData; }
 }
