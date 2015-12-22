@@ -44,6 +44,7 @@ import org.apache.logging.log4j.LogManager;
  * those jobs that are either finalizing or finalized.
  * 10-Dec-2015 - Changed to abstract class. Removed unused code. Improve the
  * method getLastInsertedJob().
+ * 22-Dec-2015 - To close the ResultSet after use.
  */
 
 public abstract class SubmittedJobDB {
@@ -53,13 +54,12 @@ public abstract class SubmittedJobDB {
     private final static Connection conn = DBHelper.getDBConn();
     private static Map<Integer,SubmittedJob> submittedJobs = new HashMap<>();
     
-    SubmittedJobDB() {}
-    
-    // insertJob insert a new job request into the submitted_job table.
+    // Insert a new job request into the submitted_job table.
     // The job_id of the insert job request will be returned for further
     // processing. Any exception encountered here will be throw and to be 
     // handled by the caller.
     public static int insertJob(SubmittedJob job) throws SQLException {
+        int job_id = Constants.DATABASE_INVALID_ID;
         String insertStr = "INSERT INTO submitted_job"
                 + "(study_id, user_id, pipeline_name, status_id, "
                 + "submit_time, chip_type, ctrl_file, annot_file, "
@@ -93,7 +93,6 @@ public abstract class SubmittedJobDB {
         insertStm.executeUpdate();
         // Retrieve and store the last inserted Job ID
         ResultSet rs = insertStm.getGeneratedKeys();
-        int job_id = Constants.DATABASE_INVALID_ID;
         
         if (rs.next()) {
             job_id = rs.getInt(1);
@@ -105,19 +104,6 @@ public abstract class SubmittedJobDB {
         return job_id;
     }
 
-    // Return the job_id of the most recently inserted job request.
-    // NOT IN USE!
-    public static int getLastInsertedJob() throws SQLException {
-        int job_id = Constants.DATABASE_INVALID_ID;
-        ResultSet rs = DBHelper.runQuery("SELECT MAX(job_id) FROM submitted_job");
-        
-        if (rs.next()) {
-            job_id = rs.getInt(1);
-        }
-        
-        return job_id;
-    }
-    
     // The following functions update the status_id of the submitted_job
     public static void updateJobStatusToInprogress(int job_id) {
         updateJobStatus(job_id, 2);
@@ -140,15 +126,15 @@ public abstract class SubmittedJobDB {
     // passed in.
     private static void updateJobStatus(int job_id, int status_id) {
         String updateStr = "UPDATE submitted_job SET status_id = " + status_id 
-                           + " WHERE job_id = " + job_id;
+                         + " WHERE job_id = " + job_id;
 
-        try (PreparedStatement updateStatus = conn.prepareStatement(updateStr))
+        try (PreparedStatement updateStm = conn.prepareStatement(updateStr))
         {
-            updateStatus.executeUpdate();
+            updateStm.executeUpdate();
             logger.debug("Updated job status.");
         }
         catch (SQLException e) {
-            logger.error("SQLException when updating job status.");
+            logger.error("SQLException when updating job status!");
             logger.error(e.getMessage());
         }
     }
@@ -159,7 +145,6 @@ public abstract class SubmittedJobDB {
         // Only execute the query if the list is empty
         // This is to prevent the query from being run multiple times.
         if (submittedJobs.isEmpty()) {
-            ResultSet result;
             // Don't retrieve those jobs which are in finalizing or finalized
             // stages.
             String queryStr = "SELECT job_id, study_id, pipeline_name, "
@@ -174,24 +159,24 @@ public abstract class SubmittedJobDB {
             FileAppender fa = (FileAppender) cfg.getAppender("File");
             */
             
-            try (PreparedStatement queryJob = conn.prepareStatement(queryStr))
+            try (PreparedStatement queryStm = conn.prepareStatement(queryStr))
             {
                 // Set the query condition using the user_id passed in.
-                queryJob.setString(1, user_id);
-                result = queryJob.executeQuery();
+                queryStm.setString(1, user_id);
+                ResultSet rs = queryStm.executeQuery();
                 int id = 1;
             
-                while (result.next()) {
+                while (rs.next()) {
                     // Create a new SubmittedJob object for every row of data 
                     // retrieved from the database.
                     SubmittedJob job = new SubmittedJob(
-                                    result.getInt("job_id"),
-                                    result.getString("study_id"),
-                                    result.getString("pipeline_name"),
-                                    result.getInt("status_id"),
-                                    result.getString("submit_time"),
-                                    result.getString("output_file"),
-                                    result.getString("report"));
+                                    rs.getInt("job_id"),
+                                    rs.getString("study_id"),
+                                    rs.getString("pipeline_name"),
+                                    rs.getInt("status_id"),
+                                    rs.getString("submit_time"),
+                                    rs.getString("output_file"),
+                                    rs.getString("report"));
                     // Add the object to the HashMap
                     submittedJobs.put(id++, job);
                 }
