@@ -38,10 +38,11 @@ import org.mindrot.jbcrypt.BCrypt;
  * account' module:
  * 1. getAllUser()
  * 2. updateAccount(UserAccount user)
- * 13-Nov-2015 - Added one new variable userIDList and one new method 
- * getAllUserID(). Changed getAllUser() method to build up the userIDList.
+ * 13-Nov-2015 - Added one new variable userIDHash and one new method 
+ * getAllUserID().
  * 30-Nov-2015 - Implementation for database 2.0
  * 14-Dec-2015 - Changed the class to abstract. Added new method, getDeptID.
+ * 22-Dec-2015 - To close the ResultSet after use.
  */
 
 public abstract class UserAccountDB {
@@ -50,9 +51,7 @@ public abstract class UserAccountDB {
             getLogger(UserAccountDB.class.getName());
     private final static Connection conn = DBHelper.getDBConn();
     private static List<UserAccount> userList = new ArrayList<>();
-    private static LinkedHashMap<String,String> userIDList = new LinkedHashMap<>();
-    
-    UserAccountDB() {};
+    private static LinkedHashMap<String,String> userIDHash = new LinkedHashMap<>();
     
     // Return the list of all the user ID currently in the system.
     // This method should be called after getAllUser().
@@ -61,7 +60,7 @@ public abstract class UserAccountDB {
             getAllUser();
         }
         
-        return userIDList;
+        return userIDHash;
     }
     
     // Return the list of user accounts that are currently in the system, and
@@ -70,31 +69,32 @@ public abstract class UserAccountDB {
         // Empty the current user list
         userList.clear();
         String queryStr = "SELECT * FROM user_account u NATURAL JOIN dept d "
-                + "WHERE u.dept_id = d.dept_id ORDER BY u.user_id";
-        ResultSet result = DBHelper.runQuery(queryStr);
+                        + "WHERE u.dept_id = d.dept_id ORDER BY u.user_id";
+        ResultSet rs = DBHelper.runQuery(queryStr);
         
         try {
-            while (result.next()) {
-                String user_id = result.getString("user_id");
+            while (rs.next()) {
+                String user_id = rs.getString("user_id");
                 UserAccount user = new UserAccount(
                                         user_id,
-                                        result.getInt("role_id"),
-                                        result.getString("first_name"),
-                                        result.getString("last_name"),
-                                        result.getString("email"),
-                                        result.getBoolean("active"),
+                                        rs.getInt("role_id"),
+                                        rs.getString("first_name"),
+                                        rs.getString("last_name"),
+                                        rs.getString("email"),
+                                        rs.getBoolean("active"),
                                         "password",
-                                        result.getString("dept_id"),
-                                        result.getString("inst_id"),
-                                        result.getString("last_login"));
+                                        rs.getString("dept_id"),
+                                        rs.getString("inst_id"),
+                                        rs.getString("last_login"));
                 
                 userList.add(user);
-                userIDList.put(user_id, user_id);
+                userIDHash.put(user_id, user_id);
             }
+            rs.close();
             logger.debug("No of user account retrieved: " + userList.size());
         }
         catch (SQLException e) {
-            logger.error("SQLException when retrieving user accounts from DB!");
+            logger.error("SQLException when retrieving user accounts!");
             logger.error(e.getMessage());
         }
         
@@ -108,29 +108,28 @@ public abstract class UserAccountDB {
                 + "WHERE u.dept_id = d.dept_id AND u.user_id = (SELECT "
                 + "user_id FROM submitted_job WHERE job_id = "
                 + jobID + ")";
-        ResultSet result = DBHelper.runQuery(queryStr);
+        ResultSet rs = DBHelper.runQuery(queryStr);
         
         try {
-            if (result.next()) {
-                user = new UserAccount(result.getString("user_id"),
-                                       result.getInt("role_id"),
-                                       result.getString("first_name"),
-                                       result.getString("last_name"),
-                                       result.getString("email"),
-                                       result.getBoolean("active"),
+            if (rs.next()) {
+                user = new UserAccount(rs.getString("user_id"),
+                                       rs.getInt("role_id"),
+                                       rs.getString("first_name"),
+                                       rs.getString("last_name"),
+                                       rs.getString("email"),
+                                       rs.getBoolean("active"),
                                        "password",
-                                       result.getString("dept_id"),
-                                       result.getString("inst_id"),
-                                       result.getString("last_login"));
+                                       rs.getString("dept_id"),
+                                       rs.getString("inst_id"),
+                                       rs.getString("last_login"));
                 
             }
-           
+            rs.close();
             logger.debug("For Job ID " + jobID + " User ID is " +
-                    result.getString("user_id"));
+                    rs.getString("user_id"));
         }
         catch (SQLException e) {
-            logger.error("SQLException when retrieving user account for Job ID: " 
-                        + jobID);
+            logger.error("SQLException when retrieving user account!");
             logger.error(e.getMessage());
         }
 
@@ -143,19 +142,18 @@ public abstract class UserAccountDB {
                 + "SELECT user_id FROM submitted_job WHERE job_id = "
                 + jobID + ")";
         String email = null;
-        ResultSet result = DBHelper.runQuery(queryStr);
+        ResultSet rs = DBHelper.runQuery(queryStr);
         
         try {
-            if (result.next()) {
-                email = result.getString("email");
+            if (rs.next()) {
+                email = rs.getString("email");
             }
-           
+            rs.close();
             logger.debug("For Job ID " + jobID + " user email address is " +
                     email);
         }
         catch (SQLException e) {
-            logger.error("SQLException when retrieving email address for Job ID: " 
-                        + jobID);
+            logger.error("SQLException when retrieving email address!");
             logger.error(e.getMessage());
         }
        
@@ -166,7 +164,7 @@ public abstract class UserAccountDB {
     // a UserAccount object will be return.
     public static UserAccount checkPwd(String user_id, String pwd) {
         String queryStr = "SELECT * FROM user_account u NATURAL JOIN dept d "
-                + "WHERE u.dept_id = d.dept_id AND u.user_id = ?";
+                        + "WHERE u.dept_id = d.dept_id AND u.user_id = ?";
         String pwd_hash = null;
         UserAccount acct = null;
 
@@ -186,19 +184,19 @@ public abstract class UserAccountDB {
                     // Construct a UserAccount object based on the return result
                     // BUT set the password and last_login to default value.
                     acct = new UserAccount(queryResult.getString("user_id"),
-                                        queryResult.getInt("role_id"),
-                                        queryResult.getString("first_name"),
-                                        queryResult.getString("last_name"),
-                                        queryResult.getString("email"),
-                                        queryResult.getBoolean("active"),
-                                        "password",
-                                        queryResult.getString("dept_id"),
-                                        queryResult.getString("inst_id"),
-                                        "last-login");
+                                           queryResult.getInt("role_id"),
+                                           queryResult.getString("first_name"),
+                                           queryResult.getString("last_name"),
+                                           queryResult.getString("email"),
+                                           queryResult.getBoolean("active"),
+                                           "password",
+                                           queryResult.getString("dept_id"),
+                                           queryResult.getString("inst_id"),
+                                           "last-login");
                 }
             }
         } catch (SQLException e) {
-            logger.error("SQLException at checkPwd.");
+            logger.error("SQLException when checking password!");
             logger.error(e.getMessage());
         } 
         
@@ -219,8 +217,7 @@ public abstract class UserAccountDB {
 
         String insertStr = "INSERT INTO user_account"
                 + "(user_id, role_id, first_name, last_name, email, pwd, "
-                + "active, dept_id)" 
-                + "VALUES (?,?,?,?,?,?,?,?)";
+                + "active, dept_id) VALUES (?,?,?,?,?,?,?,?)";
         PreparedStatement insertStm = conn.prepareStatement(insertStr);
         
         // Build the INSERT statement using the values from the current
@@ -240,7 +237,7 @@ public abstract class UserAccountDB {
     // Update the last login of this user.
     public static void updateLastLogin(String user_id, String last_login) {
         String updateStr = "UPDATE user_account SET last_login = ? WHERE "
-                + "user_id = ?";
+                         + "user_id = ?";
         
         try (PreparedStatement updateStm = conn.prepareStatement(updateStr)) {
             updateStm.setString(1, last_login);
@@ -249,8 +246,7 @@ public abstract class UserAccountDB {
             updateStm.executeUpdate();
         }
         catch (SQLException e) {
-            logger.error("SQLException when trying to update last login of " +
-                    user_id);
+            logger.error("SQLException when trying to update last login!");
             logger.error(e.getMessage());
         }
     }
@@ -262,7 +258,7 @@ public abstract class UserAccountDB {
         // Hash the password using BCrypt before storing it into the database.
         String pwd_hash = BCrypt.hashpw(new_pwd, BCrypt.gensalt());
         String updateStr = "UPDATE user_account SET pwd = ? WHERE "
-                + "user_id = ?";
+                         + "user_id = ?";
         
         PreparedStatement updateStm = conn.prepareStatement(updateStr);
         updateStm.setString(1, pwd_hash);
@@ -274,9 +270,9 @@ public abstract class UserAccountDB {
     // Update the account detail of this user.
     public static void updateAccount(UserAccount user) throws SQLException {
         String updateStr = "UPDATE user_account SET dept_id = ?, "
-                           + "first_name = ?, last_name = ?, "
-                           + "email = ?, active = ?, role_id = ? WHERE "
-                           + "user_id = ?";
+                         + "first_name = ?, last_name = ?, "
+                         + "email = ?, active = ?, role_id = ? WHERE "
+                         + "user_id = ?";
         
         PreparedStatement updateStm = conn.prepareStatement(updateStr);
         updateStm.setString(1, user.getDept_id());
@@ -305,7 +301,7 @@ public abstract class UserAccountDB {
             }
         }
         catch (SQLException e) {
-            logger.error("SQLException when query user_account for dept_id!");
+            logger.error("SQLException when query user_account!");
             logger.error(e.getMessage());
         }
         
