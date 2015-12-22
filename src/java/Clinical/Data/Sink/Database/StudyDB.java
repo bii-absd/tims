@@ -29,6 +29,7 @@ import org.apache.logging.log4j.LogManager;
  * getStudyList, queryStudy and clearStudyList().
  * 17-Dec-2015 - Added new method getAnnotVer, to return the Annotation Version
  * used in the study.
+ * 22-Dec-2015 - To close the ResultSet after use.
  */
 
 public abstract class StudyDB {
@@ -84,8 +85,7 @@ public abstract class StudyDB {
             logger.debug("Updated study: " + study.getStudy_id());
         }
         catch (SQLException e) {
-            logger.error("SQLException when updating study: " + 
-                    study.getStudy_id());
+            logger.error("SQLException when updating study!");
             logger.error(e.getMessage());
             result = Constants.NOT_OK;
         }
@@ -94,27 +94,28 @@ public abstract class StudyDB {
     }
     
     // Return the list of annotation version setup in the system
-    public static LinkedHashMap<String, String> getAnnotHashMap() {
-        LinkedHashMap<String, String> annotList = new LinkedHashMap<>();
+    public static LinkedHashMap<String, String> getAnnotHash() {
+        LinkedHashMap<String, String> annotHash = new LinkedHashMap<>();
         ResultSet rs = DBHelper.runQuery("SELECT annot_ver FROM annotation");
         
         try {
             while (rs.next()) {
-                annotList.put(rs.getString("annot_ver"), rs.getString("annot_ver"));
+                annotHash.put(rs.getString("annot_ver"), rs.getString("annot_ver"));
             }
-            logger.debug("Annotation Version: " + annotList.toString());
+            rs.close();
+            logger.debug("Annotation Version: " + annotHash.toString());
         }
         catch (SQLException e) {
             logger.error("SQLException when retrieving annotation version!");
             logger.error(e.getMessage());
         }
         
-        return annotList;
+        return annotHash;
     }
     
     // Return the list of Study ID setup for the department that this
     // user ID belongs to.
-    public static LinkedHashMap<String, String> getStudyList(String userID) {
+    public static LinkedHashMap<String, String> getStudyHash(String userID) {
         LinkedHashMap<String, String> studyHash = new LinkedHashMap<>();
         String queryStr = "SELECT study_id FROM study WHERE dept_id = "
                         + "(SELECT dept_id FROM user_account WHERE user_id = ?)";
@@ -156,6 +157,7 @@ public abstract class StudyDB {
                     
                     studyList.add(tmp);
                 }
+                rs.close();
                 logger.debug("Query study completed.");
             }
             catch (SQLException e) {
