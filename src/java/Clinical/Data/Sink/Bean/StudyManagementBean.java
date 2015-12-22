@@ -41,6 +41,8 @@ import org.apache.logging.log4j.LogManager;
  * to build the MultiSelectListbox options for Institution -> Departments.
  * 11-Dec-2015 - Added the module to edit study detail.
  * 15-Dec-2015 - To create a separate input directory for each Study ID created.
+ * 22-Dec-2015 - Updated due to changes in some of the method name from 
+ * Database Classes.
  */
 
 @ManagedBean (name="studyMgntBean")
@@ -72,7 +74,7 @@ public class StudyManagementBean implements Serializable {
         annotList = new LinkedHashMap<>();
         grouping = new ArrayList<>();
         studyList = new ArrayList<>();
-        annotList = StudyDB.getAnnotHashMap();
+        annotList = StudyDB.getAnnotHash();
         studyList = StudyDB.queryStudy();
         setupGrouping();
         // Setup the department HashMap.
@@ -170,7 +172,7 @@ public class StudyManagementBean implements Serializable {
     
     // Return the full list of departments setup in the system.
     public LinkedHashMap<String, String> getDeptList() {
-        return DepartmentDB.getDeptHash();
+        return DepartmentDB.getAllDeptHash();
     }
     
     // Machine generated getters and setters
