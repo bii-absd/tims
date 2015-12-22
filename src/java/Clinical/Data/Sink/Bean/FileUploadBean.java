@@ -48,6 +48,8 @@ import org.apache.logging.log4j.LogManager;
  * construct the directory name using the Study ID and Submission time.
  * 16-Dec-2015 - Added new method renameAnnotFile(), to rename the sample
  * annotation file to a common name.
+ * 22-Dec-2015 - Added new method renameCtrlProbeFile(), to rename the control
+ * probe file to a common name.
  */
 
 public class FileUploadBean implements Serializable {
@@ -254,6 +256,26 @@ public class FileUploadBean implements Serializable {
         }
         catch (IOException ioe) {
             logger.error("Failed to rename sample annotation file!");
+            logger.error(ioe.getMessage());
+        }
+    }
+    
+    // Rename the control probe file to a common filename 
+    // (i.e. CONTROL_PROBE.txt)
+    public void renameCtrlProbeFile() {
+        Path from = FileSystems.getDefault().getPath
+            (localDirectoryPath + getInputFilename());
+        Path to = FileSystems.getDefault().getPath
+            (localDirectoryPath +
+                Constants.getCONTROL_PROBE_FILE_NAME() +
+                Constants.getCONTROL_PROBE_FILE_EXT());
+        // Rename the filename (from -> to).
+        try {
+            Files.move(from, to);
+            logger.debug("Control probe file renamed.");
+        }
+        catch (IOException ioe) {
+            logger.error("Failed to rename control probe file!");
             logger.error(ioe.getMessage());
         }
     }
