@@ -60,6 +60,9 @@ import org.apache.logging.log4j.LogManager;
  * 16-Dec-2015 - Added one attribute inputFileDesc, and one abstract method
  * saveSampleFileDetail(). To save the sample file detail to database, and
  * rename the sample annotation file before executing the pipeline.
+ * 22-Dec-2015 - Added one abstract method renameAnnotCtrlFiles(), to rename
+ * the sample annotation file (and control probe file) to a common name for all
+ * pipelines. Added one attribute, haveNewData.
  */
 
 public abstract class ConfigBean implements Serializable {
@@ -74,6 +77,8 @@ public abstract class ConfigBean implements Serializable {
     private String sampleAverage, stdLog2Ratio;
     // The command link setup by the main menu backing bean.
     private static String commandLink;
+    // Indicator of whether user have new data to upload or not.
+    private static Boolean haveNewData;
     // Pipeline name and technology
     protected static String pipelineName, pipelineTech;
     // Common input files that will be uploaded by the users
@@ -104,6 +109,9 @@ public abstract class ConfigBean implements Serializable {
     abstract Boolean insertJob(String outputFilePath, String reportFilePath);
     // Save the input data detail into the database.
     abstract void saveSampleFileDetail();
+    // Rename the sample annotation file (and control probe file) to a common 
+    // name for future use.
+    abstract void renameAnnotCtrlFiles();
     
     public void init() {
         // Create the time stamp for the pipeline job.
@@ -228,8 +236,9 @@ public abstract class ConfigBean implements Serializable {
                         + job_id);
             // Save the Sample File detail into database
             saveSampleFileDetail();        
-            // Rename the sample annotation file to a common name for future use.
-            sampleFile.renameAnnotFile();
+            // Rename sample annotation file (and control probe file) to a
+            // common name for future use.
+            renameAnnotCtrlFiles();
             // 4. Pipeline is ready to be run now
             result = executePipeline(logFilePath);
             // Create dummy pipeline files for user to download.
@@ -450,6 +459,12 @@ public abstract class ConfigBean implements Serializable {
     }
     public static void setCommandLink(String commandLink) {
         ConfigBean.commandLink = commandLink;
+    }
+    public static Boolean getHaveNewData() {
+        return haveNewData;
+    }
+    public static void setHaveNewData(Boolean haveNewData) {
+        ConfigBean.haveNewData = haveNewData;
     }
     public static String getPipelineName() {
         return pipelineName;
