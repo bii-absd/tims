@@ -31,6 +31,7 @@ import org.apache.logging.log4j.LogManager;
  * 13-Nov-2015 - Changes the class name from UserRole to UserRoleDB.
  * 30-Nov-2015 - Implementation for database 2.0
  * 11-Dec-2015 - Changed to abstract class. Removed unused code.
+ * 22-Dec-2015 - To close the ResultSet after use.
  */
 
 public abstract class UserRoleDB implements Serializable {
@@ -38,50 +39,49 @@ public abstract class UserRoleDB implements Serializable {
     private final static Logger logger = LogManager.
             getLogger(UserRoleDB.class.getName());
     private final static LinkedHashMap<String, Integer> 
-            roleNameList = new LinkedHashMap<>();
+            roleNameHash = new LinkedHashMap<>();
     private final static LinkedHashMap<Integer, String> 
-            roleIDList = new LinkedHashMap<>();
+            roleIDHash = new LinkedHashMap<>();
     
-    public UserRoleDB() {}
-
     // Return the list of Role setup in the database
-    public static LinkedHashMap<String, Integer> getRoleNameList() {
+    public static LinkedHashMap<String, Integer> getRoleNameHash() {
         // We will only build the roleList once
-        if (roleNameList.isEmpty()) {
-            ResultSet result = DBHelper.runQuery
+        if (roleNameHash.isEmpty()) {
+            ResultSet rs = DBHelper.runQuery
                     ("SELECT * from user_role ORDER BY role_id");
             try {
-                while (result.next()) {
+                while (rs.next()) {
                     // Build the 2 Hash Map; One is Role ID -> Role Name, 
                     // the other is Role Name -> Role ID.
-                    roleNameList.put(result.getString("role_name"),
-                            result.getInt("role_id"));
-                    roleIDList.put(result.getInt("role_id"), 
-                            result.getString("role_name"));
+                    roleNameHash.put(rs.getString("role_name"),
+                                     rs.getInt("role_id"));
+                    roleIDHash.put(rs.getInt("role_id"), 
+                                   rs.getString("role_name"));
                 }
-                logger.debug("Role List: " + roleNameList.toString());
+                rs.close();
+                logger.debug("Role List: " + roleNameHash.toString());
             } catch (SQLException e) {
-                logger.error("SQLException when retrieving from user_role table!");
+                logger.error("SQLException when query user role!");
                 logger.error(e.getMessage());
             }
         }
         
-        return roleNameList;
+        return roleNameHash;
     }
     
     // Return the Role ID using the value stored in HashMap roleList.
     public static int getRoleIDFromHash(String roleName) {
-        if (roleNameList.isEmpty()) {
+        if (roleNameHash.isEmpty()) {
             return Constants.DATABASE_INVALID_ID;
         }
-        return roleNameList.get(roleName);            
+        return roleNameHash.get(roleName);            
     }
     
-    // Return the Role using the value stored in HashMap roleIDList.
+    // Return the Role using the value stored in HashMap roleIDHash.
     public static String getRoleNameFromHash(int roleID) {
-        if (roleIDList.isEmpty()) {
+        if (roleIDHash.isEmpty()) {
             return Constants.DATABASE_INVALID_STR;
         }
-        return roleIDList.get(roleID);
+        return roleIDHash.get(roleID);
     }    
 }
