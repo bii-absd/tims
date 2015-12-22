@@ -17,8 +17,8 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 /**
- * DepartmentDB is not mean to be instantiate, its main job is to perform
- * SQL operations on the department table in the database.
+ * DepartmentDB is an abstract class and not mean to be instantiate, its main 
+ * job is to perform SQL operations on the department table in the database.
  * 
  * Author: Tay Wei Hong
  * Date: 13-Nov-2015
@@ -34,9 +34,11 @@ import org.apache.logging.log4j.LogManager;
  * updating department info.
  * 11-Dec-2015 - Added new attribute deptHash, that stores the full list of
  * Department ID that have been setup in the system.
+ * 22-Dec-2015 - Changed the class to abstract. To close the ResultSet after 
+ * use.
  */
 
-public class DepartmentDB implements Serializable {
+public abstract class DepartmentDB implements Serializable {
     // Get the logger for Log4j
     private final static Logger logger = LogManager.
             getLogger(DepartmentDB.class.getName());
@@ -44,8 +46,6 @@ public class DepartmentDB implements Serializable {
     private final static List<Department> deptList = new ArrayList<>();
     private final static LinkedHashMap<String,String> deptHash = new LinkedHashMap<>();
 
-    public DepartmentDB() {}
-    
     // Clear the department list, so that it will be rebuild again.
     private static void clearDeptList() {
         deptList.clear();
@@ -57,19 +57,20 @@ public class DepartmentDB implements Serializable {
         // Only execute the query if the list is empty.
         // To prevent the query from being run multiple times.
         if (deptList.isEmpty()) {
-            ResultSet result = DBHelper.runQuery
+            ResultSet rs = DBHelper.runQuery
                 ("SELECT * FROM dept ORDER BY dept_id");
             
             try {
-                while (result.next()) {
+                while (rs.next()) {
                     Department dept = new Department(
-                                        result.getString("inst_id"),
-                                        result.getString("dept_id"),
-                                        result.getString("dept_name"));
+                                        rs.getString("inst_id"),
+                                        rs.getString("dept_id"),
+                                        rs.getString("dept_name"));
                     deptList.add(dept);
-                    deptHash.put(result.getString("dept_id"), 
-                            result.getString("dept_id"));
+                    deptHash.put(rs.getString("dept_id"), 
+                                 rs.getString("dept_id"));
                 }
+                rs.close();
             }
             catch (SQLException e) {
                 logger.error("SQLException at getAllDept!");
@@ -109,7 +110,7 @@ public class DepartmentDB implements Serializable {
     public static Boolean updateDepartment(Department dept) {
         Boolean result = Constants.OK;
         String updateStr = "UPDATE dept SET inst_id = ?, dept_name = ? "
-                + "WHERE dept_id = ?";
+                         + "WHERE dept_id = ?";
         
         try (PreparedStatement updateStm = conn.prepareStatement(updateStr)) {
             updateStm.setString(1, dept.getInst_id());
@@ -123,8 +124,7 @@ public class DepartmentDB implements Serializable {
             logger.debug("Department " + dept.getDept_id() + " updated.");
         }
         catch (SQLException e) {
-            logger.error("SQLException when updating department: " + 
-                    dept.getDept_id());
+            logger.error("SQLException when updating department!");
             logger.error(e.getMessage());
             result = Constants.NOT_OK;
         }
@@ -156,24 +156,24 @@ public class DepartmentDB implements Serializable {
     }
     
     // Return the HashMap of departments setup under the specific inst_id.
-    public static LinkedHashMap<String, String> getDeptHashMap(String inst_id) {
+    public static LinkedHashMap<String, String> getDeptHash(String inst_id) {
         LinkedHashMap<String, String> deptHashMap = new LinkedHashMap<>();
         String queryStr = "SELECT dept_id, dept_name FROM "
-                    + "dept WHERE inst_id = ?";
+                        + "dept WHERE inst_id = ?";
 
         try (PreparedStatement queryStm = conn.prepareStatement(queryStr)) {
             queryStm.setString(1, inst_id);
-            ResultSet result = queryStm.executeQuery();
+            ResultSet rs = queryStm.executeQuery();
             
-            while (result.next()) {
-                deptHashMap.put(result.getString("dept_id"), 
-                             result.getString("dept_id"));
+            while (rs.next()) {
+                deptHashMap.put(rs.getString("dept_id"), 
+                                rs.getString("dept_id"));
             }
             logger.debug("Department list for " + inst_id + ": " +
                     deptHashMap.toString());
         }
         catch (SQLException e) {
-            logger.error("SQLException at getDeptHashMap: " + inst_id);
+            logger.error("SQLException when query department!");
             logger.error(e.getMessage());
         }
         
@@ -181,7 +181,7 @@ public class DepartmentDB implements Serializable {
     }
 
     // Return the HashMap of all the department IDs setup in the system.
-    public static LinkedHashMap<String, String> getDeptHash() {
+    public static LinkedHashMap<String, String> getAllDeptHash() {
         return deptHash;
     }
 }
