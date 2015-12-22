@@ -89,8 +89,8 @@ public class DataDepositor extends Thread {
                 annotVer = rs.getString("annot_ver");
                 logger.debug("Annotation version used in job_id " + jobID + 
                              " is " + annotVer);
-                rs.close();
             }
+            rs.close();
         } 
         catch (SQLException e) {
             logger.error("SQLException when retrieving annotation version!");
@@ -112,8 +112,8 @@ public class DataDepositor extends Thread {
                 path = rs.getString("output_file");
                 logger.debug("Output file for job_id " + jobID + " stored at " +
                              path);
-                rs.close();
             }
+            rs.close();
         }
         catch (SQLException e) {
             logger.error("SQLException when retrieving output filepath!");
@@ -181,8 +181,8 @@ public class DataDepositor extends Thread {
         try{
             if (rs.next()) {
                 count = rs.getInt(1) + 1;
-                rs.close();
             }
+            rs.close();
         }
         catch (SQLException e) {
             logger.debug("SQLException when getting MAX(array_index)!");
@@ -365,8 +365,7 @@ public class DataDepositor extends Thread {
             updateStm.executeUpdate();
         }
         catch (SQLException e) {
-            logger.error("SQLException when updating data depository record " 
-                    + genename);
+            logger.error("SQLException when updating data depository record!");
             logger.error(e.getMessage());
         }
         
@@ -376,9 +375,9 @@ public class DataDepositor extends Thread {
     // Insert a new finalized_output record into the database.
     // NOT IN USER ANYMORE!
     private void insertFinalizedOutput(FinalizedOutput record) {
-        String insertStr = "INSERT INTO finalized_output(array_index,annot_ver,job_id,subject_id) "
-                           + "VALUES(?,?,?,?)";
-        
+        String insertStr = "INSERT INTO finalized_output(array_index,annot_ver,"
+                         + "job_id,subject_id) VALUES(?,?,?,?)";
+
         try (PreparedStatement insertStm = conn.prepareStatement(insertStr)) {
             insertStm.setInt(1, record.getArray_index());
             insertStm.setString(2, record.getAnnot_ver());
