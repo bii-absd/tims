@@ -33,6 +33,8 @@ import javax.faces.bean.ViewScoped;
  * 02-Dec-2015 - Streamline the createConfigFile method.
  * 16-Dec-2015 - Implemented the new abstract method saveSampleFileDetail(). 
  * Sample annotation file will be having the same common name for all pipelines.
+ * 22-Dec-2015 - Control probe file will be having the same common name for all
+ * pipelines.
  */
 
 @ManagedBean (name="gexIlluminaBean")
@@ -112,6 +114,12 @@ public class GEXIlluminaBean extends ConfigBean {
         }
     }
 
+    @Override
+    public void renameAnnotCtrlFiles() {
+        sampleFile.renameAnnotFile();
+        ctrlFile.renameCtrlProbeFile();
+    }
+    
     // Make the necessary setup to those attributes that are relevant to this
     // pipeline, and then call the base class method to create the Config File.
     @Override
