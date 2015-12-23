@@ -44,7 +44,9 @@ import org.apache.logging.log4j.LogManager;
  * those jobs that are either finalizing or finalized.
  * 10-Dec-2015 - Changed to abstract class. Removed unused code. Improve the
  * method getLastInsertedJob().
- * 22-Dec-2015 - To close the ResultSet after use.
+ * 23-Dec-2015 - To close the ResultSet after use. Added 2 new methods, 
+ * queryTIDUsedInStudy and queryCompletedJobsInStudy to support the finalize
+ * study module.
  */
 
 public abstract class SubmittedJobDB {
@@ -131,7 +133,7 @@ public abstract class SubmittedJobDB {
         try (PreparedStatement updateStm = conn.prepareStatement(updateStr))
         {
             updateStm.executeUpdate();
-            logger.debug("Updated job status.");
+            logger.debug("Updated job status for job ID: " + job_id);
         }
         catch (SQLException e) {
             logger.error("SQLException when updating job status!");
@@ -139,6 +141,66 @@ public abstract class SubmittedJobDB {
         }
     }
     
+    // Query for the pipeline technologies used in this study.
+    public static List<String> queryTIDUsedInStudy(String studyID) {
+        List<String> tidList = new ArrayList<>();
+        String queryStr = "SELECT DISTINCT tid FROM submitted_job sj INNER JOIN "
+                        + "pipeline pl ON sj.pipeline_name = pl.name "
+                        + "WHERE study_id = ? ORDER BY tid";
+        
+        try (PreparedStatement queryStm = conn.prepareStatement(queryStr)) {
+            queryStm.setString(1, studyID);
+            ResultSet rs = queryStm.executeQuery();
+            
+            while (rs.next()) {
+                tidList.add(rs.getString("tid"));
+            }
+            logger.debug("Pipeline technologies run for " + studyID + ": "
+                         + tidList.toString());
+        }
+        catch (SQLException e) {
+            logger.error("SQLException when query for pipeline technologies run!");
+            logger.error(e.getMessage());
+        }
+        
+        return tidList;
+    }
+    
+    // Query for the list of completed jobs that are ready to be finalized for
+    // this study.
+    public static List<FinalizingJobEntry> queryCompletedJobsInStudy
+        (String studyID, String tid) {
+        List<FinalizingJobEntry> jobList = new ArrayList<>();
+        String queryStr = "SELECT job_id, tid, pipeline_name, submit_time "
+                        + "FROM submitted_job sj INNER JOIN pipeline pl "
+                        + "ON sj.pipeline_name = pl.name WHERE "
+                        + "status_id = 3 AND study_id = ? AND tid = ? "
+                        + "ORDER BY job_id";
+
+        try (PreparedStatement queryStm = conn.prepareStatement(queryStr)) {
+            queryStm.setString(1, studyID);
+            queryStm.setString(2, tid);
+            ResultSet rs = queryStm.executeQuery();
+            
+            while (rs.next()) {
+                FinalizingJobEntry tmp = new FinalizingJobEntry(
+                                            rs.getInt("job_id"),
+                                            rs.getString("tid"),
+                                            rs.getString("pipeline_name"),
+                                            rs.getString("submit_time"));
+                jobList.add(tmp);
+            }
+            logger.debug("No of completed jobs for " + studyID + " under " +
+                         tid + " technology is " + jobList.size());
+        }
+        catch (SQLException e) {
+            logger.error("SQLException when query for completed jobs!");
+            logger.error(e.getMessage());
+        }
+        
+        return jobList;
+    }
+
     // Query the submitted_job table using the user_id as a match condition. 
     // The results from the query will be returned as a list to the caller.
     public static List<SubmittedJob> querySubmittedJob(String user_id) {
