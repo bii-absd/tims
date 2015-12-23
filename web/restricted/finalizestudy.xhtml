@@ -16,12 +16,67 @@
             <p:selectOneMenu id="studyID" required="true" value="#{finalizedBean.study_id}">
                 <f:selectItem itemLabel="Select Study" itemValue=""/>
                 <f:selectItems value="#{finalizedBean.studyHash}"/>
-                <p:ajax update="jobsPanel"/>
+                <p:ajax update="jobsPanel" listener="#{finalizedBean.studyChange()}"/>
             </p:selectOneMenu>
         </p:panel>
         <p:panel id="jobsPanel" visible="#{finalizedBean.studySelectedStatus}" 
                  header="Select job to finalize for each pipeline technology">
-            
+            <p:dataTable id="tid0" rendered="#{finalizedBean.studySelectedStatus}" 
+                         var="jobL0" value="#{finalizedBean.jobList0}" 
+                         selection="#{finalizedBean.selectedJob0}" 
+                         rowKey="#{jobL0.job_id}"
+                         styleClass="table-odd-row table-even-row">
+                <f:facet name="header">
+                    <h:outputText value="#{finalizedBean.TID0}"/>
+                </f:facet>
+                <p:column headerText="Pipeline Name">
+                    <h:outputText value="#{jobL0.pipeline_name}"/>
+                </p:column>
+                <p:column headerText="Submission Time">
+                    <h:outputText value="#{jobL0.submit_time}"/>
+                </p:column>
+                <p:column headerText="Finalize" selectionMode="single" 
+                          style="width: 40px; text-align: center"/>
+            </p:dataTable>
+            <p:separator style="height: 12px" rendered="#{finalizedBean.jobList1Status}"/>
+            <p:dataTable id="tid1" rendered="#{finalizedBean.jobList1Status}" 
+                         var="jobL1" value="#{finalizedBean.jobList1}" 
+                         selection="#{finalizedBean.selectedJob1}" 
+                         rowKey="#{jobL1.job_id}"
+                         styleClass="table-odd-row table-even-row">
+                <f:facet name="header">
+                    <h:outputText value="#{finalizedBean.TID1}"/>
+                </f:facet>
+                <p:column headerText="Pipeline Name">
+                    <h:outputText value="#{jobL1.pipeline_name}"/>
+                </p:column>
+                <p:column headerText="Submission Time">
+                    <h:outputText value="#{jobL1.submit_time}"/>
+                </p:column>
+                <p:column headerText="Finalize" selectionMode="single" 
+                          style="width: 40px; text-align: center"/>
+            </p:dataTable>
+            <p:separator style="height: 12px" rendered="#{finalizedBean.jobList2Status}"/>
+            <p:dataTable id="tid2" rendered="#{finalizedBean.jobList2Status}" 
+                         var="jobL2" value="#{finalizedBean.jobList2}" 
+                         selection="#{finalizedBean.selectedJob2}" 
+                         rowKey="#{jobL2.job_id}"
+                         styleClass="table-odd-row table-even-row">
+                <f:facet name="header">
+                    <h:outputText value="#{finalizedBean.TID2}"/>
+                </f:facet>
+                <p:column headerText="Pipeline Name">
+                    <h:outputText value="#{jobL2.pipeline_name}"/>
+                </p:column>
+                <p:column headerText="Submission Time">
+                    <h:outputText value="#{jobL2.submit_time}"/>
+                </p:column>
+                <p:column headerText="Finalize" selectionMode="single" 
+                          style="width: 40px; text-align: center"/>
+            </p:dataTable>
+            <p:separator style="height: 20px"/>
+            <p:commandButton value="Finalize" icon="ui-icon-check" 
+                             action="#{finalizedBean.prepareForFinalization()}"/>
         </p:panel>
     </h:form>
     </ui:define>
