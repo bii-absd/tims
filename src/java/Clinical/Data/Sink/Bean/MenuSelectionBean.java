@@ -3,7 +3,6 @@
  */
 package Clinical.Data.Sink.Bean;
 
-import Clinical.Data.Sink.Database.DataDepositor;
 import Clinical.Data.Sink.Database.DataRetriever;
 import Clinical.Data.Sink.Database.StudyDB;
 import Clinical.Data.Sink.General.Constants;
@@ -110,11 +109,6 @@ public class MenuSelectionBean implements Serializable{
     
     // For testing DataDepositor
     public String dataDepositor() {
-        // Pass in the job_id of the submitted job that is going to be finalize.
-        // For testing purpose, assume we are going to finalize job_id 2,3 and 15 and 16.
-        DataDepositor depositorThread = new DataDepositor(2);
-        depositorThread.start();
-
         return Constants.NGS_PAGE;
     }
     
