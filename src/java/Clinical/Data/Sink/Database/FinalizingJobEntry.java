@@ -13,6 +13,8 @@ package Clinical.Data.Sink.Database;
  * 
  * Revision History
  * 22-Dec-2015 - Created with the necessary methods implemented.
+ * 24-Dec-2015 - Added one method, toString() to return a string representation
+ * of the object.
  */
 
 public class FinalizingJobEntry {
@@ -27,6 +29,12 @@ public class FinalizingJobEntry {
         this.submit_time = submit_time;
     }
 
+    // Return a string representation of this object.
+    @Override
+    public String toString() {
+        return job_id + " - " + pipeline_name + " - " + submit_time;
+    }
+    
     // Machine generated getters and setters.
     public int getJob_id() 
     { return job_id; }
