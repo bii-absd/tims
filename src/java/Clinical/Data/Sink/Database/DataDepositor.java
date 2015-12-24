@@ -12,6 +12,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -31,6 +33,9 @@ import org.apache.logging.log4j.LogManager;
  * autoCommit is set to off). Improve on the logic to insert gene value into
  * data array. Big improvement in the timing for inserting 22 records of 
  * 18,210/34,694 gene values; from 178 sec to 56 sec.
+ * 23-Dec-2015 - Instead of receiving a single job_id, the constructor will
+ * receive a list of job entries. This class will then process all those job_id
+ * found in the list of job entries.
  */
 
 public class DataDepositor extends Thread {
@@ -38,27 +43,47 @@ public class DataDepositor extends Thread {
     private final static Logger logger = LogManager.
             getLogger(DataDepositor.class.getName());
     private final static Connection conn = DBHelper.getDBConn();
-    private final String dept_id, fileUri, annot_ver;
-    private final int job_id;
+    private final String study_id, dept_id, annot_ver;
+    private String fileUri;
+    private int job_id;
+    private List<FinalizingJobEntry> jobList = new ArrayList<>();
     
-    public DataDepositor(int job_id) {
-        this.job_id = job_id;
-        // Retrieve the value of dept_id, fileUri and annot_ver from database.
-        annot_ver = getAnnotVersion(job_id);
-        fileUri = getOutputPath(job_id);
-        dept_id = getDeptID(AuthenticationBean.getUserName());
-        logger.debug("DataDepositor created for job_id: " + job_id);
+    public DataDepositor(String study_id, List<FinalizingJobEntry> jobList) {
+        this.study_id = study_id;
+        this.jobList = jobList;
+        // Retrieve the value of dept_id and annot_ver from database.
+        dept_id = UserAccountDB.getDeptID(AuthenticationBean.getUserName());
+        annot_ver = StudyDB.getAnnotVer(study_id);
+        logger.debug("DataDepositor created for study: " + study_id);
     }
     
     @Override
-    public void run() {        
+    public void run() {
+        Boolean finalizeStatus = Constants.OK;
+        
         try {
-            // All the SQL statements executed in method 
-            // insertFinalizedDataIntoDB() will be treated as one transaction.
-            conn.setAutoCommit(false);
+            // All the SQL statements executed here will be treated as one 
+            // big transaction.
             logger.debug("DataDepositor start - Set auto-commit to OFF.");
+            conn.setAutoCommit(false);
             
-            if (insertFinalizedDataIntoDB()) {
+            for (FinalizingJobEntry job : jobList) {
+                // Retrieve the job ID and pipeline output file for this 
+                // selected job.
+                job_id = job.getJob_id();
+                fileUri = SubmittedJobDB.getOutputPath(job_id);
+                logger.debug("Data insertion for: " + study_id + " - " + 
+                             job.getTid() + " - Job ID: " + job_id);
+                
+                if (!insertFinalizedDataIntoDB()) {
+                    // Error occurred during data insertion, stop the transaction.
+                    finalizeStatus = Constants.NOT_OK;
+                    logger.error("DataDepositor - Hit error!");
+                    break;
+                }
+            }
+            
+            if (finalizeStatus) {
                 // All the SQL statements executed successfully, commit the changes.
                 logger.debug("DataDepositor - Commit transaction.");
                 conn.commit();
@@ -68,82 +93,18 @@ public class DataDepositor extends Thread {
                 logger.error("DataDepositor - Rollback transaction.");
                 conn.rollback();
             }
-            logger.debug("DataDepositor completed - Set auto-commit to ON.");            
+            
+            conn.setAutoCommit(true);
+            logger.debug("DataDepositor completed - Set auto-commit to ON.");
+            // Update job status to finalized
+            for (FinalizingJobEntry job : jobList) {
+                SubmittedJobDB.updateJobStatusToFinalized(job.getJob_id());
+            }
         }
         catch (SQLException e) {
             logger.error("Falied to insert finalized data into database!");
             logger.error(e.getMessage());
         }
-    }
-    
-    // Retrieve the gene annotation version used in the study where this
-    // job_id belongs to.
-    private String getAnnotVersion(int jobID) {
-        String annotVer = Constants.DATABASE_INVALID_STR;
-        String query = "SELECT annot_ver FROM study NATURAL JOIN "
-                     + "submitted_job WHERE job_id = " + jobID;
-        ResultSet rs = DBHelper.runQuery(query);
-        
-        try {
-            if (rs.next()) {
-                annotVer = rs.getString("annot_ver");
-                logger.debug("Annotation version used in job_id " + jobID + 
-                             " is " + annotVer);
-            }
-            rs.close();
-        } 
-        catch (SQLException e) {
-            logger.error("SQLException when retrieving annotation version!");
-            logger.error(e.getMessage());
-        }
-        
-        return annotVer;
-    }
-    
-    // Retrieve the output filepath for this submiited job.
-    private String getOutputPath(int jobID) {
-        String path = Constants.DATABASE_INVALID_STR;
-        String query = "SELECT output_file FROM submitted_job WHERE job_id = " 
-                     + jobID;
-        ResultSet rs = DBHelper.runQuery(query);
-        
-        try {
-            if (rs.next()) {
-                path = rs.getString("output_file");
-                logger.debug("Output file for job_id " + jobID + " stored at " +
-                             path);
-            }
-            rs.close();
-        }
-        catch (SQLException e) {
-            logger.error("SQLException when retrieving output filepath!");
-            logger.error(e.getMessage());
-        }
-        
-        return path;
-    }
-    
-    // Retrieve the department ID where this user belong to.
-    private String getDeptID(String userID) {
-        String dept = Constants.DATABASE_INVALID_STR;
-        String queryStr = "SELECT dept_id FROM user_account WHERE user_id = ?";
-        
-        try (PreparedStatement queryStm = conn.prepareStatement(queryStr)) {
-            queryStm.setString(1, userID);
-            ResultSet rs = queryStm.executeQuery();
-            
-            if (rs.next()) {
-                dept = rs.getString("dept_id");
-                logger.debug("User ID " + userID + " belongs to department " +
-                             dept);
-            }
-        }
-        catch (SQLException e) {
-            logger.error("SQLException when retrieving department ID!");
-            logger.error(e.getMessage());
-        }
-        
-        return dept;
     }
     
     // Insert the gene value into the data array using the PreparedStatement
@@ -323,6 +284,9 @@ public class DataDepositor extends Thread {
                         return Constants.NOT_OK;
                     }
                 }
+                // Close the stream and releases any system resources associated
+                // with it.
+                br.close();
             } catch (SQLException e) {
                 logger.error("SQLException when inserting into data array!");
                 logger.error(e.getMessage());
@@ -345,6 +309,8 @@ public class DataDepositor extends Thread {
         
         return result;
     }
+    
+    /* NOT IN USE ANYMORE!
     
     // Update data_depository's data field (at array_index) with the value 
     // passed in.
@@ -418,4 +384,5 @@ public class DataDepositor extends Thread {
         
         return geneExist;
     }
+    */
 }
