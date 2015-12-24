@@ -3,6 +3,7 @@
  */
 package Clinical.Data.Sink.Database;
 
+import Clinical.Data.Sink.General.Constants;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -37,7 +38,7 @@ public class DataRetriever extends Thread {
     private final static Logger logger = LogManager.
             getLogger(DataRetriever.class.getName());
     private final static Connection conn = DBHelper.getDBConn();
-    private final String study_id, annot_ver;
+    private final String study_id, annot_ver, finalize_file;
     private final List<OutputItems> opItemsList;
     private final List<String> geneList;
     private StringBuilder opHeader = new StringBuilder();
@@ -46,6 +47,9 @@ public class DataRetriever extends Thread {
     // data from the database.
     public DataRetriever(String study_id) {
         this.study_id = study_id;
+        finalize_file = Constants.getSYSTEM_PATH() + 
+                        Constants.getFINALIZE_PATH() + 
+                        study_id + Constants.getFINALIZE_FILE_EXT();
         annot_ver = StudyDB.getAnnotVer(study_id);
         opHeader.append("Subject|Technology");
         geneList = getGeneList();
@@ -58,6 +62,8 @@ public class DataRetriever extends Thread {
     public void run() {
         logger.debug("DataRetriever start running.");
         consolidateFinalizedData();
+        // Update the study with the finalized file path.
+        StudyDB.updateStudyFinalizedFile(study_id, finalize_file);
     }
     
     // To build the subject line for the output file.
@@ -191,7 +197,7 @@ public class DataRetriever extends Thread {
     // Retrieve the finalized data from the database, consolidate and output
     // them to a text file.
     private void consolidateFinalizedData() {
-        writeToFile("C://temp//iCOMIC2S//finalizedOP8.txt");
+        writeToFile(finalize_file);
 
         /*
         // NOTE: When using System.out.println the last character CANNOT be a "|"
@@ -203,6 +209,4 @@ public class DataRetriever extends Thread {
         }
         */
     }
-    
-    // Machine generated getters and setters.
 }
