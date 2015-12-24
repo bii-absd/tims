@@ -5,6 +5,7 @@ package Clinical.Data.Sink.Bean;
 
 import Clinical.Data.Sink.Database.DBHelper;
 import Clinical.Data.Sink.Database.InstitutionDB;
+import Clinical.Data.Sink.Database.JobStatusDB;
 import Clinical.Data.Sink.Database.UserAccount;
 import Clinical.Data.Sink.Database.UserAccountDB;
 import Clinical.Data.Sink.General.SelectOneMenuList;
@@ -157,6 +158,8 @@ public class AuthenticationBean implements Serializable {
         
         // Retrieve the institution list from database
         InstitutionDB.buildInstList();
+        // Retrieve the job status definition from database
+        JobStatusDB.getJobStatusDef();
         
         // Temporary hack to allow me to enter to create user when the 
         // application is first deployed.
