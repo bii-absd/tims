@@ -3,7 +3,6 @@
  */
 package Clinical.Data.Sink.Bean;
 
-import Clinical.Data.Sink.Database.JobStatusDB;
 import Clinical.Data.Sink.Database.SubmittedJob;
 import Clinical.Data.Sink.Database.SubmittedJobDB;
 import java.io.File;
@@ -44,6 +43,8 @@ import org.apache.logging.log4j.LogManager;
  * 02-Nov-2015 - Passing in the current submittedJob as method argument for 
  * downloadOuptut and downloadReport methods.
  * 25-Nov-2015 - Comment out unused code. Implementation for database 2.0
+ * 23-Dec-2015 - Moved the retrieval of the job status definition to the
+ * AuthenticationBean class.
  */
 
 @ManagedBean(name = "jobStatusBean")
@@ -65,8 +66,6 @@ public class JobStatusBean implements Serializable {
         logger.debug("JobStatusBean created.");
         logger.info(AuthenticationBean.getUserName() + 
                 ": access Job Status page.");
-        // Retrieve the job status definition from database
-        JobStatusDB.getJobStatusDef();
         // Retrieve the submitted job from database everytime we enter job
         // status page.
         SubmittedJobDB.clearSubmittedJobs();
@@ -111,7 +110,7 @@ public class JobStatusBean implements Serializable {
         try (FileInputStream fis = new FileInputStream(file)){
             OutputStream os = ec.getResponseOutputStream();
             byte[] buffer = new byte[2048]; // 2K byte-buffer
-            int bytesRead = 0;
+            int bytesRead;
             
             while ((bytesRead = fis.read(buffer)) != -1) {
                 os.write(buffer,0,bytesRead);
