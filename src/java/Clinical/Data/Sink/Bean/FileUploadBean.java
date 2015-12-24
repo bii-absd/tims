@@ -17,6 +17,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
+// Libraries for PrimeFaces
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.UploadedFile;
 // Libraries for Log4j
@@ -50,6 +51,8 @@ import org.apache.logging.log4j.LogManager;
  * annotation file to a common name.
  * 22-Dec-2015 - Added new method renameCtrlProbeFile(), to rename the control
  * probe file to a common name.
+ * 24-Dec-2015 - Updated method createSystemDirectories, to create the 
+ * directory for finalize_output too.
  */
 
 public class FileUploadBean implements Serializable {
@@ -128,11 +131,12 @@ public class FileUploadBean implements Serializable {
     }
     
     // Create level one system directories i.e. .../iCOMIC2S/users
-    // .../iCOMIC2S/input
+    // .../iCOMIC2S/input .../iCOMIC2S/finalize_output
     public static Boolean createSystemDirectories(String systemDir) {
         Boolean result = 
                 createSystemDirectory(systemDir + Constants.getUSERS_PATH()) &&
-                createSystemDirectory(systemDir + Constants.getINPUT_PATH());
+                createSystemDirectory(systemDir + Constants.getINPUT_PATH()) &&
+                createSystemDirectory(systemDir + Constants.getFINALIZE_PATH());
         
         return result;
     }
