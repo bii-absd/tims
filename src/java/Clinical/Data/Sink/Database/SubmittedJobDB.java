@@ -47,6 +47,8 @@ import org.apache.logging.log4j.LogManager;
  * 23-Dec-2015 - To close the ResultSet after use. Added 2 new methods, 
  * queryTIDUsedInStudy and queryCompletedJobsInStudy to support the finalize
  * study module.
+ * 24-Dec-2015 - Added one method, getOutputPath to retrieve the output 
+ * filepath of the submitted job.
  */
 
 public abstract class SubmittedJobDB {
@@ -133,7 +135,8 @@ public abstract class SubmittedJobDB {
         try (PreparedStatement updateStm = conn.prepareStatement(updateStr))
         {
             updateStm.executeUpdate();
-            logger.debug("Updated job status for job ID: " + job_id);
+            logger.debug("Job ID " + job_id + ": status updated to " + 
+                    JobStatusDB.getStatusName(status_id));
         }
         catch (SQLException e) {
             logger.error("SQLException when updating job status!");
@@ -252,6 +255,29 @@ public abstract class SubmittedJobDB {
         }
         
         return new ArrayList<>(submittedJobs.values());
+    }
+
+    // Retrieve the output filepath for this submiited job.
+    public static String getOutputPath(int jobID) {
+        String path = Constants.DATABASE_INVALID_STR;
+        String query = "SELECT output_file FROM submitted_job WHERE job_id = " 
+                     + jobID;
+        ResultSet rs = DBHelper.runQuery(query);
+        
+        try {
+            if (rs.next()) {
+                path = rs.getString("output_file");
+                logger.debug("Output file for job_id " + jobID + 
+                             " stored at " + path);
+            }
+            rs.close();
+        }
+        catch (SQLException e) {
+            logger.error("Failed to retrieve output filepath!");
+            logger.error(e.getMessage());
+        }
+        
+        return path;
     }
 
     // Clear the HashMap, so that the query to the database will be run again.
