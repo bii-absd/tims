@@ -65,6 +65,8 @@ import org.apache.logging.log4j.LogManager;
  * SAMPLE_ANNOT_FILE_EXT.
  * 22-Dec-2015 - Added two new constants, CONTROL_PROBE_FILE_NAME and 
  * CONTROL_PROBE_FILE_EXT.
+ * 24-Dec-2015 - Added 3 new constants, FINALIZE_PATH, FINALIZE_FILE_NAME and
+ * FINALIZE_FILE_EXT.
  */
 
 @ManagedBean (name = "constants")
@@ -113,6 +115,7 @@ public class Constants {
     private static String INPUT_PATH = null;
     private static String CONFIG_PATH = null;
     private static String LOG_PATH = null;
+    private static String FINALIZE_PATH = null;
     private static String OUTPUTFILE_NAME = null;
     private static String OUTPUTFILE_EXT = null;
     private static String REPORTFILE_NAME = null;
@@ -121,6 +124,8 @@ public class Constants {
     private static String LOGFILE_EXT = null;
     private static String CONFIG_FILE_NAME = null;
     private static String CONFIG_FILE_EXT = null;
+    private static String FINALIZE_FILE_NAME = null;
+    private static String FINALIZE_FILE_EXT = null;
     private static String SAMPLE_ANNOT_FILE_NAME = null;
     private static String SAMPLE_ANNOT_FILE_EXT = null;
     private static String CONTROL_PROBE_FILE_NAME = null;
@@ -166,6 +171,7 @@ public class Constants {
             INPUT_PATH = setup.get("INPUT_PATH");
             CONFIG_PATH = setup.get("CONFIG_PATH");
             LOG_PATH = setup.get("LOG_PATH");
+            FINALIZE_PATH = setup.get("FINALIZE_PATH");
             OUTPUTFILE_NAME = setup.get("OUTPUTFILE_NAME");
             OUTPUTFILE_EXT = setup.get("OUTPUTFILE_EXT");
             REPORTFILE_NAME = setup.get("REPORTFILE_NAME");
@@ -174,6 +180,8 @@ public class Constants {
             LOGFILE_EXT = setup.get("LOGFILE_EXT");
             CONFIG_FILE_NAME = setup.get("CONFIG_FILE_NAME");
             CONFIG_FILE_EXT = setup.get("CONFIG_FILE_EXT");
+            FINALIZE_FILE_NAME = setup.get("FINALIZE_FILE_NAME");
+            FINALIZE_FILE_EXT = setup.get("FINALIZE_FILE_EXT");
             SAMPLE_ANNOT_FILE_NAME = setup.get("SAMPLE_ANNOT_FILE_NAME");
             SAMPLE_ANNOT_FILE_EXT = setup.get("SAMPLE_ANNOT_FILE_EXT");
             CONTROL_PROBE_FILE_NAME = setup.get("CONTROL_PROBE_FILE_NAME");
@@ -204,6 +212,7 @@ public class Constants {
     public static String getINPUT_PATH() { return INPUT_PATH; }
     public static String getCONFIG_PATH() { return CONFIG_PATH; }
     public static String getLOG_PATH() { return LOG_PATH; }
+    public static String getFINALIZE_PATH() { return FINALIZE_PATH; }
     public static String getOUTPUTFILE_NAME() { return OUTPUTFILE_NAME; }
     public static String getOUTPUTFILE_EXT() { return OUTPUTFILE_EXT; }
     public static String getREPORTFILE_NAME() { return REPORTFILE_NAME; }
@@ -212,6 +221,8 @@ public class Constants {
     public static String getLOGFILE_EXT() { return LOGFILE_EXT; }
     public static String getCONFIG_FILE_NAME() { return CONFIG_FILE_NAME; }
     public static String getCONFIG_FILE_EXT() { return CONFIG_FILE_EXT; }
+    public static String getFINALIZE_FILE_NAME() { return FINALIZE_FILE_NAME; }
+    public static String getFINALIZE_FILE_EXT() { return FINALIZE_FILE_EXT; }
     public static String getSAMPLE_ANNOT_FILE_NAME() 
     { return SAMPLE_ANNOT_FILE_NAME; }
     public static String getSAMPLE_ANNOT_FILE_EXT() 
