@@ -29,7 +29,8 @@ import org.apache.logging.log4j.LogManager;
  * getStudyList, queryStudy and clearStudyList().
  * 17-Dec-2015 - Added new method getAnnotVer, to return the Annotation Version
  * used in the study.
- * 22-Dec-2015 - To close the ResultSet after use.
+ * 23-Dec-2015 - To close the ResultSet after use. Added 3 new methods, 
+ * updateStudyToCompleted, updateStudyFinalizedFile and getFinalizeStudyHash.
  */
 
 public abstract class StudyDB {
@@ -93,6 +94,37 @@ public abstract class StudyDB {
         return result;
     }
     
+    // Update the study to completed.
+    public static void updateStudyToCompleted(String studyID) {
+        String updateStr = "UPDATE study SET completed = true WHERE study_id = ?";
+        
+        try (PreparedStatement updateStm = conn.prepareStatement(updateStr)) {
+            updateStm.setString(1, studyID);
+            updateStm.executeUpdate();
+            logger.debug("Study " + studyID + " updated to completed.");
+        }
+        catch (SQLException e) {
+            logger.error("Failed to update study to completed!");
+            logger.error(e.getMessage());
+        }
+    }
+    
+    // Update the finalized_file with the file path of the output file.
+    public static void updateStudyFinalizedFile(String studyID, String path) {
+        String updateStr = "UPDATE study SET finalized_file = ? WHERE study_id = ?";
+        
+        try (PreparedStatement queryStm = conn.prepareStatement(updateStr)) {
+            queryStm.setString(1, path);
+            queryStm.setString(2, studyID);
+            queryStm.executeUpdate();
+            logger.debug(studyID + " finalized file path updated to " + path);
+        }
+        catch (SQLException e) {
+            logger.error("Failed to update study's finalized file path!");
+            logger.error(e.getMessage());
+        }
+    }
+    
     // Return the list of annotation version setup in the system
     public static LinkedHashMap<String, String> getAnnotHash() {
         LinkedHashMap<String, String> annotHash = new LinkedHashMap<>();
@@ -134,6 +166,32 @@ public abstract class StudyDB {
             logger.error(e.getMessage());
         }
         return studyHash;
+    }
+    
+    // Return the list of unfinalized Study ID that has completed job(s), and 
+    // belongs to the department that this user ID come from.
+    public static LinkedHashMap<String, String> getFinalizeStudyHash(String userID) {
+        LinkedHashMap<String, String> finStudyHash = new LinkedHashMap<>();
+        String queryStr = "SELECT DISTINCT study_id FROM study st "
+                        + "NATURAL JOIN submitted_job sj WHERE sj.status_id = 3 "
+                        + "AND st.dept_id = (SELECT dept_id FROM user_account "
+                        + "WHERE user_id =?) AND st.completed = false";
+        
+        try (PreparedStatement queryStm = conn.prepareStatement(queryStr)) {
+            queryStm.setString(1, userID);
+            ResultSet rs = queryStm.executeQuery();
+            
+            while (rs.next()) {
+                finStudyHash.put(rs.getString("study_id"), rs.getString("study_id"));
+            }
+            logger.debug("Study list available for finalization retrieved.");
+        }
+        catch (SQLException e) {
+            logger.error("Failed to retrieve study that could be finalize!");
+            logger.error(e.getMessage());
+        }
+        
+        return finStudyHash;
     }
     
     // Return the list of Study ID setup in the system.
@@ -182,10 +240,12 @@ public abstract class StudyDB {
             
             if (rs.next()) {
                 annot_ver = rs.getString("annot_ver");
+                logger.debug("Annotation version used in study: " + studyID + 
+                             " is " + annot_ver);
             }
         }
         catch (SQLException e) {
-            logger.error("SQLException when retrieving annot_ver from study!");
+            logger.error("Failed to retrieve annotation version from study!");
             logger.error(e.getMessage());
         }
         
