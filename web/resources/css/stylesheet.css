@@ -148,3 +148,8 @@
 .label {
     font-size: 14px;
 }
+
+/* To replace the \n with <br /> in outputText */
+.preformatted {
+    white-space: pre-wrap;
+}
