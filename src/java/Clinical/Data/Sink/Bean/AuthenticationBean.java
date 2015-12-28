@@ -68,6 +68,7 @@ import org.apache.logging.log4j.core.LoggerContext;
  * 16-Nov-2015 - To retrieve institution list from database after login.
  * 01-Dec-2015 - Implementation for database 2.0
  * 02-Dec-2015 - Implemented the changes in the input folder directory.
+ * 28-Dec-2015 - Added 2 new methods, isSupervisor() and isClinical().
  */
 
 @ManagedBean (name="authenticationBean")
@@ -248,8 +249,8 @@ public class AuthenticationBean implements Serializable {
         }
     }
     
-    // This function will be called by classes to determine whether the current
-    // user is a adminstrator.
+    // These functions will be called by classes to determine whether the current
+    // user is a adminstrator, supervisor or clinical.
     public static Boolean isAdministrator() {
         if (loginName.compareTo("super") == 0) {
             return Constants.OK;
@@ -257,6 +258,12 @@ public class AuthenticationBean implements Serializable {
         else {
             return userAcct.getRole_id() == 1;
         }
+    }
+    public static Boolean isSupervisor() {
+        return userAcct.getRole_id() <= 2;
+    }
+    public static Boolean isClinical() {
+        return userAcct.getRole_id() <= 3;
     }
     
     // Retrieve the faces context
