@@ -36,6 +36,8 @@ import org.apache.logging.log4j.LogManager;
  * 23-Dec-2015 - Instead of receiving a single job_id, the constructor will
  * receive a list of job entries. This class will then process all those job_id
  * found in the list of job entries.
+ * 28-Dec-2015 - Moved method subjectExistInDB to SubjectDB. Improve on the 
+ * code in method insertFinalizedDataIntoDB().
  */
 
 public class DataDepositor extends Thread {
@@ -162,18 +164,6 @@ public class DataDepositor extends Thread {
         return rs.isBeforeFirst()?Constants.OK:Constants.NOT_OK;
     }
     
-    // Check whether the subject Meta info exists in the database.
-    private Boolean subjectExistInDB(String subject_id) throws SQLException {
-        String queryStr = "SELECT * FROM subject WHERE subject_id = ? AND "
-                        + "dept_id = \'" + dept_id + "\'";
-        
-        PreparedStatement queryStm = conn.prepareStatement(queryStr);
-        queryStm.setString(1, subject_id);
-        ResultSet rs = queryStm.executeQuery();
-
-        return rs.isBeforeFirst()?Constants.OK:Constants.NOT_OK;
-    }
-    
     // Insert the finalized pipeline output into database.
     private Boolean insertFinalizedDataIntoDB() throws SQLException {
         Boolean result = Constants.OK;
@@ -187,7 +177,7 @@ public class DataDepositor extends Thread {
         try {
             BufferedReader br = new BufferedReader(new FileReader(fileUri));
             // Store those subject ID whom meta data is not in the database.
-            String studentNotFound = null;
+            StringBuilder subjectNotFound = new StringBuilder();
             
             // **Subject line processing start here.
             String lineRead = br.readLine();
@@ -208,7 +198,7 @@ public class DataDepositor extends Thread {
                     // Only store the pipeline output if the subject metadata is 
                     // available in the database.
                     try {
-                        if (subjectExistInDB(values[i])) {
+                        if (SubjectDB.isSubjectExistInDept(values[i], dept_id)) {
                             processedRecord++;
                             arrayIndex[i] = getNextArrayInd();
                             FinalizedOutput record = new FinalizedOutput
@@ -217,9 +207,7 @@ public class DataDepositor extends Thread {
                             insertToFinalizedOutput(insertStm, record);                            
                         }
                         else {
-                            studentNotFound = (studentNotFound == null)?
-                                    (values[i] + " "):
-                                    (studentNotFound + values[i] + " ");
+                            subjectNotFound.append(values[i]).append(" ");
                             arrayIndex[i] = Constants.DATABASE_INVALID_ID;
                         }
                     } catch (SQLException e) {
@@ -230,9 +218,14 @@ public class DataDepositor extends Thread {
                 }
                 logger.info("Subject records processed: " + processedRecord + 
                             " out of " + totalRecord);
-                // Record those pid(s) not found; finalized data will not be stored.
-                logger.debug("The following pid(s) is not in our database " + 
-                            studentNotFound);
+                // Record those subject ID not found; finalized data will not be stored.
+                if (subjectNotFound.toString().isEmpty()) {
+                    logger.debug("All the subject ID is found in database.");
+                }
+                else {
+                    logger.debug("The following subject ID is not found in database " + 
+                                 subjectNotFound);
+                }
             }
             catch (SQLException e) {
                 logger.error("SQLException when inserting finalized records!");
@@ -311,6 +304,20 @@ public class DataDepositor extends Thread {
     }
     
     /* NOT IN USE ANYMORE!
+    
+    // Check whether the subject Meta info exists in the database.
+    // Moved to SubjectDB. 
+    // NOT IN USE ANYMORE!
+    private Boolean subjectExistInDB(String subject_id) throws SQLException {
+        String queryStr = "SELECT * FROM subject WHERE subject_id = ? AND "
+                        + "dept_id = \'" + dept_id + "\'";
+        
+        PreparedStatement queryStm = conn.prepareStatement(queryStr);
+        queryStm.setString(1, subject_id);
+        ResultSet rs = queryStm.executeQuery();
+
+        return rs.isBeforeFirst()?Constants.OK:Constants.NOT_OK;
+    }
     
     // Update data_depository's data field (at array_index) with the value 
     // passed in.
