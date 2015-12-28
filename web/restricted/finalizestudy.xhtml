@@ -76,8 +76,27 @@
             </p:dataTable>
             <p:separator style="height: 20px"/>
             <p:commandButton value="Finalize" icon="ui-icon-check" 
-                             action="#{finalizedBean.prepareForFinalization()}"/>
+                             oncomplete="PF('dlg').show()" 
+                             update="subjectMDStatus @form"
+                             action="#{finalizedBean.prepareForFinalization}"/>
         </p:panel>
+        <p:dialog header="Study Finalization Review" widgetVar="dlg" width="340px" 
+                  resizable="false" closable="false" modal="true">
+            <h:outputText id="subjectMDStatus" 
+                          value="#{finalizedBean.subMDAvailableStatus}" 
+                          styleClass="preformatted"/>
+            <p:separator style="height: 10px"/>
+            <h:form>
+                <h:panelGrid columns="2" cellspacing="2" cellpadding="2">
+                    <p:commandButton value="Cancel" title="Do not proceed with the finalization" 
+                                     style="width: 130px" oncomplete="PF('dlg').hide()" 
+                                     action="#{finalizedBean.cancelFinalization}"/>
+                    <p:commandButton value="Proceed" title="Proceed with the finalization" 
+                                     style="width: 130px" 
+                                     action="#{finalizedBean.proceedForFinalization}"/>
+                </h:panelGrid>
+            </h:form>
+        </p:dialog>
     </h:form>
     </ui:define>
 </ui:composition>
