@@ -3,7 +3,6 @@
  */
 package Clinical.Data.Sink.Database;
 
-// Libraries for Log4j
 import Clinical.Data.Sink.General.Constants;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -11,6 +10,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+// Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
@@ -25,6 +25,7 @@ import org.apache.logging.log4j.LogManager;
  * 10-Dec-2015 - First baseline with 3 static methods, insertSubject, 
  * querySubject and clearSubList().
  * 14-Dec-2015 - Added new method, updateSubject.
+ * 28-Dec-2015 - Added new method, isSubjectExistInDept.
  */
 
 public abstract class SubjectDB {
@@ -93,7 +94,7 @@ public abstract class SubjectDB {
     // Query the subject table using the deptID as a match condition.
     // Exception thrown here need to be handle by the caller.
     public static List<Subject> querySubject(String deptID) throws SQLException {
-        String queryStr = "SELECT * from subject WHERE dept_id = ?";
+        String queryStr = "SELECT * from subject WHERE dept_id = ? ORDER BY subject_id";
         PreparedStatement queryStm = conn.prepareStatement(queryStr);
         queryStm.setString(1, deptID);
         ResultSet rs = queryStm.executeQuery();
@@ -113,6 +114,20 @@ public abstract class SubjectDB {
 
         logger.debug("Query subject completed.");
         return subList;
+    }
+    
+    // Check whether the subject meta data exists in the database.
+    public static Boolean isSubjectExistInDept
+        (String subject_id, String dept_id) throws SQLException {
+        String queryStr = "SELECT * FROM subject WHERE subject_id = ? AND "
+                        + "dept_id = ?";
+        
+        PreparedStatement queryStm = conn.prepareStatement(queryStr);
+        queryStm.setString(1, subject_id);
+        queryStm.setString(2, dept_id);
+        ResultSet rs = queryStm.executeQuery();
+
+        return rs.isBeforeFirst()?Constants.OK:Constants.NOT_OK;
     }
     
     // Clear the subject list to make sure that the latest list of subject meta
