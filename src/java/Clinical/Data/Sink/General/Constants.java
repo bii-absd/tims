@@ -67,6 +67,7 @@ import org.apache.logging.log4j.LogManager;
  * CONTROL_PROBE_FILE_EXT.
  * 24-Dec-2015 - Added 3 new constants, FINALIZE_PATH, FINALIZE_FILE_NAME and
  * FINALIZE_FILE_EXT.
+ * 28-Dec-2015 - Added 2 new constants, FINALIZE_STUDY and SUMMARY_OF_STUDY.
  */
 
 @ManagedBean (name = "constants")
@@ -106,6 +107,8 @@ public class Constants {
     public final static String STUDY_MANAGEMENT = "studymanagement";
     public final static String CLINICAL_DATA_MANAGEMENT = 
                                 "clinicaldatamanagement";
+    public final static String FINALIZE_STUDY = "finalizestudy";
+    public final static String SUMMARY_OF_STUDY = "summaryofstudy";
     public final static String NGS_PAGE = "ngs?faces-redirect=true";
     public final static String ERROR = "error?faces-redirect=true";
     // Constants read in from setup file.
