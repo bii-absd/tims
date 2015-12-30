@@ -60,18 +60,18 @@
         <p:tab id="addData" title="Add New Meta Data" titleStyleClass="tab-title">
             <h:form id="addDataForm">
                 <h:panelGrid columns="3" border="0" cellpadding="4" cellspacing="2">
-                    <h:outputText value="Subject ID" styleClass="label"/>
+                    <h:outputText value="Subject ID" styleClass="inputlabel"/>
                     <p:inputText id="subjectid" size="18" autocomplete="off" 
                                  required="true" value="#{clDataMgntBean.subject_id}"/>
                     <h:message id="subjectid-status" for="subjectid" styleClass="errors"/>
                 
-                    <h:outputText value="Age at Diagnosis" styleClass="label"/>
+                    <h:outputText value="Age at Diagnosis" styleClass="inputlabel"/>
                     <p:inputText id="agediagnosis" size="18" maxlength="3" 
                                  autocomplete="off" 
                                  value="#{clDataMgntBean.age_at_diagnosis}"/>                    
                     <h:message id="agediagnosis-status" for="agediagnosis" styleClass="errors"/>
                 
-                    <h:outputText value="Gender" styleClass="label"/>
+                    <h:outputText value="Gender" styleClass="inputlabel"/>
                     <p:selectOneRadio id="gender" required="true" 
                                       value="#{clDataMgntBean.gender}">
                         <f:selectItem itemLabel="Male" itemValue="M"/>
@@ -79,7 +79,7 @@
                     </p:selectOneRadio>
                     <h:message for="gender" styleClass="errors"/>
                 
-                    <h:outputText value="Race" styleClass="label"/>
+                    <h:outputText value="Race" styleClass="inputlabel"/>
                     <p:selectOneMenu id="race" required="true" 
                                      value="#{clDataMgntBean.race}">
                         <f:selectItem itemLabel="Select Race" itemValue=""/>
@@ -91,12 +91,12 @@
                     </p:selectOneMenu>
                     <h:message for="race" styleClass="errors"/>
                     
-                    <h:outputText value="Height" styleClass="label"/>
+                    <h:outputText value="Height" styleClass="inputlabel"/>
                     <p:inputText id="height" size="18" autocomplete="off" 
                                  value="#{clDataMgntBean.height}"/>
                     <h:panelGroup/>
                     
-                    <h:outputText value="Weight" styleClass="label"/>
+                    <h:outputText value="Weight" styleClass="inputlabel"/>
                     <p:inputText id="weight" size="18" autocomplete="off" 
                                  value="#{clDataMgntBean.weight}"/>
                     <h:panelGroup/>
