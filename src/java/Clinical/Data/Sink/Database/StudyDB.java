@@ -153,7 +153,8 @@ public abstract class StudyDB {
         LinkedHashMap<String, String> studyHash = new LinkedHashMap<>();
         String queryStr = "SELECT study_id FROM study WHERE completed = false "
                         + "AND dept_id = "
-                        + "(SELECT dept_id FROM user_account WHERE user_id = ?)";
+                        + "(SELECT dept_id FROM user_account WHERE user_id = ?) "
+                        + "ORDER BY study_id";
         
         try (PreparedStatement queryStm = conn.prepareStatement(queryStr)) {
             queryStm.setString(1, userID);
@@ -178,7 +179,7 @@ public abstract class StudyDB {
         String queryStr = "SELECT DISTINCT study_id FROM study st "
                         + "NATURAL JOIN submitted_job sj WHERE sj.status_id = 3 "
                         + "AND st.dept_id = (SELECT dept_id FROM user_account "
-                        + "WHERE user_id =?) AND st.completed = false";
+                        + "WHERE user_id =?) AND st.completed = false ORDER BY study_id";
         
         try (PreparedStatement queryStm = conn.prepareStatement(queryStr)) {
             queryStm.setString(1, userID);
