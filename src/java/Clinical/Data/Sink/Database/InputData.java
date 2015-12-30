@@ -3,6 +3,8 @@
  */
 package Clinical.Data.Sink.Database;
 
+import java.io.Serializable;
+
 /**
  * InputData is used to represent the input_data table in the database.
  * 
@@ -11,9 +13,11 @@ package Clinical.Data.Sink.Database;
  * 
  * Revision History
  * 16-Dec-2015 - Created with all the standard getters and setters.
+ * 30-Dec-2015 - To implement Serializable else will encounter 
+ * IllegalStateException : InstantiationException.
  */
 
-public class InputData {
+public class InputData implements Serializable {
     // input_data table attributes
     private String study_id, filename, filepath, description, date;
     private int sn;
