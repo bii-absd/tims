@@ -36,6 +36,8 @@ import org.apache.logging.log4j.LogManager;
  * PostConstruct phase.
  * 22-Dec-2015 - Added one attribute haveNewData, to indicate whether user
  * have new data to upload or not.
+ * 30-Dec-2015 - Updated proceedToConfig method to use the method setup from
+ * ConfigBean to setup the pipeline configuration.
  */
 
 @ManagedBean (name="menuSelectionBean")
@@ -79,9 +81,8 @@ public class MenuSelectionBean implements Serializable{
     // User selected Study to work on, and has decided to proceed to pipeline
     // configuration page.
     public String proceedToConfig() {
-        // Setup Study ID in pipeline configuration
-        ConfigBean.setStudyID(study_id);
-        ConfigBean.setHaveNewData(haveNewData);
+        // Setup pipeline configuration.
+        ConfigBean.setup(study_id, haveNewData);
         logger.debug(AuthenticationBean.getUserName() + ": selected " +
                      config_page);
         logger.debug(haveNewData?"User have new data to upload.":
