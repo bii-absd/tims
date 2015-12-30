@@ -24,6 +24,8 @@ import org.apache.logging.log4j.LogManager;
  * Revision History
  * 16-Dec-2015 - First baseline with three static methods, insertInputData, 
  * getIpList and getNextSn.
+ * 30-Dec-2015 - Updated getIpList to handle any SQLException thrown by
+ * the query.
  */
 
 public abstract class InputDataDB {
@@ -62,29 +64,33 @@ public abstract class InputDataDB {
         return result;
     }
     
-    // Return the list of input data details that belong to this study.
-    // Let the caller handle any exception that might be thrown here.
-    public static List<InputData> getIpList(String studyID) throws SQLException {
+    // Return the list of input data that belong to this study ID.
+    public static List<InputData> getIpList(String studyID) {
         // Only execute the query if the list is empty.
         if (ipList.isEmpty()) {
             String queryStr = "SELECT * FROM input_data WHERE study_id = ? "
                             + "ORDER BY sn";
-            PreparedStatement queryStm = conn.prepareStatement(queryStr);
-            queryStm.setString(1, studyID);
-            ResultSet rs = queryStm.executeQuery();
+            try (PreparedStatement queryStm = conn.prepareStatement(queryStr)) {
+                queryStm.setString(1, studyID);
+                ResultSet rs = queryStm.executeQuery();
             
-            while (rs.next()) {
-                InputData tmp = new InputData(rs.getString("study_id"),
-                                              rs.getString("filename"),
-                                              rs.getString("filepath"),
-                                              rs.getString("description"),
-                                              rs.getInt("sn"),
-                                              rs.getString("date"));
-                ipList.add(tmp);
+                while (rs.next()) {
+                    InputData tmp = new InputData(rs.getString("study_id"),
+                                                  rs.getString("filename"),
+                                                  rs.getString("filepath"),
+                                                  rs.getString("description"),
+                                                  rs.getInt("sn"),
+                                                  rs.getString("date"));
+                    ipList.add(tmp);
+                }
+                logger.debug("Query input data completed.");
             }
-            logger.debug("Query input data completed.");
+            catch (SQLException e) {
+                logger.debug("Failed to query input data!");
+                logger.debug(e.getMessage());
+            }
         }
-        
+
         return ipList;
     }
     
