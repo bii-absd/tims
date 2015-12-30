@@ -10,7 +10,6 @@
     <ui:define name="title">Finalize Study</ui:define>
     <ui:param name="link" value="Finalize Study"/>
     <ui:define name="content">
-    <p:growl id="finalizeMsg"/>
     <h:form id="studyForm">
         <p:panel header="Select Study to finalize (Subject meta data need to be setup before finalization.)">
             <p:selectOneMenu id="studyID" required="true" value="#{finalizedBean.study_id}">
@@ -80,19 +79,19 @@
                              update="subjectMDStatus @form"
                              action="#{finalizedBean.prepareForFinalization}"/>
         </p:panel>
-        <p:dialog header="Study Finalization Review" widgetVar="dlg" width="340px" 
-                  resizable="false" closable="false" modal="true">
+        <p:dialog header="Study Finalization Review" widgetVar="dlg" 
+                  width="440px" resizable="false" closable="false" modal="true">
             <h:outputText id="subjectMDStatus" 
                           value="#{finalizedBean.subMDAvailableStatus}" 
                           styleClass="preformatted"/>
             <p:separator style="height: 10px"/>
             <h:form>
                 <h:panelGrid columns="2" cellspacing="2" cellpadding="2">
-                    <p:commandButton value="Cancel" title="Do not proceed with the finalization" 
+                    <p:commandButton value="Cancel" title="Back to select job(s) for finalization" 
                                      style="width: 130px" oncomplete="PF('dlg').hide()" 
                                      action="#{finalizedBean.cancelFinalization}"/>
                     <p:commandButton value="Proceed" title="Proceed with the finalization" 
-                                     style="width: 130px" 
+                                     style="width: 130px" rendered="#{finalizedBean.allowToProceed}" 
                                      action="#{finalizedBean.proceedForFinalization}"/>
                 </h:panelGrid>
             </h:form>
