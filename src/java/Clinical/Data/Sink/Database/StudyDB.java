@@ -30,7 +30,9 @@ import org.apache.logging.log4j.LogManager;
  * 17-Dec-2015 - Added new method getAnnotVer, to return the Annotation Version
  * used in the study.
  * 23-Dec-2015 - To close the ResultSet after use. Added 3 new methods, 
- * updateStudyToCompleted, updateStudyFinalizedFile and getFinalizeStudyHash.
+ * updateStudyToCompleted, updateStudyFinalizedFile and getFinalizableStudyHash.
+ * 30-Dec-2015 - Updated the query in method getStudyHash, to return only
+ * uncompleted study.
  */
 
 public abstract class StudyDB {
@@ -145,11 +147,12 @@ public abstract class StudyDB {
         return annotHash;
     }
     
-    // Return the list of Study ID setup for the department that this
-    // user ID belongs to.
+    // Return the list of uncompleted Study ID setup under the department that 
+    // this user ID belongs to.
     public static LinkedHashMap<String, String> getStudyHash(String userID) {
         LinkedHashMap<String, String> studyHash = new LinkedHashMap<>();
-        String queryStr = "SELECT study_id FROM study WHERE dept_id = "
+        String queryStr = "SELECT study_id FROM study WHERE completed = false "
+                        + "AND dept_id = "
                         + "(SELECT dept_id FROM user_account WHERE user_id = ?)";
         
         try (PreparedStatement queryStm = conn.prepareStatement(queryStr)) {
@@ -170,7 +173,7 @@ public abstract class StudyDB {
     
     // Return the list of unfinalized Study ID that has completed job(s), and 
     // belongs to the department that this user ID come from.
-    public static LinkedHashMap<String, String> getFinalizeStudyHash(String userID) {
+    public static LinkedHashMap<String, String> getFinalizableStudyHash(String userID) {
         LinkedHashMap<String, String> finStudyHash = new LinkedHashMap<>();
         String queryStr = "SELECT DISTINCT study_id FROM study st "
                         + "NATURAL JOIN submitted_job sj WHERE sj.status_id = 3 "
