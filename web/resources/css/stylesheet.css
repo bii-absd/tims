@@ -5,6 +5,9 @@
                  presentation of the xhtml web pages found in the application.
 */
 
+/* Style defined for displaying the datalist items in the dialog for both
+   gex-affymetrix and gex-illumina views.
+*/
 .datalist .ui-widget-content {
     border: none;
 }
@@ -12,13 +15,9 @@
     text-align: left;
 }
 
-.loginpage.ui-panelgrid>*>tr,
-.loginpage.ui-panelgrid .ui-panelgrid-cell {
-    border: none;
-}
-.grid-main {
-    width: 100%;
-}
+/* Styles defined for keeping the login page layout in proportion for all 
+   window sizes.
+*/
 .grid-left {
     width: 35%;
 }
@@ -31,6 +30,8 @@
     width: 35%;
 }
 
+/* Style defined for displaying the application name at the login page.
+*/
 .app-name {
     font-family: "Comic Sans MS", cursive, sans-serif;
     font-weight: 900;
@@ -39,18 +40,8 @@
     color: rgb(0,124,188);
 }
 
-.element-spacing {
-    margin: 0.1em;
-}
-
-.button {
-    width: 215px;
-}
-
-.inputtext {
-    border-width: thin;
-}
-
+/* Style defined for displaying the input box at the login page.
+*/
 .login-box {
     border-style: solid;
     border-width: thick;
@@ -59,69 +50,56 @@
     font-size: 10pt;
 }
 
+/* Style defined for displaying the title in p:tab
+*/
 .tab-title {
     font-family: "Comic Sans MS", cursive, sans-serif;
 }
 
+/* Style defined for displaying the button found in a panelGrid.
+*/
 .panel-button {
     margin-top: 0.5em;
     width: 180px;
 }
 
-.page-border {
-    width: 100%;
-    margin-top: 0.5em;
-    border-style: solid;
-    border-width: thick;
-    border-spacing: 15px;
-    font-family: courier, arial, monospace;
-    border-color: rgb(204,204,204);
-}
-
+/* Style defined for displaying the error message in h:message.
+*/
 .errors {
     font-family: courier, arial, monospace;
     font-size: 9pt;
     color: red;
 }
 
+/* Style defined for displaying the divider at the bottom of every page.
+*/
 .underline {
     margin-top: 3em;
     color: rgb(204,204,204);
-    size: 5px;
 }
 
+/* Style defined for displaying the division and group identification at the 
+   bottem of every page.
+*/
 .alignleft {
     float: left;
     color: rgb(204,204,204);
 }
-
 .alignright {
     float: right;
     color: rgb(204,204,204);
 }
 
-.clock {
-    margin-top: 2em;
-    float: right;
-    font-family: courier, arial, monospace;
-    font-size: 10pt;
-}
-
-.aligncentre {
-    text-align: center;
-}
-
+/* Style defined for displaying the title for the menuitem under the 
+   breadCrumb.
+*/
 .subheading {
     font-family: "Comic Sans MS", cursive, sans-serif;
     font-size: 11pt;
 }
 
-.page {
-    font-family: courier, arial, monospace;
-    font-size: 10pt;
-    text-align: left;
-}
-
+/* Style defined for displaying the user info at every page after the login.
+*/
 .user-info {
     font-family: courier, arial, monospace;
     font-size: 9pt;
@@ -129,27 +107,105 @@
     float: right;
 }
 
-.header {
-    margin-bottom: 1em;
-}
-
+/* Style defined for displaying the odd and even rows in the datatable. 
+*/
 .table-odd-row .ui-datatable-odd {
     font-family: courier, arial, monospace;
     font-size: 10pt;
     background-color: rgb(232, 255, 225);
 }
-
 .table-even-row .ui-datatable-even {
     font-family: courier, arial, monospace;
     font-size: 10pt;
     background-color: rgb(233, 249, 244);
 }
 
-.label {
+/* Style defined for the input label at clinicaldatamanagement.xhtml 
+*/
+.inputlabel {
     font-size: 14px;
 }
 
-/* To replace the \n with <br /> in outputText */
+/* To replace the \n with <br /> in outputText. 
+*/
 .preformatted {
     white-space: pre-wrap;
+    font-family: courier, arial, monospace;
+    font-size: 12px;
+}
+
+
+//
+// The following styles will be removed after monitoring for a short while
+//
+
+/* Not in use anymore. To be removed! */
+.grid-mainx {
+//    width: 100%;
+}
+
+/* Used in pageTemplate.xhtml, to define the spacing between the first panelGrid
+   and the breadCrumb.
+   Not in use anymore; to be removed!
+*/
+.header {
+//    margin-bottom: 1em;
+}
+
+/* Not in use anymore */
+.loginpage.ui-panelgrid>*>tr,
+.loginpage.ui-panelgrid .ui-panelgrid-cell {
+//    border: none;
+}
+
+/* Not in use anymore */
+.element-spacing {
+//    margin: 0.1em;
+}
+
+/* Not in use anymore */
+.button {
+//    width: 215px;
+}
+
+// Not in use
+.inputtext {
+//    border-width: thin;
+}
+
+// Not in use anymore.
+.page-border {
+/*
+    width: 100%;
+    margin-top: 0.5em;
+    border-style: solid;
+    border-width: thick;
+    border-spacing: 15px;
+    font-family: courier, arial, monospace;
+    border-color: rgb(204,204,204);
+*/
+}
+
+// Not in use
+.clock {
+/*
+    margin-top: 2em;
+    float: right;
+    font-family: courier, arial, monospace;
+    font-size: 10pt;
+*/
+}
+
+// Not in use
+.aligncentre {
+//    text-align: center;
+}
+
+// Not in use anymore
+.page {
+/*
+    font-family: courier, arial, monospace;
+    font-size: 10pt;
+    text-align: left;
+*/
 }
