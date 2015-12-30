@@ -49,6 +49,8 @@ import org.apache.logging.log4j.LogManager;
  * study module.
  * 24-Dec-2015 - Added one method, getOutputPath to retrieve the output 
  * filepath of the submitted job.
+ * 30-Dec-2015 - Changed the query in method querySubmittedJob; to include
+ * jobs that are in finalized stage.
  */
 
 public abstract class SubmittedJobDB {
@@ -210,11 +212,10 @@ public abstract class SubmittedJobDB {
         // Only execute the query if the list is empty
         // This is to prevent the query from being run multiple times.
         if (submittedJobs.isEmpty()) {
-            // Don't retrieve those jobs which are in finalizing or finalized
-            // stages.
+            // Don't retrieve those jobs which are in finalizing stage.
             String queryStr = "SELECT job_id, study_id, pipeline_name, "
                     + "status_id, submit_time, output_file, report FROM "
-                    + "submitted_job WHERE user_id = ? AND status_id NOT IN (4,5) "
+                    + "submitted_job WHERE user_id = ? AND status_id NOT IN (4) "
                     + "ORDER BY job_id DESC"; 
 
             // Additional logging to get the logger context
