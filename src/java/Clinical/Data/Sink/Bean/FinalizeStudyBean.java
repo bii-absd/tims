@@ -20,8 +20,10 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import javax.annotation.PostConstruct;
+import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
+import javax.faces.context.FacesContext;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -41,6 +43,10 @@ import org.apache.logging.log4j.LogManager;
  * attributes dept_id, subMDAvailableStatus, selectedJob0, selectedJob1 & 
  * selectedJob2. Added 3 new methods proceedForFinalization, 
  * checkSubMDAvailability & cancelFinalization.
+ * 30-Dec-2015 - Added one new attribute allowToProceed, which set the condition
+ * for allowing the user to proceed with the finalization or not. Improved
+ * method prepareForFinalization; to check whether the user has selected at
+ * least one job for finalization.
  */
 
 @ManagedBean (name="finalizedBean")
@@ -59,6 +65,7 @@ public class FinalizeStudyBean implements Serializable {
     private List<FinalizingJobEntry> selectedJobs = new ArrayList<>();
     private List<List<FinalizingJobEntry>> jobEntryLists = 
             new ArrayList<List<FinalizingJobEntry>>();
+    private Boolean allowToProceed;
         
     public FinalizeStudyBean() {
         dept_id = UserAccountDB.getDeptID(AuthenticationBean.getUserName());
@@ -71,7 +78,7 @@ public class FinalizeStudyBean implements Serializable {
     public void init() {
         // Get the list of study from the user's department that has 
         // completed job(s).
-        studyHash = StudyDB.getFinalizeStudyHash
+        studyHash = StudyDB.getFinalizableStudyHash
                     (AuthenticationBean.getUserName());
     }
     
@@ -85,45 +92,62 @@ public class FinalizeStudyBean implements Serializable {
 
     // User has clicked on the Finalize button, need to prepare for the dialog
     // to display to user; to seek for final confirmation to proceed.
-    public void prepareForFinalization() {
-        // Store the subject ID that doesn't have meta data in the database.
-        StringBuilder subMetaDataNotFound = new StringBuilder();
-        selectedJobs.add(0, selectedJob0);
-        selectedJobs.add(1, selectedJob1);
-        selectedJobs.add(2, selectedJob2);
-        
+    public String prepareForFinalization() {
+        FacesContext fc = FacesContext.getCurrentInstance();
+        allowToProceed = true;
         logger.info("Preparing for Study finalization.");
-        // Check for subject meta data availability, and prepare the status
-        // update string.
-        for (FinalizingJobEntry job : selectedJobs) {
-            try {
-                if (job != null) {
-                    checkSubMDAvailability(job.getJob_id(), subMetaDataNotFound);                    
-                }
-            }
-            catch (SQLException e) {
-                // Error in checking the database for subject meta data, need 
-                // to stop the user from proceeding.
-                logger.error("SQLException when checking for subject meta data availability!");
-                logger.error(e.getMessage());
-                //return Constants.ERROR;
-            }
-        }
-
-        if (subMetaDataNotFound.toString().isEmpty()) {
+        // Check whether the user select any of the job.
+        if ((selectedJob0==null) && (selectedJob1==null) && (selectedJob2==null)) {
+            // None of the job has been selected, display error message and
+            // return to the same page.
+            allowToProceed = false;
             subMDAvailableStatus = 
-                    "All the subject's meta data are found in the database.\n" +
-                    "Please proceed with the finalization of this Study.";
-            logger.debug("All the subject meta data is found.");
+                    "No job has been selected for finalization.\n" +
+                    "\nPlease select the job(s) to be finalize before proceeding.\n";
+            logger.debug("No job has been selected for finalization.");
         }
         else {
-            subMDAvailableStatus = 
+            // At least one job has been selected, continue.
+            // Strig to store the subject ID that doesn't have meta data.
+            StringBuilder subMetaDataNotFound = new StringBuilder();
+            selectedJobs.add(0, selectedJob0);
+            selectedJobs.add(1, selectedJob1);
+            selectedJobs.add(2, selectedJob2);
+        
+            // Check for subject meta data availability, and prepare the 
+            // status update string.
+            for (FinalizingJobEntry job : selectedJobs) {
+                try {
+                    if (job != null) {
+                        checkSubMDAvailability(job.getJob_id(), 
+                                subMetaDataNotFound);                    
+                    }
+                }
+                catch (SQLException|IOException e) {
+                    // Error when checking for subject meta data. 
+                    // Stop the finalization process and go to error page.
+                    logger.error("Failed to check for subject meta data availability!");
+                    logger.error(e.getMessage());
+                    return Constants.ERROR;
+                }
+            }
+
+            if (subMetaDataNotFound.toString().isEmpty()) {
+                subMDAvailableStatus = 
+                    "All the subject's meta data are found in the database.\n" +
+                    "\nPlease proceed with the finalization of this Study.\n";
+                logger.debug("All the subject meta data is found.");
+            }
+            else {
+                subMDAvailableStatus = 
                     "The following subject's meta data are not found in the database:\n" +
                     subMetaDataNotFound +
-                    "\nPlease upload the subject's meta data before proceeding with the" + 
-                    "\nfinalization of this Study.";
-            logger.debug("Subject meta data not found: " + subMetaDataNotFound);
+                    "\n\nPlease upload the subject's meta data before proceeding with the" + 
+                    "\nfinalization of this Study.\n";
+                logger.debug("Subject meta data not found: " + subMetaDataNotFound);
+            }
         }
+        return null;
     }
     
     // User has clicked on the Proceed button in the dialog; proceed with the 
@@ -151,27 +175,21 @@ public class FinalizeStudyBean implements Serializable {
     // Check the database for subject meta data. Construct a string with all
     // those subject ID having no meta data in the database.
     private void checkSubMDAvailability(int jobID, StringBuilder metaDataNotFound) 
-            throws SQLException {
-        try {
-            BufferedReader br = new BufferedReader(
-                    new FileReader(SubmittedJobDB.getOutputPath(jobID)));
-            String subjectLine = br.readLine();
-            String[] subjectID = subjectLine.split("\t");
-            // Ignore the first 2 strings (i.e. geneID and EntrezID); start at ndex 2.
-            for (int i = 2; i < subjectID.length; i++) {
-                // If subject meta data is not found in the database.
-                if (!SubjectDB.isSubjectExistInDept(subjectID[i], dept_id)) {
-                    // Only want to store the unqiue subject ID that doesn't
-                    // have meta data in the database.
-                    if (!metaDataNotFound.toString().contains(subjectID[i])) {
-                        metaDataNotFound.append(subjectID[i]).append(" ");                        
-                    }
+            throws SQLException, IOException {
+        BufferedReader br = new BufferedReader(new FileReader
+                            (SubmittedJobDB.getOutputPath(jobID)));
+        String subjectLine = br.readLine();
+        String[] subjectID = subjectLine.split("\t");
+        // Ignore the first 2 strings (i.e. geneID and EntrezID); start at ndex 2.
+        for (int i = 2; i < subjectID.length; i++) {
+            // Check is subject meta data found in the database.
+            if (!SubjectDB.isSubjectExistInDept(subjectID[i], dept_id)) {
+                // Only want to store the unqiue subject ID that doesn't
+                // have meta data in the database.
+                if (!metaDataNotFound.toString().contains(subjectID[i])) {
+                    metaDataNotFound.append(subjectID[i]).append(" ");                        
                 }
             }
-        }
-        catch (IOException ioe) {
-            logger.error("Failed to read pipeline output file!");
-            logger.error(ioe.getMessage());
         }
     }
 
@@ -279,5 +297,8 @@ public class FinalizeStudyBean implements Serializable {
     }
     public void setSubMDAvailableStatus(String subMDAvailableStatus) {
         this.subMDAvailableStatus = subMDAvailableStatus;
+    }
+    public Boolean getAllowToProceed() {
+        return allowToProceed;
     }
 }
