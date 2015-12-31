@@ -10,9 +10,8 @@
     <ui:define name="title">GEX Pipeline (Illumina)</ui:define>
     <ui:param name="link" value="#{gexIlluminaBean.breadCrumbLink}"/>
     <ui:define name="content">
-        <h:form id="mainForm" enctype="multipart/form-data">
-            <p:panel id="inputcontrol" visible="#{gexIlluminaBean.haveNewData}" 
-                     header="Upload Sample and Control Probe Files">
+        <h:form enctype="multipart/form-data">
+            <p:panel id="inputcontrol" header="Upload Sample and Control Probe Files">
                 <p:growl id="uploadStatus" sticky="true"/>
                 <p:fileUpload mode="advanced" update="uploadStatus" 
                               label="Select Sample File"
@@ -28,7 +27,7 @@
                               label="Select Control File"
                               fileUploadListener="#{gexIlluminaBean.ctrlFile.singleFileUploadListener}"/>
             </p:panel>
-            <p:panel id="sample" visible="#{gexIlluminaBean.haveNewData}"
+            <p:panel id="sample" 
                      header="Upload Samples Annotation File 
                      (Please upload this file for the Phenotype Column and 
                      Sample Averaging to be enable)">
@@ -36,28 +35,6 @@
                               update="uploadStatus phenotype averaging"
                               label="Select Samples Annotation File"
                               fileUploadListener="#{gexIlluminaBean.sampleAnnotFileUploadListener}"/>
-            </p:panel>
-
-            <p:panel id="reuseInput" visible="#{!gexIlluminaBean.haveNewData}" 
-                     header="Select Input Data to Reuse">
-                <p:dataTable id="inputTable" var="reuseIP" 
-                             value="#{gexIlluminaBean.inputDataList}" 
-                             selection="#{gexIlluminaBean.selectedInput}" 
-                             rowKey="#{reuseIP.sn}" 
-                             styleClass="table-odd-row table-even-row">
-                    <p:column headerText="Data Upload Date" 
-                              style="width: 150px; text-align: center">
-                        <h:outputText value="#{reuseIP.date}"/>
-                    </p:column>
-                    <p:column headerText="Data Description">
-                        <h:outputText value="#{reuseIP.description}"/>
-                    </p:column>
-                    <p:column headerText="Select Data to Reuse" selectionMode="single" 
-                              style="width: 120px; text-align: center"/>
-                    <p:ajax event="rowSelectRadio" 
-                            listener="#{gexIlluminaBean.reuseInputRadioButtonSelected}"
-                            update=":mainForm:phenotype :mainForm:averaging"/>
-                </p:dataTable>
             </p:panel>
 
             <p:panel id="processparameters" header="Processing Parameters">
@@ -143,23 +120,13 @@
                     <h:outputText value="Study ID: "/>
                     <h:outputText value="#{gexIlluminaBean.studyID}"/>
                     <h:outputText value="Type: "/>
-                    <h:outputText value="#{gexIlluminaBean.type}"/>
-                    <h:outputText rendered="#{!gexIlluminaBean.haveNewData}" 
-                                  value="Reusing data uploaded on: "/>
-                    <h:outputText rendered="#{!gexIlluminaBean.haveNewData}" 
-                                  value="#{gexIlluminaBean.reuseInputDate}"/>
-                    <h:outputText rendered="#{gexIlluminaBean.haveNewData}" 
-                                  value="Sample File: "/>
-                    <h:outputText rendered="#{gexIlluminaBean.haveNewData}" 
-                                  value="#{gexIlluminaBean.inputFile.inputFilename}"/>
-                    <h:outputText rendered="#{gexIlluminaBean.haveNewData}" 
-                                  value="Control File: "/>
-                    <h:outputText rendered="#{gexIlluminaBean.haveNewData}" 
-                                  value="#{gexIlluminaBean.ctrlFile.inputFilename}"/>
-                    <h:outputText rendered="#{gexIlluminaBean.haveNewData}" 
-                                  value="Samples Annotation File: "/>
-                    <h:outputText rendered="#{gexIlluminaBean.haveNewData}" 
-                                  value="#{gexIlluminaBean.sampleFile.inputFilename}"/>
+                    <h:outputText value="#{gexIlluminaBean.type}"/> 
+                    <h:outputText value="Sample File: "/>
+                    <h:outputText value="#{gexIlluminaBean.inputFile.inputFilename}"/>
+                    <h:outputText value="Control File: "/>
+                    <h:outputText value="#{gexIlluminaBean.ctrlFile.inputFilename}"/>
+                    <h:outputText value="Samples Annotation File: "/>
+                    <h:outputText value="#{gexIlluminaBean.sampleFile.inputFilename}"/>
                     <h:outputText value="Probe Filtering: "/>
                     <p:dataList itemType="square" value="#{gexIlluminaBean.probeFilters}" 
                                 var="probe" styleClass="datalist" type="none">
