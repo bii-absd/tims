@@ -124,7 +124,7 @@ public abstract class UserAccountDB {
                                        rs.getString("last_login"));
                 
             }
-            rs.close();
+//            rs.close();
             logger.debug("For Job ID " + jobID + " User ID is " +
                     rs.getString("user_id"));
         }
