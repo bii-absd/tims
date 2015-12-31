@@ -1,5 +1,5 @@
 /*
- * Copyright @2015
+ * Copyright @2015-2016
  */
 package Clinical.Data.Sink.Database;
 
@@ -26,6 +26,8 @@ import org.apache.logging.log4j.LogManager;
  * getIpList and getNextSn.
  * 30-Dec-2015 - Updated getIpList to handle any SQLException thrown by
  * the query.
+ * 31-Dec-2015 - Removed attribute ipList, and updated getIpList to always 
+ * query the database for the input_data details.
  */
 
 public abstract class InputDataDB {
@@ -33,7 +35,6 @@ public abstract class InputDataDB {
     private final static Logger logger = LogManager.
             getLogger(InputDataDB.class.getName());
     private final static Connection conn = DBHelper.getDBConn();
-    private static List<InputData> ipList = new ArrayList<>();
     
     // Insert the new input data detail into database.
     public static Boolean insertInputData(InputData idata) {
@@ -50,8 +51,6 @@ public abstract class InputDataDB {
             insertStm.setString(6, idata.getDate());
             
             insertStm.executeUpdate();
-            // Clear the input data detail list, so that it will be rebuild.
-            ipList.clear();
             logger.debug("New input data detail inserted into database: " +
                         idata.getStudy_id() + " - SN: " + idata.getSn());
         }
@@ -66,29 +65,28 @@ public abstract class InputDataDB {
     
     // Return the list of input data that belong to this study ID.
     public static List<InputData> getIpList(String studyID) {
-        // Only execute the query if the list is empty.
-        if (ipList.isEmpty()) {
-            String queryStr = "SELECT * FROM input_data WHERE study_id = ? "
-                            + "ORDER BY sn";
-            try (PreparedStatement queryStm = conn.prepareStatement(queryStr)) {
-                queryStm.setString(1, studyID);
-                ResultSet rs = queryStm.executeQuery();
+        List<InputData> ipList = new ArrayList<>();
+        String queryStr = "SELECT * FROM input_data WHERE study_id = ? "
+                        + "ORDER BY sn";
+        
+        try (PreparedStatement queryStm = conn.prepareStatement(queryStr)) {
+            queryStm.setString(1, studyID);
+            ResultSet rs = queryStm.executeQuery();
             
-                while (rs.next()) {
-                    InputData tmp = new InputData(rs.getString("study_id"),
-                                                  rs.getString("filename"),
-                                                  rs.getString("filepath"),
-                                                  rs.getString("description"),
-                                                  rs.getInt("sn"),
-                                                  rs.getString("date"));
-                    ipList.add(tmp);
-                }
-                logger.debug("Query input data completed.");
+            while (rs.next()) {
+                InputData tmp = new InputData(rs.getString("study_id"),
+                                              rs.getString("filename"),
+                                              rs.getString("filepath"),
+                                              rs.getString("description"),
+                                              rs.getInt("sn"),
+                                              rs.getString("date"));
+                ipList.add(tmp);
             }
-            catch (SQLException e) {
-                logger.debug("Failed to query input data!");
-                logger.debug(e.getMessage());
-            }
+            logger.debug("Query input data completed.");
+        }
+        catch (SQLException e) {
+            logger.debug("Failed to query input data!");
+            logger.debug(e.getMessage());
         }
 
         return ipList;
