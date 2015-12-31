@@ -33,6 +33,7 @@ import javax.faces.bean.ViewScoped;
  * Sample annotation file will be having the same common name for all pipelines.
  * 22-Dec-2015 - Control probe file will be having the same common name for all
  * pipelines.
+ * 31-Dec-2015 - Implemented the module for reusing the input data.
  */
 
 @ManagedBean (name="gexAffymetrixBean")
@@ -53,11 +54,26 @@ public class GEXAffymetrixBean extends ConfigBean {
 
     @Override
     public void updateJobSubmissionStatus() {
-        // Only update the jobSubmissionStatus if all the input files are 
-        // uploaded.
-        if (!(inputFile.isFilelistEmpty() || sampleFile.isFilelistEmpty())) {
-            inputFile.createInputList();
-            setJobSubmissionStatus(true);
+        if (!haveNewData) {
+            // Only update the jobSubmissionStatus if data has been selected 
+            // for reuse.
+            if (selectedInput != null) {
+                setJobSubmissionStatus(true);
+                logger.debug("Data uploaded on " + selectedInput.getDate() + 
+                             " has been selected for reuse.");
+            }
+            else {
+                // No data is being selected for reuse, display error message.
+                logger.debug("No data selected for reuse!");                
+            }
+        }
+        else {
+            // Only update the jobSubmissionStatus if all the input files are 
+            // uploaded.
+            if (!(inputFile.isFilelistEmpty() || sampleFile.isFilelistEmpty())) {
+                inputFile.createInputList();
+                setJobSubmissionStatus(true);
+            }
         }
     }
     
@@ -110,19 +126,22 @@ public class GEXAffymetrixBean extends ConfigBean {
         }
     }
     
-    @Override
-    public void renameAnnotCtrlFiles() {
-        sampleFile.renameAnnotFile();
-    }
-    
     // Make the necessary setup to those attributes that are relevant to this
     // pipeline, and then call the base class method to create the Config File.
     @Override
     public Boolean createConfigFile() {
-        input = inputFile.getLocalDirectoryPath();
-        sample = sampleFile.getLocalDirectoryPath() + 
-                 Constants.getSAMPLE_ANNOT_FILE_NAME() + 
-                 Constants.getSAMPLE_ANNOT_FILE_EXT();
+        if (haveNewData) {
+            input = inputFile.getLocalDirectoryPath();
+            sample = sampleFile.getLocalDirectoryPath() + 
+                     Constants.getSAMPLE_ANNOT_FILE_NAME() + 
+                     Constants.getSAMPLE_ANNOT_FILE_EXT();
+        }
+        else {
+            input = selectedInput.getFilepath();
+            sample = selectedInput.getFilepath() + 
+                     Constants.getSAMPLE_ANNOT_FILE_NAME() + 
+                     Constants.getSAMPLE_ANNOT_FILE_EXT();
+        }
         // Call the base class method to create the Config File.        
         return super.createConfigFile();
     }
