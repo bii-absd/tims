@@ -10,8 +10,9 @@
     <ui:define name="title">GEX Pipeline (Affymetrix)</ui:define>
     <ui:param name="link" value="#{gexAffymetrixBean.breadCrumbLink}"/>
     <ui:define name="content">
-        <h:form enctype="multipart/form-data">
-            <p:panel id="inputfile" header="Upload Sample Probe Files">
+        <h:form id="mainForm" enctype="multipart/form-data">
+            <p:panel id="inputfile" visible="#{gexAffymetrixBean.haveNewData}" 
+                     header="Upload Sample Probe Files">
                 <p:growl id="uploadStatus" sticky="true"/>
                 <p:fileUpload mode="advanced" multiple="true"
                               update="uploadStatus" 
@@ -25,7 +26,7 @@
                 <p:watermark for="inputdescription" 
                              value="Enter a brief description of the Sample File here."/>
             </p:panel>
-            <p:panel id="annotfile"
+            <p:panel id="annotfile" visible="#{gexAffymetrixBean.haveNewData}"
                      header="Upload Samples Annotation File 
                      (Please upload this file for the Phenotype Column and 
                      Sample Averaging to be enable)">
@@ -33,6 +34,28 @@
                               update="uploadStatus phenotype averaging"
                               label="Select Samples Annotation File"
                               fileUploadListener="#{gexAffymetrixBean.sampleAnnotFileUploadListener}"/>
+            </p:panel>
+            
+            <p:panel id="reuseInput" visible="#{!gexAffymetrixBean.haveNewData}" 
+                     header="Select Input Data to Reuse">
+                <p:dataTable id="inputTable" var="reuseIP" 
+                             value="#{gexAffymetrixBean.inputDataList}" 
+                             selection="#{gexAffymetrixBean.selectedInput}" 
+                             rowKey="#{reuseIP.sn}" 
+                             styleClass="table-odd-row table-even-row">
+                    <p:column headerText="Data Upload Date" 
+                              style="width: 150px; text-align: center">
+                        <h:outputText value="#{reuseIP.date}"/>
+                    </p:column>
+                    <p:column headerText="Data Description">
+                        <h:outputText value="#{reuseIP.description}"/>
+                    </p:column>
+                    <p:column headerText="Select Data to Reuse" selectionMode="single" 
+                              style="width: 120px; text-align: center"/>
+                    <p:ajax event="rowSelectRadio" 
+                            listener="#{gexAffymetrixBean.reuseInputRadioButtonSelected}"
+                            update=":mainForm:phenotype :mainForm:averaging"/>
+                </p:dataTable>
             </p:panel>
             
             <p:panel id="processparameters" header="Processing Parameters">
@@ -118,15 +141,23 @@
                     <h:outputText value="Study ID: "/>
                     <h:outputText value="#{gexAffymetrixBean.studyID}"/>
                     <h:outputText value="Type: "/>
-                    <h:outputText value="#{gexAffymetrixBean.type}"/> 
-                    <h:outputText value="Sample File: "/>
+                    <h:outputText value="#{gexAffymetrixBean.type}"/>
+                    <h:outputText rendered="#{!gexAffymetrixBean.haveNewData}" 
+                                  value="Reusing data uploaded on: "/>
+                    <h:outputText rendered="#{!gexAffymetrixBean.haveNewData}" 
+                                  value="#{gexAffymetrixBean.reuseInputDate}"/>
+                    <h:outputText rendered="#{gexAffymetrixBean.haveNewData}" 
+                                  value="Sample File: "/>
                     <p:dataList itemType="square" 
+                                rendered="#{gexAffymetrixBean.haveNewData}"
                                 value="#{gexAffymetrixBean.inputFile.inputFileList}"
                                 var="filelist" styleClass="datalist" type="none">
                         <h:outputText value="#{filelist}"/><br/>
                     </p:dataList>
-                    <h:outputText value="Samples Annotation File: "/>
-                    <h:outputText value="#{gexAffymetrixBean.sampleFile.inputFilename}"/>
+                    <h:outputText rendered="#{gexAffymetrixBean.haveNewData}" 
+                                  value="Samples Annotation File: "/>
+                    <h:outputText rendered="#{gexAffymetrixBean.haveNewData}" 
+                                  value="#{gexAffymetrixBean.sampleFile.inputFilename}"/>
                     <h:outputText value="Probe Filtering: "/>
                     <h:outputText value="#{gexAffymetrixBean.probeFilter}"/>
                     <h:outputText value="Normalization: "/>
