@@ -1,5 +1,5 @@
 /*
- * Copyright @2015
+ * Copyright @2015-2016
  */
 package Clinical.Data.Sink.Database;
 
@@ -26,6 +26,7 @@ import org.apache.logging.log4j.LogManager;
  * querySubject and clearSubList().
  * 14-Dec-2015 - Added new method, updateSubject.
  * 28-Dec-2015 - Added new method, isSubjectExistInDept.
+ * 04-Jan-2016 - Fix the bug in updateSubject (i.e. to setup the 6th parameter).
  */
 
 public abstract class SubjectDB {
@@ -78,12 +79,13 @@ public abstract class SubjectDB {
             updateStm.setString(3, subject.getRace());
             updateStm.setFloat(4, subject.getHeight());
             updateStm.setFloat(5, subject.getWeight());
+            updateStm.setString(6, subject.getSubject_id());
             
             updateStm.executeUpdate();
             logger.debug("Updated subject meta data: " + subject.getSubject_id());
         }
         catch (SQLException e) {
-            logger.error("SQLException when updating subject meta data!");
+            logger.error("Failed to update subject meta data!");
             logger.error(e.getMessage());
             result = Constants.NOT_OK;
         }
@@ -98,7 +100,8 @@ public abstract class SubjectDB {
         PreparedStatement queryStm = conn.prepareStatement(queryStr);
         queryStm.setString(1, deptID);
         ResultSet rs = queryStm.executeQuery();
-                
+        subList.clear();
+
         while (rs.next()) {
             Subject tmp = new Subject(
                             rs.getString("subject_id"),
