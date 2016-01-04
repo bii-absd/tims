@@ -180,6 +180,8 @@ public abstract class ConfigBean implements Serializable {
             }
         }
         else {
+            // Only construct the selection list if an input data has been
+            // selected for reuse and the selection list has yet to be build.
             if ((selectedInput != null) && annotationList.isEmpty()) {
                 file = new File(selectedInput.getFilepath() +
                                      Constants.getSAMPLE_ANNOT_FILE_NAME() +
