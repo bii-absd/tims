@@ -12,43 +12,6 @@
     <ui:define name="content">
     <p:growl id="studyMsg"/>
     <p:accordionPanel>
-        <p:tab id="addStudy" title="Create New Study" titleStyleClass="tab-title">
-        <h:form id="addStudyForm">
-            <h:panelGrid columns="3" border="0" cellpadding="4" cellspacing="2">
-                <p:inputText id="studyid" size="32" autocomplete="off" 
-                             required="true" value="#{studyMgntBean.study_id}"/>
-                <h:message id="studyid-status" for="studyid" styleClass="errors"/>
-                <p:watermark for="studyid" value="New Study ID"/>
-                
-                <p:multiSelectListbox value="#{studyMgntBean.dept_id}" 
-                                      effect="slide" header="For Institution - Department" 
-                                      showHeaders="true">
-                    <f:selectItems value="#{studyMgntBean.grouping}"/>
-                </p:multiSelectListbox>
-                <h:panelGroup/>
-                <h:panelGroup/>
-                
-                <p:selectOneMenu id="annot" required="true" 
-                                 value="#{studyMgntBean.annot_ver}" 
-                                 style="width: 180px">
-                    <f:selectItem itemLabel="Select Annotation Version" itemValue=""/>
-                    <f:selectItems value="#{studyMgntBean.annotList}"/>
-                </p:selectOneMenu>
-                <h:message id="annot-status" for="annot" styleClass="errors"/>
-                <h:panelGroup/>
-                
-                <p:inputTextarea id="descript" cols="32" rows="3" value="#{studyMgntBean.description}"/>
-                <p:watermark for="descript" value="Enter description of this study here"/>
-                <h:panelGroup/>
-                
-                <h:commandButton action="#{studyMgntBean.createNewStudy}" 
-                                 value="Create New Study" 
-                                 styleClass="panel-button" 
-                                 style="font-size: 12px"/>
-            </h:panelGrid>
-        </h:form>
-        </p:tab>
-        
         <p:tab id="editStudy" title="Edit Study" titleStyleClass="tab-title">
         <h:form id="editStudyForm">
             <p:dataTable var="study" rows="10" id="studyTable" 
@@ -107,6 +70,43 @@
             </p:dataTable>
         </h:form>
         </p:tab>
+
+        <p:tab id="addStudy" title="Create New Study" titleStyleClass="tab-title">
+        <h:form id="addStudyForm">
+            <h:panelGrid columns="3" border="0" cellpadding="4" cellspacing="2">
+                <p:inputText id="studyid" size="32" autocomplete="off" 
+                             required="true" value="#{studyMgntBean.study_id}"/>
+                <h:message id="studyid-status" for="studyid" styleClass="errors"/>
+                <p:watermark for="studyid" value="New Study ID"/>
+                
+                <p:multiSelectListbox value="#{studyMgntBean.dept_id}" 
+                                      effect="slide" header="For Institution - Department" 
+                                      showHeaders="true">
+                    <f:selectItems value="#{studyMgntBean.grouping}"/>
+                </p:multiSelectListbox>
+                <h:panelGroup/>
+                <h:panelGroup/>
+                
+                <p:selectOneMenu id="annot" required="true" 
+                                 value="#{studyMgntBean.annot_ver}" 
+                                 style="width: 180px">
+                    <f:selectItem itemLabel="Select Annotation Version" itemValue=""/>
+                    <f:selectItems value="#{studyMgntBean.annotList}"/>
+                </p:selectOneMenu>
+                <h:message id="annot-status" for="annot" styleClass="errors"/>
+                <h:panelGroup/>
+                
+                <p:inputTextarea id="descript" cols="32" rows="3" value="#{studyMgntBean.description}"/>
+                <p:watermark for="descript" value="Enter description of this study here"/>
+                <h:panelGroup/>
+                
+                <h:commandButton action="#{studyMgntBean.createNewStudy}" 
+                                 value="Create New Study" 
+                                 styleClass="panel-button" 
+                                 style="font-size: 12px"/>
+            </h:panelGrid>
+        </h:form>
+        </p:tab>        
     </p:accordionPanel>
     </ui:define>
 </ui:composition>

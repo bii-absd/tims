@@ -12,85 +12,6 @@
     <ui:define name="content">
         <p:growl id="itemListMsg"/>
         <p:accordionPanel>
-            <p:tab id="addInst" title="Add New Institution" titleStyleClass="tab-title">
-            <h:form id="addInstForm">
-            <h:panelGrid columns="3" border="0" cellpadding="4" cellspacing="2">
-                <p:inputText id="instID" size="32" maxlength="10" autocomplete="off" 
-                             required="true" value="#{itemListMgntBean.inst_id}"/>
-                <h:message id="instID-status" for="instID" styleClass="errors"/>
-                <p:watermark for="instID" value="New Institution ID"/>
-                
-                <p:inputText id="instname" size="32" maxlength="100" autocomplete="off" 
-                             required="true" value="#{itemListMgntBean.inst_name}"/>
-                <h:message id="instname-status" for="instname" styleClass="errors"/>
-                <p:watermark for="instname" value="New Institution Name"/>
-                
-                <h:commandButton action="#{itemListMgntBean.createNewInstID}" 
-                                 value="Create Institution ID" 
-                                 styleClass="panel-button" style="font-size: 12px"/>
-            </h:panelGrid>
-            </h:form>
-            </p:tab>
-
-            <p:tab id="editInst" title="Edit Institution" titleStyleClass="tab-title">
-            <h:form id="editInstForm">
-            <p:dataTable var="inst" rows="10" id="instTable" 
-                         value="#{itemListMgntBean.instList}" paginator="true"
-                         paginatorTemplate="{FirstPageLink} {PreviousPageLink}
-                         {CurrentPageReport} {NextPageLink} {LastPageLink}"
-                         styleClass="table-odd-row table-even-row" 
-                         editable="true">
-                <p:ajax event="rowEdit" listener="#{itemListMgntBean.onInstRowEdit}"
-                        update="itemListMsg"/>
-                <p:column headerText="Institution ID" style="text-align: left">
-                    <h:outputText value="#{inst.inst_id}"/>                            
-                </p:column>
-                <p:column headerText="Institution Name" style="text-align: left">
-                    <p:cellEditor>
-                        <f:facet name="output">
-                            <h:outputText value="#{inst.inst_name}"/>
-                        </f:facet>
-                        <f:facet name="input">
-                            <h:inputText value="#{inst.inst_name}" 
-                                         style="width: 100%"/>
-                        </f:facet>
-                    </p:cellEditor>
-                </p:column>
-                <p:column style="width: 32px">
-                    <p:rowEditor/>
-                </p:column>
-            </p:dataTable>
-            </h:form>
-            </p:tab>
-
-            <p:tab id="addDept" title="Add New Department" titleStyleClass="tab-title">
-            <h:form id="addDeptForm">
-                <h:panelGrid columns="3" border="0" cellpadding="4" cellspacing="2">
-                    <p:selectOneMenu id="inst" style="width: 180px" required="true" 
-                                     value="#{itemListMgntBean.inst_id}">
-                        <f:selectItem itemLabel="Select Institution" itemValue=""/>
-                        <f:selectItems value="#{itemListMgntBean.instNameHash}"/>
-                    </p:selectOneMenu>
-                    <h:message id="inst-status" for="inst" styleClass="errors"/>
-                    <h:panelGroup/>
-                    
-                    <p:inputText id="deptID" size="32" maxlength="10" autocomplete="off" 
-                                 required="true" value="#{itemListMgntBean.dept_id}"/>
-                    <h:message id="deptID-status" for="deptID" styleClass="errors"/>
-                    <p:watermark for="deptID" value="New Department ID"/>
-                    
-                    <p:inputText id="deptname" size="32" maxlength="100" autocomplete="off" 
-                                 required="true" value="#{itemListMgntBean.dept_name}"/>
-                    <h:message id="deptname-status" for="deptname" styleClass="errors"/>
-                    <p:watermark for="deptname" value="New Department Name"/>
-                    
-                    <h:commandButton action="#{itemListMgntBean.createNewDeptID}" 
-                                     value="Create Department ID" 
-                                     styleClass="panel-button" style="font-size: 12px"/>
-                </h:panelGrid>
-            </h:form>
-            </p:tab>
-
             <p:tab id="editDept" title="Edit Department" titleStyleClass="tab-title">
             <h:form id="editDeptForm">
                 <p:dataTable var="dept" rows="10" id="deptTable" 
@@ -131,6 +52,85 @@
                         <p:rowEditor/>
                     </p:column>
                 </p:dataTable>
+            </h:form>
+            </p:tab>
+
+            <p:tab id="addDept" title="Add New Department" titleStyleClass="tab-title">
+            <h:form id="addDeptForm">
+                <h:panelGrid columns="3" border="0" cellpadding="4" cellspacing="2">
+                    <p:selectOneMenu id="inst" style="width: 180px" required="true" 
+                                     value="#{itemListMgntBean.inst_id}">
+                        <f:selectItem itemLabel="Select Institution" itemValue=""/>
+                        <f:selectItems value="#{itemListMgntBean.instNameHash}"/>
+                    </p:selectOneMenu>
+                    <h:message id="inst-status" for="inst" styleClass="errors"/>
+                    <h:panelGroup/>
+                    
+                    <p:inputText id="deptID" size="32" maxlength="10" autocomplete="off" 
+                                 required="true" value="#{itemListMgntBean.dept_id}"/>
+                    <h:message id="deptID-status" for="deptID" styleClass="errors"/>
+                    <p:watermark for="deptID" value="New Department ID"/>
+                    
+                    <p:inputText id="deptname" size="32" maxlength="100" autocomplete="off" 
+                                 required="true" value="#{itemListMgntBean.dept_name}"/>
+                    <h:message id="deptname-status" for="deptname" styleClass="errors"/>
+                    <p:watermark for="deptname" value="New Department Name"/>
+                    
+                    <h:commandButton action="#{itemListMgntBean.createNewDeptID}" 
+                                     value="Create Department ID" 
+                                     styleClass="panel-button" style="font-size: 12px"/>
+                </h:panelGrid>
+            </h:form>
+            </p:tab>
+
+            <p:tab id="editInst" title="Edit Institution" titleStyleClass="tab-title">
+            <h:form id="editInstForm">
+            <p:dataTable var="inst" rows="10" id="instTable" 
+                         value="#{itemListMgntBean.instList}" paginator="true"
+                         paginatorTemplate="{FirstPageLink} {PreviousPageLink}
+                         {CurrentPageReport} {NextPageLink} {LastPageLink}"
+                         styleClass="table-odd-row table-even-row" 
+                         editable="true">
+                <p:ajax event="rowEdit" listener="#{itemListMgntBean.onInstRowEdit}"
+                        update="itemListMsg"/>
+                <p:column headerText="Institution ID" style="text-align: left">
+                    <h:outputText value="#{inst.inst_id}"/>                            
+                </p:column>
+                <p:column headerText="Institution Name" style="text-align: left">
+                    <p:cellEditor>
+                        <f:facet name="output">
+                            <h:outputText value="#{inst.inst_name}"/>
+                        </f:facet>
+                        <f:facet name="input">
+                            <h:inputText value="#{inst.inst_name}" 
+                                         style="width: 100%"/>
+                        </f:facet>
+                    </p:cellEditor>
+                </p:column>
+                <p:column style="width: 32px">
+                    <p:rowEditor/>
+                </p:column>
+            </p:dataTable>
+            </h:form>
+            </p:tab>
+
+            <p:tab id="addInst" title="Add New Institution" titleStyleClass="tab-title">
+            <h:form id="addInstForm">
+            <h:panelGrid columns="3" border="0" cellpadding="4" cellspacing="2">
+                <p:inputText id="instID" size="32" maxlength="10" autocomplete="off" 
+                             required="true" value="#{itemListMgntBean.inst_id}"/>
+                <h:message id="instID-status" for="instID" styleClass="errors"/>
+                <p:watermark for="instID" value="New Institution ID"/>
+                
+                <p:inputText id="instname" size="32" maxlength="100" autocomplete="off" 
+                             required="true" value="#{itemListMgntBean.inst_name}"/>
+                <h:message id="instname-status" for="instname" styleClass="errors"/>
+                <p:watermark for="instname" value="New Institution Name"/>
+                
+                <h:commandButton action="#{itemListMgntBean.createNewInstID}" 
+                                 value="Create Institution ID" 
+                                 styleClass="panel-button" style="font-size: 12px"/>
+            </h:panelGrid>
             </h:form>
             </p:tab>
         </p:accordionPanel>

@@ -12,91 +12,6 @@
     <ui:define name="content">
     <p:growl id="acctMsg"/>
         <p:accordionPanel>
-            <p:tab id="newaccount" title="Create New User Account" 
-                   titleStyleClass="tab-title"
-                   rendered="#{authenticationBean.adminRight}">
-            <h:form id="newacct">
-            <p:messages id="newacct-msg" for="newacctstatus" showDetail="true"/>
-                <h:panelGrid columns="3" border="0" cellpadding="4" 
-                             cellspacing="2">
-                    <p:inputText id="userid" size="32" maxlength="10" autocomplete="off"
-                                 required="true" value="#{acctMgntBean.user_id}">
-                        <f:validateLength minimum="5" maximum="20"/>
-                    </p:inputText>
-                    <h:message id="userid-status" for="userid" styleClass="errors"/>
-                    <p:watermark for="userid" value="New User ID"/>
-
-                    <p:inputText id="firstname" size="32" maxlength="50" autocomplete="off" 
-                                 required="true" value="#{acctMgntBean.first_name}">
-                        <f:validateLength minimum="2" maximum="50"/>
-                    </p:inputText>
-                    <h:message id="firstname-status" for="firstname" 
-                               styleClass="errors"/>
-                    <p:watermark for="firstname" value="First Name"/>
-
-                    <p:inputText id="lastname" size="32" maxlength="50" autocomplete="off"
-                                 required="true" value="#{acctMgntBean.last_name}">
-                        <f:validateLength minimum="2" maximum="50"/>
-                    </p:inputText>
-                    <h:message id="lastname-status" for="lastname" 
-                               styleClass="errors"/>
-                    <p:watermark for="lastname" value="Last Name"/>
-
-                    <p:selectOneMenu id="institution" 
-                                     style="width:180px" required="true"
-                                     value="#{acctMgntBean.inst_id}">
-                        <f:selectItem itemLabel="Select Institution" itemValue=""/>
-                        <f:selectItems value="#{acctMgntBean.instList}"/>
-                        <p:ajax listener="#{acctMgntBean.instChange()}" 
-                                update="department"/>
-                    </p:selectOneMenu>
-                    <h:message id="institution-status" for="institution" 
-                               styleClass="errors"/>
-                    <h:panelGroup/>
-
-                    <p:selectOneMenu id="department" 
-                                     style="width:180px" required="true" 
-                                     disabled="#{acctMgntBean.isDeptListReady()}"
-                                     value="#{acctMgntBean.dept_id}">
-                        <f:selectItem itemLabel="Select Department" itemValue=""/>
-                        <f:selectItems value="#{acctMgntBean.deptList}"/>
-                    </p:selectOneMenu>
-                    <h:message for="department" styleClass="errors"/>
-                    <h:panelGroup/>
-                
-                    <p:selectOneMenu id="role" 
-                                     style="width:180px" required="true"
-                                     value="#{acctMgntBean.role_id}">
-                        <f:selectItem itemLabel="Select Role" itemValue=""/>
-                        <f:selectItems value="#{acctMgntBean.roleList}"/>
-                    </p:selectOneMenu>
-                    <h:message for="role" styleClass="errors"/>
-                    <h:panelGroup/>
-                
-                    <p:inputText id="email" size="32" maxlength="50" autocomplete="off"
-                                 required="true" value="#{acctMgntBean.email}">
-                        <f:validateLength minimum="5" maximum="50"/>
-                    </p:inputText>
-                    <h:message id="email-status" for="email" styleClass="errors"/>
-                    <p:watermark for="email" value="Email"/>
-
-                    <p:password id="pwd" feedback="true" inline="true" 
-                                style="width: 170px" 
-                                onkeypress="if (event.keyCode == 13) {return false;}"
-                                required="true" value="#{acctMgntBean.pwd}">
-                        <f:validateLength minimum="5" maximum="10"/>
-                    </p:password>
-                    <h:message id="pwd-status" for="pwd" styleClass="errors"/>
-                    <p:watermark for="pwd" value="Password"/>
-
-                    <h:commandButton action="#{acctMgntBean.createUserAccount}"
-                                     value="Create New Account" 
-                                     styleClass="panel-button" 
-                                     style="font-size: 12px"/>
-                </h:panelGrid>
-            </h:form>
-            </p:tab>
-
             <p:tab id="editaccount" title="Edit User Account" 
                    rendered="#{authenticationBean.adminRight}" 
                    titleStyleClass="tab-title">
@@ -202,6 +117,91 @@
                         <p:rowEditor/>
                     </p:column>
                 </p:dataTable>
+            </h:form>
+            </p:tab>
+
+            <p:tab id="newaccount" title="Create New User Account" 
+                   titleStyleClass="tab-title"
+                   rendered="#{authenticationBean.adminRight}">
+            <h:form id="newacct">
+            <p:messages id="newacct-msg" for="newacctstatus" showDetail="true"/>
+                <h:panelGrid columns="3" border="0" cellpadding="4" 
+                             cellspacing="2">
+                    <p:inputText id="userid" size="32" maxlength="10" autocomplete="off"
+                                 required="true" value="#{acctMgntBean.user_id}">
+                        <f:validateLength minimum="5" maximum="20"/>
+                    </p:inputText>
+                    <h:message id="userid-status" for="userid" styleClass="errors"/>
+                    <p:watermark for="userid" value="New User ID"/>
+
+                    <p:inputText id="firstname" size="32" maxlength="50" autocomplete="off" 
+                                 required="true" value="#{acctMgntBean.first_name}">
+                        <f:validateLength minimum="2" maximum="50"/>
+                    </p:inputText>
+                    <h:message id="firstname-status" for="firstname" 
+                               styleClass="errors"/>
+                    <p:watermark for="firstname" value="First Name"/>
+
+                    <p:inputText id="lastname" size="32" maxlength="50" autocomplete="off"
+                                 required="true" value="#{acctMgntBean.last_name}">
+                        <f:validateLength minimum="2" maximum="50"/>
+                    </p:inputText>
+                    <h:message id="lastname-status" for="lastname" 
+                               styleClass="errors"/>
+                    <p:watermark for="lastname" value="Last Name"/>
+
+                    <p:selectOneMenu id="institution" 
+                                     style="width:180px" required="true"
+                                     value="#{acctMgntBean.inst_id}">
+                        <f:selectItem itemLabel="Select Institution" itemValue=""/>
+                        <f:selectItems value="#{acctMgntBean.instList}"/>
+                        <p:ajax listener="#{acctMgntBean.instChange()}" 
+                                update="department"/>
+                    </p:selectOneMenu>
+                    <h:message id="institution-status" for="institution" 
+                               styleClass="errors"/>
+                    <h:panelGroup/>
+
+                    <p:selectOneMenu id="department" 
+                                     style="width:180px" required="true" 
+                                     disabled="#{acctMgntBean.isDeptListReady()}"
+                                     value="#{acctMgntBean.dept_id}">
+                        <f:selectItem itemLabel="Select Department" itemValue=""/>
+                        <f:selectItems value="#{acctMgntBean.deptList}"/>
+                    </p:selectOneMenu>
+                    <h:message for="department" styleClass="errors"/>
+                    <h:panelGroup/>
+                
+                    <p:selectOneMenu id="role" 
+                                     style="width:180px" required="true"
+                                     value="#{acctMgntBean.role_id}">
+                        <f:selectItem itemLabel="Select Role" itemValue=""/>
+                        <f:selectItems value="#{acctMgntBean.roleList}"/>
+                    </p:selectOneMenu>
+                    <h:message for="role" styleClass="errors"/>
+                    <h:panelGroup/>
+                
+                    <p:inputText id="email" size="32" maxlength="50" autocomplete="off"
+                                 required="true" value="#{acctMgntBean.email}">
+                        <f:validateLength minimum="5" maximum="50"/>
+                    </p:inputText>
+                    <h:message id="email-status" for="email" styleClass="errors"/>
+                    <p:watermark for="email" value="Email"/>
+
+                    <p:password id="pwd" feedback="true" inline="true" 
+                                style="width: 170px" 
+                                onkeypress="if (event.keyCode == 13) {return false;}"
+                                required="true" value="#{acctMgntBean.pwd}">
+                        <f:validateLength minimum="5" maximum="10"/>
+                    </p:password>
+                    <h:message id="pwd-status" for="pwd" styleClass="errors"/>
+                    <p:watermark for="pwd" value="Password"/>
+
+                    <h:commandButton action="#{acctMgntBean.createUserAccount}"
+                                     value="Create New Account" 
+                                     styleClass="panel-button" 
+                                     style="font-size: 12px"/>
+                </h:panelGrid>
             </h:form>
             </p:tab>
 
