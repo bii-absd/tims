@@ -11,10 +11,10 @@
     <ui:param name="link" value="Clinical Data Management"/>
     <ui:define name="content">
     <p:growl id="clDataMsg"/>
-    <p:accordionPanel>
+    <p:accordionPanel id="accPanel">
         <p:tab id="editData" title="Edit Meta Data" titleStyleClass="tab-title">
             <h:form id="editDataForm">
-                <p:dataTable var="cldata" rows="10" id="dataTable" 
+                <p:dataTable var="cldata" rows="10" id="clTable" 
                              value="#{clDataMgntBean.subjectList}" paginator="true" 
                              paginatorTemplate="{FirstPageLink} {PreviousPageLink}
                              {CurrentPageReport} {NextPageLink} {LastPageLink}"
@@ -26,19 +26,65 @@
                         <h:outputText value="#{cldata.subject_id}"/>
                     </p:column>
                     <p:column headerText="Age at Diagnosis" style="text-align: left">
-                        <h:outputText value="#{cldata.age_at_diagnosis}"/>
+                        <p:cellEditor>
+                            <f:facet name="output">
+                                <h:outputText value="#{cldata.age_at_diagnosis}"/>
+                            </f:facet>
+                            <f:facet name="input">
+                                <h:inputText value="#{cldata.age_at_diagnosis}" style="width: 100%"/>
+                            </f:facet>
+                        </p:cellEditor>
                     </p:column>
                     <p:column headerText="Gender" style="text-align: left">
-                        <h:outputText value="#{cldata.gender}"/>
+                        <p:cellEditor>
+                            <f:facet name="output">
+                                <h:outputText value="#{cldata.gender}"/>
+                            </f:facet>
+                            <f:facet name="input">
+                                <p:selectOneMenu value="#{cldata.gender}" style="width: 100%">
+                                    <f:selectItem itemLabel="Male" itemValue="M"/>
+                                    <f:selectItem itemLabel="Female" itemValue="F"/>
+                                </p:selectOneMenu>
+                            </f:facet>
+                        </p:cellEditor>
                     </p:column>
                     <p:column headerText="Race" style="text-align: left">
-                        <h:outputText value="#{cldata.race}"/>
+                        <p:cellEditor>
+                            <f:facet name="output">
+                                <h:outputText value="#{cldata.race}"/>
+                            </f:facet>
+                            <f:facet name="input">
+                                <p:selectOneMenu value="#{cldata.race}" style="width: 100%">
+                                    <f:selectItem itemLabel="Chinese" itemValue="CHN"/>
+                                    <f:selectItem itemLabel="Malay" itemValue="MAL"/>
+                                    <f:selectItem itemLabel="Indian" itemValue="IND"/>
+                                    <f:selectItem itemLabel="Eurasian" itemValue="ERA"/>
+                                    <f:selectItem itemLabel="Others" itemValue="OTH"/>
+                                </p:selectOneMenu>
+                            </f:facet>
+                        </p:cellEditor>
                     </p:column>
                     <p:column headerText="Height" style="text-align: left">
-                        <h:outputText value="#{cldata.height}"/>
+                        <p:cellEditor>
+                            <f:facet name="output">
+                                <h:outputText value="#{cldata.height}"/>
+                            </f:facet>
+                            <f:facet name="input">
+                                <p:inputText value="#{cldata.height}" 
+                                             style="width: 100%"/>
+                            </f:facet>
+                        </p:cellEditor>
                     </p:column>
                     <p:column headerText="weight" style="text-align: left">
-                        <h:outputText value="#{cldata.weight}"/>
+                        <p:cellEditor>
+                            <f:facet name="output">
+                                <h:outputText value="#{cldata.weight}"/>
+                            </f:facet>
+                            <f:facet name="input">
+                                <p:inputText value="#{cldata.weight}" 
+                                             style="width: 100%"/>
+                            </f:facet>
+                        </p:cellEditor>
                     </p:column>
                     <p:column style="width: 32px">
                         <p:rowEditor/>
@@ -51,7 +97,8 @@
                Subject_ID|Age_at_diagnosis|Gender|Race|Height|Weight)" 
                titleStyleClass="tab-title">
             <h:form id="uploadDataForm" enctype="multipart/form-data">
-                <p:fileUpload mode="advanced" update="clDataMsg" 
+                <p:fileUpload id="uploadDataFile" mode="advanced" 
+                              update="clDataMsg :accPanel:editDataForm:clTable" 
                               label="Select Meta Data File" 
                               fileUploadListener="#{clDataMgntBean.metaDataUpload}"/>
             </h:form>
@@ -91,15 +138,19 @@
                     </p:selectOneMenu>
                     <h:message for="race" styleClass="errors"/>
                     
-                    <h:outputText value="Height" styleClass="inputlabel"/>
+                    <h:outputText value="Height (Meter)" styleClass="inputlabel"/>
                     <p:inputText id="height" size="18" autocomplete="off" 
-                                 value="#{clDataMgntBean.height}"/>
-                    <h:panelGroup/>
+                                 value="#{clDataMgntBean.height}">
+                        <f:validateDoubleRange minimum="0.54" maximum="2.72"/>
+                    </p:inputText>
+                    <h:message for="height" styleClass="errors"/>
                     
-                    <h:outputText value="Weight" styleClass="inputlabel"/>
+                    <h:outputText value="Weight (KG)" styleClass="inputlabel"/>
                     <p:inputText id="weight" size="18" autocomplete="off" 
-                                 value="#{clDataMgntBean.weight}"/>
-                    <h:panelGroup/>
+                                 value="#{clDataMgntBean.weight}">
+                        <f:validateDoubleRange minimum="2.2" maximum="635.0"/>
+                    </p:inputText>
+                    <h:message for="weight" styleClass="errors"/>
                 </h:panelGrid>
 
                 <p:spacer height="40" width="2"/>

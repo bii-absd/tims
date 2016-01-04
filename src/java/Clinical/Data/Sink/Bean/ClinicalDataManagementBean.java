@@ -1,5 +1,5 @@
 /*
- * Copyright @2015
+ * Copyright @2015-2016
  */
 package Clinical.Data.Sink.Bean;
 
@@ -37,6 +37,7 @@ import org.primefaces.model.UploadedFile;
  * Revision History
  * 14-Dec-2015 - Created with all the standard getters and setters. Added 3 new
  * methods insertMetaData(), metaDataUpload and onRowEdit.
+ * 04-Jan-2016 - Added new method buildSubjectList().
  */
 
 @ManagedBean (name="clDataMgntBean")
@@ -59,10 +60,12 @@ public class ClinicalDataManagementBean implements Serializable {
     
     @PostConstruct
     public void init() {
-        // Clear the subject list first.
-        SubjectDB.clearSubList();
         dept_id = UserAccountDB.getDeptID(AuthenticationBean.getUserName());
-        
+        buildSubjectList();
+    }
+
+    // Retrieve the subjects detail from database, and build the subject list.
+    private void buildSubjectList() {
         try {
             subjectList = SubjectDB.querySubject(dept_id);
         }
@@ -74,7 +77,7 @@ public class ClinicalDataManagementBean implements Serializable {
                         "System failed to retrieve meta data from database!", ""));
         }
     }
-
+    
     // Insert subject meta data into database.
     public String insertMetaData() {
         FacesContext fc = getFacesContext();
@@ -147,6 +150,9 @@ public class ClinicalDataManagementBean implements Serializable {
                     FacesMessage.SEVERITY_ERROR,
                     "Failed to upload meta data!", ""));
         }
+        
+        // Update the subject list.
+        buildSubjectList();
         
         return Constants.CLINICAL_DATA_MANAGEMENT;
     }
