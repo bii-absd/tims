@@ -37,7 +37,8 @@ import org.primefaces.model.UploadedFile;
  * Revision History
  * 14-Dec-2015 - Created with all the standard getters and setters. Added 3 new
  * methods insertMetaData(), metaDataUpload and onRowEdit.
- * 04-Jan-2016 - Added new method buildSubjectList().
+ * 04-Jan-2016 - Added new method buildSubjectList(). Improved the method 
+ * metaDataUpload.
  */
 
 @ManagedBean (name="clDataMgntBean")
@@ -57,7 +58,7 @@ public class ClinicalDataManagementBean implements Serializable {
         logger.info(AuthenticationBean.getUserName() +
                 ": access Clinical Data Management Page.");
     }
-    
+
     @PostConstruct
     public void init() {
         dept_id = UserAccountDB.getDeptID(AuthenticationBean.getUserName());
@@ -77,7 +78,7 @@ public class ClinicalDataManagementBean implements Serializable {
                         "System failed to retrieve meta data from database!", ""));
         }
     }
-    
+
     // Insert subject meta data into database.
     public String insertMetaData() {
         FacesContext fc = getFacesContext();
@@ -110,10 +111,12 @@ public class ClinicalDataManagementBean implements Serializable {
         {
             String lineRead;
             String[] data;
-            String uploadStatus = "Incorrect meta data at the following line(s): ";
+            StringBuilder uploadStatus = 
+                new StringBuilder("Incorrect meta data at line(s): ");
             int lineNum = 1;
             int incompleteLine = 0;
-            
+            FacesMessage.Severity faceStatus = FacesMessage.SEVERITY_INFO;
+
             while ((lineRead = br.readLine()) != null) {
                 // Subject_ID|Age_at_diagnosis|gender|race|height|weight
                 data = lineRead.split("\\|");
@@ -125,10 +128,13 @@ public class ClinicalDataManagementBean implements Serializable {
                                               Float.parseFloat(data[5]), 
                                               dept_id);
                     
-                    SubjectDB.insertSubject(tmp);
+                    if (!SubjectDB.insertSubject(tmp)) {
+                        uploadStatus.append(lineNum).append(" ");
+                        incompleteLine++;
+                    }
                 }
                 else {
-                    uploadStatus = uploadStatus + lineNum + " ";
+                    uploadStatus.append(lineNum).append(" ");
                     incompleteLine++;
                 }
                 lineNum++;
@@ -136,12 +142,16 @@ public class ClinicalDataManagementBean implements Serializable {
             
             if (incompleteLine == 0) {
                 // All the meta data have complete info.
-                uploadStatus = "All meta data have been uploaded successfully.";
+                uploadStatus.replace(0, uploadStatus.length()-1, 
+                        "All meta data have been uploaded successfully.");
+            }
+            else {
+                faceStatus = FacesMessage.SEVERITY_WARN;
             }
             
             logger.debug(uploadStatus);
             getFacesContext().addMessage(null, new FacesMessage(
-                    FacesMessage.SEVERITY_INFO, uploadStatus, ""));
+                    faceStatus, uploadStatus.toString(), ""));
         }
         catch (IOException ioe) {
             logger.debug("IOException when uploading meta data!");
@@ -170,7 +180,7 @@ public class ClinicalDataManagementBean implements Serializable {
                         "Meta data updated.", ""));
         }
         else {
-            logger.error("Meta data update failed!");
+            logger.error("Failed to update meta data!");
             fc.addMessage(null, new FacesMessage(
                         FacesMessage.SEVERITY_ERROR,
                         "Failed to update meta data!", ""));
