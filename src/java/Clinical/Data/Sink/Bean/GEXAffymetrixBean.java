@@ -1,5 +1,5 @@
 /*
- * Copyright @2015
+ * Copyright @2015-2016
  */
 package Clinical.Data.Sink.Bean;
 
@@ -95,7 +95,6 @@ public class GEXAffymetrixBean extends ConfigBean {
         try {
             // Store the job_id of the inserted record
             job_id = SubmittedJobDB.insertJob(newJob);
-            logger.info("New job request inserted. ID: " + job_id);
         }
         catch (SQLException e) {
             logger.error("SQLException when inserting job.");

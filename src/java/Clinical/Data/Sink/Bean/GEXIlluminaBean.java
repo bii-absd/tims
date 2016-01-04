@@ -1,5 +1,5 @@
 /*
- * Copyright @2015
+ * Copyright @2015-2016
  */
 package Clinical.Data.Sink.Bean;
 
@@ -35,6 +35,7 @@ import javax.faces.bean.ViewScoped;
  * Sample annotation file will be having the same common name for all pipelines.
  * 22-Dec-2015 - Control probe file will be having the same common name for all
  * pipelines.
+ * 31-Dec-2015 - Implemented the module for reusing the input data.
  */
 
 @ManagedBean (name="gexIlluminaBean")
@@ -58,11 +59,26 @@ public class GEXIlluminaBean extends ConfigBean {
     
     @Override
     public void updateJobSubmissionStatus() {
-        // Only update the jobSubmissionStatus if all the input files are 
-        // uploaded.        
-        if (!(inputFile.isFilelistEmpty() || sampleFile.isFilelistEmpty() ||
-              ctrlFile.isFilelistEmpty())) {
-            setJobSubmissionStatus(true);            
+        if (!haveNewData) {
+            // Only update the jobSubmissionStatus if data has been selected 
+            // for reuse.
+            if (selectedInput != null) {
+                setJobSubmissionStatus(true);
+                logger.debug("Data uploaded on " + selectedInput.getDate() + 
+                             " has been selected for reuse.");
+            }
+            else {
+                // No data is being selected for reuse, display error message.
+                logger.debug("No data selected for reuse!");
+            }
+        }
+        else {
+            // Only update the jobSubmissionStatus if all the input files are 
+            // uploaded.
+            if (!(inputFile.isFilelistEmpty() || sampleFile.isFilelistEmpty() ||
+                ctrlFile.isFilelistEmpty())) {
+                setJobSubmissionStatus(true);            
+            }
         }
     }
 
@@ -84,7 +100,6 @@ public class GEXIlluminaBean extends ConfigBean {
         try {
             // Store the job_id of the inserted record
             job_id = SubmittedJobDB.insertJob(newJob);
-            logger.info("New job request inserted. ID: " + job_id);
         }
         catch (SQLException e) {
             logger.error("SQLException when inserting job.");
@@ -116,19 +131,32 @@ public class GEXIlluminaBean extends ConfigBean {
 
     @Override
     public void renameAnnotCtrlFiles() {
-        sampleFile.renameAnnotFile();
         ctrlFile.renameCtrlProbeFile();
+        super.renameAnnotCtrlFiles();
     }
     
     // Make the necessary setup to those attributes that are relevant to this
     // pipeline, and then call the base class method to create the Config File.
     @Override
     public Boolean createConfigFile() {
-        input = inputFile.getLocalDirectoryPath() + inputFile.getInputFilename();
-        ctrl = ctrlFile.getLocalDirectoryPath() + ctrlFile.getInputFilename();
-        sample = sampleFile.getLocalDirectoryPath() + 
-                 Constants.getSAMPLE_ANNOT_FILE_NAME() + 
-                 Constants.getSAMPLE_ANNOT_FILE_EXT();
+        if (haveNewData) {
+            input = inputFile.getLocalDirectoryPath() + inputFile.getInputFilename();
+            ctrl = ctrlFile.getLocalDirectoryPath() + 
+                   Constants.getCONTROL_PROBE_FILE_NAME() +
+                   Constants.getCONTROL_PROBE_FILE_EXT();
+            sample = sampleFile.getLocalDirectoryPath() + 
+                     Constants.getSAMPLE_ANNOT_FILE_NAME() + 
+                     Constants.getSAMPLE_ANNOT_FILE_EXT();
+        }
+        else {
+            input = selectedInput.getFilepath() + selectedInput.getFilename();
+            ctrl = selectedInput.getFilepath() + 
+                   Constants.getCONTROL_PROBE_FILE_NAME() +
+                   Constants.getCONTROL_PROBE_FILE_EXT();
+            sample = selectedInput.getFilepath() + 
+                     Constants.getSAMPLE_ANNOT_FILE_NAME() + 
+                     Constants.getSAMPLE_ANNOT_FILE_EXT();
+        }
         probeFilter = Constants.NONE;
 
         if (probeFilters.size() > 0) {

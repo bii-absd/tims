@@ -1,9 +1,10 @@
 /*
- * Copyright @2015
+ * Copyright @2015-2016
  */
 package Clinical.Data.Sink.Bean;
 
-// Libraries for Log4j
+import Clinical.Data.Sink.Database.InputData;
+import Clinical.Data.Sink.Database.InputDataDB;
 import Clinical.Data.Sink.Database.Pipeline;
 import Clinical.Data.Sink.Database.PipelineDB;
 import Clinical.Data.Sink.Database.SubmittedJobDB;
@@ -27,6 +28,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
+// Libraries for PrimeFaces
 import org.primefaces.event.FileUploadEvent;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
@@ -63,6 +65,7 @@ import org.apache.logging.log4j.LogManager;
  * 22-Dec-2015 - Added one abstract method renameAnnotCtrlFiles(), to rename
  * the sample annotation file (and control probe file) to a common name for all
  * pipelines. Added one attribute, haveNewData.
+ * 31-Dec-2015 - Implemented the module for reusing the input data.
  */
 
 public abstract class ConfigBean implements Serializable {
@@ -78,7 +81,7 @@ public abstract class ConfigBean implements Serializable {
     // The command link setup by the main menu backing bean.
     private static String commandLink;
     // Indicator of whether user have new data to upload or not.
-    private static Boolean haveNewData;
+    protected static Boolean haveNewData;
     // Pipeline name and technology
     protected static String pipelineName, pipelineTech;
     // Common input files that will be uploaded by the users
@@ -98,62 +101,92 @@ public abstract class ConfigBean implements Serializable {
     protected String input, ctrl, sample;
     // Annotation list build from Sample Annotation file
     private LinkedHashMap<String,String> annotationList = new LinkedHashMap<>();
+    // The list of input data belonging to the study, that are available for
+    // reuse.
+    private List<InputData> inputDataList = new ArrayList<>();
+    protected InputData selectedInput;
 
     // This method will only be trigger if all the inputs validation have 
     // passed after the user clicked on Submit. As a result of this behaviour 
-    // (i.e. all the validations need to pass), we will update the
-    // jobSubmissionStatus here.
+    // (i.e. all the validations need to pass), we will check whether all the 
+    // input files have been uploaded and update the jobSubmissionStatus here.
     abstract void updateJobSubmissionStatus();
     // Insert the current job request into the submitted_job table. The status
     // of the insertion operation will be return.
     abstract Boolean insertJob(String outputFilePath, String reportFilePath);
     // Save the input data detail into the database.
     abstract void saveSampleFileDetail();
-    // Rename the sample annotation file (and control probe file) to a common 
-    // name for future use.
-    abstract void renameAnnotCtrlFiles();
     
     public void init() {
         // Create the time stamp for the pipeline job.
-        createJobTimestamp();        
-        // Setup the input file directory for this pipeline job.
-        FileUploadBean.setFileDirectory(studyID, submitTimeInFilename);
-        
-        inputFile = new FileUploadBean();
-        sampleFile = new FileUploadBean();
+        createJobTimestamp();
         jobSubmissionStatus = false;
+        if (haveNewData) {
+            // Setup the input file directory for this pipeline job.
+            FileUploadBean.setFileDirectory(studyID, submitTimeInFilename);
+            inputFile = new FileUploadBean();
+            sampleFile = new FileUploadBean();
+        }
+        else {
+            inputDataList = InputDataDB.getIpList(studyID);
+        }
+        logger.debug(studyID + " ConfigBean - init().");
+    }
+    
+    // Rename the sample annotation file (and control probe file) to a common 
+    // name for future use.
+    public void renameAnnotCtrlFiles() {
+        sampleFile.renameAnnotFile();
+    }
+    
+    // To build the annotation list for user selection based on file passed in.
+    private void buildAnnotationList(File file) {
+        try (FileInputStream fis = new FileInputStream(file);
+             BufferedReader br = new BufferedReader(new InputStreamReader(fis));) 
+        {
+            // We are only interested in the first line i.e. subject line
+            String line = br.readLine();
+            // All the subjects need to be separated by the TAB key
+            String[] annotList = line.split("\t");
+                
+            for (int i = 0; i < annotList.length; i++) {
+                annotationList.put(annotList[i], annotList[i]);
+            }
+            logger.debug("Annotation subject line: " + line);
+            logger.debug("Annotation List: " + annotationList.toString());
+        }
+        catch (IOException e) {
+            logger.debug("IOException when reading the annotation file!");
+            getFacesContext().addMessage(null, new FacesMessage(
+                                FacesMessage.SEVERITY_ERROR,
+                                "Failed to create annotation list!", ""));
+        }
     }
     
     // Read in the subject line (i.e. first line) from the uploaded sample
     // annotation file, and build the selection list for "Phenotype Column"
     // and "Sample Averaging".
     public LinkedHashMap<String,String> getAnnotationList() {
-        // Only construct the selection list if the sample annotation file has
-        // been uploaded by the user and the selection list has yet to be build.
-        if (!sampleFile.isFilelistEmpty() && annotationList.isEmpty()) {
-            // Retrieve the sample annotation file from local drive
-            File file = new File(sampleFile.getLocalDirectoryPath() +
-                                sampleFile.getInputFilename());
-            
-            try (FileInputStream fis = new FileInputStream(file);
-                 BufferedReader br = new BufferedReader(new InputStreamReader(fis));) 
-            {
-                // We are only interested in the first line i.e. subject line
-                String line = br.readLine();
-                // All the subjects need to be separated by the TAB key
-                String[] annotList = line.split("\t");
-                
-                for (int i = 0; i < annotList.length; i++) {
-                    annotationList.put(annotList[i], annotList[i]);
-                }
-                logger.debug("Annotation subject line: " + line);
-                logger.debug("Annotation List: " + annotationList.toString());
+        File file;
+        
+        if (haveNewData) {
+            // Only construct the selection list if the sample annotation file has
+            // been uploaded by the user and the selection list has yet to be build.
+            if (!sampleFile.isFilelistEmpty() && annotationList.isEmpty()) {
+                // Retrieve the sample annotation file from local drive
+                file = new File(sampleFile.getLocalDirectoryPath() +
+                                     sampleFile.getInputFilename());
+                buildAnnotationList(file);
             }
-            catch (IOException e) {
-                logger.debug("IOException when reading the annotation file!");
-                getFacesContext().addMessage(null, new FacesMessage(
-                                FacesMessage.SEVERITY_ERROR,
-                                "Failed to create annotation list!", ""));
+        }
+        else {
+            // Only construct the selection list if an input data has been
+            // selected for reuse and the selection list has yet to be build.
+            if ((selectedInput != null) && annotationList.isEmpty()) {
+                file = new File(selectedInput.getFilepath() +
+                                     Constants.getSAMPLE_ANNOT_FILE_NAME() +
+                                     Constants.getSAMPLE_ANNOT_FILE_EXT());
+                buildAnnotationList(file);
             }
         }
         return annotationList;
@@ -234,11 +267,14 @@ public abstract class ConfigBean implements Serializable {
             SubmittedJobDB.updateJobStatusToInprogress(job_id);
             logger.debug("Pipeline run and job status updated to in-progress. ID: " 
                         + job_id);
-            // Save the Sample File detail into database
-            saveSampleFileDetail();        
-            // Rename sample annotation file (and control probe file) to a
-            // common name for future use.
-            renameAnnotCtrlFiles();
+            if (haveNewData) {
+                // Only perform the following steps if these are new data.
+                // Save the Sample File detail into database
+                saveSampleFileDetail();        
+                // Rename sample annotation file (and control probe file) to a
+                // common name for future use.
+                renameAnnotCtrlFiles();
+            }
             // 4. Pipeline is ready to be run now
             result = executePipeline(logFilePath);
             // Create dummy pipeline files for user to download.
@@ -429,6 +465,25 @@ public abstract class ConfigBean implements Serializable {
 	return FacesContext.getCurrentInstance();
     }
     
+    // Used by MenuSelectionBean to setup the studyID and haveNewData attributes.
+    public static void setup(String studyID, Boolean haveNewData) {
+        ConfigBean.studyID = studyID;
+        ConfigBean.haveNewData = haveNewData;
+    }
+    
+    // Return the date the reused input data is being uploaded.
+    public String getReuseInputDate() {
+        return (selectedInput != null)?selectedInput.getDate():
+                "Please select a input to reuse";
+    }
+    
+    // Need to rebuild the drop down list everytime a input data has 
+    // been selected.
+    public void reuseInputRadioButtonSelected() {
+        // Clear the annotationList, so that it get rebuild again.
+        annotationList.clear();
+    }
+    
     // Machine generated getters and setters
     public FileUploadBean getSampleFile() {
         return sampleFile;
@@ -460,7 +515,7 @@ public abstract class ConfigBean implements Serializable {
     public static void setCommandLink(String commandLink) {
         ConfigBean.commandLink = commandLink;
     }
-    public static Boolean getHaveNewData() {
+    public Boolean getHaveNewData() {
         return haveNewData;
     }
     public static void setHaveNewData(Boolean haveNewData) {
@@ -526,4 +581,14 @@ public abstract class ConfigBean implements Serializable {
     public void setJobSubmissionStatus(Boolean jobSubmissionStatus) {
         this.jobSubmissionStatus = jobSubmissionStatus;
     }
+    public List<InputData> getInputDataList() {
+        return inputDataList;
+    }
+    public InputData getSelectedInput() {
+        
+        return selectedInput;
+    }
+    public void setSelectedInput(InputData selectedInput) {
+        this.selectedInput = selectedInput;
+    }   
 }
