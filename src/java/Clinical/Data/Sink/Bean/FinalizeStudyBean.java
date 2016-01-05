@@ -1,5 +1,5 @@
 /*
- * Copyright @2015
+ * Copyright @2015-2016
  */
 package Clinical.Data.Sink.Bean;
 
@@ -20,7 +20,6 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import javax.annotation.PostConstruct;
-import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
@@ -47,6 +46,8 @@ import org.apache.logging.log4j.LogManager;
  * for allowing the user to proceed with the finalization or not. Improved
  * method prepareForFinalization; to check whether the user has selected at
  * least one job for finalization.
+ * 05-Jan-2016 - Changes due to the change in method 
+ * StudyDB.updateStudyCompletedStatus().
  */
 
 @ManagedBean (name="finalizedBean")
@@ -108,7 +109,7 @@ public class FinalizeStudyBean implements Serializable {
         }
         else {
             // At least one job has been selected, continue.
-            // Strig to store the subject ID that doesn't have meta data.
+            // String to store the subject ID that doesn't have meta data.
             StringBuilder subMetaDataNotFound = new StringBuilder();
             selectedJobs.add(0, selectedJob0);
             selectedJobs.add(1, selectedJob1);
@@ -140,10 +141,10 @@ public class FinalizeStudyBean implements Serializable {
             }
             else {
                 subMDAvailableStatus = 
-                    "The following subject's meta data are not found in the database:\n" +
+                    "The following subject's meta data are not found in the database: " +
                     subMetaDataNotFound +
-                    "\n\nPlease upload the subject's meta data before proceeding with the" + 
-                    "\nfinalization of this Study.\n";
+                    "\n\nPlease upload the subject's meta data before proceeding" + 
+                    "\nwith the finalization of this Study.\n";
                 logger.debug("Subject meta data not found: " + subMetaDataNotFound);
             }
         }
@@ -167,7 +168,7 @@ public class FinalizeStudyBean implements Serializable {
         DataDepositor depositThread = new DataDepositor(study_id, selectedJobs);
         depositThread.start();
         // Update study to completed
-        StudyDB.updateStudyToCompleted(study_id);
+        StudyDB.updateStudyCompletedStatus(study_id, true);
         
         return Constants.MAIN_PAGE;        
     }

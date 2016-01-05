@@ -33,6 +33,7 @@ import org.apache.logging.log4j.LogManager;
  * updateStudyToCompleted, updateStudyFinalizedFile and getFinalizableStudyHash.
  * 30-Dec-2015 - Updated the query in method getStudyHash, to return only
  * uncompleted study.
+ * 05-Jan-2015 - Minor changes to method updateStudyCompletedStatus.
  */
 
 public abstract class StudyDB {
@@ -96,14 +97,15 @@ public abstract class StudyDB {
         return result;
     }
     
-    // Update the study to completed.
-    public static void updateStudyToCompleted(String studyID) {
-        String updateStr = "UPDATE study SET completed = true WHERE study_id = ?";
+    // Update the study completed status.
+    public static void updateStudyCompletedStatus(String studyID, Boolean status) {
+        String updateStr = "UPDATE study SET completed = " + status + 
+                           " WHERE study_id = ?";
         
         try (PreparedStatement updateStm = conn.prepareStatement(updateStr)) {
             updateStm.setString(1, studyID);
             updateStm.executeUpdate();
-            logger.debug("Study " + studyID + " updated to completed.");
+            logger.debug(studyID + " completed status updated to " + status);
         }
         catch (SQLException e) {
             logger.error("Failed to update study to completed!");
