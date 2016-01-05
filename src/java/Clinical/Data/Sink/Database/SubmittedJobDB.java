@@ -1,5 +1,5 @@
 /*
- * Copyright @2015
+ * Copyright @2015-2016
  */
 package Clinical.Data.Sink.Database;
 
@@ -51,6 +51,8 @@ import org.apache.logging.log4j.LogManager;
  * filepath of the submitted job.
  * 30-Dec-2015 - Changed the query in method querySubmittedJob; to include
  * jobs that are in finalized stage.
+ * 05-Jan-2015 - Changes in submitted_job table, removed ctrl_file and annot_
+ * file fields. Added input_path field.
  */
 
 public abstract class SubmittedJobDB {
@@ -68,11 +70,11 @@ public abstract class SubmittedJobDB {
         int job_id = Constants.DATABASE_INVALID_ID;
         String insertStr = "INSERT INTO submitted_job"
                 + "(study_id, user_id, pipeline_name, status_id, "
-                + "submit_time, chip_type, ctrl_file, annot_file, "
+                + "submit_time, chip_type, input_path,"
                 + "normalization, probe_filtering, probe_select, "
                 + "phenotype_column, summarization, output_file, "
                 + "sample_average, standardization, region, report) "
-                + "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                + "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
         PreparedStatement insertStm = conn.prepareStatement(insertStr, 
                 Statement.RETURN_GENERATED_KEYS);
         // Build the INSERT statement using the variables retrieved from the
@@ -83,18 +85,17 @@ public abstract class SubmittedJobDB {
         insertStm.setInt(4, job.getStatus_id());
         insertStm.setString(5, job.getSubmit_time());
         insertStm.setString(6, job.getChip_type());
-        insertStm.setString(7, job.getCtrl_file());
-        insertStm.setString(8, job.getAnnot_file());
-        insertStm.setString(9, job.getNormalization());
-        insertStm.setString(10, job.getProbe_filtering());
-        insertStm.setBoolean(11, job.getProbe_select());
-        insertStm.setString(12, job.getPhenotype_column());
-        insertStm.setString(13, job.getSummarization());
-        insertStm.setString(14, job.getOutput_file());
-        insertStm.setString(15, job.getSample_average());
-        insertStm.setString(16, job.getStandardization());
-        insertStm.setString(17, job.getRegion());
-        insertStm.setString(18, job.getReport());
+        insertStm.setString(7, job.getInput_path());
+        insertStm.setString(8, job.getNormalization());
+        insertStm.setString(9, job.getProbe_filtering());
+        insertStm.setBoolean(10, job.getProbe_select());
+        insertStm.setString(11, job.getPhenotype_column());
+        insertStm.setString(12, job.getSummarization());
+        insertStm.setString(13, job.getOutput_file());
+        insertStm.setString(14, job.getSample_average());
+        insertStm.setString(15, job.getStandardization());
+        insertStm.setString(16, job.getRegion());
+        insertStm.setString(17, job.getReport());
         // Execute the INSERT statement
         insertStm.executeUpdate();
         // Retrieve and store the last inserted Job ID

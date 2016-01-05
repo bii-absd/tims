@@ -1,5 +1,5 @@
 /*
- * Copyright @2015
+ * Copyright @2015-2016
  */
 package Clinical.Data.Sink.Database;
 
@@ -24,7 +24,10 @@ import java.io.Serializable;
  * 23-Oct-2015 - Added report field.
  * 30-Oct-2015 - Added one new function getAvailable.
  * 30-Nov-2015 - Implementation for database 2.0
+ * 05-Jan-2015 - Changes in submitted_job table, removed ctrl_file and annot_
+ * file fields. Added input_path field.
  */
+
 public class SubmittedJob implements Serializable {
     // Additional attributes (study_id, pipeline_name, chip_type, 
     // ctrl_file, normalization, probe_filtering, probe_select, 
@@ -36,7 +39,7 @@ public class SubmittedJob implements Serializable {
     private String pipeline_name;
     private int status_id;
     private String submit_time;
-    private String chip_type, ctrl_file, annot_file, normalization, probe_filtering;
+    private String chip_type, input_path, normalization, probe_filtering;
     private Boolean probe_select;
     private String phenotype_column, summarization;
     private String output_file;
@@ -48,7 +51,7 @@ public class SubmittedJob implements Serializable {
     // Full constructor
     public SubmittedJob(int job_id, String study_id, 
             String pipeline_name, int status_id, String submit_time, 
-            String chip_type, String ctrl_file, String annot_file, 
+            String chip_type, String input_path, 
             String normalization, String probe_filtering, Boolean probe_select, 
             String phenotype_column, String summarization, String output_file, 
             String sample_average, String standardization, String region, 
@@ -61,8 +64,7 @@ public class SubmittedJob implements Serializable {
         this.status_id = status_id;
         this.submit_time = submit_time;
         this.chip_type = chip_type;
-        this.ctrl_file = ctrl_file;
-        this.annot_file = annot_file;
+        this.input_path = input_path;
         this.normalization = normalization;
         this.probe_filtering = probe_filtering;
         this.probe_select = probe_select;
@@ -150,17 +152,11 @@ public class SubmittedJob implements Serializable {
     public void setChip_type(String chip_type) {
         this.chip_type = chip_type;
     }
-    public String getCtrl_file() {
-        return ctrl_file;
+    public String getInput_path() {
+        return input_path;
     }
-    public void setCtrl_file(String ctrl_file) {
-        this.ctrl_file = ctrl_file;
-    }
-    public String getAnnot_file() {
-        return annot_file;
-    }
-    public void setAnnot_file(String annot_file) {
-        this.annot_file = annot_file;
+    public void setInput_path(String input_path) {
+        this.input_path = input_path;
     }
     public String getNormalization() {
         return normalization;

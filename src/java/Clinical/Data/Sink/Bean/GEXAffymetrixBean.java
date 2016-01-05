@@ -34,6 +34,8 @@ import javax.faces.bean.ViewScoped;
  * 22-Dec-2015 - Control probe file will be having the same common name for all
  * pipelines.
  * 31-Dec-2015 - Implemented the module for reusing the input data.
+ * 05-Jan-2015 - Changes in submitted_job table, removed ctrl_file and annot_
+ * file fields. Added input_path field.
  */
 
 @ManagedBean (name="gexAffymetrixBean")
@@ -86,7 +88,8 @@ public class GEXAffymetrixBean extends ConfigBean {
         // DB 2.0 - For attributes summarization and region, set them to "NA".
         SubmittedJob newJob = 
                 new SubmittedJob(0, getStudyID(), pipelineName, 1,
-                                 submitTimeInDB, getType(), ctrl, sample, 
+                                 submitTimeInDB, getType(), 
+                                 inputFile.getLocalDirectoryPath(), 
                                  getNormalization(), probeFilter, 
                                  isProbeSelect(), getPhenotype(), "NA", 
                                  outputFilePath, getSampleAverage(), 
@@ -112,8 +115,8 @@ public class GEXAffymetrixBean extends ConfigBean {
         
         try {
             sn = InputDataDB.getNextSn(studyID);
-            // For Affymetrix, we will only store the filepath.
-            // Need to include a description field for input.
+            // For Affymetrix, we will only store the filepath i.e. for 
+            // filename, it is empty.
             InputData newdata = new InputData(studyID, "", 
                     inputFile.getLocalDirectoryPath(),
                     inputFileDesc, sn, submitTimeInDB);
