@@ -66,6 +66,7 @@ import org.apache.logging.log4j.LogManager;
  * the sample annotation file (and control probe file) to a common name for all
  * pipelines. Added one attribute, haveNewData.
  * 31-Dec-2015 - Implemented the module for reusing the input data.
+ * 06-Jan-2016 - Added new method, getInputPath().
  */
 
 public abstract class ConfigBean implements Serializable {
@@ -454,6 +455,16 @@ public abstract class ConfigBean implements Serializable {
         }
     }
 
+    // Return the input path depending on whether there is any new data uploaded.
+    public String getInputPath() {
+        if (haveNewData) {
+            return inputFile.getLocalDirectoryPath();
+        }
+        else {
+            return selectedInput.getFilepath();
+        }
+    }
+    
     // Return the wording to be display at the link under the BreadCrumb in the 
     // pipeline configuration page.
     public String getBreadCrumbLink() {

@@ -38,6 +38,7 @@ import javax.faces.bean.ViewScoped;
  * 31-Dec-2015 - Implemented the module for reusing the input data.
  * 05-Jan-2015 - Changes in submitted_job table, removed ctrl_file and annot_
  * file fields. Added input_path field.
+ * 06-Jan-2016 - Fixed the bug caused by the introduction of input_path field.
  */
 
 @ManagedBean (name="gexIlluminaBean")
@@ -93,8 +94,7 @@ public class GEXIlluminaBean extends ConfigBean {
         // DB 2.0 - For attributes summarization and region, set them to "NA".
         SubmittedJob newJob = 
                 new SubmittedJob(0, getStudyID(), pipelineName, 1,
-                                 submitTimeInDB, getType(), 
-                                 inputFile.getLocalDirectoryPath(), 
+                                 submitTimeInDB, getType(), getInputPath(), 
                                  getNormalization(), probeFilter, 
                                  isProbeSelect(), getPhenotype(), "NA", 
                                  outputFilePath, getSampleAverage(), 
