@@ -1,22 +1,16 @@
 /*
- * Copyright @2015
+ * Copyright @2015-2016
  */
 package Clinical.Data.Sink.Bean;
 
 import Clinical.Data.Sink.Database.SubmittedJob;
 import Clinical.Data.Sink.Database.SubmittedJobDB;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import Clinical.Data.Sink.General.FileLoader;
 import java.io.Serializable;
 import java.util.List;
 import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
-import javax.faces.context.ExternalContext;
-import javax.faces.context.FacesContext;
-import javax.servlet.ServletContext;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -45,6 +39,7 @@ import org.apache.logging.log4j.LogManager;
  * 25-Nov-2015 - Comment out unused code. Implementation for database 2.0
  * 23-Dec-2015 - Moved the retrieval of the job status definition to the
  * AuthenticationBean class.
+ * 06-Jan-2016 - Moved the common function download() to FileLoader class.
  */
 
 @ManagedBean(name = "jobStatusBean")
@@ -81,15 +76,50 @@ public class JobStatusBean implements Serializable {
     // Download the pipeline output for user.
     public void downloadOutput(SubmittedJob job) {
 //        String output = getExternalContext().getRequestParameterMap().get("output");
-        download(job.getOutput_file());
+        FileLoader.download(job.getOutput_file());
     }
     
     // Download the pipeline report for user.
     public void downloadReport(SubmittedJob job) {
-        download(job.getReport());
+        FileLoader.download(job.getReport());
     }
     
+    // Return the list of SubmittedJob objects that belong to the current user.
+    // NOTE: This function will get called multiple times, hence should'nt
+    // include any business logic into it (i.e. performance issue). The 
+    // initialisation of jobSubmission will be done in PostConstruct function
+    // init() instead.
+    public List<SubmittedJob> getJobSubmission() {
+        return jobSubmission;
+    }
+
+    // Machine generated getters and setters
+    /* @ViewScoped will breaks when any UIComponent is bound to the bean
+       using binding attribute or when using JSTL tags in the view; the bean
+       will behave like a request scoped one.
+    public UIData getJobStatusTable() { return jobStatusTable; }
+    public void setJobStatusTable(UIData jobStatusTable) {
+        this.jobStatusTable = jobStatusTable;
+    }
+    */
+    
+    /* No longer in use.
+    
+    // Retrieve the faces context
+    private FacesContext getFacesContext() {
+	return FacesContext.getCurrentInstance();
+    }
+    // Retrieve the external context
+    private ExternalContext getExternalContext() {
+        return getFacesContext().getExternalContext();
+    }
+    // Retrieve the servlet context
+    private ServletContext getServletContext() {
+        return (ServletContext) getExternalContext().getContext();
+    }
+
     // Download the output/report file.
+    // MOVED TO FileLoader class.
     public void download(String downloadFile) {
         // Get ready the pipeline file for user to download
         File file = new File(downloadFile);
@@ -128,39 +158,6 @@ public class JobStatusBean implements Serializable {
                 ": downloaded pipeline file " + downloadFile);
     }
     
-    // Return the list of SubmittedJob objects that belong to the current user.
-    // NOTE: This function will get called multiple times, hence should'nt
-    // include any business logic into it (i.e. performance issue). The 
-    // initialisation of jobSubmission will be done in PostConstruct function
-    // init() instead.
-    public List getJobSubmission() {
-        return jobSubmission;
-    }
-
-    // Retrieve the faces context
-    private FacesContext getFacesContext() {
-	return FacesContext.getCurrentInstance();
-    }
-    // Retrieve the external context
-    private ExternalContext getExternalContext() {
-        return getFacesContext().getExternalContext();
-    }
-    // Retrieve the servlet context
-    private ServletContext getServletContext() {
-        return (ServletContext) getExternalContext().getContext();
-    }
-
-    // Machine generated getters and setters
-    /* @ViewScoped will breaks when any UIComponent is bound to the bean
-       using binding attribute or when using JSTL tags in the view; the bean
-       will behave like a request scoped one.
-    public UIData getJobStatusTable() { return jobStatusTable; }
-    public void setJobStatusTable(UIData jobStatusTable) {
-        this.jobStatusTable = jobStatusTable;
-    }
-    */
-    
-    /* No longer in use.
     public void sort(ActionEvent actionEvent) {
         // Order the query result according to the column selected by the user.
         // For Submission Date, order by job_id will be used.

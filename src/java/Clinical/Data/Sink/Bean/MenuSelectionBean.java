@@ -1,9 +1,8 @@
 /*
- * Copyright @2015
+ * Copyright @2015-2016
  */
 package Clinical.Data.Sink.Bean;
 
-import Clinical.Data.Sink.Database.DataRetriever;
 import Clinical.Data.Sink.Database.StudyDB;
 import Clinical.Data.Sink.General.Constants;
 import java.io.Serializable;
@@ -115,12 +114,6 @@ public class MenuSelectionBean implements Serializable{
     
     // For testing DataRetriever
     public String dataRetriever() {
-        // Pass in the study_id of the study that the system is going to 
-        // generate the consolidated output.
-        // For testing purpose, use study_id 'Bayer'
-        DataRetriever retrieverThread = new DataRetriever("Bayer");
-        retrieverThread.start();
-
         return Constants.NGS_PAGE;
     }
     

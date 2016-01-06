@@ -1,5 +1,5 @@
 /*
- * Copyright @2015
+ * Copyright @2015-2016
  */
 package Clinical.Data.Sink.Bean;
 
@@ -133,7 +133,8 @@ public class StudyManagementBean implements Serializable {
     // Create new Study
     public String createNewStudy() {
         FacesContext fc = getFacesContext();
-        // Study will always be created with completed status as false.
+        // New Study will always be created with completed status as false, 
+        // fields finalized_output and summary will be empty.
         Study study = new Study(study_id, dept_id, user_id, annot_ver, 
                                 description, sqlDate, false);
         
