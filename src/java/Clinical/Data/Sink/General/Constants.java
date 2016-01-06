@@ -1,9 +1,10 @@
 /*
- * Copyright @2015
+ * Copyright @2015-2016
  */
 package Clinical.Data.Sink.General;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.text.DateFormat;
@@ -68,6 +69,9 @@ import org.apache.logging.log4j.LogManager;
  * 24-Dec-2015 - Added 3 new constants, FINALIZE_PATH, FINALIZE_FILE_NAME and
  * FINALIZE_FILE_EXT.
  * 28-Dec-2015 - Added 2 new constants, FINALIZE_STUDY and SUMMARY_OF_STUDY.
+ * 06-Jan-2016 - Added one new constant, SUMMARY_FILE_EXT. Renamed 
+ * FINALIZE_FILE_NAME to SUMMARY_FILE_NAME. Standardize the setup for all 
+ * system paths.
  */
 
 @ManagedBean (name = "constants")
@@ -127,7 +131,8 @@ public class Constants {
     private static String LOGFILE_EXT = null;
     private static String CONFIG_FILE_NAME = null;
     private static String CONFIG_FILE_EXT = null;
-    private static String FINALIZE_FILE_NAME = null;
+    private static String SUMMARY_FILE_NAME = null;
+    private static String SUMMARY_FILE_EXT = null;
     private static String FINALIZE_FILE_EXT = null;
     private static String SAMPLE_ANNOT_FILE_NAME = null;
     private static String SAMPLE_ANNOT_FILE_EXT = null;
@@ -169,12 +174,18 @@ public class Constants {
         
             // Setup the config parameters
             SYSTEM_PATH = setup.get("SYSTEM_PATH");
-            USERS_PATH = setup.get("USERS_PATH");
-            OUTPUT_PATH = setup.get("OUTPUT_PATH");
-            INPUT_PATH = setup.get("INPUT_PATH");
-            CONFIG_PATH = setup.get("CONFIG_PATH");
-            LOG_PATH = setup.get("LOG_PATH");
-            FINALIZE_PATH = setup.get("FINALIZE_PATH");
+            USERS_PATH = 
+                    File.separator + setup.get("USERS_PATH") + File.separator;
+            OUTPUT_PATH = 
+                    File.separator + setup.get("OUTPUT_PATH") + File.separator;
+            INPUT_PATH = 
+                    File.separator + setup.get("INPUT_PATH") + File.separator;
+            CONFIG_PATH = 
+                    File.separator + setup.get("CONFIG_PATH") + File.separator;
+            LOG_PATH = 
+                    File.separator + setup.get("LOG_PATH") + File.separator;
+            FINALIZE_PATH = 
+                    File.separator + setup.get("FINALIZE_PATH") + File.separator;
             OUTPUTFILE_NAME = setup.get("OUTPUTFILE_NAME");
             OUTPUTFILE_EXT = setup.get("OUTPUTFILE_EXT");
             REPORTFILE_NAME = setup.get("REPORTFILE_NAME");
@@ -183,7 +194,8 @@ public class Constants {
             LOGFILE_EXT = setup.get("LOGFILE_EXT");
             CONFIG_FILE_NAME = setup.get("CONFIG_FILE_NAME");
             CONFIG_FILE_EXT = setup.get("CONFIG_FILE_EXT");
-            FINALIZE_FILE_NAME = setup.get("FINALIZE_FILE_NAME");
+            SUMMARY_FILE_NAME = setup.get("SUMMARY_FILE_NAME");
+            SUMMARY_FILE_EXT = setup.get("SUMMARY_FILE_EXT");
             FINALIZE_FILE_EXT = setup.get("FINALIZE_FILE_EXT");
             SAMPLE_ANNOT_FILE_NAME = setup.get("SAMPLE_ANNOT_FILE_NAME");
             SAMPLE_ANNOT_FILE_EXT = setup.get("SAMPLE_ANNOT_FILE_EXT");
@@ -207,7 +219,7 @@ public class Constants {
         DateFormat dateFormat = new SimpleDateFormat("dd-MMM-yyyy hh:mm:ss aa");
         return dateFormat.format(new Date());        
     }
-    
+        
     // Machine generated getters
     public static String getSYSTEM_PATH() { return SYSTEM_PATH; }
     public static String getUSERS_PATH() { return USERS_PATH; }
@@ -224,7 +236,8 @@ public class Constants {
     public static String getLOGFILE_EXT() { return LOGFILE_EXT; }
     public static String getCONFIG_FILE_NAME() { return CONFIG_FILE_NAME; }
     public static String getCONFIG_FILE_EXT() { return CONFIG_FILE_EXT; }
-    public static String getFINALIZE_FILE_NAME() { return FINALIZE_FILE_NAME; }
+    public static String getSUMMARY_FILE_NAME() { return SUMMARY_FILE_NAME; }
+    public static String getSUMMARY_FILE_EXT() { return SUMMARY_FILE_EXT; }
     public static String getFINALIZE_FILE_EXT() { return FINALIZE_FILE_EXT; }
     public static String getSAMPLE_ANNOT_FILE_NAME() 
     { return SAMPLE_ANNOT_FILE_NAME; }
