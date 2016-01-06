@@ -1,5 +1,5 @@
 /*
- * Copyright @2015
+ * Copyright @2015-2016
  */
 package Clinical.Data.Sink.Database;
 
@@ -33,7 +33,10 @@ import org.apache.logging.log4j.LogManager;
  * updateStudyToCompleted, updateStudyFinalizedFile and getFinalizableStudyHash.
  * 30-Dec-2015 - Updated the query in method getStudyHash, to return only
  * uncompleted study.
- * 05-Jan-2015 - Minor changes to method updateStudyCompletedStatus.
+ * 05-Jan-2016 - Minor changes to method updateStudyCompletedStatus.
+ * 06-Jan-2016 - Changes due to 2 addition attributes in Study class. Added
+ * new method queryCompletedStudy. Implemented the module for downloading of
+ * study's consolidated output and finalized summary.
  */
 
 public abstract class StudyDB {
@@ -43,7 +46,8 @@ public abstract class StudyDB {
     private final static Connection conn = DBHelper.getDBConn();
     private static List<Study> studyList = new ArrayList<>();
 
-    // Insert the new study into database
+    // Insert the new study into database. For every new study created, 
+    // the finalized_output and summary fields will be empty.
     public static Boolean insertStudy(Study study) {
         Boolean result = Constants.OK;
         String insertStr = "INSERT INTO study(study_id,dept_id,user_id,"
@@ -115,7 +119,7 @@ public abstract class StudyDB {
     
     // Update the finalized_file with the file path of the output file.
     public static void updateStudyFinalizedFile(String studyID, String path) {
-        String updateStr = "UPDATE study SET finalized_file = ? WHERE study_id = ?";
+        String updateStr = "UPDATE study SET finalized_output = ? WHERE study_id = ?";
         
         try (PreparedStatement queryStm = conn.prepareStatement(updateStr)) {
             queryStm.setString(1, path);
@@ -200,6 +204,40 @@ public abstract class StudyDB {
         return finStudyHash;
     }
     
+    // Return the list of completed study that belong to the department.
+    public static List<Study> queryCompletedStudy(String dept_id) {
+        List<Study> completedStudy = new ArrayList<>();
+        String queryStr = "SELECT * FROM study WHERE dept_id = ? "
+                        + "AND completed = true ORDER BY date DESC";
+        
+        try (PreparedStatement queryStm = conn.prepareStatement(queryStr)) {
+            queryStm.setString(1, dept_id);
+            ResultSet rs = queryStm.executeQuery();
+            
+            while (rs.next()) {
+                Study tmp = new Study(
+                            rs.getString("study_id"),
+                            rs.getString("dept_id"),
+                            rs.getString("user_id"),
+                            rs.getString("annot_ver"),
+                            rs.getString("description"),
+                            rs.getString("finalized_output"),
+                            rs.getString("summary"),
+                            rs.getDate("date"),
+                            rs.getBoolean("completed"));
+                
+                completedStudy.add(tmp);
+            }
+            logger.debug("Query completed study for " + dept_id + " completed.");
+        }
+        catch (SQLException e) {
+            logger.error("Failed to retrieve completed study!");
+            logger.error(e.getMessage());
+        }
+        
+        return completedStudy;
+    }
+    
     // Return the list of Study ID setup in the system.
     // Note: Users will not have access to create Study ID i.e. only the 
     // administrator do.
@@ -216,6 +254,8 @@ public abstract class StudyDB {
                             rs.getString("user_id"),
                             rs.getString("annot_ver"),
                             rs.getString("description"),
+                            rs.getString("finalized_output"),
+                            rs.getString("summary"),
                             rs.getDate("date"),
                             rs.getBoolean("completed"));
                     
