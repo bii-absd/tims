@@ -1,5 +1,5 @@
 /*
- * Copyright @2015
+ * Copyright @2015-2016
  */
 package Clinical.Data.Sink.General;
 
@@ -24,6 +24,7 @@ public class LogContextListener extends Log4jServletContextListener{
     
     public LogContextListener(){}
     
+    @Override
     public void contextInitialized(ServletContextEvent event) {
         String OS = System.getProperty("os.name");
         String pathToConfigFile, realPathToConfigFile;

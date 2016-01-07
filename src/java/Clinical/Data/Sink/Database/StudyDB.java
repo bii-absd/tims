@@ -34,7 +34,7 @@ import org.apache.logging.log4j.LogManager;
  * 30-Dec-2015 - Updated the query in method getStudyHash, to return only
  * uncompleted study.
  * 05-Jan-2016 - Minor changes to method updateStudyCompletedStatus.
- * 06-Jan-2016 - Changes due to 2 addition attributes in Study class. Added
+ * 07-Jan-2016 - Changes due to 2 addition attributes in Study class. Added
  * new method queryCompletedStudy. Implemented the module for downloading of
  * study's consolidated output and finalized summary.
  */
@@ -117,7 +117,7 @@ public abstract class StudyDB {
         }
     }
     
-    // Update the finalized_file with the file path of the output file.
+    // Update the finalized_output with the file path of the output file.
     public static void updateStudyFinalizedFile(String studyID, String path) {
         String updateStr = "UPDATE study SET finalized_output = ? WHERE study_id = ?";
         
@@ -131,6 +131,22 @@ public abstract class StudyDB {
             logger.error("Failed to update study's finalized file path!");
             logger.error(e.getMessage());
         }
+    }
+    
+    // Updated the summary with the file path of the summary report.
+    public static void updateStudySummaryReport(String studyID, String path) {
+        String updateStr = "UPDATE study SET summary = ? WHERE study_id = ?";
+        
+        try (PreparedStatement queryStm = conn.prepareStatement(updateStr)) {
+            queryStm.setString(1, path);
+            queryStm.setString(2, studyID);
+            queryStm.executeUpdate();
+            logger.debug(studyID + " summary report path updated to " + path);
+        }
+        catch (SQLException e) {
+            logger.error("Failed to update study's summary report path!");
+            logger.error(e.getMessage());
+        }        
     }
     
     // Return the list of annotation version setup in the system

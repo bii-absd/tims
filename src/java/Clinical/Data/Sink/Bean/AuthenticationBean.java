@@ -1,5 +1,5 @@
 /*
- * Copyright @2015
+ * Copyright @2015-2016
  */
 package Clinical.Data.Sink.Bean;
 
@@ -24,7 +24,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
 
 /**
- * AuthenticationBean is the backing bean for the login.xhtml view.
+ * AuthenticationBean is the backing bean for the login view.
  * 
  * Author: Tay Wei Hong
  * Created on: 18-Sep-2015
@@ -69,6 +69,8 @@ import org.apache.logging.log4j.core.LoggerContext;
  * 01-Dec-2015 - Implementation for database 2.0
  * 02-Dec-2015 - Implemented the changes in the input folder directory.
  * 28-Dec-2015 - Added 2 new methods, isSupervisor() and isClinical().
+ * 07-Jan-2016 - Added one new method, getFullName() to be used during 
+ * generation of study's summary report.
  */
 
 @ManagedBean (name="authenticationBean")
@@ -84,17 +86,6 @@ public class AuthenticationBean implements Serializable {
     
     public AuthenticationBean() {
         logger.debug("AuthenticationBean created.");
-    }
-    
-    // Update log4j2 log filename
-    // Use together with:
-    // <RollingRandomAccessFile name="RollingRandomAccessFile" fileName="${sys:logFilename}" filePattern="${sys:logFilename}-%d{MMM-yyyy}-%i.gz">
-    // NOT IN USE.
-    private void updateLog4jConfiguration() {
-        System.setProperty("logFilename", "C:/temp/datasink/log/log");
-        
-        LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
-        ctx.reconfigure();
     }
     
     // Setup the database configuration, input and config file path according 
@@ -303,9 +294,27 @@ public class AuthenticationBean implements Serializable {
         }
     }
     
+    // Supply the user full name for Summary Report generation.
+    public static String getFullName() {
+        return userAcct.getFirst_name() + " " + userAcct.getLast_name();
+    }
+    
     // Machine generated getters and setters
     public String getLoginName() { return loginName; }
     public void setLoginName(String loginName) { this.loginName = loginName; }
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
+
+    /* NOT IN USE
+    // Update log4j2 log filename
+    // Use together with:
+    // <RollingRandomAccessFile name="RollingRandomAccessFile" fileName="${sys:logFilename}" filePattern="${sys:logFilename}-%d{MMM-yyyy}-%i.gz">
+    // NOT IN USE.
+    private void updateLog4jConfiguration() {
+        System.setProperty("logFilename", "C:/temp/datasink/log/log");
+        
+        LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+        ctx.reconfigure();
+    }
+    */
 }

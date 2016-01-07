@@ -1,13 +1,15 @@
 /*
- * Copyright @2015
+ * Copyright @2015-2016
  */
 package Clinical.Data.Sink.Database;
 
 import Clinical.Data.Sink.Bean.AuthenticationBean;
 import Clinical.Data.Sink.General.Constants;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -38,6 +40,9 @@ import org.apache.logging.log4j.LogManager;
  * found in the list of job entries.
  * 28-Dec-2015 - Moved method subjectExistInDB to SubjectDB. Improve on the 
  * code in method insertFinalizedDataIntoDB().
+ * 07-Jan-2016 - Continue to generate the consolidated output after the data
+ * insertion has completed successfully. Generated the summary report after 
+ * finalization.Removed unused code.
  */
 
 public class DataDepositor extends Thread {
@@ -46,8 +51,11 @@ public class DataDepositor extends Thread {
             getLogger(DataDepositor.class.getName());
     private final static Connection conn = DBHelper.getDBConn();
     private final String study_id, dept_id, annot_ver;
-    private String fileUri;
-    private int job_id;
+    private String fileUri, summaryReport;
+    private int job_id, totalGene, processGene;
+    // Categories of subject ID based on whether their meta data is found 
+    // in the database or not.
+    StringBuilder subjectNotFound, subjectFound;
     private List<FinalizingJobEntry> jobList = new ArrayList<>();
     
     public DataDepositor(String study_id, List<FinalizingJobEntry> jobList) {
@@ -56,6 +64,10 @@ public class DataDepositor extends Thread {
         // Retrieve the value of dept_id and annot_ver from database.
         dept_id = UserAccountDB.getDeptID(AuthenticationBean.getUserName());
         annot_ver = StudyDB.getAnnotVer(study_id);
+        summaryReport = Constants.getSYSTEM_PATH() + 
+                        Constants.getFINALIZE_PATH() + study_id + 
+                        Constants.getSUMMARY_FILE_NAME() + 
+                        Constants.getSUMMARY_FILE_EXT();
         logger.debug("DataDepositor created for study: " + study_id);
     }
     
@@ -98,14 +110,65 @@ public class DataDepositor extends Thread {
             
             conn.setAutoCommit(true);
             logger.debug("DataDepositor completed - Set auto-commit to ON.");
-            // Update job status to finalized
-            for (FinalizingJobEntry job : jobList) {
-                SubmittedJobDB.updateJobStatusToFinalized(job.getJob_id());
+            if (finalizeStatus) {
+                // Update job status to finalized
+                for (FinalizingJobEntry job : jobList) {
+                    SubmittedJobDB.updateJobStatusToFinalized(job.getJob_id());
+                }
+                // Generate the summary report for this study.
+                generateSummaryReport();
+                // Update the summary filepath in the study table.
+                StudyDB.updateStudySummaryReport(study_id, summaryReport);
+                // Generate the consolidated output for this study.
+                DataRetriever retrieverThread = new DataRetriever(study_id);
+                retrieverThread.start();
+            }
+            else {
+                // Update study to uncompleted
+                StudyDB.updateStudyCompletedStatus(study_id, false);
             }
         }
         catch (SQLException e) {
             logger.error("Falied to insert finalized data into database!");
             logger.error(e.getMessage());
+        }
+    }
+    
+    // Generate the summary report for the finalization of study.
+    private void generateSummaryReport() {
+        String[] subjects = subjectFound.toString().split("\\$");
+        StringBuilder summary = new StringBuilder("Summary Report for Finalization of ");
+        
+        // Start to generate the summary report content
+        summary.append(study_id).append("\n\n");
+        summary.append("1. Technology employed - Pipeline executed - Date & Time").append("\n");
+        for (FinalizingJobEntry job : jobList) {
+            summary.append("\t").append(job.getTid()).append(" - ");
+            summary.append(job.getPipeline_name()).append(" - ");
+            summary.append(job.getSubmit_time()).append("\n");
+        }
+        summary.append("\n").append("2. Identified Subject ID").append("\n");
+        for (String sub : subjects) {
+            summary.append("\t").append(sub).append("\n");
+        }
+        summary.append("\n").append("3. Unidentified Subject ID").append("\n");
+        summary.append("\t").append(subjectNotFound).append("\n");
+        summary.append("\n").append("4. No of gene data available").append("\n");
+        summary.append("\t").append(totalGene).append("\n");
+        summary.append("\n").append("5. No of gene data stored").append("\n");
+        summary.append("\t").append(processGene).append("\n\n");
+        summary.append("Author: ").append(AuthenticationBean.getFullName()).append("\n");
+        summary.append("Department: ").append(AuthenticationBean.getHeaderInstDept()).append("\n");
+        summary.append("Date: ").append(Constants.getDateTime());
+
+        // Start to produce the summary report.
+        try {
+            PrintStream ps = new PrintStream(new File(summaryReport));
+            ps.print(summary);
+        }
+        catch (IOException ioe) {
+            logger.error("IOException when writing summary report!");
+            logger.error(ioe.getMessage());
         }
     }
     
@@ -173,13 +236,14 @@ public class DataDepositor extends Thread {
         int totalRecord, processedRecord;
         // To record the time taken to insert the processed data
         long startTime, elapsedTime;
-        
+        subjectNotFound = new StringBuilder();
+        subjectFound = new StringBuilder();
+
         try {
             BufferedReader br = new BufferedReader(new FileReader(fileUri));
-            // Store those subject ID whom meta data is not in the database.
-            StringBuilder subjectNotFound = new StringBuilder();
-            
+            //
             // **Subject line processing start here.
+            //
             String lineRead = br.readLine();
             values = lineRead.split("\t");
             // Declare a integer array with size equal to the no of columns
@@ -199,12 +263,17 @@ public class DataDepositor extends Thread {
                     // available in the database.
                     try {
                         if (SubjectDB.isSubjectExistInDept(values[i], dept_id)) {
+                            subjectFound.append(values[i]).append(" ");
                             processedRecord++;
                             arrayIndex[i] = getNextArrayInd();
                             FinalizedOutput record = new FinalizedOutput
                                 (arrayIndex[i], annot_ver, values[i], job_id);
                             // Insert the finalized output record.
                             insertToFinalizedOutput(insertStm, record);                            
+                            // At every 5th subject ID, place a marker '*'
+                            if (processedRecord%5 == 0) {
+                                subjectFound.append("$");
+                            }
                         }
                         else {
                             subjectNotFound.append(values[i]).append(" ");
@@ -233,10 +302,11 @@ public class DataDepositor extends Thread {
                 // Error occurred, return to caller.
                 return Constants.NOT_OK;
             }
-            
+            //
             // **Gene data processing start here.
+            //
             String genename;
-            totalRecord = processedRecord = 0;
+            totalGene = processGene = 0;
             // To record the total time taken to insert the finalized data.
             startTime = System.nanoTime();
             // UPDATE statement to update the data array in data_depository table.
@@ -252,14 +322,14 @@ public class DataDepositor extends Thread {
                  PreparedStatement queryGeneStm = conn.prepareStatement(queryGene)) 
             {
                 while ((lineRead = br.readLine()) != null) {
-                    totalRecord++;
+                    totalGene++;
                     values = lineRead.split("\t");
                     // The first string is the gene symbol.
                     genename = values[0];
                     try {
                         // Check whether genename exist in data_depository.
                         if (checkGeneExistInDB(queryGeneStm,genename)) {
-                            processedRecord++;
+                            processGene++;
                             // Start reading in the data from 3rd string; 
                             // start from index 2.
                             for (int i = 2; i < values.length; i++) {
@@ -290,7 +360,7 @@ public class DataDepositor extends Thread {
             elapsedTime = System.nanoTime() - startTime;
             
             logger.debug("Total gene record processed: " + 
-                    processedRecord + "/" + totalRecord);
+                    processGene + "/" + totalGene);
             logger.debug("Total time taken: " + (elapsedTime / 1000000000.0) +
                     " sec");
         }
@@ -302,94 +372,4 @@ public class DataDepositor extends Thread {
         
         return result;
     }
-    
-    /* NOT IN USE ANYMORE!
-    
-    // Check whether the subject Meta info exists in the database.
-    // Moved to SubjectDB. 
-    // NOT IN USE ANYMORE!
-    private Boolean subjectExistInDB(String subject_id) throws SQLException {
-        String queryStr = "SELECT * FROM subject WHERE subject_id = ? AND "
-                        + "dept_id = \'" + dept_id + "\'";
-        
-        PreparedStatement queryStm = conn.prepareStatement(queryStr);
-        queryStm.setString(1, subject_id);
-        ResultSet rs = queryStm.executeQuery();
-
-        return rs.isBeforeFirst()?Constants.OK:Constants.NOT_OK;
-    }
-    
-    // Update data_depository's data field (at array_index) with the value 
-    // passed in.
-    // NOT IN USE ANYMORE!
-    private Boolean updateDataArray(String genename, int array_index, 
-            String value) {
-        Boolean result = Constants.OK;
-        
-        String updateStr = "UPDATE data_depository SET data[?] = ? "
-                + "WHERE genename = ? AND annot_ver = ?";
-        
-        try (PreparedStatement updateStm = conn.prepareStatement(updateStr)) {
-            updateStm.setInt(1, array_index);
-            updateStm.setString(2, value);
-            updateStm.setString(3, genename);
-            updateStm.setString(4, annot_ver);
-            
-            updateStm.executeUpdate();
-        }
-        catch (SQLException e) {
-            logger.error("SQLException when updating data depository record!");
-            logger.error(e.getMessage());
-        }
-        
-        return result;
-    }
-    
-    // Insert a new finalized_output record into the database.
-    // NOT IN USER ANYMORE!
-    private void insertFinalizedOutput(FinalizedOutput record) {
-        String insertStr = "INSERT INTO finalized_output(array_index,annot_ver,"
-                         + "job_id,subject_id) VALUES(?,?,?,?)";
-
-        try (PreparedStatement insertStm = conn.prepareStatement(insertStr)) {
-            insertStm.setInt(1, record.getArray_index());
-            insertStm.setString(2, record.getAnnot_ver());
-            insertStm.setInt(3, record.getJob_id());
-            insertStm.setString(4, record.getSubject_id());
-            insertStm.executeUpdate();
-            
-            logger.debug("Finalized output for " + record.getSubject_id() + 
-                         " inserted with array_index: " + record.getArray_index());
-        }
-        catch (SQLException e) {
-            logger.error("SQLException when inserting new finalized output!");
-            logger.error(e.getMessage());
-        }
-    }
-    
-    // Check whether the genename exists in the database or not.
-    // NOT IN USE ANYMORE.
-    private Boolean geneExistInDB(String genename) {
-        Boolean geneExist = Constants.OK;
-        String queryStr = "SELECT * FROM data_depository "
-                        + "WHERE genename = ? AND annot_ver = \'" 
-                        + annot_ver + "\'";
-        
-        try (PreparedStatement queryStm = conn.prepareStatement(queryStr)) {
-            queryStm.setString(1, genename);
-            ResultSet result = queryStm.executeQuery();
-            
-            // Check whether does this gene exist in the database
-            if (!result.isBeforeFirst()) {
-                geneExist = Constants.NOT_OK;
-            }
-        }
-        catch (SQLException e) {
-            logger.error("SQLException when searching for genename!");
-            logger.error(e.getMessage());
-        }
-        
-        return geneExist;
-    }
-    */
 }

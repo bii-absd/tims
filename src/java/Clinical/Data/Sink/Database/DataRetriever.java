@@ -1,5 +1,5 @@
 /*
- * Copyright @2015
+ * Copyright @2015-2016
  */
 package Clinical.Data.Sink.Database;
 
@@ -91,7 +91,7 @@ public class DataRetriever extends Thread {
                     (elapsedTime / 1000000.0) + " msec");
         }
         catch (SQLException e) {
-            logger.error("SQLException when retrieving subject data!");
+            logger.error("Failed to retrieve subject data!");
             logger.error(e.getMessage());
         }
         
@@ -148,7 +148,7 @@ public class DataRetriever extends Thread {
             logger.debug("Time taken: " + (elapsedTime / 1000000.0) + " msec.");
         }
         catch (SQLException e) {
-            logger.error("SQLException when retrieving genename!");
+            logger.error("Failed to retrieve genename!");
             logger.error(e.getMessage());
         }
         
