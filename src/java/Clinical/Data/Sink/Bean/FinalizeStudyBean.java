@@ -23,6 +23,7 @@ import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
+import javax.servlet.ServletContext;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -48,6 +49,8 @@ import org.apache.logging.log4j.LogManager;
  * least one job for finalization.
  * 05-Jan-2016 - Changes due to the change in method 
  * StudyDB.updateStudyCompletedStatus().
+ * 08-Jan-2016 - To setup the Astar and Bii logo before starting the 
+ * DataDepositor thread.
  */
 
 @ManagedBean (name="finalizedBean")
@@ -163,6 +166,10 @@ public class FinalizeStudyBean implements Serializable {
         for (FinalizingJobEntry job : selectedJobs) {
             SubmittedJobDB.updateJobStatusToFinalizing(job.getJob_id());
         }
+        // Setup the filepath of the Astar and Bii logo.
+        DataDepositor.setupLogo(
+                getServletContext().getRealPath("/resources/images/Astar.jpg"), 
+                getServletContext().getRealPath("/resources/images/BII.jpg"));
         // Start a new thread to insert the finalized pipeline output into 
         // database.
         DataDepositor depositThread = new DataDepositor(study_id, selectedJobs);
@@ -284,6 +291,12 @@ public class FinalizeStudyBean implements Serializable {
     }
     public FinalizingJobEntry getSelectedJob2() {
         return selectedJob2;
+    }
+    
+    // Retrieve the servlet context
+    private ServletContext getServletContext() {
+        return (ServletContext) FacesContext.getCurrentInstance().
+                getExternalContext().getContext();
     }
     
     // Machine generated getters and setters

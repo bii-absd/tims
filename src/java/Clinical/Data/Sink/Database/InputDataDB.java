@@ -28,6 +28,7 @@ import org.apache.logging.log4j.LogManager;
  * the query.
  * 31-Dec-2015 - Removed attribute ipList, and updated getIpList to always 
  * query the database for the input_data details.
+ * 08-Jan-2016 - To sort the list of input data in descending order.
  */
 
 public abstract class InputDataDB {
@@ -67,7 +68,7 @@ public abstract class InputDataDB {
     public static List<InputData> getIpList(String studyID) {
         List<InputData> ipList = new ArrayList<>();
         String queryStr = "SELECT * FROM input_data WHERE study_id = ? "
-                        + "ORDER BY sn";
+                        + "ORDER BY sn DESC";
         
         try (PreparedStatement queryStm = conn.prepareStatement(queryStr)) {
             queryStm.setString(1, studyID);

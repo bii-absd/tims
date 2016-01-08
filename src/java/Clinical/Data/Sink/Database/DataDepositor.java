@@ -7,6 +7,7 @@ import Clinical.Data.Sink.Bean.AuthenticationBean;
 import Clinical.Data.Sink.General.Constants;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -19,6 +20,15 @@ import java.util.List;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.apache.pdfbox.exceptions.COSVisitorException;
+// Libraries for Apache PDFBox
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.pdmodel.edit.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.font.PDFont;
+import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import org.apache.pdfbox.pdmodel.graphics.xobject.PDJpeg;
 
 /**
  * DataDepositor read in the processed data from the pipeline output and 
@@ -43,6 +53,7 @@ import org.apache.logging.log4j.LogManager;
  * 07-Jan-2016 - Continue to generate the consolidated output after the data
  * insertion has completed successfully. Generated the summary report after 
  * finalization.Removed unused code.
+ * 08-Jan-2016 - Generate the PDF version of the summary report.
  */
 
 public class DataDepositor extends Thread {
@@ -52,7 +63,11 @@ public class DataDepositor extends Thread {
     private final static Connection conn = DBHelper.getDBConn();
     private final String study_id, dept_id, annot_ver;
     private String fileUri, summaryReport;
-    private int job_id, totalGene, processGene;
+    private int job_id, totalGene, processedGene;
+    // Store the filepath of the Astar and Bii logo.
+    private static String astarLogo, biiLogo;
+    // Store the y-axis of the PDF content stream cursor.
+    float pageCursorYaxis;
     // Categories of subject ID based on whether their meta data is found 
     // in the database or not.
     StringBuilder subjectNotFound, subjectFound;
@@ -116,7 +131,7 @@ public class DataDepositor extends Thread {
                     SubmittedJobDB.updateJobStatusToFinalized(job.getJob_id());
                 }
                 // Generate the summary report for this study.
-                generateSummaryReport();
+                genPDFSummaryReport();
                 // Update the summary filepath in the study table.
                 StudyDB.updateStudySummaryReport(study_id, summaryReport);
                 // Generate the consolidated output for this study.
@@ -134,8 +149,168 @@ public class DataDepositor extends Thread {
         }
     }
     
-    // Generate the summary report for the finalization of study.
-    private void generateSummaryReport() {
+    // Call by FinalizeStudyBean to setup the filepath of the Astar and Bii 
+    // logo before starting the finalization process.
+    public static void setupLogo(String astar, String bii) {
+        astarLogo = astar;
+        biiLogo = bii;
+    }
+    
+    // Update the cursor y-axis to the next line, and return the new position.
+    private float getNextLineYaxis() {
+        pageCursorYaxis -= 15;
+        return pageCursorYaxis;
+    }
+    // Update the cursor y-axis to the next sub-header, and return the new position.
+    private float getNextSubheaderYaxis() {
+        pageCursorYaxis -= 30;
+        return pageCursorYaxis;
+    }
+    // Update the cursor y-axis to the next header, and return the new position.
+    private float getNextHeaderYaxis() {
+        pageCursorYaxis -= 50;
+        return pageCursorYaxis;
+    }
+    
+    // Generate the PDF summary report for the finalization of study.
+    private void genPDFSummaryReport() {
+        // In the summary report, we print 5 subjects on every line.
+        String[] foundSubjects = subjectFound.toString().split("\\$");
+        String[] missingSubjects = subjectNotFound.toString().split("\\$");
+        // Create a PDF document and add a page to it.
+        PDDocument doc = new PDDocument();
+        PDPage page1 = new PDPage(PDPage.PAGE_SIZE_A4);
+        doc.addPage(page1);
+        // rect can be used to get the page width and height.
+        PDRectangle rect = page1.getMediaBox();
+        pageCursorYaxis = rect.getHeight();
+        // x-axis position for each new subheader.
+        float subheadX = 40;
+        // x-axis position for each new content line.
+        float lineX = 65;
+        // Create some font objects by selecting one of the PDF base fonts.
+        PDFont plainFont = PDType1Font.COURIER;
+        PDFont boldFont = PDType1Font.COURIER_BOLD;
+        PDFont italicFont = PDType1Font.COURIER_BOLD_OBLIQUE;
+
+        // Start a new content stream to hold the created content.
+        try (PDPageContentStream cs = new PDPageContentStream(doc, page1)) {
+            int line = 0;
+            // Create 2 image objects for Astar and BII logo.
+            PDJpeg astarImg = new PDJpeg(doc, 
+                    new FileInputStream(astarLogo));
+            PDJpeg biiImg = new PDJpeg(doc, 
+                    new FileInputStream(biiLogo));
+            // Draw the Astar and BII logo.
+            cs.drawImage(astarImg, subheadX, pageCursorYaxis-100);
+            cs.drawImage(biiImg, subheadX+200, pageCursorYaxis-100);
+            pageCursorYaxis -= 100;
+            
+            // Write the title in bold first.
+            cs.beginText();
+            cs.setFont(boldFont, 14);
+            cs.moveTextPositionByAmount(subheadX, getNextHeaderYaxis());
+            cs.drawString("Summary Report for Finalization of " + study_id);
+            cs.endText();
+            
+            // Write the body in plain.
+            cs.beginText();
+            cs.setFont(plainFont, 12);
+            // Section 1
+            cs.moveTextPositionByAmount(subheadX, getNextHeaderYaxis());
+            cs.drawString("1. Technology employed - Pipeline executed - Date & Time");
+            cs.endText();
+            
+            for (FinalizingJobEntry job : jobList) {
+                StringBuilder tmp = new StringBuilder(job.getTid());
+                tmp.append(" - ").append(job.getPipeline_name());
+                tmp.append(" - ").append(job.getSubmit_time());
+                cs.beginText();
+                cs.moveTextPositionByAmount(lineX, getNextLineYaxis());
+                cs.drawString(tmp.toString());
+                cs.endText();
+            }
+            // Section 2
+            cs.beginText();
+            cs.moveTextPositionByAmount(subheadX, getNextSubheaderYaxis());
+            cs.drawString("2. Identified Subject ID");
+            cs.endText();
+            
+            for (String sub : foundSubjects) {
+                cs.beginText();
+                cs.moveTextPositionByAmount(lineX, getNextLineYaxis());
+                cs.drawString(sub);
+                cs.endText();
+            }
+            // Section 3
+            cs.beginText();
+            cs.moveTextPositionByAmount(subheadX, getNextSubheaderYaxis());
+            cs.drawString("3. Unidentified Subject ID");
+            cs.endText();
+            
+            for (String sub : missingSubjects) {
+                cs.beginText();
+                cs.moveTextPositionByAmount(lineX, getNextLineYaxis());
+                cs.drawString(sub);
+                cs.endText();
+            }
+            // Section 4
+            cs.beginText();
+            cs.moveTextPositionByAmount(subheadX, getNextSubheaderYaxis());
+            cs.drawString("4. No of gene data available");
+            cs.endText();
+            
+            cs.beginText();
+            cs.moveTextPositionByAmount(lineX, getNextLineYaxis());
+            cs.drawString(String.valueOf(totalGene));
+            cs.endText();
+            // Section 5
+            cs.beginText();
+            cs.moveTextPositionByAmount(subheadX, getNextSubheaderYaxis());
+            cs.drawString("5. No of gene data stored");
+            cs.endText();
+            
+            cs.beginText();
+            cs.moveTextPositionByAmount(lineX, getNextLineYaxis());
+            cs.drawString(String.valueOf(processedGene));
+            cs.endText();
+            // Ending section
+            cs.beginText();
+            cs.moveTextPositionByAmount(subheadX, getNextHeaderYaxis());
+            cs.drawString("Author: " + AuthenticationBean.getFullName());
+            cs.endText();
+            
+            cs.beginText();
+            cs.moveTextPositionByAmount(subheadX, getNextLineYaxis());
+            cs.drawString("Department: " + AuthenticationBean.getHeaderInstDept());
+            cs.endText();
+            
+            cs.beginText();
+            cs.moveTextPositionByAmount(subheadX, getNextLineYaxis());
+            cs.drawString("Date: " + Constants.getDateTime());
+            cs.endText();
+            
+            // Application Signature
+            cs.beginText();
+            cs.setFont(italicFont, 12);
+            cs.moveTextPositionByAmount(subheadX, getNextHeaderYaxis());
+            cs.drawString("Generated by iCOMIC2S");
+            cs.endText();
+            
+            // Close the content stream.
+            cs.close();
+            // Save the result, and close the document.
+            doc.save(summaryReport);
+            doc.close();
+        } 
+        catch (IOException|COSVisitorException ex) {
+            logger.error("Exception when creating the summary report!");
+            logger.error(ex.getMessage());
+        }
+    }
+    
+    // Generate the summary report (.txt) for the finalization of study.
+    private void genTxtSummaryReport() {
         String[] subjects = subjectFound.toString().split("\\$");
         StringBuilder summary = new StringBuilder("Summary Report for Finalization of ");
         
@@ -156,7 +331,7 @@ public class DataDepositor extends Thread {
         summary.append("\n").append("4. No of gene data available").append("\n");
         summary.append("\t").append(totalGene).append("\n");
         summary.append("\n").append("5. No of gene data stored").append("\n");
-        summary.append("\t").append(processGene).append("\n\n");
+        summary.append("\t").append(processedGene).append("\n\n");
         summary.append("Author: ").append(AuthenticationBean.getFullName()).append("\n");
         summary.append("Department: ").append(AuthenticationBean.getHeaderInstDept()).append("\n");
         summary.append("Date: ").append(Constants.getDateTime());
@@ -233,7 +408,7 @@ public class DataDepositor extends Thread {
         int[] arrayIndex;
         String[] values;
         // For record purpose
-        int totalRecord, processedRecord;
+        int totalRecord, processedRecord, unprocessedRecord;
         // To record the time taken to insert the processed data
         long startTime, elapsedTime;
         subjectNotFound = new StringBuilder();
@@ -250,7 +425,7 @@ public class DataDepositor extends Thread {
             arrayIndex = new int[values.length];
             // No of subjects = total column - 2
             totalRecord = values.length - 2;
-            processedRecord = 0;
+            processedRecord = unprocessedRecord = 0;
             // INSERT statement to insert a record into finalized_output table.
             String insertStr = "INSERT INTO finalized_output(array_index,"
                              + "annot_ver,job_id,subject_id) VALUES(?,?,?,?)";
@@ -270,14 +445,19 @@ public class DataDepositor extends Thread {
                                 (arrayIndex[i], annot_ver, values[i], job_id);
                             // Insert the finalized output record.
                             insertToFinalizedOutput(insertStm, record);                            
-                            // At every 5th subject ID, place a marker '*'
+                            // At every 5th subject ID, place a marker '$'
                             if (processedRecord%5 == 0) {
                                 subjectFound.append("$");
                             }
                         }
                         else {
                             subjectNotFound.append(values[i]).append(" ");
+                            unprocessedRecord++;
                             arrayIndex[i] = Constants.DATABASE_INVALID_ID;
+                            // At every 5th subject ID, place a marker '$'
+                            if (unprocessedRecord%5 == 0) {
+                                subjectNotFound.append("$");
+                            }
                         }
                     } catch (SQLException e) {
                         // Error occurred, return to caller.
@@ -306,7 +486,7 @@ public class DataDepositor extends Thread {
             // **Gene data processing start here.
             //
             String genename;
-            totalGene = processGene = 0;
+            totalGene = processedGene = 0;
             // To record the total time taken to insert the finalized data.
             startTime = System.nanoTime();
             // UPDATE statement to update the data array in data_depository table.
@@ -329,7 +509,7 @@ public class DataDepositor extends Thread {
                     try {
                         // Check whether genename exist in data_depository.
                         if (checkGeneExistInDB(queryGeneStm,genename)) {
-                            processGene++;
+                            processedGene++;
                             // Start reading in the data from 3rd string; 
                             // start from index 2.
                             for (int i = 2; i < values.length; i++) {
@@ -360,7 +540,7 @@ public class DataDepositor extends Thread {
             elapsedTime = System.nanoTime() - startTime;
             
             logger.debug("Total gene record processed: " + 
-                    processGene + "/" + totalGene);
+                    processedGene + "/" + totalGene);
             logger.debug("Total time taken: " + (elapsedTime / 1000000000.0) +
                     " sec");
         }
