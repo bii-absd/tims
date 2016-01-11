@@ -1,5 +1,5 @@
 /*
- * Copyright @2015
+ * Copyright @2015-2016
  */
 package Clinical.Data.Sink.General;
 
@@ -34,6 +34,7 @@ import org.apache.logging.log4j.LogManager;
  * 02-Nov-2015 - Port to JSF 2.2
  * 05-Nov-2015 - To receive the study ID of this job, and to retrieve the user
  * account of the job requestor. Personalize the email sent to the user.
+ * 11-Jan-2015 - To include the pipeline name in the subject title of the email.
  */
 
 public class ExitListener implements EventListener {
@@ -62,8 +63,10 @@ public class ExitListener implements EventListener {
     // execution. The success/failure of the execution will be indicated on 
     // the Subject line.
     private void sendEmail(int job_id, String study_id, Boolean status) {
-        // Retrieve the user account of the job requestor
+        // Retrieve the user account of the job requestor.
         UserAccount user = UserAccountDB.getUser(job_id);
+        // Retrieve the pipeline executed in this job.
+        String plName = SubmittedJobDB.getPipelineName(job_id);
         String from = "datasink@bii.a-star.edu.sg";
         // Sending email from localhost
         String host = "localhost";
@@ -85,8 +88,8 @@ public class ExitListener implements EventListener {
             if (status) {
                 // Set the Subject and message content according to execution 
                 // return status.
-                message.setSubject("Pipeline execution for " + study_id + 
-                                   " successfully completed");
+                message.setSubject("Pipeline " + plName + " execution for " + 
+                                   study_id + " successfully completed.");
                 message.setText(
                     "Dear " + user.getFirst_name() + ",\n\n" +
                     "Pipeline execution has completed.\n\n" +

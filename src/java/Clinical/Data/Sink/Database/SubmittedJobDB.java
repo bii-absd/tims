@@ -53,6 +53,8 @@ import org.apache.logging.log4j.LogManager;
  * jobs that are in finalized stage.
  * 05-Jan-2015 - Changes in submitted_job table, removed ctrl_file and annot_
  * file fields. Added input_path field.
+ * 11-Jan-2015 - Added new method, getPipelineName to retrieve the name of the
+ * pipeline executed for the job.
  */
 
 public abstract class SubmittedJobDB {
@@ -282,6 +284,26 @@ public abstract class SubmittedJobDB {
         return path;
     }
 
+    // Retrieve the pipeline name for this submitted job.
+    public static String getPipelineName(int jobID) {
+        String plName = Constants.DATABASE_INVALID_STR;
+        String queryStr = "SELECT pipeline_name FROM submitted_job WHERE job_id = " + jobID;
+        ResultSet rs = DBHelper.runQuery(queryStr);
+        
+        try {
+            if (rs.next()) {
+                plName = rs.getString("pipeline_name");
+            }
+            rs.close();
+        }
+        catch (SQLException e) {
+            logger.error("Failed to retrieve pipeline name!");
+            logger.error(e.getMessage());
+        }
+        
+        return plName;
+    }
+    
     // Clear the HashMap, so that the query to the database will be run again.
     public static void clearSubmittedJobs() {
         submittedJobs.clear();
