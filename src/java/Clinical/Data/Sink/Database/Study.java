@@ -3,6 +3,8 @@
  */
 package Clinical.Data.Sink.Database;
 
+import Clinical.Data.Sink.General.Constants;
+import java.io.File;
 import java.sql.Date;
 
 /**
@@ -15,6 +17,8 @@ import java.sql.Date;
  * 07-Dec-2015 - Created with all the standard getters and setters.
  * 09-Dec-2015 - Added one attribute, dept_id.
  * 06-Jan-2016 - Added two attributes, finalized_output and summary.
+ * 11-Jan-2016 - Added methods to disable/enable the download links for
+ * output and summary.
  */
 
 public class Study {
@@ -52,6 +56,26 @@ public class Study {
         finalized_output = summary = null;
         this.sqlDate = sqlDate;
         this.completed = completed;
+    }
+    
+    // If finalized output is ready for download, don't disable the link (i.e.
+    // return false).
+    public Boolean getOutputReadyStatus() {
+        return !checkFileReady(finalized_output);
+    }
+    
+    // If summary is ready for download, don't disable the link (i.e. return
+    // false).
+    public Boolean getSummaryReadyStatus() {
+        return !checkFileReady(summary);
+    }
+    
+    // Check whether the file is ready for download by checking whether it 
+    // exist or not.
+    private Boolean checkFileReady(String filename) {
+        File file = new File(filename);
+        
+        return file.exists()?Constants.OK:Constants.NOT_OK;
     }
     
     // Machine generated getters and setters

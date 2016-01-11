@@ -31,11 +31,13 @@
                 <p:column headerText="Consolidated Ouput" 
                           style="width: 120px; text-align: left">
                     <p:commandLink ajax="false" value="Download" 
+                                   disabled="#{cmpStudy.outputReadyStatus}"
                                    action="#{SOSBean.downloadFinalizedOP(cmpStudy)}"/>
                 </p:column>
                 <p:column headerText="Finalized Summary" 
                           style="width: 120px; text-align: left">
                     <p:commandLink ajax="false" value="Download" 
+                                   disabled="#{cmpStudy.summaryReadyStatus}"
                                    action="#{SOSBean.downloadSummary(cmpStudy)}"/>
                 </p:column>
             </p:dataTable>
