@@ -92,7 +92,7 @@ public class ExitListener implements EventListener {
                                    study_id + " successfully completed.");
                 message.setText(
                     "Dear " + user.getFirst_name() + ",\n\n" +
-                    "Pipeline execution has completed.\n\n" +
+                    "Pipeline " + plName + " execution has completed.\n\n" +
                     "Output and report files are ready for download at Job Status page.\n\n\n" +
                     "Please do not reply to this message.");
             }
@@ -101,11 +101,11 @@ public class ExitListener implements EventListener {
                 // Temporarily hardcoded the support email to me
                 message.addRecipient(Message.RecipientType.CC, 
                     new InternetAddress("taywh@bii.a-star.edu.sg"));
-                message.setSubject("Pipeline execution for " + study_id + 
-                        " failed to complete.");
+                message.setSubject("Pipeline " + plName + " execution for " + 
+                                   study_id + " failed to complete.");
                 message.setText(
                     "Dear " + user.getFirst_name() + ",\n\n" +
-                    "Pipeline execution failed to complete.\n\n" +
+                    "Pipeline " + plName + " execution failed to complete.\n\n" +
                     "The team is looking at the root cause now.\n\n" +
                     "We will get back to you once we have any finding.\n\n" +
                     "Sorry for the inconvenience caused.\n\n\n" +
