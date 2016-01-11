@@ -1,0 +1,142 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition template="/WEB-INF/pageTemplate.xhtml"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    
+    <ui:define name="title">METH Pipeline</ui:define>
+    <ui:param name="link" value="#{methPBean.breadCrumbLink}"/>
+    <ui:define name="content">
+        <h:form id="mainForm" enctype="multipart/form-data">
+            <p:panel id="inputfile" visible="#{methPBean.haveNewData}" 
+                     header="Upload Sample Probe Files">
+                <p:growl id="uploadStatus" sticky="true"/>
+                <p:fileUpload mode="advanced" multiple="true"
+                              update="uploadStatus" 
+                              label="Select Sample Files"
+                              allowTypes="/(\.|\/)(idat)$/"
+                              fileUploadListener="#{methPBean.inputFile.multipleFileUploadListener}">
+                </p:fileUpload>
+                <p:inputText id="inputdescription" 
+                             value="#{methPBean.inputFileDesc}" 
+                             autocomplete="off" size="150" style="width: 99%; color: blue"/>
+                <p:watermark for="inputdescription" 
+                             value="Enter a brief description of the Sample File here."/>
+            </p:panel>
+            <p:panel id="annotfile" visible="#{methPBean.haveNewData}"
+                     header="Upload Samples Annotation File 
+                     (Please upload this file for the Phenotype Column and 
+                     Sample Averaging to be enable)">
+                <p:fileUpload mode="advanced"
+                              update="uploadStatus phenotype"
+                              label="Select Samples Annotation File"
+                              fileUploadListener="#{methPBean.sampleAnnotFileUploadListener}"/>
+            </p:panel>
+            
+            <p:panel id="reuseInput" visible="#{!methPBean.haveNewData}" 
+                     header="Select Input Data to Reuse">
+                <p:dataTable id="inputTable" var="reuseIP" 
+                             value="#{methPBean.inputDataList}" 
+                             selection="#{methPBean.selectedInput}" 
+                             rowKey="#{reuseIP.sn}" 
+                             styleClass="table-odd-row table-even-row">
+                    <p:column headerText="Data Upload Date" 
+                              style="width: 150px; text-align: center">
+                        <h:outputText value="#{reuseIP.date}"/>
+                    </p:column>
+                    <p:column headerText="Data Description">
+                        <h:outputText value="#{reuseIP.description}"/>
+                    </p:column>
+                    <p:column headerText="Select Data to Reuse" selectionMode="single" 
+                              style="width: 120px; text-align: center"/>
+                    <p:ajax event="rowSelectRadio" 
+                            listener="#{methPBean.reuseInputRadioButtonSelected}"
+                            update=":mainForm:phenotype"/>
+                </p:dataTable>
+            </p:panel>
+            
+            <p:panel id="processparameters" header="Processing Parameters">
+                <h:panelGrid columns="4" cellpadding="5">
+                    <p:column>
+                        <p:selectOneMenu id="normalization" required="true"
+                                         value="#{methPBean.normalization}">
+                            <f:selectItem itemLabel="Select Normalization Method" 
+                                          itemValue=""/>
+                            <f:selectItem itemLabel="SWAN" itemValue="Swan"/>
+                        </p:selectOneMenu>
+                    </p:column>
+                    <p:column>
+                        <p:selectOneMenu id="phenotype" required="true" 
+                                         disabled="#{methPBean.isAnnotationListReady()}"
+                                         title="#{msg['phenotype.column']}"
+                                         value="#{methPBean.phenotype}">
+                            <f:selectItem itemLabel="Phenotype Column"
+                                          itemValue=""/>
+                            <f:selectItems value="#{methPBean.annotationList}"/>
+                        </p:selectOneMenu>
+                    </p:column>
+                    <p:column>
+                        <h:outputText value="Probe Selection: "/>
+                        <p:selectBooleanButton id="probeselection" 
+                                               value="#{methPBean.probeSelect}" 
+                                               title="#{msg['probe.selection']}"
+                                               onLabel="Yes" offLabel="No"/>
+                    </p:column>
+                    <h:message for="phenotype" styleClass="errors"/>
+                </h:panelGrid>
+            </p:panel>
+            
+            <p:separator style="height: 20px"/>
+            <p:commandButton value="Submit" update="display @form"
+                             oncomplete="PF('dlg').show()"
+                             icon="ui-icon-check" 
+                             action="#{methPBean.updateJobSubmissionStatus()}"/>
+            
+            <p:dialog header="Pipeline Configuration Review"
+                      widgetVar="dlg"
+                      resizable="false">
+                <p:panelGrid columns="2" id="display">
+                    <h:outputText value="Study ID: "/>
+                    <h:outputText value="#{methPBean.studyID}"/>
+                    <h:outputText rendered="#{!methPBean.haveNewData}" 
+                                  value="Reusing data uploaded on: "/>
+                    <h:outputText rendered="#{!methPBean.haveNewData}" 
+                                  value="#{methPBean.reuseInputDate}"/>
+                    <h:outputText rendered="#{methPBean.haveNewData}" 
+                                  value="Sample File: "/>
+                    <p:dataList itemType="square" 
+                                rendered="#{methPBean.haveNewData}"
+                                value="#{methPBean.inputFile.inputFileList}"
+                                var="filelist" styleClass="datalist" type="none">
+                        <h:outputText value="#{filelist}"/><br/>
+                    </p:dataList>
+                    <h:outputText rendered="#{methPBean.haveNewData}" 
+                                  value="Samples Annotation File: "/>
+                    <h:outputText rendered="#{methPBean.haveNewData}" 
+                                  value="#{methPBean.sampleFile.inputFilename}"/>
+                    <h:outputText value="Normalization: "/>
+                    <h:outputText value="#{methPBean.normalization}"/>
+                    <h:outputText value="Phenotype Column: "/>
+                    <h:outputText value="#{methPBean.phenotype}"/>
+                    <h:outputText value="Probe Selection: "/>
+                    <h:outputText value="#{methPBean.probeSelect?'Yes':'No'}"/>
+                </p:panelGrid>
+                <p:separator style="height: 20px"/>
+                <h:form>
+                    <h:panelGrid columns="2" cellspacing="2" cellpadding="2">
+                        <p:commandButton value="Cancel" title="Redo the configuration"
+                                         style="width: 130px" oncomplete="PF('dlg').hide()"
+                                         action="#{methPBean.cancelJob}"/>
+                        <p:commandButton value="Confirm" title="Start the pipeline execution"
+                                         style="width: 130px"
+                                         action="#{methPBean.submitJob}" 
+                                         rendered="#{methPBean.jobSubmissionStatus}"/>                        
+                    </h:panelGrid>
+                </h:form>
+            </p:dialog>
+        </h:form>
+    </ui:define>
+</ui:composition>

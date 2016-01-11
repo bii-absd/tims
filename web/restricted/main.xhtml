@@ -19,9 +19,10 @@
                 <p:commandLink action="#{menuSelectionBean.gexAffymetrix}" 
                                value="#{msg['gex.affymetrix']}" 
                                style="font-size: 16px" oncomplete="PF('dlg').show()"/>
-                <p:commandLink action="#{menuSelectionBean.dataDepositor}" 
-                               value="#{msg['meth']}" style="font-size: 16px"/>
-                <p:commandLink action="#{menuSelectionBean.dataRetriever}" 
+                <p:commandLink action="#{menuSelectionBean.methPipeline}" 
+                               value="#{msg['meth']}" 
+                               style="font-size: 16px" oncomplete="PF('dlg').show()"/>
+                <p:commandLink action="#{menuSelectionBean.dataRetriever}" rendered="false"
                                value="#{msg['geno']}" style="font-size: 16px"/>
             </h:panelGrid>
         </p:tab>
@@ -69,7 +70,7 @@
                     Finalize Study
                 </h:outputLink>
                 <h:outputLink title="Download consolidated output and summary report" 
-                    value="summaryofstudy.xhtml" style="font-size: 16px">
+                              value="summaryofstudy.xhtml" style="font-size: 16px">
                     Summary of Study
                 </h:outputLink>
             </h:panelGrid>

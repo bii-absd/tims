@@ -37,6 +37,7 @@ import org.apache.logging.log4j.LogManager;
  * have new data to upload or not.
  * 30-Dec-2015 - Updated proceedToConfig method to use the method setup from
  * ConfigBean to setup the pipeline configuration.
+ * 11-Jan-2016 - Added the support for METH pipeline.
  */
 
 @ManagedBean (name="menuSelectionBean")
@@ -68,6 +69,12 @@ public class MenuSelectionBean implements Serializable{
     public void gexAffymetrix() {
         ConfigBean.setCommandLink("run-gex-pipeline (Affymetrix)");
         config_page = Constants.GEX_AFFYMETRIX_PAGE;
+    }
+    
+    // Setup the ConfigBean for METH pipeline processing.
+    public void methPipeline() {
+        ConfigBean.setCommandLink("run-meth-pipeline");
+        config_page = Constants.METH_PIPELINE_PAGE;
     }
     
     // User decided not to proceed to pipeline configuration page. Stay at the
