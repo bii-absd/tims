@@ -21,6 +21,7 @@ import javax.faces.bean.ViewScoped;
  * Revision History
  * 11-Jan-2016 - Initial creation by extending GEXAffymetrixBean. Override the
  * insertJob method.
+ * 12-Jan-2016 - Fix the static variable issues in AuthenticationBean.
  */
 
 @ManagedBean (name="methPBean")
@@ -43,7 +44,7 @@ public class METHPipelineBean extends GEXAffymetrixBean {
         // For attributes type, probeFilter, sampleAverage, StdLog2Ratio, 
         // summarization and region, set them to "NA".
         SubmittedJob newJob = 
-                new SubmittedJob(0, getStudyID(), pipelineName, 1,
+                new SubmittedJob(0, getStudyID(), userName, pipelineName, 1,
                                  submitTimeInDB, "NA", getInputPath(), 
                                  getNormalization(), "NA", isProbeSelect(), 
                                  getPhenotype(), "NA", outputFilePath, 
@@ -54,11 +55,11 @@ public class METHPipelineBean extends GEXAffymetrixBean {
             job_id = SubmittedJobDB.insertJob(newJob);
         }
         catch (SQLException e) {
-            logger.error("SQLException when inserting job.");
-            logger.error(e.getMessage());
             result = Constants.NOT_OK;
+            logger.error("FAIL to insert job!");
+            logger.error(e.getMessage());
         }
-        // The insert operation will have failed if the control reaches here.
+
         return result;
     }    
 }

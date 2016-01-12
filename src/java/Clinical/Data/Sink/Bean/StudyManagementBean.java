@@ -43,6 +43,7 @@ import org.apache.logging.log4j.LogManager;
  * 15-Dec-2015 - To create a separate input directory for each Study ID created.
  * 22-Dec-2015 - Updated due to changes in some of the method name from 
  * Database Classes.
+ * 12-Jan-2016 - Fix the static variable issues in AuthenticationBean.
  */
 
 @ManagedBean (name="studyMgntBean")
@@ -61,7 +62,8 @@ public class StudyManagementBean implements Serializable {
     private List<Study> studyList;
     
     public StudyManagementBean() {
-        user_id = AuthenticationBean.getUserName();
+        user_id = (String) getFacesContext().getExternalContext().
+                getSessionMap().get("User");
         sqlDate = new Date(Calendar.getInstance().getTime().getTime());
         // Clear the study list everytime the user enter this page.
         StudyDB.clearStudyList();
@@ -91,15 +93,14 @@ public class StudyManagementBean implements Serializable {
         }
 
         if (StudyDB.updateStudy((Study) event.getObject())) {
-            logger.debug(AuthenticationBean.getUserName() + 
-                    ": updated study " + 
+            logger.debug(user_id + ": updated study " + 
                     ((Study) event.getObject()).getStudy_id());
             fc.addMessage(null, new FacesMessage(
                     FacesMessage.SEVERITY_INFO, 
                     "Study updated.", ""));
         }
         else {
-            logger.error("Study update failed!");
+            logger.error("FAIL to update study!");
             fc.addMessage(null, new FacesMessage(
                     FacesMessage.SEVERITY_ERROR, 
                     "Failed to update study!", ""));
@@ -147,7 +148,7 @@ public class StudyManagementBean implements Serializable {
                     "New Study ID created.", ""));
         }
         else {
-            logger.info("Failed to create new Study ID: " + study_id);
+            logger.info("FAIL to create new Study ID: " + study_id);
             fc.addMessage(null, new FacesMessage(
                     FacesMessage.SEVERITY_ERROR, 
                     "Failed to create new Study ID!", ""));

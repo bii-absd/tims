@@ -37,6 +37,7 @@ import javax.faces.bean.ViewScoped;
  * 05-Jan-2015 - Changes in submitted_job table, removed ctrl_file and annot_
  * file fields. Added input_path field.
  * 06-Jan-2016 - Fixed the bug caused by the introduction of input_path field.
+ * 12-Jan-2016 - Fix the static variable issues in AuthenticationBean.
  */
 
 @ManagedBean (name="gexAffymetrixBean")
@@ -88,7 +89,7 @@ public class GEXAffymetrixBean extends ConfigBean {
         // Insert the new job request into datbase; job status is 1 i.e. Waiting
         // DB 2.0 - For attributes summarization and region, set them to "NA".
         SubmittedJob newJob = 
-                new SubmittedJob(0, getStudyID(), pipelineName, 1,
+                new SubmittedJob(0, getStudyID(), userName, pipelineName, 1,
                                  submitTimeInDB, getType(), getInputPath(), 
                                  getNormalization(), probeFilter, 
                                  isProbeSelect(), getPhenotype(), "NA", 
@@ -100,11 +101,11 @@ public class GEXAffymetrixBean extends ConfigBean {
             job_id = SubmittedJobDB.insertJob(newJob);
         }
         catch (SQLException e) {
-            logger.error("SQLException when inserting job.");
-            logger.error(e.getMessage());
             result = Constants.NOT_OK;
+            logger.error("FAIL to insert job!");
+            logger.error(e.getMessage());
         }
-        // The insert operation will have failed if the control reaches here.
+
         return result;
     }
 
@@ -123,7 +124,7 @@ public class GEXAffymetrixBean extends ConfigBean {
             InputDataDB.insertInputData(newdata);
         }
         catch (SQLException e) {
-            logger.error("Failed to insert input data detail!");
+            logger.error("FAIL to insert input data detail!");
             logger.error(e.getMessage());
         }
     }

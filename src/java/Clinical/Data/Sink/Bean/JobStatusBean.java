@@ -11,6 +11,7 @@ import java.util.List;
 import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
+import javax.faces.context.FacesContext;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -40,6 +41,7 @@ import org.apache.logging.log4j.LogManager;
  * 23-Dec-2015 - Moved the retrieval of the job status definition to the
  * AuthenticationBean class.
  * 06-Jan-2016 - Moved the common function download() to FileLoader class.
+ * 12-Jan-2016 - Fix the static variable issues in AuthenticationBean.
  */
 
 @ManagedBean(name = "jobStatusBean")
@@ -51,16 +53,14 @@ public class JobStatusBean implements Serializable {
     // For JSF 2.2, since we are using @ViewScoped we cannot bind any UIComponent.
 //    private transient UIData jobStatusTable;
     private List<SubmittedJob> jobSubmission;
-    /* No longer in use.
-    // These 2 variables are used during downloading of output and report. 
-    private File file = null;
-    private String type;
-    */
+    // Store the user ID of the current user.
+    private final String userName;
     
     public JobStatusBean() {
+        userName = (String) FacesContext.getCurrentInstance().
+                getExternalContext().getSessionMap().get("User");
         logger.debug("JobStatusBean created.");
-        logger.info(AuthenticationBean.getUserName() + 
-                ": access Job Status page.");
+        logger.info(userName + ": access Job Status page.");
         // Retrieve the submitted job from database everytime we enter job
         // status page.
         SubmittedJobDB.clearSubmittedJobs();
@@ -69,8 +69,7 @@ public class JobStatusBean implements Serializable {
     @PostConstruct
     public void init() {
         // Need to assign the jobSubmission here, else the sorting will not work.
-        jobSubmission = SubmittedJobDB.querySubmittedJob
-                        (AuthenticationBean.getUserName());
+        jobSubmission = SubmittedJobDB.querySubmittedJob(userName);
     }
     
     // Download the pipeline output for user.
@@ -104,59 +103,6 @@ public class JobStatusBean implements Serializable {
     */
     
     /* No longer in use.
-    
-    // Retrieve the faces context
-    private FacesContext getFacesContext() {
-	return FacesContext.getCurrentInstance();
-    }
-    // Retrieve the external context
-    private ExternalContext getExternalContext() {
-        return getFacesContext().getExternalContext();
-    }
-    // Retrieve the servlet context
-    private ServletContext getServletContext() {
-        return (ServletContext) getExternalContext().getContext();
-    }
-
-    // Download the output/report file.
-    // MOVED TO FileLoader class.
-    public void download(String downloadFile) {
-        // Get ready the pipeline file for user to download
-        File file = new File(downloadFile);
-        String filename = file.getName();
-        int contentLength = (int) file.length();
-        ExternalContext ec = getFacesContext().getExternalContext();
-        // Some JSF component library or some filter might have set some headers
-        // in the buffer beforehand. We want to clear them, else they may collide.
-        ec.responseReset();
-        // Auto-detect the media-types based on filename
-        ec.setResponseContentType(ec.getMimeType(filename));
-        // Set the file size, so that the download progress will be known.
-        ec.setResponseContentLength(contentLength);
-        // Create the Sava As popup
-        ec.setResponseHeader("Content-Disposition", "attachment; filename=\""
-                            + filename + "\"");
-        
-        try (FileInputStream fis = new FileInputStream(file)){
-            OutputStream os = ec.getResponseOutputStream();
-            byte[] buffer = new byte[2048]; // 2K byte-buffer
-            int bytesRead;
-            
-            while ((bytesRead = fis.read(buffer)) != -1) {
-                os.write(buffer,0,bytesRead);
-            }
-        } catch (IOException ex) {
-            logger.error(AuthenticationBean.getUserName() + 
-                    ": encountered IOException during download.");
-            logger.error(ex.getMessage());
-        }
-        
-        // Important! Otherwise JSF will attempt to render the response which
-        // will fail since it's already written with a file and closed.
-        getFacesContext().responseComplete();
-        logger.info(AuthenticationBean.getUserName() + 
-                ": downloaded pipeline file " + downloadFile);
-    }
     
     public void sort(ActionEvent actionEvent) {
         // Order the query result according to the column selected by the user.

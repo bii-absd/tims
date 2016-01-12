@@ -3,7 +3,6 @@
  */
 package Clinical.Data.Sink.General;
 
-import Clinical.Data.Sink.Bean.AuthenticationBean;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -24,6 +23,7 @@ import org.apache.logging.log4j.LogManager;
  * 
  * Revision History
  * 06-Jan-2016 - Created with one method, download.
+ * 12-Jan-2016 - Fix the static variable issues in AuthenticationBean.
  */
 
 public abstract class FileLoader {
@@ -58,15 +58,13 @@ public abstract class FileLoader {
                 os.write(buffer,0,bytesRead);
             }
         } catch (IOException ex) {
-            logger.error(AuthenticationBean.getUserName() + 
-                    ": encountered IOException during download.");
+            logger.error("FAIL to download " + filename);
             logger.error(ex.getMessage());
         }
         
         // Important! Otherwise JSF will attempt to render the response which
         // will fail since it's already written with a file and closed.
         FacesContext.getCurrentInstance().responseComplete();
-        logger.info(AuthenticationBean.getUserName() + 
-                ": downloaded file " + filepath);
+        logger.info(filename + " downloaded.");
     }
 }

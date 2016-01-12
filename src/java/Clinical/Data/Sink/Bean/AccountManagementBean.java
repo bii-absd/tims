@@ -1,5 +1,5 @@
 /*
- * Copyright @2015
+ * Copyright @2015-2016
  */
 package Clinical.Data.Sink.Bean;
 
@@ -49,6 +49,7 @@ import org.primefaces.event.RowEditEvent;
  * 01-Dec-2015 - Implementation for database 2.0
  * 22-Dec-2015 - Updated due to changes in some of the method name from 
  * Database Classes.
+ * 11-Jan-2016 - Fix the static variable issues in AuthenticationBean.
  */
 
 @ManagedBean (name="acctMgntBean")
@@ -64,18 +65,25 @@ public class AccountManagementBean implements Serializable {
     private int role_id;
     private String dept_id, inst_id;
     private String new_pwd, cfm_pwd;
+    // Store the user ID of the current user.
+    private final String userName;
     private static List<UserAccount> userList = new ArrayList<>();
     private LinkedHashMap<String,String> deptList = new LinkedHashMap<>();
+    private LinkedHashMap<String, Integer> roleNameHash;
     
     public AccountManagementBean() {
+        userName = (String) getFacesContext().getExternalContext().
+                getSessionMap().get("User");
         logger.debug("AccountManagementBean created.");
     }
     
     @PostConstruct
     public void init() {
-        if (AuthenticationBean.isAdministrator()) {
+        if (UserAccountDB.isAdministrator(userName)) {
             userList = UserAccountDB.getAllUser();
         }
+        // Retrieve the list of role name setup in the system.
+        roleNameHash = UserRoleDB.getRoleNameHash();
     }
     
     // Return all the user ID currently in the system.
@@ -118,9 +126,8 @@ public class AccountManagementBean implements Serializable {
         try {
             // Insert the new account into database        
             UserAccountDB.insertAccount(newAcct);
-            logger.info(AuthenticationBean.getUserName() + 
-                    ": created new User ID " + user_id + " with " + 
-                    UserRoleDB.getRoleNameFromHash(role_id) + " right.");
+            logger.info(userName + ": created new User ID " + user_id + " with " + 
+                        UserRoleDB.getRoleNameFromHash(role_id) + " right.");
             facesContext.addMessage("newacctstatus", new FacesMessage(
                     FacesMessage.SEVERITY_INFO, "User Account: " 
                     + user_id + " successfully created.", ""));
@@ -131,8 +138,8 @@ public class AccountManagementBean implements Serializable {
             // Trim the detail error message by removing "Detail: " (i.e. 8 characters)
             String errorMsg = e.getMessage().substring(start+8);
             
-            logger.error("SQLException encountered while creating new User ID: "
-                    + user_id + " : " + errorMsg);
+            logger.error("FAIL to create new User ID: " + user_id + 
+                         " : " + errorMsg);
             logger.error(e.getMessage());
             facesContext.addMessage("newacctstatus", new FacesMessage(
                     FacesMessage.SEVERITY_ERROR, "Failed: " + errorMsg, ""));
@@ -147,15 +154,14 @@ public class AccountManagementBean implements Serializable {
         FacesContext facesContext = getFacesContext();
 
         if (new_pwd.compareTo(cfm_pwd) == 0) {
-            String id = AuthenticationBean.getUserName();
+            String id = userName;
             
             // If this user is a administrator, he/she might be changing the
             // password of another user.
-            if ( AuthenticationBean.isAdministrator() && 
-                 (user_id.compareTo("none") != 0) ) {
+            if (UserAccountDB.isAdministrator(userName) &&
+                (user_id.compareTo("none") != 0) ) {
                 id = user_id;
-                logger.info(AuthenticationBean.getUserName() + ": changing "
-                        + "the password of " + id);
+                logger.info(userName + ": changing " + "the password of " + id);
             }
             
             try {
@@ -167,7 +173,7 @@ public class AccountManagementBean implements Serializable {
                         "Password successfully updated.", ""));
             }
             catch (SQLException e) {
-                logger.error("SQLException while trying to update password!");
+                logger.error("FAIL to update password!");
                 logger.error(e.getMessage());
                 facesContext.addMessage("changepwdstatus", new FacesMessage(
                         FacesMessage.SEVERITY_FATAL, 
@@ -185,8 +191,8 @@ public class AccountManagementBean implements Serializable {
     }
     
     // Return the list of Role setup in the database
-    public LinkedHashMap<String, Integer> getRoleList() {
-        return UserRoleDB.getRoleNameHash();
+    public LinkedHashMap<String, Integer> getRoleNameHash() {
+        return roleNameHash;
     }
     
     // Return the list of Institution setup in the database

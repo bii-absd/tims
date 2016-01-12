@@ -1,5 +1,5 @@
 /*
- * Copyright @2015
+ * Copyright @2015-2016
  */
 package Clinical.Data.Sink.Bean;
 
@@ -32,6 +32,7 @@ import org.primefaces.event.RowEditEvent;
  * to create new pipeline command.
  * 24-Nov-2015 - Changed variable name from command_id to pipeline_name. Added
  * one variable tid (Technology ID).
+ * 12-Jan-2016 - Fix the static variable issues in AuthenticationBean.
  */
 
 @ManagedBean (name="plMgntBean")
@@ -42,11 +43,14 @@ public class PipelineManagementBean implements Serializable {
             getLogger(PipelineManagementBean.class.getName());
     private String pipeline_name, tid, code, parameter;
     private List<Pipeline> plList;
-    
+    // Store the user ID of the current user.
+    private final String userName;
+
     public PipelineManagementBean() {
+        userName = (String) getFacesContext().getExternalContext().
+                getSessionMap().get("User");
         logger.debug("PipelineManagementBean created.");
-        logger.info(AuthenticationBean.getUserName() +
-                ": access Pipeline Management page.");
+        logger.info(userName + ": access Pipeline Management page.");
     }
     
     @PostConstruct
@@ -55,7 +59,7 @@ public class PipelineManagementBean implements Serializable {
             plList = PipelineDB.getAllPipeline();            
         }
         catch (SQLException e) {
-            logger.error("SQLException when query pipeline table.");
+            logger.error("FAIL to retrieve pipeline info!");
             logger.error(e.getMessage());
             getFacesContext().addMessage(null, new FacesMessage(
                         FacesMessage.SEVERITY_ERROR,
@@ -69,14 +73,13 @@ public class PipelineManagementBean implements Serializable {
        Pipeline newCmd = new Pipeline(pipeline_name, tid, code, parameter);
        
        if (PipelineDB.insertPipeline(newCmd)) {
-           logger.info(AuthenticationBean.getUserName() + 
-                   ": created new Pipeline: " + pipeline_name);
+           logger.info(userName + ": created new Pipeline: " + pipeline_name);
            fc.addMessage(null, new FacesMessage(
                     FacesMessage.SEVERITY_INFO,
                     "New pipeline created.", ""));
        }
        else {
-           logger.error("Failed to create new pipeline: " + pipeline_name);
+           logger.error("FAIL to create new pipeline: " + pipeline_name);
            fc.addMessage(null, new FacesMessage(
                     FacesMessage.SEVERITY_ERROR,
                     "Failed to create new pipeline!", ""));
@@ -90,15 +93,14 @@ public class PipelineManagementBean implements Serializable {
         FacesContext fc = getFacesContext();
         
         if (PipelineDB.updatePipeline((Pipeline) event.getObject())) {
-            logger.info(AuthenticationBean.getUserName() + 
-                    ": updated pipeline " + 
+            logger.info(userName + ": updated pipeline " + 
                     ((Pipeline) event.getObject()).getName());
             fc.addMessage(null, new FacesMessage(
                         FacesMessage.SEVERITY_INFO,
                         "Pipeline updated.", ""));
         }
         else {
-            logger.error("Pipeline update failed.");
+            logger.error("FAIL to update pipeline!");
             fc.addMessage(null, new FacesMessage(
                         FacesMessage.SEVERITY_ERROR,
                         "Failed to update pipeline!", ""));

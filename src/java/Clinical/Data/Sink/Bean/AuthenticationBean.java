@@ -21,7 +21,6 @@ import javax.faces.bean.ManagedBean;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.core.LoggerContext;
 
 /**
  * AuthenticationBean is the backing bean for the login view.
@@ -71,6 +70,7 @@ import org.apache.logging.log4j.core.LoggerContext;
  * 28-Dec-2015 - Added 2 new methods, isSupervisor() and isClinical().
  * 07-Jan-2016 - Added one new method, getFullName() to be used during 
  * generation of study's summary report.
+ * 12-Jan-2016 - Fix the static variable issues in AuthenticationBean.
  */
 
 @ManagedBean (name="authenticationBean")
@@ -80,9 +80,8 @@ public class AuthenticationBean implements Serializable {
     private final static Logger logger = LogManager.
             getLogger(AuthenticationBean.class.getName());
     private static DBHelper dbHandle;
-    private static String loginName, homeDir;
-    private String password;
-    private static UserAccount userAcct;
+    private String loginName, password;
+    private UserAccount userAcct;
     
     public AuthenticationBean() {
         logger.debug("AuthenticationBean created.");
@@ -142,7 +141,7 @@ public class AuthenticationBean implements Serializable {
         // Shouldn't let the user proceed if the DBHelper cannot be created.
         catch (ClassNotFoundException|InstantiationException|
                SQLException|IllegalAccessException e) {
-            logger.error("Exception when creating DBHelper!");
+            logger.error("FAIL to create DBHelper!");
             logger.error(e.getMessage());
             
             return Constants.ERROR;
@@ -158,7 +157,7 @@ public class AuthenticationBean implements Serializable {
         if ((loginName.compareTo("super")==0) && 
             (password.compareTo("super")==0)) {
             getFacesContext().getExternalContext().getSessionMap().
-                    put("User", "User");
+                    put("User", "super");
             // "Super" user, no further check required. Proceed from 
             // login to /restricted folder
             return Constants.PAGES_DIR + Constants.MAIN_PAGE;
@@ -173,7 +172,7 @@ public class AuthenticationBean implements Serializable {
             if (userAcct.getActive()) {
                 logger.info(loginName + ": login to the system.");
                 // Create user home directory once successfully login
-                homeDir = Constants.getSYSTEM_PATH() + 
+                String homeDir = Constants.getSYSTEM_PATH() + 
                           Constants.getUSERS_PATH() + loginName;
                 // Update the last login of this user            
                 UserAccountDB.updateLastLogin(loginName, Constants.getDateTime());
@@ -181,13 +180,14 @@ public class AuthenticationBean implements Serializable {
                 // Create system directories, follow by .../users/loginName directories
                 if ( FileUploadBean.createSystemDirectories(Constants.getSYSTEM_PATH()) &&
                     (FileUploadBean.createUsersDirectories(homeDir))) {
-                        getFacesContext().getExternalContext().getSessionMap().
-                                put("User", "User");
-                        // Everything is fine, proceed from login to /restricted folder
-                        result =  Constants.PAGES_DIR + Constants.MAIN_PAGE;
+                    // Save the user ID in the session map.
+                    getFacesContext().getExternalContext().getSessionMap().
+                                put("User", loginName);
+                    // Everything is fine, proceed from login to /restricted folder
+                    result =  Constants.PAGES_DIR + Constants.MAIN_PAGE;
                 }
                 else {
-                    logger.debug(loginName + ": failed to create system dirs after login.");
+                    logger.error(loginName + ": failed to create system dirs after login!");
                     // If control reached here, it means some of the system directories
                     // is not created, shouldn't allow user to proceed.
                     result = Constants.PAGES_DIR + Constants.ERROR;                    
@@ -208,7 +208,7 @@ public class AuthenticationBean implements Serializable {
             facesContext.addMessage("global", new FacesMessage(
                     FacesMessage.SEVERITY_WARN, 
                     "Invalid name or password.", ""));
-            logger.info(loginName + ": failed to login to the system.");
+            logger.info(loginName + ": failed to login to the system!");
             // User ID/Password invalid, return to login page.
         }
         
@@ -240,23 +240,6 @@ public class AuthenticationBean implements Serializable {
         }
     }
     
-    // These functions will be called by classes to determine whether the current
-    // user is a adminstrator, supervisor or clinical.
-    public static Boolean isAdministrator() {
-        if (loginName.compareTo("super") == 0) {
-            return Constants.OK;
-        }
-        else {
-            return userAcct.getRole_id() == 1;
-        }
-    }
-    public static Boolean isSupervisor() {
-        return userAcct.getRole_id() <= 2;
-    }
-    public static Boolean isClinical() {
-        return userAcct.getRole_id() <= 3;
-    }
-    
     // Retrieve the faces context
     private FacesContext getFacesContext() {
 	return FacesContext.getCurrentInstance();
@@ -267,13 +250,8 @@ public class AuthenticationBean implements Serializable {
                 getExternalContext().getContext();
     }
     
-    // getUserName allows all other classes to get the id of the current user
-    public static String getUserName() { return loginName; }
-    // getHomeDir will return the home directory of the current user.
-    public static String getHomeDir() { return homeDir; }
-    
     // Supply the Institution-Department string to all the views.
-    public static String getHeaderInstDept() { 
+    public String getHeaderInstDept() { 
         if (loginName.compareTo("super") == 0) {
             return loginName;
         }
@@ -282,8 +260,9 @@ public class AuthenticationBean implements Serializable {
                     + userAcct.getDept_id();            
         }
     }
+    
     // Supply the Full Name string to all the views.
-    public static String getHeaderFullName() { 
+    public String getHeaderFullName() { 
         if (loginName.compareTo("super") == 0) {
             return loginName;
         }
@@ -292,11 +271,6 @@ public class AuthenticationBean implements Serializable {
             // type of users.
             return "Welcome " +  userAcct.getFirst_name();
         }
-    }
-    
-    // Supply the user full name for Summary Report generation.
-    public static String getFullName() {
-        return userAcct.getFirst_name() + " " + userAcct.getLast_name();
     }
     
     // Machine generated getters and setters

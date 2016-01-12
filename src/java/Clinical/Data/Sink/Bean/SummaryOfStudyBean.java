@@ -12,6 +12,7 @@ import java.util.List;
 import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
+import javax.faces.context.FacesContext;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -25,6 +26,7 @@ import org.apache.logging.log4j.LogManager;
  * Revision History
  * 06-Jan-2016 - Implemented the module for downloading of study's consolidated 
  * output and finalized summary.
+ * 12-Jan-2016 - Fix the static variable issues in AuthenticationBean.
  */
 
 @ManagedBean (name = "SOSBean")
@@ -34,11 +36,14 @@ public class SummaryOfStudyBean implements Serializable {
     private final static Logger logger = LogManager.
             getLogger(SummaryOfStudyBean.class.getName());
     private List<Study> completedStudy;
-    
+    // Store the user ID of the current user.
+    private final String userName;
+
     public SummaryOfStudyBean() {
+        userName = (String) FacesContext.getCurrentInstance().
+                getExternalContext().getSessionMap().get("User");
         logger.debug("SummaryOfStudyBean created.");
-        logger.info(AuthenticationBean.getUserName() + 
-                ": access Summary of Study page.");
+        logger.info(userName + ": access Summary of Study page.");
     }
     
     @PostConstruct
@@ -46,7 +51,7 @@ public class SummaryOfStudyBean implements Serializable {
         // Retrieve the list of completed study that belong to the user's
         // department.
         completedStudy = StudyDB.queryCompletedStudy
-            (UserAccountDB.getDeptID(AuthenticationBean.getUserName()));        
+                        (UserAccountDB.getDeptID(userName));        
     }
     
     // Download the consolidated output for this study.

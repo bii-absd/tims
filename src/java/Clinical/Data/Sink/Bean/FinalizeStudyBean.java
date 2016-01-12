@@ -51,6 +51,7 @@ import org.apache.logging.log4j.LogManager;
  * StudyDB.updateStudyCompletedStatus().
  * 08-Jan-2016 - To setup the Astar and Bii logo before starting the 
  * DataDepositor thread.
+ * 12-Jan-2016 - Fix the static variable issues in AuthenticationBean.
  */
 
 @ManagedBean (name="finalizedBean")
@@ -70,20 +71,22 @@ public class FinalizeStudyBean implements Serializable {
     private List<List<FinalizingJobEntry>> jobEntryLists = 
             new ArrayList<List<FinalizingJobEntry>>();
     private Boolean allowToProceed;
+    // Store the user ID of the current user.
+    private final String userName;
         
     public FinalizeStudyBean() {
-        dept_id = UserAccountDB.getDeptID(AuthenticationBean.getUserName());
+        userName = (String) FacesContext.getCurrentInstance().
+                getExternalContext().getSessionMap().get("User");
+        dept_id = UserAccountDB.getDeptID(userName);
         logger.debug("FinalizeStudyBean created.");
-        logger.info(AuthenticationBean.getUserName() + 
-                ": access Finalize Study page.");
+        logger.info(userName + ": access Finalize Study page.");
     }
     
     @PostConstruct
     public void init() {
         // Get the list of study from the user's department that has 
         // completed job(s).
-        studyHash = StudyDB.getFinalizableStudyHash
-                    (AuthenticationBean.getUserName());
+        studyHash = StudyDB.getFinalizableStudyHash(userName);
     }
     
     // A new study has been selected by user, need to build the job entries
@@ -130,7 +133,7 @@ public class FinalizeStudyBean implements Serializable {
                 catch (SQLException|IOException e) {
                     // Error when checking for subject meta data. 
                     // Stop the finalization process and go to error page.
-                    logger.error("Failed to check for subject meta data availability!");
+                    logger.error("FAIL to check for subject meta data availability!");
                     logger.error(e.getMessage());
                     return Constants.ERROR;
                 }
@@ -160,8 +163,8 @@ public class FinalizeStudyBean implements Serializable {
         // Remove all the null ojects in the list before proceeding to insert
         // the finalized pipeline output.
         selectedJobs.removeAll(Collections.singleton(null));
-        logger.info(AuthenticationBean.getUserName() + 
-                " begin finalization process for " + study_id + ".");
+        logger.info(userName + " begin finalization process for " 
+                    + study_id + ".");
         // Update job status to finalizing
         for (FinalizingJobEntry job : selectedJobs) {
             SubmittedJobDB.updateJobStatusToFinalizing(job.getJob_id());
@@ -172,7 +175,7 @@ public class FinalizeStudyBean implements Serializable {
                 getServletContext().getRealPath("/resources/images/BII.jpg"));
         // Start a new thread to insert the finalized pipeline output into 
         // database.
-        DataDepositor depositThread = new DataDepositor(study_id, selectedJobs);
+        DataDepositor depositThread = new DataDepositor(userName, study_id, selectedJobs);
         depositThread.start();
         // Update study to completed
         StudyDB.updateStudyCompletedStatus(study_id, true);
@@ -207,8 +210,7 @@ public class FinalizeStudyBean implements Serializable {
         // Clear the selected jobs list so that it will be build again when 
         // the user click on the Finalize button.
         selectedJobs.clear();
-        logger.info(AuthenticationBean.getUserName() +
-                ": decided not to proceed with the finalization.");
+        logger.info(userName + ": decided not to proceed with the finalization.");
     }
     
     // Each time a new study is selected, the system need to clear the old 

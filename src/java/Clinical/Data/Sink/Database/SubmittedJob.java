@@ -3,7 +3,6 @@
  */
 package Clinical.Data.Sink.Database;
 
-import Clinical.Data.Sink.Bean.AuthenticationBean;
 import Clinical.Data.Sink.General.Constants;
 import java.io.Serializable;
 
@@ -26,6 +25,7 @@ import java.io.Serializable;
  * 30-Nov-2015 - Implementation for database 2.0
  * 05-Jan-2015 - Changes in submitted_job table, removed ctrl_file and annot_
  * file fields. Added input_path field.
+ * 12-Jan-2016 - Fix the static variable issues in AuthenticationBean.
  */
 
 public class SubmittedJob implements Serializable {
@@ -49,7 +49,7 @@ public class SubmittedJob implements Serializable {
     private String status_name;
 
     // Full constructor
-    public SubmittedJob(int job_id, String study_id, 
+    public SubmittedJob(int job_id, String study_id, String user_id,
             String pipeline_name, int status_id, String submit_time, 
             String chip_type, String input_path, 
             String normalization, String probe_filtering, Boolean probe_select, 
@@ -59,7 +59,7 @@ public class SubmittedJob implements Serializable {
     {
         this.job_id = job_id;
         this.study_id = study_id;
-        this.user_id = AuthenticationBean.getUserName();
+        this.user_id = user_id;
         this.pipeline_name = pipeline_name;
         this.status_id = status_id;
         this.submit_time = submit_time;
@@ -78,13 +78,13 @@ public class SubmittedJob implements Serializable {
     }
     
     // Simplify constructor for data table.
-    public SubmittedJob(int job_id, String study_id, 
+    public SubmittedJob(int job_id, String study_id, String user_id,
             String pipeline_name, int status_id, String submit_time, 
             String output_file, String report) 
     {
         this.job_id = job_id;
         this.study_id = study_id;
-        this.user_id = AuthenticationBean.getUserName();
+        this.user_id = user_id;
         this.pipeline_name = pipeline_name;
         this.status_id = status_id;
         this.submit_time = submit_time;

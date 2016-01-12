@@ -43,6 +43,7 @@ import org.mindrot.jbcrypt.BCrypt;
  * 30-Nov-2015 - Implementation for database 2.0
  * 14-Dec-2015 - Changed the class to abstract. Added new method, getDeptID.
  * 22-Dec-2015 - To close the ResultSet after use.
+ * 11-Jan-2016 - Fix the static variable issues in AuthenticationBean.
  */
 
 public abstract class UserAccountDB {
@@ -94,7 +95,7 @@ public abstract class UserAccountDB {
             logger.debug("No of user account retrieved: " + userList.size());
         }
         catch (SQLException e) {
-            logger.error("SQLException when retrieving user accounts!");
+            logger.error("FAIL to retrieve user accounts!");
             logger.error(e.getMessage());
         }
         
@@ -129,7 +130,7 @@ public abstract class UserAccountDB {
                     rs.getString("user_id"));
         }
         catch (SQLException e) {
-            logger.error("SQLException when retrieving user account!");
+            logger.error("FAIL to retrieve user account!");
             logger.error(e.getMessage());
         }
 
@@ -153,7 +154,7 @@ public abstract class UserAccountDB {
                     email);
         }
         catch (SQLException e) {
-            logger.error("SQLException when retrieving email address!");
+            logger.error("FAIL to retrieve email address!");
             logger.error(e.getMessage());
         }
        
@@ -196,7 +197,7 @@ public abstract class UserAccountDB {
                 }
             }
         } catch (SQLException e) {
-            logger.error("SQLException when checking password!");
+            logger.error("FAIL to check password!");
             logger.error(e.getMessage());
         } 
         
@@ -246,7 +247,7 @@ public abstract class UserAccountDB {
             updateStm.executeUpdate();
         }
         catch (SQLException e) {
-            logger.error("SQLException when trying to update last login!");
+            logger.error("FAIL to update last login!");
             logger.error(e.getMessage());
         }
     }
@@ -286,25 +287,108 @@ public abstract class UserAccountDB {
         updateStm.executeUpdate();
     }
     
-    // Return the department ID for this user.
-    public static String getDeptID(String userID) {
-        String result = Constants.DATABASE_INVALID_STR;
-        String queryStr = "SELECT dept_id FROM user_account WHERE user_id = ?";
+    // Retrieve the user account info for this user ID.
+    public static UserAccount getUserAct(String userID) {
+        UserAccount userAct = null;
+        String queryStr = "SELECT * FROM user_account u NATURAL JOIN dept d "
+                        + "WHERE user_id = ? AND u.dept_id = d.dept_id";
         
         try (PreparedStatement queryStm = conn.prepareStatement(queryStr)) {
             queryStm.setString(1, userID);
             ResultSet rs = queryStm.executeQuery();
             
             if (rs.next()) {
-                result = rs.getString("dept_id");
-                logger.debug("Department ID for " + userID + " is " + result);
+                userAct = new UserAccount(rs.getString("user_id"),
+                                          rs.getInt("role_id"),
+                                          rs.getString("first_name"),
+                                          rs.getString("last_name"),
+                                          rs.getString("email"),
+                                          rs.getBoolean("active"),
+                                          "password",
+                                          rs.getString("dept_id"),
+                                          rs.getString("inst_id"),
+                                          rs.getString("last_login"));
             }
         }
         catch (SQLException e) {
-            logger.error("SQLException when query user_account!");
+            logger.error("FAIL to retrieve user account info!");
             logger.error(e.getMessage());
         }
         
-        return result;
+        return userAct;
+    }
+    
+    // Return the department ID for this user.
+    public static String getDeptID(String userID) {
+        UserAccount tmp = getUserAct(userID);
+        
+        if (tmp != null) {
+            return tmp.getDept_id();
+        }
+
+        return Constants.DATABASE_INVALID_STR;
+    }
+    
+    // Return the role ID for this user.
+    public static int getRoleID(String userID) {
+        UserAccount tmp = getUserAct(userID);
+        
+        if (tmp != null) {
+            return tmp.getRole_id();
+        }
+        
+        return Constants.DATABASE_INVALID_ID;
+    }
+    
+    // Return the full name of this user.
+    public static String getFullName(String userID) {
+        UserAccount tmp = getUserAct(userID);
+        
+        if (tmp != null) {
+            return tmp.getFirst_name() + " " + tmp.getLast_name();
+        }
+        
+        return Constants.DATABASE_INVALID_STR;
+    }
+    
+    // Check whether this user ID belongs to a adminstrator/supervisor/clinical
+    public static Boolean isAdministrator(String userID) {
+        if (userID.compareTo("super") == 0) {
+            return Constants.OK;
+        }
+        else {
+            return getRoleID(userID) == 1;
+        }
+    }
+    public static Boolean isSuperVisor(String userID) {
+        return getRoleID(userID) <= 2;
+    }
+    public static Boolean isClinical(String userID) {
+        return getRoleID(userID) <= 3;
+    }
+    
+    // Return the institution name and department ID for this user.
+    public static String getInstNameDeptID(String userID) {
+        String instDept = Constants.DATABASE_INVALID_STR;
+        String queryStr = "SELECT d.inst_name, u.dept_id FROM user_account u "
+                        + "NATURAL JOIN (SELECT inst_name, dept_id FROM dept "
+                        + "NATURAL JOIN inst) d WHERE u.user_id = ? "
+                        + "AND u.dept_id = d.dept_id";
+        
+        try (PreparedStatement queryStm = conn.prepareStatement(queryStr)) {
+            queryStm.setString(1, userID);
+            ResultSet rs = queryStm.executeQuery();
+            
+            if (rs.next()) {
+                instDept = rs.getString("inst_name") + " - " 
+                            + rs.getString("dept_id");
+            }
+        }
+        catch (SQLException e) {
+            logger.error("FAIL to retrieve institution name and department ID!");
+            logger.error(e.getMessage());
+        }
+        
+        return instDept;
     }
 }

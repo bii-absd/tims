@@ -3,7 +3,6 @@
  */
 package Clinical.Data.Sink.Database;
 
-import Clinical.Data.Sink.Bean.AuthenticationBean;
 import Clinical.Data.Sink.General.Constants;
 import java.io.BufferedReader;
 import java.io.File;
@@ -54,6 +53,7 @@ import org.apache.pdfbox.pdmodel.graphics.xobject.PDJpeg;
  * insertion has completed successfully. Generated the summary report after 
  * finalization.Removed unused code.
  * 08-Jan-2016 - Generate the PDF version of the summary report.
+ * 12-Jan-2016 - Fix the static variable issues in AuthenticationBean.
  */
 
 public class DataDepositor extends Thread {
@@ -72,12 +72,16 @@ public class DataDepositor extends Thread {
     // in the database or not.
     StringBuilder subjectNotFound, subjectFound;
     private List<FinalizingJobEntry> jobList = new ArrayList<>();
+    // Store the user ID of the current user.
+    private final String userName;
     
-    public DataDepositor(String study_id, List<FinalizingJobEntry> jobList) {
+    public DataDepositor(String userName, String study_id, 
+            List<FinalizingJobEntry> jobList) {
+        this.userName = userName;
         this.study_id = study_id;
         this.jobList = jobList;
         // Retrieve the value of dept_id and annot_ver from database.
-        dept_id = UserAccountDB.getDeptID(AuthenticationBean.getUserName());
+        dept_id = UserAccountDB.getDeptID(userName);
         annot_ver = StudyDB.getAnnotVer(study_id);
         summaryReport = Constants.getSYSTEM_PATH() + 
                         Constants.getFINALIZE_PATH() + study_id + 
@@ -144,7 +148,7 @@ public class DataDepositor extends Thread {
             }
         }
         catch (SQLException e) {
-            logger.error("Falied to insert finalized data into database!");
+            logger.error("FAIL to insert finalized data!");
             logger.error(e.getMessage());
         }
     }
@@ -277,12 +281,12 @@ public class DataDepositor extends Thread {
             // Ending section
             cs.beginText();
             cs.moveTextPositionByAmount(subheadX, getNextHeaderYaxis());
-            cs.drawString("Author: " + AuthenticationBean.getFullName());
+            cs.drawString("Author: " + UserAccountDB.getFullName(userName));
             cs.endText();
             
             cs.beginText();
             cs.moveTextPositionByAmount(subheadX, getNextLineYaxis());
-            cs.drawString("Department: " + AuthenticationBean.getHeaderInstDept());
+            cs.drawString("Department: " + UserAccountDB.getInstNameDeptID(userName));
             cs.endText();
             
             cs.beginText();
@@ -304,7 +308,7 @@ public class DataDepositor extends Thread {
             doc.close();
         } 
         catch (IOException|COSVisitorException ex) {
-            logger.error("Exception when creating the summary report!");
+            logger.error("FAIL to create summary report!");
             logger.error(ex.getMessage());
         }
     }
@@ -332,8 +336,8 @@ public class DataDepositor extends Thread {
         summary.append("\t").append(totalGene).append("\n");
         summary.append("\n").append("5. No of gene data stored").append("\n");
         summary.append("\t").append(processedGene).append("\n\n");
-        summary.append("Author: ").append(AuthenticationBean.getFullName()).append("\n");
-        summary.append("Department: ").append(AuthenticationBean.getHeaderInstDept()).append("\n");
+        summary.append("Author: ").append(UserAccountDB.getFullName(userName)).append("\n");
+        summary.append("Department: ").append(UserAccountDB.getInstNameDeptID(userName)).append("\n");
         summary.append("Date: ").append(Constants.getDateTime());
 
         // Start to produce the summary report.
@@ -342,7 +346,7 @@ public class DataDepositor extends Thread {
             ps.print(summary);
         }
         catch (IOException ioe) {
-            logger.error("IOException when writing summary report!");
+            logger.error("FAIL to create summary report!");
             logger.error(ioe.getMessage());
         }
     }
@@ -386,7 +390,7 @@ public class DataDepositor extends Thread {
             rs.close();
         }
         catch (SQLException e) {
-            logger.debug("SQLException when getting MAX(array_index)!");
+            logger.debug("FAIL to retrieve MAX(array_index)!");
             logger.debug(e.getMessage());
         }
         
@@ -477,7 +481,7 @@ public class DataDepositor extends Thread {
                 }
             }
             catch (SQLException e) {
-                logger.error("SQLException when inserting finalized records!");
+                logger.error("FAIL to insert finalized records!");
                 logger.error(e.getMessage());
                 // Error occurred, return to caller.
                 return Constants.NOT_OK;
@@ -531,7 +535,7 @@ public class DataDepositor extends Thread {
                 // with it.
                 br.close();
             } catch (SQLException e) {
-                logger.error("SQLException when inserting into data array!");
+                logger.error("FAIL to insert into data array!");
                 logger.error(e.getMessage());
                 // Error occurred, return to caller.
                 return Constants.NOT_OK;
@@ -545,7 +549,7 @@ public class DataDepositor extends Thread {
                     " sec");
         }
         catch (IOException ioe) {
-            logger.error("IOException when reading pipeline output file!");
+            logger.error("FAIL to read pipeline output file!");
             logger.error(ioe.getMessage());
             result = Constants.NOT_OK;
         }

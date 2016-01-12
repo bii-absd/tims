@@ -1,5 +1,5 @@
 /*
- * Copyright @2015
+ * Copyright @2015-2016
  */
 package Clinical.Data.Sink.Bean;
 
@@ -53,6 +53,7 @@ import org.apache.logging.log4j.LogManager;
  * probe file to a common name.
  * 24-Dec-2015 - Updated method createSystemDirectories, to create the 
  * directory for finalize_output too.
+ * 12-Jan-2016 - Fix the static variable issues in AuthenticationBean.
  */
 
 public class FileUploadBean implements Serializable {
@@ -107,9 +108,7 @@ public class FileUploadBean implements Serializable {
                                      " uploaded successfully."));            
             }
             catch (IOException ex) {
-                logger.error(AuthenticationBean.getUserName() +
-                            ": encountered error in uploading file " +
-                            uFile.getFileName());
+                logger.error("FAIL to upload file " + uFile.getFileName());
                 logger.error(ex.getMessage());
                 getFacesContext().addMessage(null, 
                         new FacesMessage(FacesMessage.SEVERITY_ERROR,
@@ -120,7 +119,7 @@ public class FileUploadBean implements Serializable {
         else {
             // System failed to create the input files directory for this job,
             // shouldn't allow the user to continue.
-            logger.error("Failed to create the input files directory");
+            logger.error("FAIL to create input files directory!");
             getFacesContext().addMessage(null, 
                     new FacesMessage(FacesMessage.SEVERITY_ERROR,
                                 "System failed to create input directory!\n"
@@ -173,7 +172,7 @@ public class FileUploadBean implements Serializable {
                 logger.debug("Directory " + systemDir + " created.");
             }
             else {
-                logger.error("Failed to create directory " + systemDir);
+                logger.error("FAIL to create directory " + systemDir);
                 result = Constants.NOT_OK;
             }
         }
@@ -259,7 +258,7 @@ public class FileUploadBean implements Serializable {
             logger.debug("Sample annotation file renamed.");
         }
         catch (IOException ioe) {
-            logger.error("Failed to rename sample annotation file!");
+            logger.error("FAIL to rename sample annotation file!");
             logger.error(ioe.getMessage());
         }
     }
@@ -279,7 +278,7 @@ public class FileUploadBean implements Serializable {
             logger.debug("Control probe file renamed.");
         }
         catch (IOException ioe) {
-            logger.error("Failed to rename control probe file!");
+            logger.error("FAIL to rename control probe file!");
             logger.error(ioe.getMessage());
         }
     }

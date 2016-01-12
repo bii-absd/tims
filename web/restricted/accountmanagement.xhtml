@@ -82,7 +82,7 @@
                             </f:facet>
                             <f:facet name="input">
                                 <p:selectOneMenu value="#{acct.role_id}" style="width: 100%">
-                                    <f:selectItems value="#{acctMgntBean.roleList}"/>
+                                    <f:selectItems value="#{acctMgntBean.roleNameHash}"/>
                                 </p:selectOneMenu>
                             </f:facet>
                         </p:cellEditor>
@@ -176,7 +176,7 @@
                                      style="width:180px" required="true"
                                      value="#{acctMgntBean.role_id}">
                         <f:selectItem itemLabel="Select Role" itemValue=""/>
-                        <f:selectItems value="#{acctMgntBean.roleList}"/>
+                        <f:selectItems value="#{acctMgntBean.roleNameHash}"/>
                     </p:selectOneMenu>
                     <h:message for="role" styleClass="errors"/>
                     <h:panelGroup/>

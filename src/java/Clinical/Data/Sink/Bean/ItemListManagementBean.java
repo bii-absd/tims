@@ -1,5 +1,5 @@
 /*
- * Copyright @2015
+ * Copyright @2015-2016
  */
 package Clinical.Data.Sink.Bean;
 
@@ -34,6 +34,7 @@ import org.apache.logging.log4j.LogManager;
  * 18-Nov-2015 - Added one new method onInstRowEdit() to allow user to edit
  * the institution's information.
  * 09-Dec-2015 - Added in the module for adding and updating department info.
+ * 12-Jan-2016 - Fix the static variable issues in AuthenticationBean.
  */
 
 @ManagedBean (name="itemListMgntBean")
@@ -48,16 +49,18 @@ public class ItemListManagementBean implements Serializable {
     private String dept_id, dept_name;
     private List<Institution> instList;
     private List<Department> deptList;
+    // Store the user ID of the current user.
+    private final String userName;
     
     public ItemListManagementBean() {
+        userName = (String) getFacesContext().getExternalContext().
+                getSessionMap().get("User");
         logger.debug("ItemListManagementBean created.");
-        logger.info(AuthenticationBean.getUserName() + 
-                ": access Item List Management page.");
+        logger.info(userName + ": access Item List Management page.");
     }
     
     @PostConstruct
     public void init() {
-        System.out.println("Post Construct.");
         instList = InstitutionDB.getInstList();
         deptList = DepartmentDB.getDeptList();
     }
@@ -67,12 +70,11 @@ public class ItemListManagementBean implements Serializable {
         Institution newInst = new Institution(inst_id, inst_name);
         
         if (InstitutionDB.insertInstitution(newInst)) {
-            logger.info(AuthenticationBean.getUserName() +
-                    ": created new institution ID: " + inst_id);
+            logger.info(userName + ": created new institution ID: " + inst_id);
             addFacesInfoMsg("New institution ID created.");
         }
         else {
-            logger.error("Failed to create new institution ID: " + inst_id);
+            logger.error("FAIL to create new institution ID: " + inst_id);
             addFacesErrorMsg("Failed to create new institution ID!");
         }
         
@@ -84,12 +86,11 @@ public class ItemListManagementBean implements Serializable {
         Department newDept = new Department(inst_id, dept_id, dept_name);
         
         if (DepartmentDB.insertDepartment(newDept)) {
-            logger.info(AuthenticationBean.getUserName() +
-                    ": created new department ID: " + dept_id);
+            logger.info(userName + ": created new department ID: " + dept_id);
             addFacesInfoMsg("New department ID created.");
         }
         else {
-            logger.error("Failed to create new department ID: " + dept_id);
+            logger.error("FAIL to create new department ID: " + dept_id);
             addFacesErrorMsg("Failed to create new department ID!");
         }
         
@@ -99,12 +100,11 @@ public class ItemListManagementBean implements Serializable {
     // Update the institution table in the database.
     public void onInstRowEdit(RowEditEvent event) {
         if (InstitutionDB.updateInstitution((Institution) event.getObject())) {
-            logger.info(AuthenticationBean.getUserName() + 
-                    ": updated Institution.");
+            logger.info(userName + ": updated Institution.");
             addFacesInfoMsg("Institution updated.");
         }
         else {
-            logger.error("Institution update failed.");
+            logger.error("FAIL to update institution!");
             addFacesErrorMsg("Failed to update institution!");
         }
     }
@@ -117,12 +117,11 @@ public class ItemListManagementBean implements Serializable {
     // Update the department table in the database.
     public void onDeptRowEdit(RowEditEvent event) {
         if (DepartmentDB.updateDepartment((Department) event.getObject())) {
-            logger.info(AuthenticationBean.getUserName() +
-                    ": updated Department.");
+            logger.info(userName + ": updated Department.");
             addFacesInfoMsg("Department updated.");
         }
         else {
-            logger.error("Department update failed.");
+            logger.error("FAIL to update department!");
             addFacesErrorMsg("Failed to update department!");
         }
     }

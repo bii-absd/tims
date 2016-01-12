@@ -10,6 +10,7 @@ import java.util.LinkedHashMap;
 import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
+import javax.faces.context.FacesContext;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -38,6 +39,7 @@ import org.apache.logging.log4j.LogManager;
  * 30-Dec-2015 - Updated proceedToConfig method to use the method setup from
  * ConfigBean to setup the pipeline configuration.
  * 11-Jan-2016 - Added the support for METH pipeline.
+ * 12-Jan-2016 - Fix the static variable issues in AuthenticationBean.
  */
 
 @ManagedBean (name="menuSelectionBean")
@@ -49,14 +51,18 @@ public class MenuSelectionBean implements Serializable{
     private String study_id, config_page;
     private Boolean haveNewData;
     private LinkedHashMap<String, String> studyList;
+    // Store the user ID of the current user.
+    private final String userName;
     
     public MenuSelectionBean() {
+        userName = (String) FacesContext.getCurrentInstance().
+                getExternalContext().getSessionMap().get("User");
         logger.debug("MenuSelectionBean created.");
     }
     
     @PostConstruct
     public void init() {
-        studyList = StudyDB.getStudyHash(AuthenticationBean.getUserName());
+        studyList = StudyDB.getStudyHash(userName);
     }
     
     // Setup the ConfigBean for GEX Illumina pipeline processing.
@@ -80,7 +86,7 @@ public class MenuSelectionBean implements Serializable{
     // User decided not to proceed to pipeline configuration page. Stay at the
     // current page.
     public void backToMainMenu() {
-        logger.debug(AuthenticationBean.getUserName() + ": return to main menu.");
+        logger.debug(userName + ": return to main menu.");
         config_page = null;
     }
     
@@ -89,8 +95,7 @@ public class MenuSelectionBean implements Serializable{
     public String proceedToConfig() {
         // Setup pipeline configuration.
         ConfigBean.setup(study_id, haveNewData);
-        logger.debug(AuthenticationBean.getUserName() + ": selected " +
-                     config_page);
+        logger.debug(userName + ": selected " + config_page);
         logger.debug(haveNewData?"User have new data to upload.":
                      "No new data to upload.");
         // Proceed to pipeline configuration page.

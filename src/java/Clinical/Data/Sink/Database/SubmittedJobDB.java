@@ -55,6 +55,7 @@ import org.apache.logging.log4j.LogManager;
  * file fields. Added input_path field.
  * 11-Jan-2015 - Added new method, getPipelineName to retrieve the name of the
  * pipeline executed for the job.
+ * 12-Jan-2016 - Fix the static variable issues in AuthenticationBean.
  */
 
 public abstract class SubmittedJobDB {
@@ -144,7 +145,7 @@ public abstract class SubmittedJobDB {
                     JobStatusDB.getStatusName(status_id));
         }
         catch (SQLException e) {
-            logger.error("SQLException when updating job status!");
+            logger.error("FAIL to update job status!");
             logger.error(e.getMessage());
         }
     }
@@ -167,7 +168,7 @@ public abstract class SubmittedJobDB {
                          + tidList.toString());
         }
         catch (SQLException e) {
-            logger.error("SQLException when query for pipeline technologies run!");
+            logger.error("FAIL to query for pipeline technologies!");
             logger.error(e.getMessage());
         }
         
@@ -202,7 +203,7 @@ public abstract class SubmittedJobDB {
                          tid + " technology is " + jobList.size());
         }
         catch (SQLException e) {
-            logger.error("SQLException when query for completed jobs!");
+            logger.error("FAIL to query for completed jobs!");
             logger.error(e.getMessage());
         }
         
@@ -241,6 +242,7 @@ public abstract class SubmittedJobDB {
                     SubmittedJob job = new SubmittedJob(
                                     rs.getInt("job_id"),
                                     rs.getString("study_id"),
+                                    user_id,
                                     rs.getString("pipeline_name"),
                                     rs.getInt("status_id"),
                                     rs.getString("submit_time"),
@@ -251,7 +253,7 @@ public abstract class SubmittedJobDB {
                 }
                 logger.debug("Query submitted job completed.");
             } catch (SQLException e) {
-                logger.error("SQLException when query submitted job!");
+                logger.error("FAIL to query submitted job!");
                 logger.error(e.getMessage());
                 // Exception has occurred, return back a empty list.
                 return new ArrayList<>(0);
@@ -277,7 +279,7 @@ public abstract class SubmittedJobDB {
             rs.close();
         }
         catch (SQLException e) {
-            logger.error("Failed to retrieve output filepath!");
+            logger.error("FAIL to retrieve output filepath!");
             logger.error(e.getMessage());
         }
         
@@ -297,7 +299,7 @@ public abstract class SubmittedJobDB {
             rs.close();
         }
         catch (SQLException e) {
-            logger.error("Failed to retrieve pipeline name!");
+            logger.error("FAIL to retrieve pipeline name!");
             logger.error(e.getMessage());
         }
         

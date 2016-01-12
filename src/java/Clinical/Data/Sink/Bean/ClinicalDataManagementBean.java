@@ -39,6 +39,7 @@ import org.primefaces.model.UploadedFile;
  * methods insertMetaData(), metaDataUpload and onRowEdit.
  * 04-Jan-2016 - Added new method buildSubjectList(). Improved the method 
  * metaDataUpload.
+ * 12-Jan-2016 - Fix the static variable issues in AuthenticationBean.
  */
 
 @ManagedBean (name="clDataMgntBean")
@@ -52,16 +53,19 @@ public class ClinicalDataManagementBean implements Serializable {
     private int age_at_diagnosis;
     private float height, weight;
     private List<Subject> subjectList;
+    // Store the user ID of the current user.
+    private final String userName;
     
     public ClinicalDataManagementBean() {
+        userName = (String) getFacesContext().getExternalContext().
+                getSessionMap().get("User");
         logger.debug("ClinicalDataManagementBean created.");
-        logger.info(AuthenticationBean.getUserName() +
-                ": access Clinical Data Management Page.");
+        logger.info(userName + ": access Clinical Data Management Page.");
     }
 
     @PostConstruct
     public void init() {
-        dept_id = UserAccountDB.getDeptID(AuthenticationBean.getUserName());
+        dept_id = UserAccountDB.getDeptID(userName);
         buildSubjectList();
     }
 
@@ -71,7 +75,7 @@ public class ClinicalDataManagementBean implements Serializable {
             subjectList = SubjectDB.querySubject(dept_id);
         }
         catch (SQLException e) {
-            logger.error("SQLException when query subject!");
+            logger.error("FAIL to retrieve subject detail!");
             logger.error(e.getMessage());
             getFacesContext().addMessage(null, new FacesMessage(
                         FacesMessage.SEVERITY_ERROR,
@@ -86,14 +90,14 @@ public class ClinicalDataManagementBean implements Serializable {
                                       race, height, weight, dept_id);
         
         if (SubjectDB.insertSubject(subject)) {
-            logger.info(AuthenticationBean.getUserName() + 
-                    ": inserted new subject meta data: " + subject_id);
+            logger.info(userName + ": inserted new subject meta data: " 
+                        + subject_id);
             fc.addMessage(null, new FacesMessage(
                     FacesMessage.SEVERITY_INFO,
                     "Subject meta data inserted into database.", ""));
         }
         else {
-            logger.error("Failed to insert subject meta data!");
+            logger.error("FAIL to insert subject meta data!");
             fc.addMessage(null, new FacesMessage(
                     FacesMessage.SEVERITY_ERROR,
                     "Failed to insert subject meta data!", ""));
@@ -154,7 +158,7 @@ public class ClinicalDataManagementBean implements Serializable {
                     faceStatus, uploadStatus.toString(), ""));
         }
         catch (IOException ioe) {
-            logger.debug("IOException when uploading meta data!");
+            logger.debug("FAIL to upload meta data!");
             logger.debug(ioe.getMessage());
             getFacesContext().addMessage(null, new FacesMessage(
                     FacesMessage.SEVERITY_ERROR,
@@ -172,15 +176,14 @@ public class ClinicalDataManagementBean implements Serializable {
         FacesContext fc = getFacesContext();
         
         if (SubjectDB.updateSubject((Subject) event.getObject())) {
-            logger.info(AuthenticationBean.getUserName() +
-                    ": updated subject meta data " + 
+            logger.info(userName + ": updated subject meta data " + 
                     ((Subject) event.getObject()).getSubject_id());
             fc.addMessage(null, new FacesMessage(
                         FacesMessage.SEVERITY_INFO,
                         "Meta data updated.", ""));
         }
         else {
-            logger.error("Failed to update meta data!");
+            logger.error("FAIL to update meta data!");
             fc.addMessage(null, new FacesMessage(
                         FacesMessage.SEVERITY_ERROR,
                         "Failed to update meta data!", ""));
