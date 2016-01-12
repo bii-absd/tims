@@ -68,6 +68,7 @@ import org.apache.logging.log4j.LogManager;
  * 31-Dec-2015 - Implemented the module for reusing the input data.
  * 06-Jan-2016 - Added new method, getInputPath().
  * 12-Jan-2016 - Fix the static variable issues in AuthenticationBean.
+ * 12-Jan-2016 - To include the study ID into the config filename.
  */
 
 public abstract class ConfigBean implements Serializable {
@@ -386,8 +387,8 @@ public abstract class ConfigBean implements Serializable {
         String configDir = homeDir + Constants.getCONFIG_PATH();
         // Config File will be send to the pipeline during execution
         File configFile = new File(configDir + 
-                Constants.getCONFIG_FILE_NAME() + submitTimeInFilename + 
-                Constants.getCONFIG_FILE_EXT());
+                Constants.getCONFIG_FILE_NAME() + getStudyID() + "_" + 
+                submitTimeInFilename + Constants.getCONFIG_FILE_EXT());
 
         pipelineConfig = configFile.getAbsolutePath();
 
