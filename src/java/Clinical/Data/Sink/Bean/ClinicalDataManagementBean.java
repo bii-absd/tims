@@ -39,7 +39,8 @@ import org.primefaces.model.UploadedFile;
  * methods insertMetaData(), metaDataUpload and onRowEdit.
  * 04-Jan-2016 - Added new method buildSubjectList(). Improved the method 
  * metaDataUpload.
- * 12-Jan-2016 - Fix the static variable issues in AuthenticationBean.
+ * 13-Jan-2016 - Removed all the static variables in Clinical Data Management
+ * module.
  */
 
 @ManagedBean (name="clDataMgntBean")
@@ -72,10 +73,10 @@ public class ClinicalDataManagementBean implements Serializable {
     // Retrieve the subjects detail from database, and build the subject list.
     private void buildSubjectList() {
         try {
-            subjectList = SubjectDB.querySubject(dept_id);
+            subjectList = SubjectDB.getSubjectList(dept_id);
         }
         catch (SQLException e) {
-            logger.error("FAIL to retrieve subject detail!");
+            logger.error("FAIL to build subject list!");
             logger.error(e.getMessage());
             getFacesContext().addMessage(null, new FacesMessage(
                         FacesMessage.SEVERITY_ERROR,

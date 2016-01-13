@@ -27,6 +27,8 @@ import org.apache.logging.log4j.LogManager;
  * 14-Dec-2015 - Added new method, updateSubject.
  * 28-Dec-2015 - Added new method, isSubjectExistInDept.
  * 04-Jan-2016 - Fix the bug in updateSubject (i.e. to setup the 6th parameter).
+ * 13-Jan-2016 - Removed all the static variables in Clinical Data Management
+ * module.
  */
 
 public abstract class SubjectDB {
@@ -34,7 +36,6 @@ public abstract class SubjectDB {
     private final static Logger logger = LogManager.
             getLogger(SubjectDB.class.getName());
     private final static Connection conn = DBHelper.getDBConn();
-    private static List<Subject> subList = new ArrayList<>();
 
     // Insert the new subject meta data into database
     public static Boolean insertSubject(Subject subject) {
@@ -53,14 +54,13 @@ public abstract class SubjectDB {
             insertStm.setFloat(7, subject.getWeight());
             
             insertStm.executeUpdate();
-            // Clear the subject list as there is new meta data inserted into database.
             logger.debug("New Subject ID inserted into database: " +
                     subject.getSubject_id());
         }
         catch (SQLException e) {
-            logger.error("SQLException when inserting subject!");
-            logger.error(e.getMessage());
             result = Constants.NOT_OK;
+            logger.error("FAIL to insert subject!");
+            logger.error(e.getMessage());
         }
         return result;
     }
@@ -85,22 +85,22 @@ public abstract class SubjectDB {
             logger.debug("Updated subject meta data: " + subject.getSubject_id());
         }
         catch (SQLException e) {
-            logger.error("Failed to update subject meta data!");
-            logger.error(e.getMessage());
             result = Constants.NOT_OK;
+            logger.error("FAIL to update subject meta data!");
+            logger.error(e.getMessage());
         }
         
         return result;
     }
     
-    // Query the subject table using the deptID as a match condition.
+    // Return the list of subjects belonging to this department.
     // Exception thrown here need to be handle by the caller.
-    public static List<Subject> querySubject(String deptID) throws SQLException {
+    public static List<Subject> getSubjectList(String deptID) throws SQLException {
+        List<Subject> subjectList = new ArrayList<>();
         String queryStr = "SELECT * from subject WHERE dept_id = ? ORDER BY subject_id";
         PreparedStatement queryStm = conn.prepareStatement(queryStr);
         queryStm.setString(1, deptID);
         ResultSet rs = queryStm.executeQuery();
-        subList.clear();
 
         while (rs.next()) {
             Subject tmp = new Subject(
@@ -111,15 +111,16 @@ public abstract class SubjectDB {
                             rs.getFloat("height"),
                             rs.getFloat("weight"),
                             rs.getString("dept_id"));
-            // Add the object to the List.
-            subList.add(tmp);
+
+            subjectList.add(tmp);
         }
 
         logger.debug("Query subject completed.");
-        return subList;
+        return subjectList;
     }
     
     // Check whether the subject meta data exists in the database.
+    // Exception thrown here need to be handle by the caller.
     public static Boolean isSubjectExistInDept
         (String subject_id, String dept_id) throws SQLException {
         String queryStr = "SELECT * FROM subject WHERE subject_id = ? AND "
@@ -131,11 +132,5 @@ public abstract class SubjectDB {
         ResultSet rs = queryStm.executeQuery();
 
         return rs.isBeforeFirst()?Constants.OK:Constants.NOT_OK;
-    }
-    
-    // Clear the subject list to make sure that the latest list of subject meta
-    // data will be build.
-    public static void clearSubList() {
-        subList.clear();
     }
 }
