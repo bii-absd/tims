@@ -17,6 +17,7 @@ import javax.faces.context.FacesContext;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+// Libraries for PrimeFaces
 import org.primefaces.event.RowEditEvent;
 
 /**
@@ -33,6 +34,7 @@ import org.primefaces.event.RowEditEvent;
  * 24-Nov-2015 - Changed variable name from command_id to pipeline_name. Added
  * one variable tid (Technology ID).
  * 12-Jan-2016 - Fix the static variable issues in AuthenticationBean.
+ * 13-Jan-2016 - Removed all the static variables in Pipeline Management module.
  */
 
 @ManagedBean (name="plMgntBean")

@@ -1,5 +1,5 @@
 /*
- * Copyright @2015
+ * Copyright @2015-2016
  */
 package Clinical.Data.Sink.Database;
 
@@ -34,6 +34,7 @@ import org.apache.logging.log4j.LogManager;
  * 25-Nov-2015 - Added one new method getPipelineTechnology.
  * 01-Dec-2015 - Implementation for database 2.0
  * 10-Dec-2015 - Changed to abstract class.
+ * 13-Jan-2016 - Removed all the static variables in Pipeline Management module.
  */
 
 public abstract class PipelineDB {
@@ -41,7 +42,6 @@ public abstract class PipelineDB {
     private final static Logger logger = LogManager.
             getLogger(PipelineDB.class.getName());
     private final static Connection conn = DBHelper.getDBConn();
-    private final static List<Pipeline> pipelineList = new ArrayList<>();
 
     // Return the pipeline technology for this pipeline name.
     public static String getPipelineTechnology(String pipeline_name) {
@@ -57,14 +57,14 @@ public abstract class PipelineDB {
             }
         }
         catch (SQLException e) {
-            logger.error("SQLException when query pipeline technology!");
+            logger.error("FAIL to retrieve pipeline technology!");
             logger.error(e.getMessage());
         }
         
         return tid;
     }
     
-    // Return the code and parameter for this pipeline.
+    // Return the pipeline object for this pipeline.
     public static Pipeline getPipeline(String pipeline_name) 
             throws SQLException {
         Pipeline command = null;
@@ -89,25 +89,21 @@ public abstract class PipelineDB {
     
     // Return all the pipeline currently setup in the database.
     public static List<Pipeline> getAllPipeline() throws SQLException {
-        // Only execute the query if the list is empty
-        // To prevent the query from being run multiple times.
-        if (pipelineList.isEmpty()) {
-            String queryStr = "SELECT * FROM pipeline";
-            PreparedStatement queryStm = conn.prepareStatement(queryStr);
-            ResultSet result = queryStm.executeQuery();
-            int index = 0;
+        List<Pipeline> plList = new ArrayList<>();
+        ResultSet rs = DBHelper.runQuery("SELECT * FROM pipeline");
+        int index = 0;
             
-            while (result.next()) {
-                Pipeline tmp = new Pipeline(
-                                        result.getString("name"),
-                                        result.getString("tid"),
-                                        result.getString("code"),
-                                        result.getString("parameter"));
-                // Add the Pipeline to the command list
-                pipelineList.add(index++, tmp);
-            }
+        while (rs.next()) {
+            Pipeline tmp = new Pipeline(
+                                rs.getString("name"),
+                                rs.getString("tid"),
+                                rs.getString("code"),
+                                rs.getString("parameter"));
+            // Add the Pipeline to the command list
+            plList.add(index++, tmp);
         }
-        return pipelineList;
+
+        return plList;
     }
     
     // Update the pipeline command in the database.
@@ -126,10 +122,9 @@ public abstract class PipelineDB {
             logger.debug("Updated pipeline: " + cmd.getName());
         }
         catch (SQLException e) {
-            logger.error("SQLException when updating pipeline: "
-                    + cmd.getName());
-            logger.error(e.getMessage());
             result = Constants.NOT_OK;
+            logger.error("FAIL to update pipeline: " + cmd.getName());
+            logger.error(e.getMessage());
         }
         
         return result;
@@ -149,14 +144,14 @@ public abstract class PipelineDB {
             
             insertStm.executeUpdate();
             // Clear the command list, so that it will be rebuild again.
-            pipelineList.clear();
+//            pipelineList.clear();
             logger.debug("New pipeline inserted into database: " + 
                     cmd.getName());
         }
         catch (SQLException e) {
-            logger.error("SQLException when inserting pipeline!");
-            logger.error(e.getMessage());
             result = Constants.NOT_OK;
+            logger.error("FAIL to insert pipeline!");
+            logger.error(e.getMessage());
         }
         
         return result;
