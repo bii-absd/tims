@@ -37,6 +37,8 @@ import org.apache.logging.log4j.LogManager;
  * 07-Jan-2016 - Changes due to 2 addition attributes in Study class. Added
  * new method queryCompletedStudy. Implemented the module for downloading of
  * study's consolidated output and finalized summary.
+ * 13-Dec-2016 - Removed all the static variables in Study and ItemList
+ * management modules.
  */
 
 public abstract class StudyDB {
@@ -44,7 +46,6 @@ public abstract class StudyDB {
     private final static Logger logger = LogManager.
             getLogger(StudyDB.class.getName());
     private final static Connection conn = DBHelper.getDBConn();
-    private static List<Study> studyList = new ArrayList<>();
 
     // Insert the new study into database. For every new study created, 
     // the finalized_output and summary fields will be empty.
@@ -64,20 +65,18 @@ public abstract class StudyDB {
             insertStm.setBoolean(7, study.getCompleted());
 
             insertStm.executeUpdate();
-            // Clear the study list, so that it will be rebuild again.
-            clearStudyList();
             logger.debug("New Study ID inserted into database: " + 
                     study.getStudy_id());
         }
         catch (SQLException e) {
-            logger.error("SQLException when inserting study!");
-            logger.error(e.getMessage());
             result = Constants.NOT_OK;
+            logger.error("FAIL to insert study!");
+            logger.error(e.getMessage());
         }
         return result;
     }
     
-    // Update the study information in the database
+    // Update the study information in the database.
     public static Boolean updateStudy(Study study) {
         Boolean result = Constants.OK;
         String updateStr = "UPDATE study SET dept_id = ?, description = ?, "
@@ -93,9 +92,9 @@ public abstract class StudyDB {
             logger.debug("Updated study: " + study.getStudy_id());
         }
         catch (SQLException e) {
-            logger.error("SQLException when updating study!");
-            logger.error(e.getMessage());
             result = Constants.NOT_OK;
+            logger.error("FAIL to update study!");
+            logger.error(e.getMessage());
         }
         
         return result;
@@ -112,7 +111,7 @@ public abstract class StudyDB {
             logger.debug(studyID + " completed status updated to " + status);
         }
         catch (SQLException e) {
-            logger.error("Failed to update study to completed!");
+            logger.error("FAIL to update study to completed!");
             logger.error(e.getMessage());
         }
     }
@@ -128,7 +127,7 @@ public abstract class StudyDB {
             logger.debug(studyID + " finalized file path updated to " + path);
         }
         catch (SQLException e) {
-            logger.error("Failed to update study's finalized file path!");
+            logger.error("FAIL to update study's finalized file path!");
             logger.error(e.getMessage());
         }
     }
@@ -144,7 +143,7 @@ public abstract class StudyDB {
             logger.debug(studyID + " summary report path updated to " + path);
         }
         catch (SQLException e) {
-            logger.error("Failed to update study's summary report path!");
+            logger.error("FAIL to update study's summary report path!");
             logger.error(e.getMessage());
         }        
     }
@@ -162,7 +161,7 @@ public abstract class StudyDB {
             logger.debug("Annotation Version: " + annotHash.toString());
         }
         catch (SQLException e) {
-            logger.error("SQLException when retrieving annotation version!");
+            logger.error("FAIL to retrieve annotation version!");
             logger.error(e.getMessage());
         }
         
@@ -188,7 +187,7 @@ public abstract class StudyDB {
             logger.debug("Study list for " + userID + "'s department retrieved.");
         }
         catch (SQLException e) {
-            logger.error("SQLException when query study!");
+            logger.error("FAIL to query study!");
             logger.error(e.getMessage());
         }
         return studyHash;
@@ -213,7 +212,7 @@ public abstract class StudyDB {
             logger.debug("Study list available for finalization retrieved.");
         }
         catch (SQLException e) {
-            logger.error("Failed to retrieve study that could be finalize!");
+            logger.error("FAIL to retrieve study that could be finalize!");
             logger.error(e.getMessage());
         }
         
@@ -247,7 +246,7 @@ public abstract class StudyDB {
             logger.debug("Query completed study for " + dept_id + " completed.");
         }
         catch (SQLException e) {
-            logger.error("Failed to retrieve completed study!");
+            logger.error("FAIL to retrieve completed study!");
             logger.error(e.getMessage());
         }
         
@@ -258,13 +257,12 @@ public abstract class StudyDB {
     // Note: Users will not have access to create Study ID i.e. only the 
     // administrator do.
     public static List<Study> queryStudy() {
-        // Only execute the query if the list is empty.
-        if (studyList.isEmpty()) {
-            ResultSet rs = DBHelper.runQuery("SELECT * FROM study ORDER BY date DESC");
+        List<Study> studyList = new ArrayList<>();
+        ResultSet rs = DBHelper.runQuery("SELECT * FROM study ORDER BY date DESC");
             
-            try {
-                while (rs.next()) {
-                    Study tmp = new Study(
+        try {
+            while (rs.next()) {
+                Study tmp = new Study(
                             rs.getString("study_id"),
                             rs.getString("dept_id"),
                             rs.getString("user_id"),
@@ -275,17 +273,14 @@ public abstract class StudyDB {
                             rs.getDate("date"),
                             rs.getBoolean("completed"));
                     
-                    studyList.add(tmp);
-                }
-                rs.close();
-                logger.debug("Query study completed.");
+                studyList.add(tmp);
             }
-            catch (SQLException e) {
-                logger.error("SQLException when query study!");
-                logger.error(e.getMessage());
-                // Exception has occurred, return back a empty list.
-                return new ArrayList<>();
-            }
+            rs.close();
+            logger.debug("Query study completed.");
+        }
+        catch (SQLException e) {
+            logger.error("FAIL to query study!");
+            logger.error(e.getMessage());
         }
         
         return studyList;
@@ -307,15 +302,10 @@ public abstract class StudyDB {
             }
         }
         catch (SQLException e) {
-            logger.error("Failed to retrieve annotation version from study!");
+            logger.error("FAIL to retrieve annotation version from study!");
             logger.error(e.getMessage());
         }
         
         return annot_ver;
-    }
-    
-    // Clear the study list, so that the query to the database get to run again.
-    public static void clearStudyList() {
-        studyList.clear();
     }
 }

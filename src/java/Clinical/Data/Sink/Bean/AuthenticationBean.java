@@ -71,6 +71,8 @@ import org.apache.logging.log4j.LogManager;
  * 07-Jan-2016 - Added one new method, getFullName() to be used during 
  * generation of study's summary report.
  * 12-Jan-2016 - Fix the static variable issues in AuthenticationBean.
+ * 13-Dec-2016 - Removed all the static variables in Study and ItemList
+ * management modules.
  */
 
 @ManagedBean (name="authenticationBean")
@@ -82,6 +84,7 @@ public class AuthenticationBean implements Serializable {
     private static DBHelper dbHandle;
     private String loginName, password;
     private UserAccount userAcct;
+    private String instName;
     
     public AuthenticationBean() {
         logger.debug("AuthenticationBean created.");
@@ -103,8 +106,7 @@ public class AuthenticationBean implements Serializable {
         }
 
         logger.debug("Application is hosted on: " + OS);
-        logger.debug("Config file located at: " + 
-                     context.getRealPath(setupFile));
+//        logger.debug("Config file located at: " + context.getRealPath(setupFile));
         
         // Setup the constants using the parameters defined in setup
         return Constants.setup(context.getRealPath(setupFile));
@@ -114,8 +116,7 @@ public class AuthenticationBean implements Serializable {
     private Boolean setupMenuList(ServletContext context) {
         // Load the itemlist filename from context-param
         String itemListFile = context.getInitParameter("itemlist");
-        logger.debug("Item list file located at: " + 
-                     context.getRealPath(itemListFile));
+//        logger.debug("Item list file located at: " + context.getRealPath(itemListFile));
         
         // Setup the menu list using the items defined in item list config
         return SelectOneMenuList.setup(context.getRealPath(itemListFile));
@@ -147,8 +148,6 @@ public class AuthenticationBean implements Serializable {
             return Constants.ERROR;
         }
         
-        // Retrieve the institution list from database
-        InstitutionDB.buildInstList();
         // Retrieve the job status definition from database
         JobStatusDB.getJobStatusDef();
         
@@ -183,6 +182,8 @@ public class AuthenticationBean implements Serializable {
                     // Save the user ID in the session map.
                     getFacesContext().getExternalContext().getSessionMap().
                                 put("User", loginName);
+                    // Save the institution name where this user belongs to.
+                    instName = InstitutionDB.getInstName(userAcct.getInst_id());
                     // Everything is fine, proceed from login to /restricted folder
                     result =  Constants.PAGES_DIR + Constants.MAIN_PAGE;
                 }
@@ -256,8 +257,7 @@ public class AuthenticationBean implements Serializable {
             return loginName;
         }
         else {
-            return InstitutionDB.getInstName(userAcct.getInst_id()) + " - " 
-                    + userAcct.getDept_id();            
+            return instName + " - " + userAcct.getDept_id();            
         }
     }
     

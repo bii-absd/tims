@@ -32,7 +32,7 @@
                         </f:facet>
                         <f:facet name="input">
                             <p:selectOneMenu value="#{study.dept_id}" style="width: 100%">
-                                <f:selectItems value="#{studyMgntBean.deptList}"/>
+                                <f:selectItems value="#{studyMgntBean.deptHash}"/>
                             </p:selectOneMenu>
                         </f:facet>
                     </p:cellEditor>
@@ -91,7 +91,7 @@
                                  value="#{studyMgntBean.annot_ver}" 
                                  style="width: 180px">
                     <f:selectItem itemLabel="Select Annotation Version" itemValue=""/>
-                    <f:selectItems value="#{studyMgntBean.annotList}"/>
+                    <f:selectItems value="#{studyMgntBean.annotHash}"/>
                 </p:selectOneMenu>
                 <h:message id="annot-status" for="annot" styleClass="errors"/>
                 <h:panelGroup/>

@@ -1,5 +1,5 @@
 /*
- * Copyright @2015
+ * Copyright @2015-2016
  */
 package Clinical.Data.Sink.Database;
 
@@ -13,6 +13,8 @@ package Clinical.Data.Sink.Database;
  * 13-Nov-2015 - Created with all the standard getters and setters.
  * 01-Dec-2015 - Implementation for database 2.0
  * 09-Dec-2015 - Added new attribute, inst_name.
+ * 13-Dec-2016 - Removed all the static variables in Study and ItemList
+ * management modules.
  */
 
 public class Department {
@@ -26,11 +28,12 @@ public class Department {
         this.inst_id = inst_id;
         this.dept_id = dept_id;
         this.dept_name = dept_name;
+        inst_name = InstitutionDB.getInstName(inst_id);
     }
 
     // Return the institution name for this inst_id.
     public String getInst_name() {
-        return InstitutionDB.getInstName(inst_id);
+        return inst_name;
     }
     
     // Machine generated getters and setters

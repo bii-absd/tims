@@ -36,7 +36,7 @@ import org.apache.logging.log4j.LogManager;
  * 
  * Revision History
  * 07-Dec-2015 - Created with all the standard getters and setters, plus two
- * static methods createNewStudy() and getAnnotList().
+ * static methods createNewStudy() and getAnnotHash().
  * 09-Dec-2015 - Added one attribute, dept_id. Added new method setupGrouping(),
  * to build the MultiSelectListbox options for Institution -> Departments.
  * 11-Dec-2015 - Added the module to edit study detail.
@@ -44,6 +44,8 @@ import org.apache.logging.log4j.LogManager;
  * 22-Dec-2015 - Updated due to changes in some of the method name from 
  * Database Classes.
  * 12-Jan-2016 - Fix the static variable issues in AuthenticationBean.
+ * 13-Dec-2016 - Removed all the static variables in Study and ItemList
+ * management modules.
  */
 
 @ManagedBean (name="studyMgntBean")
@@ -57,7 +59,7 @@ public class StudyManagementBean implements Serializable {
     private Date sqlDate;
     private java.util.Date utilDate;
     private Boolean completed;
-    private LinkedHashMap<String, String> annotList;
+    private LinkedHashMap<String,String> annotHash, deptHash;
     private List<SelectItem> grouping;
     private List<Study> studyList;
     
@@ -65,22 +67,17 @@ public class StudyManagementBean implements Serializable {
         user_id = (String) getFacesContext().getExternalContext().
                 getSessionMap().get("User");
         sqlDate = new Date(Calendar.getInstance().getTime().getTime());
-        // Clear the study list everytime the user enter this page.
-        StudyDB.clearStudyList();
         logger.debug("StudyManagementBean created.");
         logger.debug(user_id + ": access Study ID Management page.");
     }
     
     @PostConstruct
     public void init() {
-        annotList = new LinkedHashMap<>();
-        grouping = new ArrayList<>();
-        studyList = new ArrayList<>();
-        annotList = StudyDB.getAnnotHash();
+        annotHash = StudyDB.getAnnotHash();
+        deptHash = DepartmentDB.getAllDeptHash();
         studyList = StudyDB.queryStudy();
+        grouping = new ArrayList<>();
         setupGrouping();
-        // Setup the department HashMap.
-        DepartmentDB.getDeptList();
     }
     
     // Update the study table in database.
@@ -96,14 +93,12 @@ public class StudyManagementBean implements Serializable {
             logger.debug(user_id + ": updated study " + 
                     ((Study) event.getObject()).getStudy_id());
             fc.addMessage(null, new FacesMessage(
-                    FacesMessage.SEVERITY_INFO, 
-                    "Study updated.", ""));
+                    FacesMessage.SEVERITY_INFO, "Study updated.", ""));
         }
         else {
             logger.error("FAIL to update study!");
             fc.addMessage(null, new FacesMessage(
-                    FacesMessage.SEVERITY_ERROR, 
-                    "Failed to update study!", ""));
+                    FacesMessage.SEVERITY_ERROR, "Failed to update study!", ""));
         }
     }
 
@@ -163,8 +158,8 @@ public class StudyManagementBean implements Serializable {
     }
     
     // Return the list of Annotation Version setup in the system.
-    public LinkedHashMap<String, String> getAnnotList() {
-        return annotList;
+    public LinkedHashMap<String, String> getAnnotHash() {
+        return annotHash;
     }
     
     // Retrieve the faces context
@@ -173,8 +168,8 @@ public class StudyManagementBean implements Serializable {
     }
     
     // Return the full list of departments setup in the system.
-    public LinkedHashMap<String, String> getDeptList() {
-        return DepartmentDB.getAllDeptHash();
+    public LinkedHashMap<String, String> getDeptHash() {
+        return deptHash;
     }
     
     // Machine generated getters and setters

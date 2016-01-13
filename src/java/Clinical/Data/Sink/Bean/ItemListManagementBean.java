@@ -35,6 +35,8 @@ import org.apache.logging.log4j.LogManager;
  * the institution's information.
  * 09-Dec-2015 - Added in the module for adding and updating department info.
  * 12-Jan-2016 - Fix the static variable issues in AuthenticationBean.
+ * 13-Dec-2016 - Removed all the static variables in Study and ItemList
+ * management modules.
  */
 
 @ManagedBean (name="itemListMgntBean")
@@ -49,6 +51,7 @@ public class ItemListManagementBean implements Serializable {
     private String dept_id, dept_name;
     private List<Institution> instList;
     private List<Department> deptList;
+    private LinkedHashMap<String,String> instNameHash;
     // Store the user ID of the current user.
     private final String userName;
     
@@ -63,6 +66,7 @@ public class ItemListManagementBean implements Serializable {
     public void init() {
         instList = InstitutionDB.getInstList();
         deptList = DepartmentDB.getDeptList();
+        instNameHash = InstitutionDB.getInstNameHash();
     }
 
     // Create the new institution ID
@@ -111,7 +115,7 @@ public class ItemListManagementBean implements Serializable {
     
     // Return the HashMap of inst_name-inst_id for user selection.
     public LinkedHashMap<String, String> getInstNameHash() {
-        return InstitutionDB.getInstNameHash();
+        return instNameHash;
     }
     
     // Update the department table in the database.
@@ -131,7 +135,7 @@ public class ItemListManagementBean implements Serializable {
         getFacesContext().addMessage(null, 
                 new FacesMessage(FacesMessage.SEVERITY_INFO, msg, ""));
     }
-    // Show a Faces Error Message ath the current context.
+    // Show a Faces Error Message at the current context.
     private void addFacesErrorMsg(String msg) {
         getFacesContext().addMessage(null, 
                 new FacesMessage(FacesMessage.SEVERITY_ERROR, msg, ""));
