@@ -35,6 +35,7 @@ import org.apache.logging.log4j.LogManager;
  * 05-Nov-2015 - To receive the study ID of this job, and to retrieve the user
  * account of the job requestor. Personalize the email sent to the user.
  * 11-Jan-2015 - To include the pipeline name in the subject title of the email.
+ * 13-Jan-2016 - Removed all the static variables in Account Management module.
  */
 
 public class ExitListener implements EventListener {
@@ -64,7 +65,7 @@ public class ExitListener implements EventListener {
     // the Subject line.
     private void sendEmail(int job_id, String study_id, Boolean status) {
         // Retrieve the user account of the job requestor.
-        UserAccount user = UserAccountDB.getUser(job_id);
+        UserAccount user = UserAccountDB.getJobRequestor(job_id);
         // Retrieve the pipeline executed in this job.
         String plName = SubmittedJobDB.getPipelineName(job_id);
         String from = "datasink@bii.a-star.edu.sg";

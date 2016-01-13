@@ -17,7 +17,7 @@
                    titleStyleClass="tab-title">
             <h:form id="editAcctForm">
                 <p:dataTable var="acct" rows="5" id="editTable" 
-                             value="#{acctMgntBean.userList}" 
+                             value="#{acctMgntBean.userAcctList}" 
                              paginator="true"
                              paginatorTemplate="{FirstPageLink} {PreviousPageLink}
                              {CurrentPageReport} {NextPageLink} {LastPageLink}"
@@ -54,7 +54,7 @@
                             </f:facet>
                             <f:facet name="input">
                                 <p:selectOneMenu value="#{acct.inst_id}" style="width: 100%">
-                                    <f:selectItems value="#{acctMgntBean.instList}"/>
+                                    <f:selectItems value="#{acctMgntBean.instNameHash}"/>
                                     <p:ajax listener="#{acctMgntBean.instEditChange()}" 
                                             update="deptID"/>
                                 </p:selectOneMenu>
@@ -68,9 +68,9 @@
                             </f:facet>
                             <f:facet name="input">
                                 <p:selectOneMenu id="deptID" 
-                                                 disabled="#{acctMgntBean.isDeptListReady()}" 
+                                                 disabled="#{acctMgntBean.isDeptIDHashReady()}" 
                                                  value="#{acct.dept_id}" style="width: 100%">
-                                    <f:selectItems value="#{acctMgntBean.deptList}"/>
+                                    <f:selectItems value="#{acctMgntBean.deptIDHash}"/>
                                 </p:selectOneMenu>
                             </f:facet>
                         </p:cellEditor>
@@ -154,7 +154,7 @@
                                      style="width:180px" required="true"
                                      value="#{acctMgntBean.inst_id}">
                         <f:selectItem itemLabel="Select Institution" itemValue=""/>
-                        <f:selectItems value="#{acctMgntBean.instList}"/>
+                        <f:selectItems value="#{acctMgntBean.instNameHash}"/>
                         <p:ajax listener="#{acctMgntBean.instChange()}" 
                                 update="department"/>
                     </p:selectOneMenu>
@@ -164,10 +164,10 @@
 
                     <p:selectOneMenu id="department" 
                                      style="width:180px" required="true" 
-                                     disabled="#{acctMgntBean.isDeptListReady()}"
+                                     disabled="#{acctMgntBean.isDeptIDHashReady()}"
                                      value="#{acctMgntBean.dept_id}">
                         <f:selectItem itemLabel="Select Department" itemValue=""/>
-                        <f:selectItems value="#{acctMgntBean.deptList}"/>
+                        <f:selectItems value="#{acctMgntBean.deptIDHash}"/>
                     </p:selectOneMenu>
                     <h:message for="department" styleClass="errors"/>
                     <h:panelGroup/>
@@ -214,7 +214,7 @@
                                      rendered="#{authenticationBean.adminRight}" 
                                      style="width: 175px">
                         <f:selectItem itemLabel="Select User ID" itemValue="none"/>
-                        <f:selectItems value="#{acctMgntBean.allUserID}"/>
+                        <f:selectItems value="#{acctMgntBean.userIDHash}"/>
                     </p:selectOneMenu>
                     <h:panelGroup/>
                     <h:panelGroup/>

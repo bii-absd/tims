@@ -11,7 +11,6 @@ import Clinical.Data.Sink.Database.UserRoleDB;
 import Clinical.Data.Sink.General.Constants;
 import java.io.Serializable;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import javax.annotation.PostConstruct;
@@ -42,7 +41,7 @@ import org.primefaces.event.RowEditEvent;
  * 09-Nov-2015 - Added the following methods to support the 'update user
  * account' module:
  * 1. init()
- * 2. getUserList()
+ * 2. getUserAcctList()
  * 3. onRowEdit
  * 13-Nov-2015 - Allowing administrator to change the password of other user.
  * Added one new method getAllUserID() that return all the user ID in the system.
@@ -50,6 +49,7 @@ import org.primefaces.event.RowEditEvent;
  * 22-Dec-2015 - Updated due to changes in some of the method name from 
  * Database Classes.
  * 11-Jan-2016 - Fix the static variable issues in AuthenticationBean.
+ * 13-Jan-2016 - Removed all the static variables in Account Management module.
  */
 
 @ManagedBean (name="acctMgntBean")
@@ -58,42 +58,47 @@ public class AccountManagementBean implements Serializable {
     // Get the logger for Log4j
     private final static Logger logger = LogManager.
             getLogger(AccountManagementBean.class.getName());
-    private String user_id;
-    private String first_name, last_name;
-    private String email, pwd;
+    // User account table attributes
+    private String user_id, first_name, last_name, email, pwd;
     private Boolean active;
     private int role_id;
-    private String dept_id, inst_id;
-    private String new_pwd, cfm_pwd;
+    private String dept_id, inst_id, new_pwd, cfm_pwd;
+//    private String new_pwd, cfm_pwd;
     // Store the user ID of the current user.
     private final String userName;
-    private static List<UserAccount> userList = new ArrayList<>();
-    private LinkedHashMap<String,String> deptList = new LinkedHashMap<>();
-    private LinkedHashMap<String, Integer> roleNameHash;
+    private List<UserAccount> userAcctList;
+    private LinkedHashMap<String,String> instNameHash, deptIDHash, userIDHash;
+//    private LinkedHashMap<String,String> deptIDHash;
+    private LinkedHashMap<String,Integer> roleNameHash;
+//    private LinkedHashMap<String,String> userIDHash;
     
     public AccountManagementBean() {
         userName = (String) getFacesContext().getExternalContext().
                 getSessionMap().get("User");
+        deptIDHash = new LinkedHashMap<>();
         logger.debug("AccountManagementBean created.");
     }
     
     @PostConstruct
     public void init() {
         if (UserAccountDB.isAdministrator(userName)) {
-            userList = UserAccountDB.getAllUser();
+            userAcctList = UserAccountDB.getAllUserAcct();
+            userIDHash = UserAccountDB.getUserIDHash();
         }
         // Retrieve the list of role name setup in the system.
         roleNameHash = UserRoleDB.getRoleNameHash();
+        // Retrieve the list of institution setup in the system.
+        instNameHash = InstitutionDB.getInstNameHash();
     }
     
     // Return all the user ID currently in the system.
-    public LinkedHashMap<String,String> getAllUserID() {
-        return UserAccountDB.getAllUserID();
+    public LinkedHashMap<String,String> getUserIDHash() {
+        return userIDHash;
     }
     
     // Return the list of user accounts currenlty in the system.
-    public List<UserAccount> getUserList() {
-        return userList;
+    public List<UserAccount> getUserAcctList() {
+        return userAcctList;
     }
     
     // Update the user account detail in the database.
@@ -108,7 +113,7 @@ public class AccountManagementBean implements Serializable {
                     FacesMessage.SEVERITY_INFO, "User account updated.", ""));
         }
         catch (SQLException e) {
-            logger.error("User account update failed!");
+            logger.error("Fail to update user account!");
             getFacesContext().addMessage(null, new FacesMessage(
                     FacesMessage.SEVERITY_ERROR, 
                     "Failed to update user account!", ""));            
@@ -196,25 +201,25 @@ public class AccountManagementBean implements Serializable {
     }
     
     // Return the list of Institution setup in the database
-    public LinkedHashMap<String, String> getInstList() {
-        return InstitutionDB.getInstNameHash();
+    public LinkedHashMap<String, String> getInstNameHash() {
+        return instNameHash;
     }
     
     // Return the list of Dept ID belonging to the selected Institution
-    public LinkedHashMap<String, String> getDeptList() {
-        return deptList;
+    public LinkedHashMap<String, String> getDeptIDHash() {
+        return deptIDHash;
     }
     
     // The enabled/disabled status of "Select Department" will depend on
     // whether the institution has been selected or not.
-    public Boolean isDeptListReady() {
-        return deptList.isEmpty();
+    public Boolean isDeptIDHashReady() {
+        return deptIDHash.isEmpty();
     }
     
     // Listener for institution selection change, it's job is to update 
-    // the deptList.
+    // the deptIDHash.
     public void instChange() {
-        deptList = DepartmentDB.getDeptHash(inst_id);
+        deptIDHash = DepartmentDB.getDeptHash(inst_id);
     }
     
     // Listener for institution selection change in the 'Edit User Account' 
@@ -224,7 +229,7 @@ public class AccountManagementBean implements Serializable {
                 evaluateExpressionGet(getFacesContext(), "#{acct}", 
                 UserAccount.class);
         
-        deptList = DepartmentDB.getDeptHash(user.getInst_id());        
+        deptIDHash = DepartmentDB.getDeptHash(user.getInst_id());        
     }
     
     // Retrieve the faces context

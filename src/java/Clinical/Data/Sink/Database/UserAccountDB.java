@@ -44,6 +44,7 @@ import org.mindrot.jbcrypt.BCrypt;
  * 14-Dec-2015 - Changed the class to abstract. Added new method, getDeptID.
  * 22-Dec-2015 - To close the ResultSet after use.
  * 11-Jan-2016 - Fix the static variable issues in AuthenticationBean.
+ * 13-Jan-2016 - Removed all the static variables in Account Management module.
  */
 
 public abstract class UserAccountDB {
@@ -51,33 +52,39 @@ public abstract class UserAccountDB {
     private final static Logger logger = LogManager.
             getLogger(UserAccountDB.class.getName());
     private final static Connection conn = DBHelper.getDBConn();
-    private static List<UserAccount> userList = new ArrayList<>();
-    private static LinkedHashMap<String,String> userIDHash = new LinkedHashMap<>();
     
     // Return the list of all the user ID currently in the system.
-    // This method should be called after getAllUser().
-    public static LinkedHashMap<String,String> getAllUserID() {
-        if (userList.isEmpty()) {
-            getAllUser();
+    public static LinkedHashMap<String,String> getUserIDHash() {
+        LinkedHashMap<String,String> userIDHash = new LinkedHashMap<>();
+        ResultSet rs = DBHelper.runQuery(
+                "SELECT user_id FROM user_account ORDER BY user_id");
+        
+        try {
+            while (rs.next()) {
+                String user_id = rs.getString("user_id");
+                userIDHash.put(user_id, user_id);
+            }
+            rs.close();
+        }
+        catch (SQLException e) {
+            logger.error("FAIL to retrieve user ID!");
+            logger.error(e.getMessage());
         }
         
         return userIDHash;
     }
     
-    // Return the list of user accounts that are currently in the system, and
-    // build the list of user ID.
-    public static List<UserAccount> getAllUser() {
-        // Empty the current user list
-        userList.clear();
+    // Return the list of user accounts that are currently in the system.
+    public static List<UserAccount> getAllUserAcct() {
+        List<UserAccount> userAcctList = new ArrayList<>();
         String queryStr = "SELECT * FROM user_account u NATURAL JOIN dept d "
                         + "WHERE u.dept_id = d.dept_id ORDER BY u.user_id";
         ResultSet rs = DBHelper.runQuery(queryStr);
         
         try {
             while (rs.next()) {
-                String user_id = rs.getString("user_id");
                 UserAccount user = new UserAccount(
-                                        user_id,
+                                        rs.getString("user_id"),
                                         rs.getInt("role_id"),
                                         rs.getString("first_name"),
                                         rs.getString("last_name"),
@@ -88,22 +95,21 @@ public abstract class UserAccountDB {
                                         rs.getString("inst_id"),
                                         rs.getString("last_login"));
                 
-                userList.add(user);
-                userIDHash.put(user_id, user_id);
+                userAcctList.add(user);
             }
             rs.close();
-            logger.debug("No of user account retrieved: " + userList.size());
+            logger.debug("No of user account retrieved: " + userAcctList.size());
         }
         catch (SQLException e) {
             logger.error("FAIL to retrieve user accounts!");
             logger.error(e.getMessage());
         }
         
-        return userList;
+        return userAcctList;
     }
     
     // Return the user account that requested this job.
-    public static UserAccount getUser(int jobID) {
+    public static UserAccount getJobRequestor(int jobID) {
         UserAccount user = null;
         String queryStr = "SELECT * FROM user_account u NATURAL JOIN dept d "
                 + "WHERE u.dept_id = d.dept_id AND u.user_id = (SELECT "
@@ -138,7 +144,8 @@ public abstract class UserAccountDB {
     }
     
     // Return the email address of the user that requested this job.
-    public static String getEmailAddress(int jobID) {
+    // Currently not in use.
+    public static String getJobRequestorEmail(int jobID) {
         String queryStr = "SELECT email FROM user_account WHERE user_id = ("
                 + "SELECT user_id FROM submitted_job WHERE job_id = "
                 + jobID + ")";
@@ -268,7 +275,8 @@ public abstract class UserAccountDB {
         updateStm.executeUpdate();
     }
     
-    // Update the account detail of this user.
+    // Update the account detail of this user. Any exception encountered here
+    // will be throw and to be handled by the caller.
     public static void updateAccount(UserAccount user) throws SQLException {
         String updateStr = "UPDATE user_account SET dept_id = ?, "
                          + "first_name = ?, last_name = ?, "
