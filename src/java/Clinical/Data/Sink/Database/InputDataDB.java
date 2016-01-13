@@ -29,6 +29,8 @@ import org.apache.logging.log4j.LogManager;
  * 31-Dec-2015 - Removed attribute ipList, and updated getIpList to always 
  * query the database for the input_data details.
  * 08-Jan-2016 - To sort the list of input data in descending order.
+ * 13-Jan-2016 - One new field user_id added in the input_data table; to 
+ * identify the user who has uploaded this input data.
  */
 
 public abstract class InputDataDB {
@@ -40,25 +42,27 @@ public abstract class InputDataDB {
     // Insert the new input data detail into database.
     public static Boolean insertInputData(InputData idata) {
         Boolean result = Constants.OK;
-        String insertStr = "INSERT INTO input_data(study_id,sn,filename,"
-                         + "filepath,description,date) VALUES(?,?,?,?,?,?)";
+        String insertStr = "INSERT INTO input_data(study_id,sn,user_id,"
+                         + "filename,filepath,description,date) "
+                         + "VALUES(?,?,?,?,?,?,?)";
         
         try (PreparedStatement insertStm = conn.prepareStatement(insertStr)) {
             insertStm.setString(1, idata.getStudy_id());
             insertStm.setInt(2, idata.getSn());
-            insertStm.setString(3, idata.getFilename());
-            insertStm.setString(4, idata.getFilepath());
-            insertStm.setString(5, idata.getDescription());
-            insertStm.setString(6, idata.getDate());
+            insertStm.setString(3, idata.getUser_id());
+            insertStm.setString(4, idata.getFilename());
+            insertStm.setString(5, idata.getFilepath());
+            insertStm.setString(6, idata.getDescription());
+            insertStm.setString(7, idata.getDate());
             
             insertStm.executeUpdate();
             logger.debug("New input data detail inserted into database: " +
                         idata.getStudy_id() + " - SN: " + idata.getSn());
         }
         catch (SQLException e) {
-            logger.error("SQLException when inserting input data!");
-            logger.error(e.getMessage());
             result = Constants.NOT_OK;
+            logger.error("FAIL to insert input data!");
+            logger.error(e.getMessage());
         }
         
         return result;
@@ -76,6 +80,7 @@ public abstract class InputDataDB {
             
             while (rs.next()) {
                 InputData tmp = new InputData(rs.getString("study_id"),
+                                              rs.getString("user_id"),
                                               rs.getString("filename"),
                                               rs.getString("filepath"),
                                               rs.getString("description"),
@@ -86,7 +91,7 @@ public abstract class InputDataDB {
             logger.debug("Query input data completed.");
         }
         catch (SQLException e) {
-            logger.debug("Failed to query input data!");
+            logger.debug("FAIL to query input data!");
             logger.debug(e.getMessage());
         }
 

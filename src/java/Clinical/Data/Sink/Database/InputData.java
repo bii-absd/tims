@@ -1,5 +1,5 @@
 /*
- * Copyright @2015
+ * Copyright @2015-2016
  */
 package Clinical.Data.Sink.Database;
 
@@ -15,16 +15,19 @@ import java.io.Serializable;
  * 16-Dec-2015 - Created with all the standard getters and setters.
  * 30-Dec-2015 - To implement Serializable else will encounter 
  * IllegalStateException : InstantiationException.
+ * 13-Jan-2016 - One new field user_id added in the input_data table; to 
+ * identify the user who has uploaded this input data.
  */
 
 public class InputData implements Serializable {
     // input_data table attributes
-    private String study_id, filename, filepath, description, date;
+    private String study_id, user_id, filename, filepath, description, date;
     private int sn;
 
-    public InputData(String study_id, String filename, String filepath, 
-            String description, int sn, String date) {
+    public InputData(String study_id, String user_id, String filename, 
+            String filepath, String description, int sn, String date) {
         this.study_id = study_id;
+        this.user_id = user_id;
         this.filename = filename;
         this.filepath = filepath;
         this.description = description;
@@ -38,6 +41,12 @@ public class InputData implements Serializable {
     }
     public void setStudy_id(String study_id) {
         this.study_id = study_id;
+    }
+    public String getUser_id() {
+        return user_id;
+    }
+    public void setUser_id(String user_id) {
+        this.user_id = user_id;
     }
     public String getFilename() {
         return filename;

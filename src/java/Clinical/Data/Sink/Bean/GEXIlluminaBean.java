@@ -40,6 +40,8 @@ import javax.faces.bean.ViewScoped;
  * file fields. Added input_path field.
  * 06-Jan-2016 - Fixed the bug caused by the introduction of input_path field.
  * 12-Jan-2016 - Fix the static variable issues in AuthenticationBean.
+ * 13-Jan-2016 - One new field user_id added in the input_data table; to 
+ * identify the user who has uploaded this input data.
  */
 
 @ManagedBean (name="gexIlluminaBean")
@@ -121,7 +123,7 @@ public class GEXIlluminaBean extends ConfigBean {
         try {
             sn = InputDataDB.getNextSn(studyID);
             // Insert a new record into input_data table.
-            InputData newdata = new InputData(studyID, 
+            InputData newdata = new InputData(studyID, userName,
                     inputFile.getInputFilename(), 
                     inputFile.getLocalDirectoryPath(),
                     inputFileDesc, sn, submitTimeInDB);

@@ -45,8 +45,12 @@
                              selection="#{gexIlluminaBean.selectedInput}" 
                              rowKey="#{reuseIP.sn}" 
                              styleClass="table-odd-row table-even-row">
+                    <p:column headerText="Data Uploaded By" 
+                              style="width: 120px">
+                        <h:outputText value="#{reuseIP.user_id}"/>
+                    </p:column>
                     <p:column headerText="Data Upload Date" 
-                              style="width: 150px; text-align: center">
+                              style="width: 150px">
                         <h:outputText value="#{reuseIP.date}"/>
                     </p:column>
                     <p:column headerText="Data Description">

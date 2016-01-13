@@ -38,6 +38,8 @@ import javax.faces.bean.ViewScoped;
  * file fields. Added input_path field.
  * 06-Jan-2016 - Fixed the bug caused by the introduction of input_path field.
  * 12-Jan-2016 - Fix the static variable issues in AuthenticationBean.
+ * 13-Jan-2016 - One new field user_id added in the input_data table; to 
+ * identify the user who has uploaded this input data.
  */
 
 @ManagedBean (name="gexAffymetrixBean")
@@ -118,7 +120,7 @@ public class GEXAffymetrixBean extends ConfigBean {
             sn = InputDataDB.getNextSn(studyID);
             // For Affymetrix, we will only store the filepath i.e. for 
             // filename, it is empty.
-            InputData newdata = new InputData(studyID, "", 
+            InputData newdata = new InputData(studyID, userName, "", 
                     inputFile.getLocalDirectoryPath(),
                     inputFileDesc, sn, submitTimeInDB);
             InputDataDB.insertInputData(newdata);
