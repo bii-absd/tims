@@ -10,9 +10,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -56,6 +54,7 @@ import org.apache.logging.log4j.LogManager;
  * 11-Jan-2015 - Added new method, getPipelineName to retrieve the name of the
  * pipeline executed for the job.
  * 12-Jan-2016 - Fix the static variable issues in AuthenticationBean.
+ * 13-Jan-2016 - Removed all the static variables in Job Status module.
  */
 
 public abstract class SubmittedJobDB {
@@ -63,7 +62,6 @@ public abstract class SubmittedJobDB {
     private final static Logger logger = LogManager.
             getLogger(SubmittedJobDB.class.getName());
     private final static Connection conn = DBHelper.getDBConn();
-    private static Map<Integer,SubmittedJob> submittedJobs = new HashMap<>();
     
     // Insert a new job request into the submitted_job table.
     // The job_id of the insert job request will be returned for further
@@ -78,6 +76,7 @@ public abstract class SubmittedJobDB {
                 + "phenotype_column, summarization, output_file, "
                 + "sample_average, standardization, region, report) "
                 + "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+        // To request for the return of generated key upon successful insertion.
         PreparedStatement insertStm = conn.prepareStatement(insertStr, 
                 Statement.RETURN_GENERATED_KEYS);
         // Build the INSERT statement using the variables retrieved from the
@@ -150,8 +149,8 @@ public abstract class SubmittedJobDB {
         }
     }
     
-    // Query for the pipeline technologies used in this study.
-    public static List<String> queryTIDUsedInStudy(String studyID) {
+    // Return the list of pipeline technologies used in this study.
+    public static List<String> getTIDUsedInStudy(String studyID) {
         List<String> tidList = new ArrayList<>();
         String queryStr = "SELECT DISTINCT tid FROM submitted_job sj INNER JOIN "
                         + "pipeline pl ON sj.pipeline_name = pl.name "
@@ -168,16 +167,16 @@ public abstract class SubmittedJobDB {
                          + tidList.toString());
         }
         catch (SQLException e) {
-            logger.error("FAIL to query for pipeline technologies!");
+            logger.error("FAIL to retrieve pipeline technologies executed!");
             logger.error(e.getMessage());
         }
         
         return tidList;
     }
     
-    // Query for the list of completed jobs that are ready to be finalized for
+    // Return the list of completed jobs that are ready to be finalized for
     // this study.
-    public static List<FinalizingJobEntry> queryCompletedJobsInStudy
+    public static List<FinalizingJobEntry> getCompletedJobsInStudy
         (String studyID, String tid) {
         List<FinalizingJobEntry> jobList = new ArrayList<>();
         String queryStr = "SELECT job_id, tid, pipeline_name, submit_time "
@@ -203,67 +202,50 @@ public abstract class SubmittedJobDB {
                          tid + " technology is " + jobList.size());
         }
         catch (SQLException e) {
-            logger.error("FAIL to query for completed jobs!");
+            logger.error("FAIL to retrieve completed jobs for " + studyID);
             logger.error(e.getMessage());
         }
         
         return jobList;
     }
 
-    // Query the submitted_job table using the user_id as a match condition. 
-    // The results from the query will be returned as a list to the caller.
-    public static List<SubmittedJob> querySubmittedJob(String user_id) {
-        // Only execute the query if the list is empty
-        // This is to prevent the query from being run multiple times.
-        if (submittedJobs.isEmpty()) {
-            // Don't retrieve those jobs which are in finalizing stage.
-            String queryStr = "SELECT job_id, study_id, pipeline_name, "
-                    + "status_id, submit_time, output_file, report FROM "
-                    + "submitted_job WHERE user_id = ? AND status_id NOT IN (4) "
-                    + "ORDER BY job_id DESC"; 
+    // Return the list of jobs that have been submitted by this user.
+    public static List<SubmittedJob> getSubmittedJobs(String user_id) {
+        List<SubmittedJob> jobList = new ArrayList<>();
+        // Don't retrieve those jobs which are in finalizing stage.
+        String queryStr = "SELECT job_id, study_id, pipeline_name, "
+                + "status_id, submit_time, output_file, report FROM "
+                + "submitted_job WHERE user_id = ? AND status_id NOT IN (4) "
+                + "ORDER BY job_id DESC"; 
 
-            // Additional logging to get the logger context
-            /*
-            LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
-            Configuration cfg = ctx.getConfiguration();
-            FileAppender fa = (FileAppender) cfg.getAppender("File");
-            */
+        try (PreparedStatement queryStm = conn.prepareStatement(queryStr)) {
+            queryStm.setString(1, user_id);
+            ResultSet rs = queryStm.executeQuery();
             
-            try (PreparedStatement queryStm = conn.prepareStatement(queryStr))
-            {
-                // Set the query condition using the user_id passed in.
-                queryStm.setString(1, user_id);
-                ResultSet rs = queryStm.executeQuery();
-                int id = 1;
-            
-                while (rs.next()) {
-                    // Create a new SubmittedJob object for every row of data 
-                    // retrieved from the database.
-                    SubmittedJob job = new SubmittedJob(
-                                    rs.getInt("job_id"),
-                                    rs.getString("study_id"),
-                                    user_id,
-                                    rs.getString("pipeline_name"),
-                                    rs.getInt("status_id"),
-                                    rs.getString("submit_time"),
-                                    rs.getString("output_file"),
-                                    rs.getString("report"));
-                    // Add the object to the HashMap
-                    submittedJobs.put(id++, job);
-                }
-                logger.debug("Query submitted job completed.");
-            } catch (SQLException e) {
-                logger.error("FAIL to query submitted job!");
-                logger.error(e.getMessage());
-                // Exception has occurred, return back a empty list.
-                return new ArrayList<>(0);
+            while (rs.next()) {
+                SubmittedJob job = new SubmittedJob(
+                                rs.getInt("job_id"),
+                                rs.getString("study_id"),
+                                user_id,
+                                rs.getString("pipeline_name"),
+                                rs.getInt("status_id"),
+                                rs.getString("submit_time"),
+                                rs.getString("output_file"),
+                                rs.getString("report"));
+                
+                jobList.add(job);
             }
+            logger.debug("Submitted job retrieved for " + user_id);
+        } 
+        catch (SQLException e) {
+                logger.error("FAIL to retrieve submitted job!");
+                logger.error(e.getMessage());
         }
         
-        return new ArrayList<>(submittedJobs.values());
+        return jobList;
     }
 
-    // Retrieve the output filepath for this submiited job.
+    // Return the output filepath for this job.
     public static String getOutputPath(int jobID) {
         String path = Constants.DATABASE_INVALID_STR;
         String query = "SELECT output_file FROM submitted_job WHERE job_id = " 
@@ -286,10 +268,11 @@ public abstract class SubmittedJobDB {
         return path;
     }
 
-    // Retrieve the pipeline name for this submitted job.
+    // Return the pipeline name for this job.
     public static String getPipelineName(int jobID) {
         String plName = Constants.DATABASE_INVALID_STR;
-        String queryStr = "SELECT pipeline_name FROM submitted_job WHERE job_id = " + jobID;
+        String queryStr = "SELECT pipeline_name FROM submitted_job "
+                        + "WHERE job_id = " + jobID;
         ResultSet rs = DBHelper.runQuery(queryStr);
         
         try {
@@ -304,10 +287,5 @@ public abstract class SubmittedJobDB {
         }
         
         return plName;
-    }
-    
-    // Clear the HashMap, so that the query to the database will be run again.
-    public static void clearSubmittedJobs() {
-        submittedJobs.clear();
     }
 }

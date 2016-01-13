@@ -52,6 +52,7 @@ import org.apache.logging.log4j.LogManager;
  * 08-Jan-2016 - To setup the Astar and Bii logo before starting the 
  * DataDepositor thread.
  * 12-Jan-2016 - Fix the static variable issues in AuthenticationBean.
+ * 13-Jan-2016 - Removed all the static variables in Job Status module.
  */
 
 @ManagedBean (name="finalizedBean")
@@ -224,11 +225,11 @@ public class FinalizeStudyBean implements Serializable {
     // Build new lists based on the study_id selected by user.
     private void buildLists() {
         int index = 0;
-        TIDList = SubmittedJobDB.queryTIDUsedInStudy(study_id);
+        TIDList = SubmittedJobDB.getTIDUsedInStudy(study_id);
         
         for (String tid : TIDList) {
             jobEntryLists.add(index++, SubmittedJobDB.
-                    queryCompletedJobsInStudy(study_id, tid));
+                    getCompletedJobsInStudy(study_id, tid));
         }
     }
     

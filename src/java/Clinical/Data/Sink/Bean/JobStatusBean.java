@@ -42,6 +42,7 @@ import org.apache.logging.log4j.LogManager;
  * AuthenticationBean class.
  * 06-Jan-2016 - Moved the common function download() to FileLoader class.
  * 12-Jan-2016 - Fix the static variable issues in AuthenticationBean.
+ * 13-Jan-2016 - Removed all the static variables in Job Status module.
  */
 
 @ManagedBean(name = "jobStatusBean")
@@ -61,15 +62,12 @@ public class JobStatusBean implements Serializable {
                 getExternalContext().getSessionMap().get("User");
         logger.debug("JobStatusBean created.");
         logger.info(userName + ": access Job Status page.");
-        // Retrieve the submitted job from database everytime we enter job
-        // status page.
-        SubmittedJobDB.clearSubmittedJobs();
     }
 
     @PostConstruct
     public void init() {
         // Need to assign the jobSubmission here, else the sorting will not work.
-        jobSubmission = SubmittedJobDB.querySubmittedJob(userName);
+        jobSubmission = SubmittedJobDB.getSubmittedJobs(userName);
     }
     
     // Download the pipeline output for user.
