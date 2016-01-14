@@ -1,5 +1,5 @@
 /*
- * Copyright @2015
+ * Copyright @2015-2016
  */
 package Clinical.Data.Sink.Database;
 
@@ -41,7 +41,7 @@ public abstract class JobStatusDB {
     
     // Retrieve all the job status currently defined in job_status table and 
     // store them in the HashMap job_status.
-    public static void getJobStatusDef() {
+    public static void buildJobStatusDef() {
         // Only execute the query if the list is empty
         if (job_status.isEmpty()) {
             ResultSet rs = DBHelper.runQuery(
@@ -55,7 +55,7 @@ public abstract class JobStatusDB {
                 logger.debug("Job Status Definition: " + job_status.values());                
             }
             catch (SQLException e) {
-                logger.error("SQLException when query job status!");
+                logger.error("FAIL to retrieve job status!");
                 logger.error(e.getMessage());
             }
         }

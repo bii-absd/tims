@@ -8,7 +8,6 @@ import Clinical.Data.Sink.Database.InstitutionDB;
 import Clinical.Data.Sink.Database.JobStatusDB;
 import Clinical.Data.Sink.Database.UserAccount;
 import Clinical.Data.Sink.Database.UserAccountDB;
-import Clinical.Data.Sink.General.SelectOneMenuList;
 import Clinical.Data.Sink.General.Constants;
 
 import java.io.Serializable;
@@ -73,6 +72,8 @@ import org.apache.logging.log4j.LogManager;
  * 12-Jan-2016 - Fix the static variable issues in AuthenticationBean.
  * 13-Dec-2016 - Removed all the static variables in Study and ItemList
  * management modules.
+ * 14-Jan-2016 - Deleted method setupMenuList. The menu item list will be setup
+ * in MenuBean.
  */
 
 @ManagedBean (name="authenticationBean")
@@ -106,20 +107,9 @@ public class AuthenticationBean implements Serializable {
         }
 
         logger.debug("Application is hosted on: " + OS);
-//        logger.debug("Config file located at: " + context.getRealPath(setupFile));
         
         // Setup the constants using the parameters defined in setup
         return Constants.setup(context.getRealPath(setupFile));
-    }
-    
-    // Setup all the menu list found in the system.
-    private Boolean setupMenuList(ServletContext context) {
-        // Load the itemlist filename from context-param
-        String itemListFile = context.getInitParameter("itemlist");
-//        logger.debug("Item list file located at: " + context.getRealPath(itemListFile));
-        
-        // Setup the menu list using the items defined in item list config
-        return SelectOneMenuList.setup(context.getRealPath(itemListFile));
     }
     
     // Setup the system, check the user login and password against the 
@@ -129,7 +119,7 @@ public class AuthenticationBean implements Serializable {
         // Setting up the database configuration, input, config file path, etc
         ServletContext context = getServletContext();
 
-        if (!(setupConstants(context) && setupMenuList(context)) )
+        if (!setupConstants(context))
         {
             // System having issue, shouldn't let the user proceed.
             return Constants.ERROR;
@@ -149,7 +139,7 @@ public class AuthenticationBean implements Serializable {
         }
         
         // Retrieve the job status definition from database
-        JobStatusDB.getJobStatusDef();
+        JobStatusDB.buildJobStatusDef();
         
         // Temporary hack to allow me to enter to create user when the 
         // application is first deployed.

@@ -38,14 +38,14 @@
             </h:panelGrid>
         </p:tab>
             
-        <p:tab id="proteome" title="Proteome Data" titleStyleClass="tab-title">
+        <p:tab id="proteome" rendered="false" title="Proteome Data" titleStyleClass="tab-title">
             <h:panelGrid cellpadding="1">
                 <p:commandLink value="Proteome Pipeline 1" style="font-size: 16px"/>
                 <p:commandLink value="Proteome Pipeline 2" style="font-size: 16px"/>
             </h:panelGrid>
         </p:tab>
             
-        <p:tab id="imaging" title="Imaging Data" titleStyleClass="tab-title">
+        <p:tab id="imaging" rendered="false" title="Imaging Data" titleStyleClass="tab-title">
             <h:panelGrid cellpadding="1">
                 <p:commandLink value="Imaging Pipeline 1" style="font-size: 16px"/>
             </h:panelGrid>
@@ -59,7 +59,7 @@
             </h:outputLink>
         </p:tab>
             
-        <p:tab id="job" title="My Job Submission" titleStyleClass="tab-title">
+        <p:tab id="job" title="My Work Area" titleStyleClass="tab-title">
             <h:panelGrid cellpadding="1">
                 <h:outputLink title="View my job submission status" 
                               value="jobstatus.xhtml" style="font-size: 16px">

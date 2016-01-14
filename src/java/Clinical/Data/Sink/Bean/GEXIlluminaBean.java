@@ -9,9 +9,7 @@ import Clinical.Data.Sink.Database.PipelineDB;
 import Clinical.Data.Sink.Database.SubmittedJob;
 import Clinical.Data.Sink.Database.SubmittedJobDB;
 import Clinical.Data.Sink.General.Constants;
-import Clinical.Data.Sink.General.SelectOneMenuList;
 import java.sql.SQLException;
-import java.util.LinkedHashMap;
 import java.util.List;
 import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
@@ -43,6 +41,8 @@ import javax.faces.bean.ViewScoped;
  * identify the user who has uploaded this input data.
  * 14-Jan-2016 - Removed all the static variables in Pipeline Configuration
  * Management module.
+ * 14-Jan-2016 - Deleted method getTypeList(). The pipeline type list will be 
+ * retrieved from MenuBean.
  */
 
 @ManagedBean (name="gexIlluminaBean")
@@ -179,11 +179,6 @@ public class GEXIlluminaBean extends ConfigBean {
         }
         // Call the base class method to create the Config File.
         return super.createConfigFile();
-    }
-    
-    // Return the list of Illumina type.
-    public LinkedHashMap<String,String> getTypeList() {
-        return SelectOneMenuList.getIlluminaTypeList();
     }
     
     // Machine generated getters and setters
