@@ -40,6 +40,8 @@ import org.apache.logging.log4j.LogManager;
  * ConfigBean to setup the pipeline configuration.
  * 11-Jan-2016 - Added the support for METH pipeline.
  * 12-Jan-2016 - Fix the static variable issues in AuthenticationBean.
+ * 14-Jan-2016 - Removed all the static variables in Pipeline Configuration
+ * Management module.
  */
 
 @ManagedBean (name="menuSelectionBean")
@@ -65,21 +67,18 @@ public class MenuSelectionBean implements Serializable{
         studyList = StudyDB.getStudyHash(userName);
     }
     
-    // Setup the ConfigBean for GEX Illumina pipeline processing.
+    // Setup config_page for GEX Illumina pipeline processing.
     public void gexIllumina() {
-        ConfigBean.setCommandLink("run-gex-pipeline (Illumina)");
         config_page = Constants.GEX_ILLUMINA_PAGE;
     }
     
-    // Setup the ConfigBean for GEX Affymetrix pipeline processing.
+    // Setup config_page for GEX Affymetrix pipeline processing.
     public void gexAffymetrix() {
-        ConfigBean.setCommandLink("run-gex-pipeline (Affymetrix)");
         config_page = Constants.GEX_AFFYMETRIX_PAGE;
     }
     
-    // Setup the ConfigBean for METH pipeline processing.
+    // Setup config_page for METH pipeline processing.
     public void methPipeline() {
-        ConfigBean.setCommandLink("run-meth-pipeline");
         config_page = Constants.METH_PIPELINE_PAGE;
     }
     
@@ -93,8 +92,13 @@ public class MenuSelectionBean implements Serializable{
     // User selected Study to work on, and has decided to proceed to pipeline
     // configuration page.
     public String proceedToConfig() {
-        // Setup pipeline configuration.
-        ConfigBean.setup(study_id, haveNewData);
+        // Save the Study ID and haveNewData selection in the session map to be
+        // use by pipeline configuration bean.
+        FacesContext.getCurrentInstance().getExternalContext().
+                getSessionMap().put("study_id", study_id);
+        FacesContext.getCurrentInstance().getExternalContext().
+                getSessionMap().put("haveNewData", haveNewData);
+        
         logger.debug(userName + ": selected " + config_page);
         logger.debug(haveNewData?"User have new data to upload.":
                      "No new data to upload.");
@@ -115,12 +119,6 @@ public class MenuSelectionBean implements Serializable{
 
     // Setup the NGSConfigBean according to the specific pipeline selected.
     public String ngsPipeline() {
-        
-        return Constants.NGS_PAGE;
-    }
-    
-    // For testing DataDepositor
-    public String dataDepositor() {
         return Constants.NGS_PAGE;
     }
     
@@ -132,8 +130,7 @@ public class MenuSelectionBean implements Serializable{
     // Machine generated getters and setters
     public String getStudy_id() { return study_id; }
     public void setStudy_id(String study_id) { this.study_id = study_id; }
-    public Boolean getHaveNewData() 
-    { return haveNewData; }
+    public Boolean getHaveNewData() { return haveNewData; }
     public void setHaveNewData(Boolean haveNewData) 
     { this.haveNewData = haveNewData; }
 }

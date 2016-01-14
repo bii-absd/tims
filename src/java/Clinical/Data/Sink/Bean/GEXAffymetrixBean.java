@@ -40,6 +40,8 @@ import javax.faces.bean.ViewScoped;
  * 12-Jan-2016 - Fix the static variable issues in AuthenticationBean.
  * 13-Jan-2016 - One new field user_id added in the input_data table; to 
  * identify the user who has uploaded this input data.
+ * 14-Jan-2016 - Removed all the static variables in Pipeline Configuration
+ * Management module.
  */
 
 @ManagedBean (name="gexAffymetrixBean")
@@ -49,6 +51,7 @@ public class GEXAffymetrixBean extends ConfigBean {
     public GEXAffymetrixBean() {
         pipelineName = Constants.GEX_AFFYMETRIX;
         pipelineTech = PipelineDB.getPipelineTechnology(pipelineName);
+        commandLink  = "run-gex-pipeline (Affymetrix)";
         
         logger.debug("GEXAffymetrixBean created.");
     }

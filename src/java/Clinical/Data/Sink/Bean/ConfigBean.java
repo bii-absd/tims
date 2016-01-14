@@ -69,24 +69,25 @@ import org.apache.logging.log4j.LogManager;
  * 06-Jan-2016 - Added new method, getInputPath().
  * 12-Jan-2016 - Fix the static variable issues in AuthenticationBean.
  * 12-Jan-2016 - To include the study ID into the config filename.
+ * 14-Jan-2016 - Removed all the static variables in Pipeline Configuration
+ * Management module.
  */
 
 public abstract class ConfigBean implements Serializable {
     // Get the logger for Log4j
     protected final static Logger logger = LogManager.
             getLogger(ConfigBean.class.getName());
-    protected static String studyID;
+    protected String studyID;
     // Common Processing Parameters. 
     protected String type, normalization, probeFilter, phenotype;
     private boolean probeSelect;
     // Further Processing
     private String sampleAverage, stdLog2Ratio;
-    // The command link setup by the main menu backing bean.
-    private static String commandLink;
+    protected String commandLink;
     // Indicator of whether user have new data to upload or not.
-    protected static Boolean haveNewData;
+    protected Boolean haveNewData;
     // Pipeline name and technology
-    protected static String pipelineName, pipelineTech;
+    protected String pipelineName, pipelineTech;
     // Common input files that will be uploaded by the users
     protected FileUploadBean inputFile, sampleFile;
     // Brief description of the input file
@@ -122,18 +123,23 @@ public abstract class ConfigBean implements Serializable {
     // Save the input data detail into the database.
     abstract void saveSampleFileDetail();
     
-    public void init() {
+    protected void init() {
+        // Retrieve the setting from the session map.
         userName = (String) getFacesContext().getExternalContext().
-                getSessionMap().get("User");
+                    getSessionMap().get("User");
+        studyID = (String) getFacesContext().getExternalContext().
+                    getSessionMap().get("study_id");
+        haveNewData = (Boolean) getFacesContext().getExternalContext().
+                    getSessionMap().get("haveNewData");
+        
         homeDir = Constants.getSYSTEM_PATH() + Constants.getUSERS_PATH() + userName;
+        jobSubmissionStatus = false;
         // Create the time stamp for the pipeline job.
         createJobTimestamp();
-        jobSubmissionStatus = false;
+        
         if (haveNewData) {
-            // Setup the input file directory for this pipeline job.
-            FileUploadBean.setFileDirectory(studyID, submitTimeInFilename);
-            inputFile = new FileUploadBean();
-            sampleFile = new FileUploadBean();
+            inputFile = new FileUploadBean(studyID, submitTimeInFilename);
+            sampleFile = new FileUploadBean(studyID, submitTimeInFilename);
         }
         else {
             inputDataList = InputDataDB.getIpList(studyID);
@@ -421,22 +427,22 @@ public abstract class ConfigBean implements Serializable {
             fw.write("### Report Generation\n" +
                      "REP_FILENAME\t=\t" + pipelineReport + "\n\n");
 
-            logger.debug("Pipeline config file created at " + pipelineConfig);
+            logger.debug("Pipeline config file: " + pipelineConfig);
         }
         catch (IOException e) {
             result = Constants.NOT_OK;
-            logger.error("FAIL to write pipeline config file.");
+            logger.error("FAIL to create pipeline config file!");
         }
 
         return result;
     }
 
-    // booleanToYesNo helped to convert boolean (i.e. true/false) to yes/no
+    // Convert boolean (i.e. true/false) to yes/no
     protected String booleanToYesNo(boolean parameter) {
         return parameter?"yes":"no";
     }
 
-    // Function to create the output/report file for testing purposes.
+    // Create the output/report file for testing purposes.
     private void createDummyFile(String dummyFile) {
         File file = new File(dummyFile);
         
@@ -476,12 +482,6 @@ public abstract class ConfigBean implements Serializable {
 	return FacesContext.getCurrentInstance();
     }
     
-    // Used by MenuSelectionBean to setup the studyID and haveNewData attributes.
-    public static void setup(String studyID, Boolean haveNewData) {
-        ConfigBean.studyID = studyID;
-        ConfigBean.haveNewData = haveNewData;
-    }
-    
     // Return the date the reused input data is being uploaded.
     public String getReuseInputDate() {
         return (selectedInput != null)?selectedInput.getDate():
@@ -513,36 +513,6 @@ public abstract class ConfigBean implements Serializable {
     }
     public void setInputFileDesc(String inputFileDesc) {
         this.inputFileDesc = inputFileDesc;
-    }
-    public static String getPipelineTech() {
-        return pipelineTech;
-    }
-    public static void setPipelineTech(String pipelineTech) {
-        ConfigBean.pipelineTech = pipelineTech;
-    }
-    public String getCommandLink() {
-        return commandLink;
-    }
-    public static void setCommandLink(String commandLink) {
-        ConfigBean.commandLink = commandLink;
-    }
-    public Boolean getHaveNewData() {
-        return haveNewData;
-    }
-    public static void setHaveNewData(Boolean haveNewData) {
-        ConfigBean.haveNewData = haveNewData;
-    }
-    public static String getPipelineName() {
-        return pipelineName;
-    }    
-    public static void setPipelineName(String pipelineName) {
-        ConfigBean.pipelineName = pipelineName;
-    }
-    public String getStudyID() {
-        return studyID;
-    }
-    public static void setStudyID(String studyID) {
-        ConfigBean.studyID = studyID;
     }
     public String getType() {
         return type;
@@ -592,14 +562,30 @@ public abstract class ConfigBean implements Serializable {
     public void setJobSubmissionStatus(Boolean jobSubmissionStatus) {
         this.jobSubmissionStatus = jobSubmissionStatus;
     }
-    public List<InputData> getInputDataList() {
-        return inputDataList;
-    }
-    public InputData getSelectedInput() {
-        
+    public InputData getSelectedInput() {        
         return selectedInput;
     }
     public void setSelectedInput(InputData selectedInput) {
         this.selectedInput = selectedInput;
-    }   
+    }
+    
+    // The setter for the following few fields will not be available for use.
+    public String getPipelineTech() {
+        return pipelineTech;
+    }
+    public String getCommandLink() {
+        return commandLink;
+    }
+    public Boolean getHaveNewData() {
+        return haveNewData;
+    }
+    public String getPipelineName() {
+        return pipelineName;
+    }
+    public String getStudyID() {
+        return studyID;
+    }
+    public List<InputData> getInputDataList() {
+        return inputDataList;
+    }
 }

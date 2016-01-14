@@ -3,7 +3,6 @@
  */
 package Clinical.Data.Sink.Bean;
 
-import static Clinical.Data.Sink.Bean.ConfigBean.studyID;
 import Clinical.Data.Sink.Database.InputData;
 import Clinical.Data.Sink.Database.InputDataDB;
 import Clinical.Data.Sink.Database.PipelineDB;
@@ -42,6 +41,8 @@ import javax.faces.bean.ViewScoped;
  * 12-Jan-2016 - Fix the static variable issues in AuthenticationBean.
  * 13-Jan-2016 - One new field user_id added in the input_data table; to 
  * identify the user who has uploaded this input data.
+ * 14-Jan-2016 - Removed all the static variables in Pipeline Configuration
+ * Management module.
  */
 
 @ManagedBean (name="gexIlluminaBean")
@@ -53,14 +54,17 @@ public class GEXIlluminaBean extends ConfigBean {
     public GEXIlluminaBean() {
         pipelineName = Constants.GEX_ILLUMINA;
         pipelineTech = PipelineDB.getPipelineTechnology(pipelineName);
+        commandLink = "run-gex-pipeline (Illumina)";
 
         logger.debug("GEXIlluminaBean created.");
     }
     
     @PostConstruct
     public void initFiles() {
-        ctrlFile = new FileUploadBean();            
         init();
+        if (haveNewData) {
+            ctrlFile = new FileUploadBean(studyID, submitTimeInFilename);            
+        }
     }
     
     @Override

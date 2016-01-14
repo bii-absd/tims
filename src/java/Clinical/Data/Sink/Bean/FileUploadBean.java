@@ -54,6 +54,8 @@ import org.apache.logging.log4j.LogManager;
  * 24-Dec-2015 - Updated method createSystemDirectories, to create the 
  * directory for finalize_output too.
  * 12-Jan-2016 - Fix the static variable issues in AuthenticationBean.
+ * 14-Jan-2016 - Removed all the static variables in Pipeline Configuration
+ * Management module.
  */
 
 public class FileUploadBean implements Serializable {
@@ -61,15 +63,16 @@ public class FileUploadBean implements Serializable {
     private final static Logger logger = LogManager.
             getLogger(FileUploadBean.class.getName());
     private int fileCount = 0;
-    private static String fileDirectory = null;
+    private String fileDirectory = null;
     // To store the local path of the input files folder (to be use during
     // config file creation).
-    private static String localDirectoryPath = null;
+    private String localDirectoryPath = null;
     private List<String> inputList = null;
     private LinkedHashMap<Integer,String> fileList = null;
 
-    public FileUploadBean() {
+    public FileUploadBean(String study_id, String submitTime) {
         fileList = new LinkedHashMap<>();
+        setFileDirectory(study_id, submitTime);
     }
     
     // Used for multiple files upload.
@@ -182,9 +185,8 @@ public class FileUploadBean implements Serializable {
     
     // Setup and store the local path of the input files folder; to be use in
     // config file creation.
-    private static void setLocalDirectoryPath(String fullpath) {
+    private void setLocalDirectoryPath(String fullpath) {
         localDirectoryPath = fullpath + File.separator;
-        logger.debug("Local input files directory: " + localDirectoryPath);
     }
     
     // Return the local path of the input files folder.
@@ -208,15 +210,14 @@ public class FileUploadBean implements Serializable {
     }
     
     // Return the input files directory for this pipeline job.
-    public static String getFileDirectory() {
+    public String getFileDirectory() {
         return fileDirectory;
     }
     
     // Set the input files directory for this pipeline job i.e.
     // .../iCOMIC2S/input/Bayer/20151210_1502
-    // This will be called once by the ArrayConfigBean's initFiles() method 
-    // whenever the user enter the GEX pipeline view.
-    public static void setFileDirectory(String study_id, String submitTime) {
+    // This method will be called by the constructor.
+    private void setFileDirectory(String study_id, String submitTime) {
         fileDirectory = Constants.getSYSTEM_PATH() + 
                         Constants.getINPUT_PATH() +
                         study_id + File.separator +

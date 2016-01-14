@@ -3,7 +3,6 @@
  */
 package Clinical.Data.Sink.Bean;
 
-import static Clinical.Data.Sink.Bean.ConfigBean.pipelineName;
 import Clinical.Data.Sink.Database.PipelineDB;
 import Clinical.Data.Sink.Database.SubmittedJob;
 import Clinical.Data.Sink.Database.SubmittedJobDB;
@@ -22,6 +21,8 @@ import javax.faces.bean.ViewScoped;
  * 11-Jan-2016 - Initial creation by extending GEXAffymetrixBean. Override the
  * insertJob method.
  * 12-Jan-2016 - Fix the static variable issues in AuthenticationBean.
+ * 14-Jan-2016 - Removed all the static variables in Pipeline Configuration
+ * Management module.
  */
 
 @ManagedBean (name="methPBean")
@@ -31,6 +32,7 @@ public class METHPipelineBean extends GEXAffymetrixBean {
     public METHPipelineBean() {
         pipelineName = Constants.METH_PIPELINE;
         pipelineTech = PipelineDB.getPipelineTechnology(pipelineName);
+        commandLink  = "run-meth-pipeline";
         
         logger.debug("METHPipelineBean created.");
     }
