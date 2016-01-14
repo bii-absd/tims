@@ -19,6 +19,8 @@ import java.sql.Date;
  * 06-Jan-2016 - Added two attributes, finalized_output and summary.
  * 11-Jan-2016 - Added methods to disable/enable the download links for
  * output and summary.
+ * 14-Jan-2016 - Bug Fix: To make sure the finalized_output / summary is not
+ * null before checking whether the file is ready for download.
  */
 
 public class Study {
@@ -61,13 +63,25 @@ public class Study {
     // If finalized output is ready for download, don't disable the link (i.e.
     // return false).
     public Boolean getOutputReadyStatus() {
-        return !checkFileReady(finalized_output);
+        if (finalized_output != null) {
+            return !checkFileReady(finalized_output);            
+        }
+        else {
+            // Finalized output is not ready for download.
+            return Constants.OK;
+        }
     }
     
     // If summary is ready for download, don't disable the link (i.e. return
     // false).
     public Boolean getSummaryReadyStatus() {
-        return !checkFileReady(summary);
+        if (summary != null) {
+            return !checkFileReady(summary);            
+        }
+        else {
+            // Summary is not ready for download.
+            return Constants.OK;
+        }
     }
     
     // Check whether the file is ready for download by checking whether it 

@@ -26,6 +26,8 @@ import java.io.Serializable;
  * 05-Jan-2015 - Changes in submitted_job table, removed ctrl_file and annot_
  * file fields. Added input_path field.
  * 12-Jan-2016 - Fix the static variable issues in AuthenticationBean.
+ * 14-Jan-2016 - To allow users to download the output and report from 
+ * finalized job.
  */
 
 public class SubmittedJob implements Serializable {
@@ -100,7 +102,8 @@ public class SubmittedJob implements Serializable {
     // Based on the job status, the download link at jobstatus.xhtml will be
     // enabled or disabled accordingly.
     public String getAvailable() {
-        if (JobStatusDB.getStatusName(status_id).compareTo("Completed") == 0)
+        if ( (JobStatusDB.getStatusName(status_id).compareTo("Completed") == 0) || 
+             (JobStatusDB.getStatusName(status_id).compareTo("Finalized") == 0) )
         {
             return Constants.FALSE;
         }
