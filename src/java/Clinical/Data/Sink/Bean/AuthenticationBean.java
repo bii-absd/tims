@@ -74,6 +74,7 @@ import org.apache.logging.log4j.LogManager;
  * management modules.
  * 14-Jan-2016 - Deleted method setupMenuList. The menu item list will be setup
  * in MenuBean.
+ * 15-Jan-2016 - Enhanced the error handling during login.
  */
 
 @ManagedBean (name="authenticationBean")
@@ -107,7 +108,6 @@ public class AuthenticationBean implements Serializable {
         }
 
         logger.debug("Application is hosted on: " + OS);
-        
         // Setup the constants using the parameters defined in setup
         return Constants.setup(context.getRealPath(setupFile));
     }
@@ -116,13 +116,20 @@ public class AuthenticationBean implements Serializable {
     // database before letting the user use the system.
     public String login()
     {
+        // Next page to proceed to
+        String result = Constants.LOGIN_PAGE;
         // Setting up the database configuration, input, config file path, etc
         ServletContext context = getServletContext();
 
         if (!setupConstants(context))
         {
-            // System having issue, shouldn't let the user proceed.
-            return Constants.ERROR;
+            // Constant variables cannot be loaded, shouldn't let the user proceed.
+            getFacesContext().addMessage("global", new FacesMessage(
+                    FacesMessage.SEVERITY_ERROR, 
+                    "System failure. Please contact the administrator.", ""));
+            logger.error("FAIL to create system constants!");
+            // Return to login page.
+            return Constants.LOGIN_PAGE;
         }
         
         try {
@@ -132,10 +139,14 @@ public class AuthenticationBean implements Serializable {
         // Shouldn't let the user proceed if the DBHelper cannot be created.
         catch (ClassNotFoundException|InstantiationException|
                SQLException|IllegalAccessException e) {
+            getFacesContext().addMessage("global", new FacesMessage(
+                    FacesMessage.SEVERITY_ERROR, 
+                    "System failed to access database. "
+                    + "Please contact administrator.", ""));
             logger.error("FAIL to create DBHelper!");
             logger.error(e.getMessage());
-            
-            return Constants.ERROR;
+            // Return to login page.
+            return Constants.LOGIN_PAGE;
         }
         
         // Retrieve the job status definition from database
@@ -153,8 +164,6 @@ public class AuthenticationBean implements Serializable {
         }
         
         userAcct = UserAccountDB.checkPwd(loginName, password);
-        // Next page to proceed to
-        String result = Constants.LOGIN_PAGE;
         
         if (userAcct != null) {
             // Check is account enabled.
@@ -178,25 +187,26 @@ public class AuthenticationBean implements Serializable {
                     result =  Constants.PAGES_DIR + Constants.MAIN_PAGE;
                 }
                 else {
-                    logger.error(loginName + ": failed to create system dirs after login!");
-                    // If control reached here, it means some of the system directories
-                    // is not created, shouldn't allow user to proceed.
-                    result = Constants.PAGES_DIR + Constants.ERROR;                    
+                    // Failed to create system directories, shouldn't let the user proceed.
+                    getFacesContext().addMessage("global", new FacesMessage(
+                    FacesMessage.SEVERITY_ERROR, 
+                    "System failure. Please contact the administrator.", ""));
+                    logger.error("FAIL to create system directories after login!");
+                    // Return to login page.
                 }
             }
             else {
                 // Account is disabled, display error message to user.
                 getFacesContext().addMessage("global", 
                         new FacesMessage(FacesMessage.SEVERITY_WARN,
-                        "Your account is disabled. Please check with the administrator.", ""));
+                        "Your account is disabled. "
+                        + "Please check with the administrator.", ""));
                 logger.info(loginName + ": account is disabled.");
                 // Account disabled, return to login page.
             }
         }
         else {
-            FacesContext facesContext = getFacesContext();
-            
-            facesContext.addMessage("global", new FacesMessage(
+            getFacesContext().addMessage("global", new FacesMessage(
                     FacesMessage.SEVERITY_WARN, 
                     "Invalid name or password.", ""));
             logger.info(loginName + ": failed to login to the system!");
