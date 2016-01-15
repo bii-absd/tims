@@ -10,20 +10,17 @@
     <ui:define name="title">Page Not Found</ui:define>
     <ui:define name="content">
         <h:panelGrid columns="2" cellpadding="5" cellspacing="5">
-            <p:column>
-                <h:graphicImage library="images" name="404.jpg" 
-                                alt="Page Not Found"/>                
-            </p:column>
-            <p:column>
-                <dir>
-                    <p> We can't find the page you are looking for...</p>
-                    <p> Please login 
-                    <h:outputLink value="#{request.contextPath}/login.xhtml" title="Back to Login Page">
+            <h:graphicImage library="images" name="404.jpg" alt="Page Not Found"/>
+            <h:panelGrid columns="1" cellpadding="5" cellspacing="5">
+                <h:outputText value="We can't find the page you are looking for..."/>
+                <h:panelGroup>
+                    <h:outputText value="#{exBean.PNFInstruction}"/>
+                    <h:outputLink value="#{request.contextPath}/login.xhtml" 
+                                  title="Back to Login Page">
                         here
                     </h:outputLink>
-                    </p>
-                </dir>                
-            </p:column>
+                </h:panelGroup>
+            </h:panelGrid>
         </h:panelGrid>
     </ui:define>
 </ui:composition>

@@ -11,13 +11,11 @@
     <ui:define name="content">
         <h:panelGrid columns="2" cellpadding="5" cellspacing="5">
             <h:graphicImage library="images" name="error.jpg" alt="Sorry"/>
-            <dir>
-                <p> Sorry, we are experiencing some system issues now. </p>
-                <p> The issues have been logged, and we are looking into 
-                    them now. </p>
-                <br/>
-                <p> Please come back later. </p>
-            </dir>
+            <h:panelGrid columns="1" cellpadding="5" cellspacing="5">
+                <h:outputText value="Sorry, we are experiencing some system issues now."/>
+                <h:outputText value="The issues have been logged, and we are looking into them now."/>
+                <h:outputText value="#{exBean.errorInstruction}"/>
+            </h:panelGrid>
         </h:panelGrid>
     </ui:define>
 </ui:composition>
