@@ -42,6 +42,8 @@ import javax.faces.bean.ViewScoped;
  * Management module.
  * 14-Jan-2016 - Deleted method getTypeList(). The pipeline type list will be 
  * retrieved from MenuBean.
+ * 18-Jan-2016 - Changed the type of variable sample_average from String to
+ * Boolean.
  */
 
 @ManagedBean (name="gexAffymetrixBean")
@@ -98,7 +100,7 @@ public class GEXAffymetrixBean extends ConfigBean {
                                  submitTimeInDB, getType(), getInputPath(), 
                                  getNormalization(), probeFilter, 
                                  isProbeSelect(), getPhenotype(), "NA", 
-                                 outputFilePath, getSampleAverage(), 
+                                 outputFilePath, isSampleAverage(), 
                                  getStdLog2Ratio(), "NA", reportFilePath);
         
         try {

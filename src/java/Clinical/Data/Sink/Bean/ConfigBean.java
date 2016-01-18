@@ -71,6 +71,8 @@ import org.apache.logging.log4j.LogManager;
  * 12-Jan-2016 - To include the study ID into the config filename.
  * 14-Jan-2016 - Removed all the static variables in Pipeline Configuration
  * Management module.
+ * 18-Jan-2016 - Changed the type of variable sample_average from String to
+ * Boolean.
  */
 
 public abstract class ConfigBean implements Serializable {
@@ -79,10 +81,10 @@ public abstract class ConfigBean implements Serializable {
             getLogger(ConfigBean.class.getName());
     protected String studyID;
     // Common Processing Parameters. 
-    protected String type, normalization, probeFilter, phenotype;
-    private boolean probeSelect;
+    protected String type, normalization, probeFilter, phenotype, summarization;
+    private boolean probeSelect, sampleAverage;
     // Further Processing
-    private String sampleAverage, stdLog2Ratio;
+    private String stdLog2Ratio;
     protected String commandLink;
     // Indicator of whether user have new data to upload or not.
     protected Boolean haveNewData;
@@ -415,13 +417,14 @@ public abstract class ConfigBean implements Serializable {
                      "NORMALIZATION\t=\t" + getNormalization() +
                      "\nPROBE_FILTERING\t=\t" + getProbeFilter() +
                      "\nPROBE_SELECTION\t=\t" + booleanToYesNo(isProbeSelect()) +
-                     "\nPHENOTYPE_COLUMN\t=\t" + getPhenotype() + "\n\n");
+                     "\nPHENOTYPE_COLUMN\t=\t" + getPhenotype() + 
+                     "\nSUMMARIZATION\t=\t" + getSummarization() + "\n\n");
 
             fw.write("### Output file after normalization and processing\n" +
                      "OUTPUT\t=\t" + pipelineOutput + "\n\n");
 
             fw.write("### Further Processing\n" +
-                     "SAMPLE_AVERAGING\t=\t" + getSampleAverage() +
+                     "SAMPLE_AVERAGING\t=\t" + booleanToYesNo(isSampleAverage()) +
                      "\nSTANDARDIZATION\t=\t" + getStdLog2Ratio() + "\n\n");
 
             fw.write("### Report Generation\n" +
@@ -538,16 +541,22 @@ public abstract class ConfigBean implements Serializable {
     public void setPhenotype(String phenotype) {
         this.phenotype = phenotype;
     }
+    public String getSummarization() {
+        return summarization;
+    }
+    public void setSummarization(String summarization) {
+        this.summarization = summarization;
+    }
     public boolean isProbeSelect() {
         return probeSelect;
     }
     public void setProbeSelect(boolean probeSelect) {
         this.probeSelect = probeSelect;
     }
-    public String getSampleAverage() {
+    public boolean isSampleAverage() {
         return sampleAverage;
     }
-    public void setSampleAverage(String sampleAverage) {
+    public void setSampleAverage(boolean sampleAverage) {
         this.sampleAverage = sampleAverage;
     }
     public String getStdLog2Ratio() {

@@ -23,6 +23,8 @@ import javax.faces.bean.ViewScoped;
  * 12-Jan-2016 - Fix the static variable issues in AuthenticationBean.
  * 14-Jan-2016 - Removed all the static variables in Pipeline Configuration
  * Management module.
+ * 18-Jan-2016 - Changed the type of variable sample_average from String to
+ * Boolean.
  */
 
 @ManagedBean (name="methPBean")
@@ -43,14 +45,14 @@ public class METHPipelineBean extends GEXAffymetrixBean {
         // job_id will not be used during insertion, just send in any value will
         // do e.g. 0
         // Insert the new job request into datbase; job status is 1 i.e. Waiting
-        // For attributes type, probeFilter, sampleAverage, StdLog2Ratio, 
-        // summarization and region, set them to "NA".
+        // For attributes type, probeFilter, StdLog2Ratio, summarization and 
+        // region, set them to "NA". For sample_average, set it to false.
         SubmittedJob newJob = 
                 new SubmittedJob(0, getStudyID(), userName, pipelineName, 1,
                                  submitTimeInDB, "NA", getInputPath(), 
                                  getNormalization(), "NA", isProbeSelect(), 
                                  getPhenotype(), "NA", outputFilePath, 
-                                 "NA", "NA", "NA", reportFilePath);
+                                 false, "NA", "NA", reportFilePath);
         
         try {
             // Store the job_id of the inserted record

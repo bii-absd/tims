@@ -55,6 +55,8 @@ import org.apache.logging.log4j.LogManager;
  * pipeline executed for the job.
  * 12-Jan-2016 - Fix the static variable issues in AuthenticationBean.
  * 13-Jan-2016 - Removed all the static variables in Job Status module.
+ * 18-Jan-2016 - Changed the type of variable sample_average from String to
+ * Boolean.
  */
 
 public abstract class SubmittedJobDB {
@@ -94,7 +96,7 @@ public abstract class SubmittedJobDB {
         insertStm.setString(11, job.getPhenotype_column());
         insertStm.setString(12, job.getSummarization());
         insertStm.setString(13, job.getOutput_file());
-        insertStm.setString(14, job.getSample_average());
+        insertStm.setBoolean(14, job.getSample_average());
         insertStm.setString(15, job.getStandardization());
         insertStm.setString(16, job.getRegion());
         insertStm.setString(17, job.getReport());

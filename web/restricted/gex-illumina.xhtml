@@ -33,7 +33,7 @@
                      (Please upload this file for the Phenotype Column and 
                      Sample Averaging to be enable)">
                 <p:fileUpload mode="advanced"
-                              update="uploadStatus phenotype averaging"
+                              update="uploadStatus phenotype"
                               label="Select Samples Annotation File"
                               fileUploadListener="#{gexIlluminaBean.sampleAnnotFileUploadListener}"/>
             </p:panel>
@@ -113,14 +113,11 @@
             <p:panel id="furtherprocessing" header="Optional Processing">
                 <h:panelGrid columns="2" cellpadding="5">
                     <p:column>
-                        <p:selectOneMenu id="averaging" 
-                                         disabled="#{gexIlluminaBean.isAnnotationListReady()}"
-                                         value="#{gexIlluminaBean.sampleAverage}" 
-                                         title="#{msg['sample.averaging']}">
-                            <f:selectItem itemLabel="Sample Averaging"
-                                          itemValue="none"/>
-                            <f:selectItems value="#{gexIlluminaBean.annotationList}"/>
-                        </p:selectOneMenu>
+                        <h:outputText value="Sample Averaging: "/>
+                        <p:selectBooleanButton id="averaging" 
+                                               value="#{gexIlluminaBean.sampleAverage}" 
+                                               title="#{msg['sample.averaging']}" 
+                                               onLabel="Yes" offLabel="No"/>
                     </p:column>
                     <p:column>
                         <p:selectOneMenu id="stdlog2ratio" value="#{gexIlluminaBean.stdLog2Ratio}">
@@ -176,7 +173,7 @@
                     <h:outputText value="Probe Selection: "/>
                     <h:outputText value="#{gexIlluminaBean.probeSelect?'Yes':'No'}"/>
                     <h:outputText value="Sample Averaging: "/>
-                    <h:outputText value="#{gexIlluminaBean.sampleAverage}"/>
+                    <h:outputText value="#{gexIlluminaBean.sampleAverage?'Yes':'No'}"/>
                     <h:outputText value="Standardization Method: "/>
                     <h:outputText value="#{gexIlluminaBean.stdLog2Ratio}"/>
                 </p:panelGrid>

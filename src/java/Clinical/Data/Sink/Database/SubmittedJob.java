@@ -28,6 +28,8 @@ import java.io.Serializable;
  * 12-Jan-2016 - Fix the static variable issues in AuthenticationBean.
  * 14-Jan-2016 - To allow users to download the output and report from 
  * finalized job.
+ * 18-Jan-2016 - Changed the type of variable sample_average from String to
+ * Boolean.
  */
 
 public class SubmittedJob implements Serializable {
@@ -42,10 +44,10 @@ public class SubmittedJob implements Serializable {
     private int status_id;
     private String submit_time;
     private String chip_type, input_path, normalization, probe_filtering;
-    private Boolean probe_select;
+    private Boolean probe_select, sample_average;
     private String phenotype_column, summarization;
     private String output_file;
-    private String sample_average, standardization, region;
+    private String standardization, region;
     private String report;
     // status_name will be used by the job status page
     private String status_name;
@@ -56,7 +58,7 @@ public class SubmittedJob implements Serializable {
             String chip_type, String input_path, 
             String normalization, String probe_filtering, Boolean probe_select, 
             String phenotype_column, String summarization, String output_file, 
-            String sample_average, String standardization, String region, 
+            Boolean sample_average, String standardization, String region, 
             String report) 
     {
         this.job_id = job_id;
@@ -197,10 +199,10 @@ public class SubmittedJob implements Serializable {
     public void setOutput_file(String output_file) {
         this.output_file = output_file;
     }
-    public String getSample_average() {
+    public Boolean getSample_average() {
         return sample_average;
     }
-    public void setSample_average(String sample_average) {
+    public void setSample_average(Boolean sample_average) {
         this.sample_average = sample_average;
     }
     public String getStandardization() {
