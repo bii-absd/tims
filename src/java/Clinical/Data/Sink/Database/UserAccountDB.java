@@ -45,6 +45,8 @@ import org.mindrot.jbcrypt.BCrypt;
  * 22-Dec-2015 - To close the ResultSet after use.
  * 11-Jan-2016 - Fix the static variable issues in AuthenticationBean.
  * 13-Jan-2016 - Removed all the static variables in Account Management module.
+ * 18-Jan-2016 - Added new method, getAdminEmails() to retrieve all the 
+ * administrator email addresses.
  */
 
 public abstract class UserAccountDB {
@@ -166,6 +168,33 @@ public abstract class UserAccountDB {
         }
        
         return email;
+    }
+    
+    // Return the list of administrator's email addresses i.e. email1,email2
+    public static String getAdminEmails() {
+        String emails = Constants.DATABASE_INVALID_STR;
+        ResultSet rs = DBHelper.runQuery(
+                "SELECT email FROM user_account WHERE role_id = 1");
+        
+        try {
+            // The first administrator email.
+            if (rs.next()) {
+                emails = rs.getString("email");
+            }
+            // Subsequent adminstrator email(s).
+            while (rs.next()) {
+                emails += ",";
+                emails += rs.getString("email");
+            }
+            rs.close();
+            logger.debug("Retrieved adminstrator email addresses.");
+        }
+        catch (SQLException e) {
+            logger.error("FAIL to retrieve administrator email addresses!");
+            logger.error(e.getMessage());
+        }
+        
+        return emails;
     }
     
     // Check the password entered by the user, and if the password is valid, 

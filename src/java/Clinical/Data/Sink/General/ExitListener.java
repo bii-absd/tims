@@ -3,17 +3,8 @@
  */
 package Clinical.Data.Sink.General;
 
-import java.util.EventListener;
 import Clinical.Data.Sink.Database.SubmittedJobDB;
-import Clinical.Data.Sink.Database.UserAccount;
-import Clinical.Data.Sink.Database.UserAccountDB;
-import java.util.Properties;
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.Session;
-import javax.mail.Transport;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
+import java.util.EventListener;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -36,6 +27,7 @@ import org.apache.logging.log4j.LogManager;
  * account of the job requestor. Personalize the email sent to the user.
  * 11-Jan-2015 - To include the pipeline name in the subject title of the email.
  * 13-Jan-2016 - Removed all the static variables in Account Management module.
+ * 18-Jan-2016 - Moved the sendMail method to Postman class.
  */
 
 public class ExitListener implements EventListener {
@@ -51,76 +43,12 @@ public class ExitListener implements EventListener {
         if (result == 0) {
             SubmittedJobDB.updateJobStatusToCompleted(job_id);
             logger.debug("Job status updated to completed. ID: " + job_id);
-            sendEmail(job_id, study_id, Constants.OK);
+            Postman.sendJobStatusEmail(job_id, study_id, Constants.OK);
         }
         else {
             SubmittedJobDB.updateJobStatusToFailed(job_id);
             logger.debug("Job status updated to failed. ID: " + job_id);
-            sendEmail(job_id, study_id, Constants.NOT_OK);
-        }
-    }
-    
-    // Send a email to notify the user that the pipeline has completed 
-    // execution. The success/failure of the execution will be indicated on 
-    // the Subject line.
-    private void sendEmail(int job_id, String study_id, Boolean status) {
-        // Retrieve the user account of the job requestor.
-        UserAccount user = UserAccountDB.getJobRequestor(job_id);
-        // Retrieve the pipeline executed in this job.
-        String plName = SubmittedJobDB.getPipelineName(job_id);
-        String from = "datasink@bii.a-star.edu.sg";
-        // Sending email from localhost
-        String host = "localhost";
-        // Get system properties
-        Properties properties = System.getProperties();
-        // Setup mail server
-        properties.setProperty("mail.smtp.host", host);
-        // Get the default session object
-        Session session = Session.getDefaultInstance(properties);
-        
-        try {
-            // Create a default MimeMessage object
-            MimeMessage message = new MimeMessage(session);
-            // Set From: header field
-            message.setFrom(new InternetAddress(from));
-            // Set To: header field
-            message.addRecipient(Message.RecipientType.TO,
-                    new InternetAddress(user.getEmail()));
-            if (status) {
-                // Set the Subject and message content according to execution 
-                // return status.
-                message.setSubject("Pipeline " + plName + " execution for " + 
-                                   study_id + " successfully completed.");
-                message.setText(
-                    "Dear " + user.getFirst_name() + ",\n\n" +
-                    "Pipeline " + plName + " execution has completed.\n\n" +
-                    "Output and report files are ready for download at Job Status page.\n\n\n" +
-                    "Please do not reply to this message.");
-            }
-            else {
-                // For failed case, CC the email to the support team also.
-                // Temporarily hardcoded the support email to me
-                message.addRecipient(Message.RecipientType.CC, 
-                    new InternetAddress("taywh@bii.a-star.edu.sg"));
-                message.setSubject("Pipeline " + plName + " execution for " + 
-                                   study_id + " failed to complete.");
-                message.setText(
-                    "Dear " + user.getFirst_name() + ",\n\n" +
-                    "Pipeline " + plName + " execution failed to complete.\n\n" +
-                    "The team is looking at the root cause now.\n\n" +
-                    "We will get back to you once we have any finding.\n\n" +
-                    "Sorry for the inconvenience caused.\n\n\n" +
-                    "Please do not reply to this message.");                
-            }
-            // Send the message
-            Transport.send(message);
-            
-            logger.debug("Email successfully sent to: " + user.getEmail());
-        }
-        catch (MessagingException me) {
-            logger.error("MessagingException encountered while trying to send "
-                    + "email to: " + user.getEmail());
-            logger.error(me.getMessage());
+            Postman.sendJobStatusEmail(job_id, study_id, Constants.NOT_OK);
         }
     }
 }

@@ -3,6 +3,7 @@
  */
 package Clinical.Data.Sink.Bean;
 
+import Clinical.Data.Sink.General.Postman;
 import java.io.Serializable;
 import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
@@ -22,6 +23,8 @@ import org.apache.logging.log4j.Logger;
  * Revision History
  * 15-Jan-2016 - Created with 2 methods, getErrorInstruction() and 
  * getPNFInstruction().
+ * 18-Jan-2016 - To send a email to the administrators whenever the user enter
+ * the error page.
  */
 
 @ManagedBean (name="exBean")
@@ -32,6 +35,8 @@ public class ExceptionHandlingBean implements Serializable {
             getLogger(ExceptionHandlingBean.class.getName());
 
     public ExceptionHandlingBean() {
+        // Send exception email to the administrators for help.
+        Postman.sendExceptionEmail();
         logger.debug("ExceptionHandlingBean created.");
     }
     
