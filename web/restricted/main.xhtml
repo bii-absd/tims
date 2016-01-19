@@ -15,46 +15,48 @@
             <h:panelGrid cellpadding="1">
                 <p:commandLink action="#{menuSelectionBean.gexIllumina}"
                                value="#{msg['gex.illumina']}" 
-                               style="font-size: 16px" oncomplete="PF('dlg').show()"/>
+                               styleClass="mainmenuitem" oncomplete="PF('dlg').show()"/>
                 <p:commandLink action="#{menuSelectionBean.gexAffymetrix}" 
                                value="#{msg['gex.affymetrix']}" 
-                               style="font-size: 16px" oncomplete="PF('dlg').show()"/>
+                               styleClass="mainmenuitem" oncomplete="PF('dlg').show()"/>
                 <p:commandLink action="#{menuSelectionBean.methPipeline}" 
                                value="#{msg['meth']}" 
-                               style="font-size: 16px" oncomplete="PF('dlg').show()"/>
-                <p:commandLink action="#{menuSelectionBean.dataRetriever}" rendered="false"
-                               value="#{msg['geno']}" style="font-size: 16px"/>
+                               styleClass="mainmenuitem" oncomplete="PF('dlg').show()"/>
+                <p:commandLink action="#{menuSelectionBean.cnvPipeline}" 
+                               value="#{msg['cnv']}" 
+                               styleClass="mainmenuitem" oncomplete="PF('dlg').show()"/>
             </h:panelGrid>
         </p:tab>
             
         <p:tab id="ngs" title="NGS Data" titleStyleClass="tab-title">
             <h:panelGrid>
-                <p:commandLink action="#{menuSelectionBean.ngsPipeline}" 
-                               value="#{msg['rnaseq']}" style="font-size: 16px"/>
-                <p:commandLink action="#{menuSelectionBean.ngsPipeline}" 
-                               value="#{msg['dnaseq']}" style="font-size: 16px"/>
-                <p:commandLink action="#{menuSelectionBean.ngsPipeline}" 
-                               value="#{msg['chipseq']}" style="font-size: 16px"/>
+                <h:commandLink action="#{menuSelectionBean.ngsPipeline}" 
+                               value="#{msg['rnaseq']}" styleClass="mainmenuitem"/>
+                <h:commandLink action="#{menuSelectionBean.ngsPipeline}" 
+                               value="#{msg['dnaseq']}" styleClass="mainmenuitem"/>
+                <h:commandLink action="#{menuSelectionBean.ngsPipeline}" 
+                               value="#{msg['chipseq']}" styleClass="mainmenuitem"/>
             </h:panelGrid>
         </p:tab>
             
         <p:tab id="proteome" rendered="false" title="Proteome Data" titleStyleClass="tab-title">
             <h:panelGrid cellpadding="1">
-                <p:commandLink value="Proteome Pipeline 1" style="font-size: 16px"/>
-                <p:commandLink value="Proteome Pipeline 2" style="font-size: 16px"/>
+                <p:commandLink value="Proteome Pipeline 1" styleClass="mainmenuitem"/>
+                <p:commandLink value="Proteome Pipeline 2" styleClass="mainmenuitem"/>
             </h:panelGrid>
         </p:tab>
             
         <p:tab id="imaging" rendered="false" title="Imaging Data" titleStyleClass="tab-title">
             <h:panelGrid cellpadding="1">
-                <p:commandLink value="Imaging Pipeline 1" style="font-size: 16px"/>
+                <p:commandLink value="Imaging Pipeline 1" styleClass="mainmenuitem"/>
             </h:panelGrid>
         </p:tab>
             
         <p:tab id="pathlogy" title="Clinical Pathlogy Data" 
                titleStyleClass="tab-title">
             <h:outputLink title="Upload or edit clinical data" 
-                          value="clinicaldatamanagement.xhtml" style="font-size: 16px">
+                          value="clinicaldatamanagement.xhtml" 
+                          styleClass="mainmenuitem">
                 Clinical Data Management
             </h:outputLink>
         </p:tab>
@@ -62,15 +64,15 @@
         <p:tab id="job" title="My Work Area" titleStyleClass="tab-title">
             <h:panelGrid cellpadding="1">
                 <h:outputLink title="View my job submission status" 
-                              value="jobstatus.xhtml" style="font-size: 16px">
+                              value="jobstatus.xhtml" styleClass="mainmenuitem">
                     Job Status
                 </h:outputLink>
                 <h:outputLink title="Finalize Study" value="finalizestudy.xhtml" 
-                              style="font-size: 16px">
+                              styleClass="mainmenuitem">
                     Finalize Study
                 </h:outputLink>
                 <h:outputLink title="Download consolidated output and summary report" 
-                              value="summaryofstudy.xhtml" style="font-size: 16px">
+                              value="summaryofstudy.xhtml" styleClass="mainmenuitem">
                     Summary of Study
                 </h:outputLink>
             </h:panelGrid>
@@ -92,7 +94,8 @@
                                    value="#{menuSelectionBean.haveNewData}" 
                                    onLabel="Yes" offLabel="No"/>
             </h:panelGrid>
-            <p:separator style="height: 20px"/>
+            <p:separator styleClass="configsep"/>
+            
             <h:panelGrid id="selPanel" columns="2" cellspacing="2" cellpadding="2">
                 <p:commandButton value="Cancel" oncomplete="PF('dlg').hide()" 
                                  action="#{menuSelectionBean.backToMainMenu}"/>

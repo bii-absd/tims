@@ -126,86 +126,44 @@
     font-size: 14px;
 }
 
+/* Style defined to align the panel grid columns in the pipeline configuration
+   page to the top.
+*/
+.configcolumn td {
+    vertical-align: top;
+}
+
+/* Style defined for the input label at all the pipeline configuration pages.
+*/
+.configlabel {
+    font-weight: bold;
+}
+
+/* Style defined for the separator at all the pipeline configuration pages.
+*/
+.configsep {
+    height: 20px;
+}
+
+/* Style defined for input text at the pipeline configuration pages.
+*/
+.configinput {
+    width: 99%;
+    color: red !important;
+    font-weight: bold !important;
+}
+
+/* Style defined for the menu items at the main page.
+*/
+.mainmenuitem {
+    font-family: "Comic Sans MS", cursive, sans-serif;
+    font-size: 12pt !important;
+}
+
 /* To replace the \n with <br /> in outputText. 
 */
 .preformatted {
     white-space: pre-wrap;
     font-family: courier, arial, monospace;
     font-size: 12px;
-}
-
-
-//
-// The following styles will be removed after monitoring for a short while
-//
-
-/* Not in use anymore. To be removed! */
-.grid-mainx {
-//    width: 100%;
-}
-
-/* Used in pageTemplate.xhtml, to define the spacing between the first panelGrid
-   and the breadCrumb.
-   Not in use anymore; to be removed!
-*/
-.header {
-//    margin-bottom: 1em;
-}
-
-/* Not in use anymore */
-.loginpage.ui-panelgrid>*>tr,
-.loginpage.ui-panelgrid .ui-panelgrid-cell {
-//    border: none;
-}
-
-/* Not in use anymore */
-.element-spacing {
-//    margin: 0.1em;
-}
-
-/* Not in use anymore */
-.button {
-//    width: 215px;
-}
-
-// Not in use
-.inputtext {
-//    border-width: thin;
-}
-
-// Not in use anymore.
-.page-border {
-/*
-    width: 100%;
-    margin-top: 0.5em;
-    border-style: solid;
-    border-width: thick;
-    border-spacing: 15px;
-    font-family: courier, arial, monospace;
-    border-color: rgb(204,204,204);
-*/
-}
-
-// Not in use
-.clock {
-/*
-    margin-top: 2em;
-    float: right;
-    font-family: courier, arial, monospace;
-    font-size: 10pt;
-*/
-}
-
-// Not in use
-.aligncentre {
-//    text-align: center;
-}
-
-// Not in use anymore
-.page {
-/*
-    font-family: courier, arial, monospace;
-    font-size: 10pt;
-    text-align: left;
-*/
 }

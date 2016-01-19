@@ -16,22 +16,22 @@
                 <p:growl id="uploadStatus" sticky="true"/>
                 <p:fileUpload mode="advanced" update="uploadStatus" 
                               label="Select Sample File"
+                              allowTypes="/(\.|\/)(txt)$/"
                               fileUploadListener="#{gexIlluminaBean.inputFile.singleFileUploadListener}">
                 </p:fileUpload>
                 <p:inputText id="inputdescription" 
                              value="#{gexIlluminaBean.inputFileDesc}" 
-                             autocomplete="off" size="200" style="width: 99%; color: blue"/>
+                             autocomplete="off" size="200" styleClass="configinput"/>
                 <p:watermark for="inputdescription" 
                              value="Enter a brief description of the Sample File here."/>
-                <p:separator style="height: 15px"/>
+                <p:separator styleClass="configsep"/>
                 <p:fileUpload mode="advanced" update="uploadStatus" 
                               label="Select Control File"
                               fileUploadListener="#{gexIlluminaBean.ctrlFile.singleFileUploadListener}"/>
             </p:panel>
             <p:panel id="sample" visible="#{gexIlluminaBean.haveNewData}"
                      header="Upload Samples Annotation File 
-                     (Please upload this file for the Phenotype Column and 
-                     Sample Averaging to be enable)">
+                     (Please upload this file for the Phenotype Column to be enable)">
                 <p:fileUpload mode="advanced"
                               update="uploadStatus phenotype"
                               label="Select Samples Annotation File"
@@ -60,21 +60,25 @@
                               style="width: 120px; text-align: center"/>
                     <p:ajax event="rowSelectRadio" 
                             listener="#{gexIlluminaBean.reuseInputRadioButtonSelected}"
-                            update=":mainForm:phenotype :mainForm:averaging"/>
+                            update=":mainForm:phenotype"/>
                 </p:dataTable>
             </p:panel>
+            <p:separator styleClass="configsep"/>
 
             <p:panel id="processparameters" header="Processing Parameters">
-                <h:panelGrid columns="6" cellpadding="5">
+                <h:panelGrid columns="6" cellpadding="5" cellspacing="7" styleClass="configcolumn">
                     <p:column>
-                        <p:selectOneMenu id="type" required="true" 
-                                         value="#{gexIlluminaBean.type}">
-                            <f:selectItem itemLabel="Select Type" itemValue=""/>
-                            <f:selectItems value="#{menuBean.illuminaType}"/>
-                        </p:selectOneMenu>
+                        <h:panelGrid columns="1">
+                            <p:outputLabel value="Select Type" styleClass="configlabel"/>
+                            <p:selectOneMenu id="type" required="true" 
+                                             value="#{gexIlluminaBean.type}">
+                                <f:selectItems value="#{menuBean.illuminaType}"/>
+                            </p:selectOneMenu>
+                        </h:panelGrid>
                     </p:column>
                     <p:column>
-                        <p:outputLabel value="Probe Filtering" style="font-weight: bold" title="#{msg['probe.filtering']}"/>
+                        <p:outputLabel value="Probe Filtering" styleClass="configlabel" 
+                                       title="#{msg['probe.filtering']}"/>
                         <p:selectManyMenu id="probefilter" showCheckbox="true"
                                           value="#{gexIlluminaBean.probeFilters}">
                             <f:selectItem itemLabel="Low-expression" itemValue="low-expression"/>
@@ -82,25 +86,30 @@
                         </p:selectManyMenu>
                     </p:column>
                     <p:column>
-                        <p:selectOneMenu id="normalization" required="true" 
-                                         value="#{gexIlluminaBean.normalization}">
-                            <f:selectItem itemLabel="Select Normalization Method" 
-                                          itemValue=""/>
-                            <f:selectItem itemLabel="NEQC" itemValue="neqc"/>
-                        </p:selectOneMenu>
+                        <h:panelGrid columns="1">
+                            <p:outputLabel value="Select Normalization Method" 
+                                           styleClass="configlabel"/>
+                            <p:selectOneMenu id="normalization" required="true" 
+                                             value="#{gexIlluminaBean.normalization}">
+                                <f:selectItem itemLabel="NEQC" itemValue="neqc"/>
+                            </p:selectOneMenu>                            
+                        </h:panelGrid>
                     </p:column>
                     <p:column>
-                        <p:selectOneMenu id="phenotype" required="true" 
-                                         disabled="#{gexIlluminaBean.isAnnotationListReady()}"
-                                         title="#{msg['phenotype.column']}"
-                                         value="#{gexIlluminaBean.phenotype}">
-                            <f:selectItem itemLabel="Phenotype Column"
-                                          itemValue=""/>
-                            <f:selectItems value="#{gexIlluminaBean.annotationList}"/>
-                        </p:selectOneMenu>
+                        <h:panelGrid columns="1">
+                            <p:outputLabel value="Phenotype Column" 
+                                           styleClass="configlabel"/>
+                            <p:selectOneMenu id="phenotype" required="true" 
+                                             disabled="#{gexIlluminaBean.isAnnotationListReady()}"
+                                             title="#{msg['phenotype.column']}"
+                                             value="#{gexIlluminaBean.phenotype}">
+                                <f:selectItems value="#{gexIlluminaBean.annotationList}"/>
+                            </p:selectOneMenu>
+                        </h:panelGrid>
                     </p:column>
                     <p:column>
-                        <h:outputText value="Probe Selection: "/>
+                        <p:outputLabel value="Probe Selection: " 
+                                       styleClass="configlabel"/>
                         <p:selectBooleanButton id="probeselection" 
                                                value="#{gexIlluminaBean.probeSelect}" 
                                                title="#{msg['probe.selection']}"
@@ -109,29 +118,35 @@
                     <h:message for="type" styleClass="errors"/>
                 </h:panelGrid>
             </p:panel>
-            
+            <p:separator styleClass="configsep"/>
+
             <p:panel id="furtherprocessing" header="Optional Processing">
-                <h:panelGrid columns="2" cellpadding="5">
+                <h:panelGrid columns="2" cellpadding="5" cellspacing="7" styleClass="configcolumn">
                     <p:column>
-                        <h:outputText value="Sample Averaging: "/>
+                        <h:panelGrid columns="1">
+                            <p:outputLabel value="Standardization Method" 
+                                           styleClass="configlabel"/>
+                            <p:selectOneMenu id="stdlog2ratio" value="#{gexIlluminaBean.stdLog2Ratio}">
+                                <f:selectItem itemLabel="None"
+                                              itemValue="none"/>
+                                <f:selectItem itemLabel="Standardize" itemValue="Standardize" 
+                                              itemDescription="#{msg['standardization']}"/>
+                                <f:selectItem itemLabel="Log2Ratio" itemValue="Log2Ratio" 
+                                              itemDescription="#{msg['log2ratio']}"/>
+                            </p:selectOneMenu>                            
+                        </h:panelGrid>
+                    </p:column>
+                    <p:column>
+                        <p:outputLabel value="Sample Averaging: " 
+                                       styleClass="configlabel"/>
                         <p:selectBooleanButton id="averaging" 
                                                value="#{gexIlluminaBean.sampleAverage}" 
                                                title="#{msg['sample.averaging']}" 
                                                onLabel="Yes" offLabel="No"/>
                     </p:column>
-                    <p:column>
-                        <p:selectOneMenu id="stdlog2ratio" value="#{gexIlluminaBean.stdLog2Ratio}">
-                            <f:selectItem itemLabel="Standardization Method"
-                                          itemValue="none"/>
-                            <f:selectItem itemLabel="Standardize" itemValue="Standardize" 
-                                          itemDescription="#{msg['standardization']}"/>
-                            <f:selectItem itemLabel="Log2Ratio" itemValue="Log2Ratio" 
-                                          itemDescription="#{msg['log2ratio']}"/>
-                        </p:selectOneMenu>
-                    </p:column>
                 </h:panelGrid>
             </p:panel>
-            <p:separator style="height: 20px"/>
+            <p:separator styleClass="configsep"/>
             <p:commandButton value="Submit" update="display @form"
                              oncomplete="PF('dlg').show()" 
                              icon="ui-icon-check" 
@@ -177,7 +192,7 @@
                     <h:outputText value="Standardization Method: "/>
                     <h:outputText value="#{gexIlluminaBean.stdLog2Ratio}"/>
                 </p:panelGrid>
-                <p:separator style="height: 20px"/>
+                <p:separator styleClass="configsep"/>
                 <h:form>
                     <h:panelGrid columns="2" cellspacing="2" cellpadding="2">
                         <p:commandButton value="Cancel" title="Redo the configuration"

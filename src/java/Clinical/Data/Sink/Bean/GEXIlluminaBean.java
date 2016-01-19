@@ -10,6 +10,7 @@ import Clinical.Data.Sink.Database.SubmittedJob;
 import Clinical.Data.Sink.Database.SubmittedJobDB;
 import Clinical.Data.Sink.General.Constants;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
@@ -45,6 +46,7 @@ import javax.faces.bean.ViewScoped;
  * retrieved from MenuBean.
  * 18-Jan-2016 - Changed the type of variable sample_average from String to
  * Boolean.
+ * 19-Jan-2016 - Initialize the variable probeFilters in the constructor. 
  */
 
 @ManagedBean (name="gexIlluminaBean")
@@ -57,6 +59,7 @@ public class GEXIlluminaBean extends ConfigBean {
         pipelineName = Constants.GEX_ILLUMINA;
         pipelineTech = PipelineDB.getPipelineTechnology(pipelineName);
         commandLink = "run-gex-pipeline (Illumina)";
+        probeFilters = new ArrayList<>();
 
         logger.debug("GEXIlluminaBean created.");
     }
@@ -101,6 +104,10 @@ public class GEXIlluminaBean extends ConfigBean {
         // do e.g. 0
         // Insert the new job request into datbase; job status is 1 i.e. Waiting
         // DB 2.0 - For attributes summarization and region, set them to "NA".
+        // SubmittedJob(job_id, study_id, user_id, pipeline_name, status_id, 
+        // submit_time, chip_type, input_path, normalization, probe_filtering, 
+        // probe_select, phenotype_column, summarization, output_file, 
+        // sample_average, standardization, region, report) 
         SubmittedJob newJob = 
                 new SubmittedJob(0, getStudyID(), userName, pipelineName, 1,
                                  submitTimeInDB, getType(), getInputPath(), 
@@ -170,7 +177,7 @@ public class GEXIlluminaBean extends ConfigBean {
                      Constants.getSAMPLE_ANNOT_FILE_EXT();
         }
         probeFilter = Constants.NONE;
-
+        
         if (probeFilters.size() > 0) {
             probeFilter = probeFilters.get(0);
 
@@ -182,7 +189,7 @@ public class GEXIlluminaBean extends ConfigBean {
         // Call the base class method to create the Config File.
         return super.createConfigFile();
     }
-    
+
     // Machine generated getters and setters
     public FileUploadBean getCtrlFile() {
         return ctrlFile;

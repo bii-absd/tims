@@ -22,20 +22,22 @@
                 </p:fileUpload>
                 <p:inputText id="inputdescription" 
                              value="#{gexAffymetrixBean.inputFileDesc}" 
-                             autocomplete="off" size="150" style="width: 99%; color: blue"/>
+                             autocomplete="off" size="200" styleClass="configinput"/>
                 <p:watermark for="inputdescription" 
                              value="Enter a brief description of the Sample File here."/>
             </p:panel>
+            <p:separator styleClass="configsep"/>
+            
             <p:panel id="annotfile" visible="#{gexAffymetrixBean.haveNewData}"
                      header="Upload Samples Annotation File 
-                     (Please upload this file for the Phenotype Column and 
-                     Sample Averaging to be enable)">
+                     (Please upload this file for the Phenotype Column to be enable)">
                 <p:fileUpload mode="advanced"
                               update="uploadStatus phenotype"
                               label="Select Samples Annotation File"
                               fileUploadListener="#{gexAffymetrixBean.sampleAnnotFileUploadListener}"/>
             </p:panel>
-            
+            <p:separator styleClass="configsep"/>
+
             <p:panel id="reuseInput" visible="#{!gexAffymetrixBean.haveNewData}" 
                      header="Select Input Data to Reuse">
                 <p:dataTable id="inputTable" var="reuseIP" 
@@ -58,10 +60,10 @@
                               style="width: 120px; text-align: center"/>
                     <p:ajax event="rowSelectRadio" 
                             listener="#{gexAffymetrixBean.reuseInputRadioButtonSelected}"
-                            update=":mainForm:phenotype :mainForm:averaging"/>
+                            update=":mainForm:phenotype"/>
                 </p:dataTable>
             </p:panel>
-            
+
             <p:panel id="processparameters" header="Processing Parameters">
                 <h:panelGrid columns="6" cellpadding="5">
                     <p:column>
@@ -107,7 +109,8 @@
                     <h:message for="type" styleClass="errors"/>
                 </h:panelGrid>
             </p:panel>
-            
+            <p:separator styleClass="configsep"/>
+
             <p:panel id="furtherprocessing" header="Optional Processing">
                 <h:panelGrid columns="2" cellpadding="5">
                     <p:column>
@@ -129,7 +132,8 @@
                     </p:column>
                 </h:panelGrid>
             </p:panel>
-            <p:separator style="height: 20px"/>
+            <p:separator styleClass="configsep"/>
+
             <p:commandButton value="Submit" update="display @form"
                              oncomplete="PF('dlg').show()"
                              icon="ui-icon-check" 

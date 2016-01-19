@@ -1,0 +1,143 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition template="/WEB-INF/pageTemplate.xhtml"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    
+    <ui:define name="title">Copy Number Variation Pipeline</ui:define>
+    <ui:param name="link" value="#{cnvPBean.breadCrumbLink}"/>
+    <ui:define name="content">
+        <h:form id="mainForm" enctype="multipart/form-data">
+            <p:panel id="inputcontrol" visible="#{cnvPBean.haveNewData}" 
+                     header="Upload Sample and Control Probe Files">
+                <p:growl id="uploadStatus" sticky="true"/>
+                <p:fileUpload mode="advanced" update="uploadStatus" 
+                              label="Select Sample File"
+                              allowTypes="/(\.|\/)(txt)$/"
+                              fileUploadListener="#{cnvPBean.inputFile.singleFileUploadListener}"/>
+                <p:inputText id="inputdescription" 
+                             value="#{cnvPBean.inputFileDesc}" 
+                             autocomplete="off" size="200" styleClass="configinput"/>
+                <p:watermark for="inputdescription" 
+                             value="Enter a brief description of the Sample File here."/>
+                <p:separator styleClass="configsep"/>
+                <p:fileUpload mode="advanced" update="uploadStatus" 
+                              label="Select Control File"
+                              fileUploadListener="#{cnvPBean.ctrlFile.singleFileUploadListener}"/>
+            </p:panel>
+
+            <p:panel id="sample" visible="#{cnvPBean.haveNewData}"
+                     header="Upload Samples Annotation File 
+                     (Please upload this file for the Phenotype Column to be enable)">
+                <p:fileUpload mode="advanced"
+                              update="uploadStatus phenotype"
+                              label="Select Samples Annotation File"
+                              fileUploadListener="#{cnvPBean.sampleAnnotFileUploadListener}"/>
+            </p:panel>
+
+            <p:panel id="reuseInput" visible="#{!cnvPBean.haveNewData}" 
+                     header="Select Input Data to Reuse">
+                <p:dataTable id="inputTable" var="reuseIP" 
+                             value="#{cnvPBean.inputDataList}" 
+                             selection="#{cnvPBean.selectedInput}" 
+                             rowKey="#{reuseIP.sn}" 
+                             styleClass="table-odd-row table-even-row">
+                    <p:column headerText="Data Uploaded By" 
+                              style="width: 120px">
+                        <h:outputText value="#{reuseIP.user_id}"/>
+                    </p:column>
+                    <p:column headerText="Data Upload Date" 
+                              style="width: 150px">
+                        <h:outputText value="#{reuseIP.date}"/>
+                    </p:column>
+                    <p:column headerText="Data Description">
+                        <h:outputText value="#{reuseIP.description}"/>
+                    </p:column>
+                    <p:column headerText="Select Data to Reuse" selectionMode="single" 
+                              style="width: 120px; text-align: center"/>
+                    <p:ajax event="rowSelectRadio" 
+                            listener="#{cnvPBean.reuseInputRadioButtonSelected}"
+                            update=":mainForm:phenotype"/>
+                </p:dataTable>
+            </p:panel>
+            <p:separator style="height: 20px"/>
+
+            <p:panel id="processparameters" header="Processing Parameters">
+                <h:panelGrid columns="6" cellpadding="5" cellspacing="7" styleClass="configcolumn">
+                    <p:column>
+                        <h:panelGrid columns="1">
+                            <p:outputLabel value="Phenotype Column" styleClass="configlabel"/>
+                            <p:selectOneMenu id="phenotype" required="true" 
+                                             disabled="#{cnvPBean.isAnnotationListReady()}"
+                                             title="#{msg['phenotype.column']}"
+                                             value="#{cnvPBean.phenotype}">
+                                <f:selectItems value="#{cnvPBean.annotationList}"/>
+                            </p:selectOneMenu>
+                        </h:panelGrid>
+                    </p:column>
+                    <p:column>
+                        <h:panelGrid columns="1">
+                            <p:outputLabel value="Summarization" styleClass="configlabel"/>
+                            <p:selectOneMenu id="summarization" required="true"
+                                             value="#{cnvPBean.summarization}">
+                                <f:selectItem itemLabel="Average" itemValue="Average"/>
+                                <f:selectItem itemLabel="GISTIC" itemValue="GISTIC"/>
+                            </p:selectOneMenu>
+                        </h:panelGrid>
+                    </p:column>
+                    <h:message for="phenotype" styleClass="errors"/>
+                </h:panelGrid>
+            </p:panel>
+            
+            <p:separator styleClass="configsep"/>
+            <p:commandButton value="Submit" update="display @form"
+                             oncomplete="PF('dlg').show()" 
+                             icon="ui-icon-check" 
+                             action="#{cnvPBean.updateJobSubmissionStatus}"/>
+            
+            <p:dialog header="Pipeline Configuration Review"
+                      widgetVar="dlg"
+                      resizable="false">
+                <p:panelGrid columns="2" id="display">
+                    <h:outputText value="Study ID: "/>
+                    <h:outputText value="#{cnvPBean.studyID}"/>
+                    <h:outputText rendered="#{!cnvPBean.haveNewData}" 
+                                  value="Reusing data uploaded on: "/>
+                    <h:outputText rendered="#{!cnvPBean.haveNewData}" 
+                                  value="#{cnvPBean.reuseInputDate}"/>
+                    <h:outputText rendered="#{cnvPBean.haveNewData}" 
+                                  value="Sample File: "/>
+                    <h:outputText rendered="#{cnvPBean.haveNewData}" 
+                                  value="#{cnvPBean.inputFile.inputFilename}"/>
+                    <h:outputText rendered="#{cnvPBean.haveNewData}" 
+                                  value="Control File: "/>
+                    <h:outputText rendered="#{cnvPBean.haveNewData}" 
+                                  value="#{cnvPBean.ctrlFile.inputFilename}"/>
+                    <h:outputText rendered="#{cnvPBean.haveNewData}" 
+                                  value="Samples Annotation File: "/>
+                    <h:outputText rendered="#{cnvPBean.haveNewData}" 
+                                  value="#{cnvPBean.sampleFile.inputFilename}"/>
+                    <h:outputText value="Phenotype Column: "/>
+                    <h:outputText value="#{cnvPBean.phenotype}"/>
+                    <h:outputText value="Summarization: "/>
+                    <h:outputText value="#{cnvPBean.summarization}"/>
+                </p:panelGrid>
+                <p:separator style="height: 20px"/>
+                <h:form>
+                    <h:panelGrid columns="2" cellspacing="2" cellpadding="2">
+                        <p:commandButton value="Cancel" title="Redo the configuration"
+                                         style="width: 130px" oncomplete="PF('dlg').hide()"
+                                         action="#{cnvPBean.cancelJob}"/>
+                        <p:commandButton value="Confirm" title="Start the pipeline execution"
+                                         style="width: 130px"
+                                         action="#{cnvPBean.submitJob}" 
+                                         rendered="#{cnvPBean.jobSubmissionStatus}"/>                        
+                    </h:panelGrid>
+                </h:form>
+            </p:dialog>
+        </h:form>
+    </ui:define>
+</ui:composition>

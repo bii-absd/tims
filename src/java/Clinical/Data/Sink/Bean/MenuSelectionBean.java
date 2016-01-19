@@ -42,6 +42,7 @@ import org.apache.logging.log4j.LogManager;
  * 12-Jan-2016 - Fix the static variable issues in AuthenticationBean.
  * 14-Jan-2016 - Removed all the static variables in Pipeline Configuration
  * Management module.
+ * 19-Jan-2016 - Added the support for CNV pipeline.
  */
 
 @ManagedBean (name="menuSelectionBean")
@@ -80,6 +81,11 @@ public class MenuSelectionBean implements Serializable{
     // Setup config_page for METH pipeline processing.
     public void methPipeline() {
         config_page = Constants.METH_PIPELINE_PAGE;
+    }
+    
+    // Setup config_page for CNV pipeline processing.
+    public void cnvPipeline() {
+        config_page = Constants.CNV_PIPELINE_PAGE;
     }
     
     // User decided not to proceed to pipeline configuration page. Stay at the
