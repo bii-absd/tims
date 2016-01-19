@@ -22,7 +22,7 @@
                          editable="true">
                 <p:ajax event="rowEdit" listener="#{studyMgntBean.onRowEdit}" 
                         update="studyMsg"/>
-                <p:column headerText="Study ID" style="width: 100px; text-align: left">
+                <p:column headerText="Study ID" style="width: 160px; text-align: left">
                     <h:outputText value="#{study.study_id}"/>
                 </p:column>
                 <p:column headerText="Department ID" style="width: 90px; text-align: left">
@@ -98,6 +98,17 @@
                 
                 <p:inputTextarea id="descript" cols="32" rows="3" value="#{studyMgntBean.description}"/>
                 <p:watermark for="descript" value="Enter description of this study here"/>
+                <h:panelGroup/>
+                
+                <p:column>
+                    <h:panelGrid columns="2">
+                        <p:outputLabel value="Completed?" styleClass="configlabel"/>
+                        <p:selectBooleanButton id="completed" title="#{msg['adhoc.study']}"
+                                               value="#{studyMgntBean.completed}" 
+                                               onLabel="Yes" offLabel="No"/>                        
+                    </h:panelGrid>
+                </p:column>
+                <h:panelGroup/>
                 <h:panelGroup/>
                 
                 <h:commandButton action="#{studyMgntBean.createNewStudy}" 

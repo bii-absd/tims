@@ -46,6 +46,8 @@ import org.apache.logging.log4j.LogManager;
  * 12-Jan-2016 - Fix the static variable issues in AuthenticationBean.
  * 13-Dec-2016 - Removed all the static variables in Study and ItemList
  * management modules.
+ * 19-Jan-2016 - To cater for adhoc study creation i.e. where the study is 
+ * created with completed flag set to true.
  */
 
 @ManagedBean (name="studyMgntBean")
@@ -129,10 +131,10 @@ public class StudyManagementBean implements Serializable {
     // Create new Study
     public String createNewStudy() {
         FacesContext fc = getFacesContext();
-        // New Study will always be created with completed status as false, 
-        // fields finalized_output and summary will be empty.
+        // New Study will always be created with empty finalized_output and 
+        // summary fields.
         Study study = new Study(study_id, dept_id, user_id, annot_ver, 
-                                description, sqlDate, false);
+                                description, sqlDate, completed);
         
         if (StudyDB.insertStudy(study)) {
             // Create a separate input directory for the newly created Study ID.
@@ -208,6 +210,9 @@ public class StudyManagementBean implements Serializable {
     }
     public Date getSqlDate() {
         return sqlDate;
+    }
+    public void setCompleted(Boolean completed) {
+        this.completed = completed;
     }
     public Boolean getCompleted() {
         return completed;

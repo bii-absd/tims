@@ -39,6 +39,8 @@ import org.apache.logging.log4j.LogManager;
  * study's consolidated output and finalized summary.
  * 13-Dec-2016 - Removed all the static variables in Study and ItemList
  * management modules.
+ * 19-Jan-2016 - To cater for adhoc study creation i.e. where the study is 
+ * created with completed flag set to true.
  */
 
 public abstract class StudyDB {
@@ -168,12 +170,11 @@ public abstract class StudyDB {
         return annotHash;
     }
     
-    // Return the list of uncompleted Study ID setup under the department that 
-    // this user ID belongs to.
+    // Return the list of Study ID setup under the department that this 
+    // user ID belongs to.
     public static LinkedHashMap<String, String> getStudyHash(String userID) {
         LinkedHashMap<String, String> studyHash = new LinkedHashMap<>();
-        String queryStr = "SELECT study_id FROM study WHERE completed = false "
-                        + "AND dept_id = "
+        String queryStr = "SELECT study_id FROM study WHERE dept_id = "
                         + "(SELECT dept_id FROM user_account WHERE user_id = ?) "
                         + "ORDER BY study_id";
         
