@@ -48,6 +48,8 @@ import org.apache.logging.log4j.LogManager;
  * management modules.
  * 19-Jan-2016 - To cater for adhoc study creation i.e. where the study is 
  * created with completed flag set to true.
+ * 20-Jan-2016 - Updated study table in database; added one new variable closed, 
+ * and renamed completed to finalized.
  */
 
 @ManagedBean (name="studyMgntBean")
@@ -60,7 +62,7 @@ public class StudyManagementBean implements Serializable {
     private String study_id, dept_id, user_id, annot_ver, description;
     private Date sqlDate;
     private java.util.Date utilDate;
-    private Boolean completed;
+    private Boolean finalized;
     private LinkedHashMap<String,String> annotHash, deptHash;
     private List<SelectItem> grouping;
     private List<Study> studyList;
@@ -134,7 +136,7 @@ public class StudyManagementBean implements Serializable {
         // New Study will always be created with empty finalized_output and 
         // summary fields.
         Study study = new Study(study_id, dept_id, user_id, annot_ver, 
-                                description, sqlDate, completed);
+                                description, sqlDate, finalized);
         
         if (StudyDB.insertStudy(study)) {
             // Create a separate input directory for the newly created Study ID.
@@ -211,11 +213,11 @@ public class StudyManagementBean implements Serializable {
     public Date getSqlDate() {
         return sqlDate;
     }
-    public void setCompleted(Boolean completed) {
-        this.completed = completed;
+    public void setFinalized(Boolean finalized) {
+        this.finalized = finalized;
     }
-    public Boolean getCompleted() {
-        return completed;
+    public Boolean getFinalized() {
+        return finalized;
     }
     // utilDate is used as a temporary placement for attribute sqlDate during
     // edit operation.

@@ -53,6 +53,8 @@ import org.apache.logging.log4j.LogManager;
  * DataDepositor thread.
  * 12-Jan-2016 - Fix the static variable issues in AuthenticationBean.
  * 13-Jan-2016 - Removed all the static variables in Job Status module.
+ * 20-Jan-2016 - Updated study table in database; added one new variable closed, 
+ * and renamed completed to finalized.
  */
 
 @ManagedBean (name="finalizedBean")
@@ -178,8 +180,8 @@ public class FinalizeStudyBean implements Serializable {
         // database.
         DataDepositor depositThread = new DataDepositor(userName, study_id, selectedJobs);
         depositThread.start();
-        // Update study to completed
-        StudyDB.updateStudyCompletedStatus(study_id, true);
+        // Update study to finalized.
+        StudyDB.updateStudyFinalizedStatus(study_id, true);
         
         return Constants.MAIN_PAGE;        
     }

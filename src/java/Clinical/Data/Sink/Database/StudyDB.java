@@ -41,6 +41,8 @@ import org.apache.logging.log4j.LogManager;
  * management modules.
  * 19-Jan-2016 - To cater for adhoc study creation i.e. where the study is 
  * created with completed flag set to true.
+ * 20-Jan-2016 - Updated study table in database; added one new variable closed, 
+ * and renamed completed to finalized.
  */
 
 public abstract class StudyDB {
@@ -54,8 +56,8 @@ public abstract class StudyDB {
     public static Boolean insertStudy(Study study) {
         Boolean result = Constants.OK;
         String insertStr = "INSERT INTO study(study_id,dept_id,user_id,"
-                         + "annot_ver,description,date,completed) "
-                         + "VALUES(?,?,?,?,?,?,?)";
+                         + "annot_ver,description,date,finalized,closed) "
+                         + "VALUES(?,?,?,?,?,?,?,?)";
         
         try (PreparedStatement insertStm = conn.prepareStatement(insertStr)) {
             insertStm.setString(1, study.getStudy_id());
@@ -64,7 +66,8 @@ public abstract class StudyDB {
             insertStm.setString(4, study.getAnnot_ver());
             insertStm.setString(5, study.getDescription());
             insertStm.setDate(6, study.getSqlDate());
-            insertStm.setBoolean(7, study.getCompleted());
+            insertStm.setBoolean(7, study.getFinalized());
+            insertStm.setBoolean(8, study.getClosed());
 
             insertStm.executeUpdate();
             logger.debug("New Study ID inserted into database: " + 
@@ -82,13 +85,14 @@ public abstract class StudyDB {
     public static Boolean updateStudy(Study study) {
         Boolean result = Constants.OK;
         String updateStr = "UPDATE study SET dept_id = ?, description = ?, "
-                         + "date = ? WHERE study_id = ?";
+                         + "date = ?, closed = ? WHERE study_id = ?";
         
         try (PreparedStatement updateStm = conn.prepareStatement(updateStr)) {
             updateStm.setString(1, study.getDept_id());
             updateStm.setString(2, study.getDescription());
             updateStm.setDate(3, study.getSqlDate());
-            updateStm.setString(4, study.getStudy_id());
+            updateStm.setBoolean(4, study.getClosed());
+            updateStm.setString(5, study.getStudy_id());
             
             updateStm.executeUpdate();
             logger.debug("Updated study: " + study.getStudy_id());
@@ -102,20 +106,36 @@ public abstract class StudyDB {
         return result;
     }
     
-    // Update the study completed status.
-    public static void updateStudyCompletedStatus(String studyID, Boolean status) {
-        String updateStr = "UPDATE study SET completed = " + status + 
+    // Update the study finalized status.
+    public static void updateStudyFinalizedStatus(String studyID, Boolean status) {
+        String updateStr = "UPDATE study SET finalized = " + status + 
                            " WHERE study_id = ?";
         
         try (PreparedStatement updateStm = conn.prepareStatement(updateStr)) {
             updateStm.setString(1, studyID);
             updateStm.executeUpdate();
-            logger.debug(studyID + " completed status updated to " + status);
+            logger.debug(studyID + " finalized status updated to " + status);
         }
         catch (SQLException e) {
-            logger.error("FAIL to update study to completed!");
+            logger.error("FAIL to update study to finalized!");
             logger.error(e.getMessage());
         }
+    }
+    
+    // Update the study closed status.
+    public static void updateStudyClosedStatus(String studyID, Boolean status) {
+        String updateStr = "UPDATE study SET closed = " + status + 
+                           " WHERE study_id = ?";
+        
+        try (PreparedStatement updateStm = conn.prepareStatement(updateStr)) {
+            updateStm.setString(1, studyID);
+            updateStm.executeUpdate();
+            logger.debug(studyID + " closed status updated to " + status);
+        }
+        catch (SQLException e) {
+            logger.error("FAIL to update study to closed!");
+            logger.error(e.getMessage());
+        }        
     }
     
     // Update the finalized_output with the file path of the output file.
@@ -170,12 +190,13 @@ public abstract class StudyDB {
         return annotHash;
     }
     
-    // Return the list of Study ID setup under the department that this 
-    // user ID belongs to.
+    // Return the list of unclosed Study ID setup under the department that this 
+    // user ID belongs to. This list of Study ID will be available for users to
+    // select for pipeline execution.
     public static LinkedHashMap<String, String> getStudyHash(String userID) {
         LinkedHashMap<String, String> studyHash = new LinkedHashMap<>();
-        String queryStr = "SELECT study_id FROM study WHERE dept_id = "
-                        + "(SELECT dept_id FROM user_account WHERE user_id = ?) "
+        String queryStr = "SELECT study_id FROM study WHERE closed = false AND "
+                        + "dept_id = (SELECT dept_id FROM user_account WHERE user_id = ?) "
                         + "ORDER BY study_id";
         
         try (PreparedStatement queryStm = conn.prepareStatement(queryStr)) {
@@ -195,13 +216,14 @@ public abstract class StudyDB {
     }
     
     // Return the list of unfinalized Study ID that has completed job(s), and 
-    // belongs to the department that this user ID come from.
+    // belongs to the department that this user ID come from. This list of 
+    // Study ID will be available for users to select for finalization.
     public static LinkedHashMap<String, String> getFinalizableStudyHash(String userID) {
         LinkedHashMap<String, String> finStudyHash = new LinkedHashMap<>();
         String queryStr = "SELECT DISTINCT study_id FROM study st "
                         + "NATURAL JOIN submitted_job sj WHERE sj.status_id = 3 "
                         + "AND st.dept_id = (SELECT dept_id FROM user_account "
-                        + "WHERE user_id =?) AND st.completed = false ORDER BY study_id";
+                        + "WHERE user_id =?) AND st.finalized = false ORDER BY study_id";
         
         try (PreparedStatement queryStm = conn.prepareStatement(queryStr)) {
             queryStm.setString(1, userID);
@@ -220,11 +242,13 @@ public abstract class StudyDB {
         return finStudyHash;
     }
     
-    // Return the list of completed study that belong to the department.
-    public static List<Study> queryCompletedStudy(String dept_id) {
-        List<Study> completedStudy = new ArrayList<>();
+    // Return the list of finalized study that belong to the department. This
+    // list of study objects will be shown in the datatable in summary of study
+    // view.
+    public static List<Study> queryFinalizedStudy(String dept_id) {
+        List<Study> finalizedStudy = new ArrayList<>();
         String queryStr = "SELECT * FROM study WHERE dept_id = ? "
-                        + "AND completed = true ORDER BY date DESC";
+                        + "AND finalized = true ORDER BY date DESC";
         
         try (PreparedStatement queryStm = conn.prepareStatement(queryStr)) {
             queryStm.setString(1, dept_id);
@@ -240,18 +264,19 @@ public abstract class StudyDB {
                             rs.getString("finalized_output"),
                             rs.getString("summary"),
                             rs.getDate("date"),
-                            rs.getBoolean("completed"));
+                            rs.getBoolean("finalized"),
+                            rs.getBoolean("closed"));
                 
-                completedStudy.add(tmp);
+                finalizedStudy.add(tmp);
             }
-            logger.debug("Query completed study for " + dept_id + " completed.");
+            logger.debug("Query finalized study for " + dept_id + " completed.");
         }
         catch (SQLException e) {
-            logger.error("FAIL to retrieve completed study!");
+            logger.error("FAIL to retrieve finalized study!");
             logger.error(e.getMessage());
         }
         
-        return completedStudy;
+        return finalizedStudy;
     }
     
     // Return the list of Study ID setup in the system.
@@ -272,7 +297,8 @@ public abstract class StudyDB {
                             rs.getString("finalized_output"),
                             rs.getString("summary"),
                             rs.getDate("date"),
-                            rs.getBoolean("completed"));
+                            rs.getBoolean("finalized"),
+                            rs.getBoolean("closed"));
                     
                 studyList.add(tmp);
             }

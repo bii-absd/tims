@@ -21,6 +21,8 @@ import java.sql.Date;
  * output and summary.
  * 14-Jan-2016 - Bug Fix: To make sure the finalized_output / summary is not
  * null before checking whether the file is ready for download.
+ * 20-Jan-2016 - Updated study table in database; added one new variable closed, 
+ * and renamed completed to finalized.
  */
 
 public class Study {
@@ -28,12 +30,12 @@ public class Study {
     private String study_id, dept_id, user_id, annot_ver, 
                    description, finalized_output, summary;
     private Date sqlDate;
-    private Boolean completed;
+    private Boolean finalized, closed;
 
     // This constructor is used when retrieving the study table for database.
     public Study(String study_id, String dept_id, String user_id, 
             String annot_ver, String description, String finalized_output,
-            String summary, Date sqlDate, Boolean completed) {
+            String summary, Date sqlDate, Boolean finalized, Boolean closed) {
         this.study_id = study_id;
         this.dept_id = dept_id;
         this.user_id = user_id;
@@ -42,14 +44,15 @@ public class Study {
         this.finalized_output = finalized_output;
         this.summary = summary;
         this.sqlDate = sqlDate;
-        this.completed = completed;
+        this.finalized = finalized;
+        this.closed = closed;
     }
     // This constructor is used for constructing new Study.
     // For every new Study created, the finalized_output and summary will be
-    // empty.
+    // empty, and closed status will be false (i.e. not closed).
     public Study(String study_id, String dept_id, String user_id, 
             String annot_ver, String description, Date sqlDate, 
-            Boolean completed) {
+            Boolean finalized) {
         this.study_id = study_id;
         this.dept_id = dept_id;
         this.user_id = user_id;
@@ -57,7 +60,8 @@ public class Study {
         this.description = description;
         finalized_output = summary = null;
         this.sqlDate = sqlDate;
-        this.completed = completed;
+        this.finalized = finalized;
+        closed = false;
     }
     
     // If finalized output is ready for download, don't disable the link (i.e.
@@ -141,10 +145,16 @@ public class Study {
     public void setSqlDate(Date sqlDate) {
         this.sqlDate = sqlDate;
     }
-    public Boolean getCompleted() {
-        return completed;
+    public Boolean getFinalized() {
+        return finalized;
     }
-    public void setCompleted(Boolean completed) {
-        this.completed = completed;
+    public void setFinalized(Boolean finalized) {
+        this.finalized = finalized;
+    }
+    public Boolean getClosed() {
+        return closed;
+    }
+    public void setClosed(Boolean closed) {
+        this.closed = closed;
     }
 }

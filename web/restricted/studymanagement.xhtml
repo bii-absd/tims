@@ -61,8 +61,21 @@
                         </f:facet>
                     </p:cellEditor>
                 </p:column>
-                <p:column headerText="Completed" style="width: 70px; text-align: left">
-                    <h:outputText value="#{study.completed?'Yes':'No'}"/>
+                <p:column headerText="Finalized" style="width: 70px; text-align: left">
+                    <h:outputText value="#{study.finalized?'Yes':'No'}"/>
+                </p:column>
+                <p:column headerText="Closed" style="width: 70px; text-align: left">
+                    <p:cellEditor>
+                        <f:facet name="output">
+                            <h:outputText value="#{study.closed?'Yes':'No'}"/>
+                        </f:facet>
+                        <f:facet name="input">
+                            <p:selectOneMenu value="#{study.closed}" style="width: 100%">
+                                <f:selectItem itemLabel="No" itemValue="false"/>
+                                <f:selectItem itemLabel="Yes" itemValue="true"/>
+                            </p:selectOneMenu>
+                        </f:facet>
+                    </p:cellEditor>
                 </p:column>
                 <p:column style="width: 32px">
                     <p:rowEditor/>
@@ -102,9 +115,9 @@
                 
                 <p:column>
                     <h:panelGrid columns="2">
-                        <p:outputLabel value="Completed?" styleClass="configlabel"/>
-                        <p:selectBooleanButton id="completed" title="#{msg['adhoc.study']}"
-                                               value="#{studyMgntBean.completed}" 
+                        <p:outputLabel value="Finalized?" styleClass="configlabel"/>
+                        <p:selectBooleanButton id="finalized" title="#{msg['adhoc.study']}"
+                                               value="#{studyMgntBean.finalized}" 
                                                onLabel="Yes" offLabel="No"/>                        
                     </h:panelGrid>
                 </p:column>

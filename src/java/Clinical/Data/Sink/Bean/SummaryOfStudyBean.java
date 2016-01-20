@@ -27,6 +27,8 @@ import org.apache.logging.log4j.LogManager;
  * 06-Jan-2016 - Implemented the module for downloading of study's consolidated 
  * output and finalized summary.
  * 12-Jan-2016 - Fix the static variable issues in AuthenticationBean.
+ * 20-Jan-2016 - Updated study table in database; added one new variable closed, 
+ * and renamed completed to finalized.
  */
 
 @ManagedBean (name = "SOSBean")
@@ -50,7 +52,7 @@ public class SummaryOfStudyBean implements Serializable {
     public void init() {
         // Retrieve the list of completed study that belong to the user's
         // department.
-        completedStudy = StudyDB.queryCompletedStudy
+        completedStudy = StudyDB.queryFinalizedStudy
                         (UserAccountDB.getDeptID(userName));        
     }
     

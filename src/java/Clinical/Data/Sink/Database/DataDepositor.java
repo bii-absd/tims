@@ -54,6 +54,8 @@ import org.apache.pdfbox.pdmodel.graphics.xobject.PDJpeg;
  * finalization.Removed unused code.
  * 08-Jan-2016 - Generate the PDF version of the summary report.
  * 12-Jan-2016 - Fix the static variable issues in AuthenticationBean.
+ * 20-Jan-2016 - Updated study table in database; added one new variable closed, 
+ * and renamed completed to finalized.
  */
 
 public class DataDepositor extends Thread {
@@ -143,8 +145,8 @@ public class DataDepositor extends Thread {
                 retrieverThread.start();
             }
             else {
-                // Update study to uncompleted
-                StudyDB.updateStudyCompletedStatus(study_id, false);
+                // Update study to unfinalized.
+                StudyDB.updateStudyFinalizedStatus(study_id, false);
             }
         }
         catch (SQLException e) {
