@@ -74,6 +74,7 @@ import org.apache.logging.log4j.LogManager;
  * system paths.
  * 11-Jan-2016 - Added 2 new constants, METH_PIPELINE and METH_PIPELINE_PAGE.
  * 19-Jan-2016 - Added 2 new constants, CNV_PIPELINE and CNV_PIPELINE_PAGE.
+ * 20-Jan-2016 - Removed all pipeline related constants.
  */
 
 @ManagedBean (name = "constants")
@@ -93,22 +94,20 @@ public class Constants {
     public final static String FALSE = "false";
     public final static String NONE = "none";
     // Pipeline name
-    public final static String GEX_ILLUMINA = "gex-illumina";
-    public final static String GEX_AFFYMETRIX = "gex-affymetrix";
-    public final static String METH_PIPELINE = "meth-pipeline";
-    public final static String CNV_PIPELINE = "cnv-pipeline";
+//    public final static String GEX_ILLUMINA = "gex-illumina";
+//    public final static String GEX_AFFYMETRIX = "gex-affymetrix";
+//    public final static String METH_PIPELINE = "meth-pipeline";
+//    public final static String CNV_PIPELINE = "cnv-pipeline";
     // Navigation Strings
     public final static String PAGES_DIR = "restricted/";
     // For Login page, we shouldn't redirect because most of the time the 
     // system is going from Login back to Login.
     public final static String LOGIN_PAGE = "/login";
     public final static String MAIN_PAGE = "main?faces-redirect=true";
-    public final static String GEX_ILLUMINA_PAGE = 
-                                "gex-illumina?faces-redirect=true";
-    public final static String GEX_AFFYMETRIX_PAGE = 
-                                "gex-affymetrix?faces-redirect=true";
-    public final static String METH_PIPELINE_PAGE = "meth-pipeline?faces-redirect=true";
-    public final static String CNV_PIPELINE_PAGE = "cnv-pipeline?faces-redirect=true";
+//    public final static String GEX_ILLUMINA_PAGE = "gex-illumina?faces-redirect=true";
+//    public final static String GEX_AFFYMETRIX_PAGE = "gex-affymetrix?faces-redirect=true";
+//    public final static String METH_PIPELINE_PAGE = "meth-pipeline?faces-redirect=true";
+//    public final static String CNV_PIPELINE_PAGE = "cnv-pipeline?faces-redirect=true";
     public final static String ACCOUNT_MANAGEMENT = "accountmanagement";
     public final static String PIPELINE_MANAGEMENT = 
                                 "pipelinemanagement";

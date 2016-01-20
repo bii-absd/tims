@@ -11,6 +11,7 @@ import Clinical.Data.Sink.Database.SubmittedJobDB;
 import Clinical.Data.Sink.General.Constants;
 import Clinical.Data.Sink.General.ExitListener;
 import Clinical.Data.Sink.General.ProcessExitDetector;
+import Clinical.Data.Sink.General.ResourceRetriever;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -73,6 +74,8 @@ import org.apache.logging.log4j.LogManager;
  * Management module.
  * 18-Jan-2016 - Changed the type of variable sample_average from String to
  * Boolean.
+ * 20-Jan-2016 - To streamline the navigation flow and passing of pipeline name
+ * from main menu to pipeline configuration pages.
  */
 
 public abstract class ConfigBean implements Serializable {
@@ -133,7 +136,11 @@ public abstract class ConfigBean implements Serializable {
                     getSessionMap().get("study_id");
         haveNewData = (Boolean) getFacesContext().getExternalContext().
                     getSessionMap().get("haveNewData");
-        
+        pipelineName = (String) getFacesContext().getExternalContext().
+                    getSessionMap().get("pipeline");
+        // Setup local variables using the setting retrieved from session map.
+        pipelineTech = PipelineDB.getPipelineTechnology(pipelineName);
+        commandLink = ResourceRetriever.getMsg(pipelineName);
         homeDir = Constants.getSYSTEM_PATH() + Constants.getUSERS_PATH() + userName;
         jobSubmissionStatus = false;
         // Create the time stamp for the pipeline job.

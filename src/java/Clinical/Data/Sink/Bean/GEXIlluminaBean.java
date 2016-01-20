@@ -47,6 +47,8 @@ import javax.faces.bean.ViewScoped;
  * 18-Jan-2016 - Changed the type of variable sample_average from String to
  * Boolean.
  * 19-Jan-2016 - Initialize the variable probeFilters in the constructor. 
+ * 20-Jan-2016 - To streamline the navigation flow and passing of pipeline name
+ * from main menu to pipeline configuration pages.
  */
 
 @ManagedBean (name="gexIlluminaBean")
@@ -56,9 +58,6 @@ public class GEXIlluminaBean extends ConfigBean {
     private List<String> probeFilters;
 
     public GEXIlluminaBean() {
-        pipelineName = Constants.GEX_ILLUMINA;
-        pipelineTech = PipelineDB.getPipelineTechnology(pipelineName);
-        commandLink = "run-gex-pipeline (Illumina)";
         probeFilters = new ArrayList<>();
 
         logger.debug("GEXIlluminaBean created.");

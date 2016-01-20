@@ -24,6 +24,8 @@ import javax.faces.bean.ViewScoped;
  * insertJob method.
  * 20-Jan-2016 - Changed from extending GEXIlluminaBean to GEXAffymetrixBean
  * because CNV need to support multiple input files upload.
+ * 20-Jan-2016 - To streamline the navigation flow and passing of pipeline name
+ * from main menu to pipeline configuration pages.
  */
 
 @ManagedBean (name="cnvPBean")
@@ -32,10 +34,6 @@ public class CNVPipelineBean extends GEXAffymetrixBean {
     private FileUploadBean ctrlFile;
 
     public CNVPipelineBean() {
-        pipelineName = Constants.CNV_PIPELINE;
-        pipelineTech = PipelineDB.getPipelineTechnology(pipelineName);
-        commandLink = "run-cnv-pipeline";
-
         logger.debug("CNVPipelineBean created.");
     }
     

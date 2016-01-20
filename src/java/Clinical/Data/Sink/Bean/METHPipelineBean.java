@@ -25,6 +25,8 @@ import javax.faces.bean.ViewScoped;
  * Management module.
  * 18-Jan-2016 - Changed the type of variable sample_average from String to
  * Boolean.
+ * 20-Jan-2016 - To streamline the navigation flow and passing of pipeline name
+ * from main menu to pipeline configuration pages.
  */
 
 @ManagedBean (name="methPBean")
@@ -32,10 +34,6 @@ import javax.faces.bean.ViewScoped;
 public class METHPipelineBean extends GEXAffymetrixBean {
 
     public METHPipelineBean() {
-        pipelineName = Constants.METH_PIPELINE;
-        pipelineTech = PipelineDB.getPipelineTechnology(pipelineName);
-        commandLink  = "run-meth-pipeline";
-        
         logger.debug("METHPipelineBean created.");
     }
     

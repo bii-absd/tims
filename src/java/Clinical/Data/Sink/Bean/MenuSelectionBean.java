@@ -43,6 +43,8 @@ import org.apache.logging.log4j.LogManager;
  * 14-Jan-2016 - Removed all the static variables in Pipeline Configuration
  * Management module.
  * 19-Jan-2016 - Added the support for CNV pipeline.
+ * 20-Jan-2016 - To streamline the navigation flow and passing of pipeline name
+ * from main menu to pipeline configuration pages.
  */
 
 @ManagedBean (name="menuSelectionBean")
@@ -51,7 +53,7 @@ public class MenuSelectionBean implements Serializable{
     // Get the logger for Log4j
     private final static Logger logger = LogManager.
             getLogger(MenuSelectionBean.class.getName());
-    private String study_id, config_page;
+    private String study_id, plConfigPageURL, plName;
     private Boolean haveNewData;
     private LinkedHashMap<String, String> studyList;
     // Store the user ID of the current user.
@@ -68,6 +70,66 @@ public class MenuSelectionBean implements Serializable{
         studyList = StudyDB.getStudyHash(userName);
     }
     
+    // All the pipeline link will be using this method to setup the URL for 
+    // pipeline configuration page.
+    public void setupPlConfigPageURL() {
+        plConfigPageURL = plName + "?faces-redirect=true";
+    }
+    
+    // User decided not to proceed to pipeline configuration page. Stay at the
+    // current page.
+    public void backToMainMenu() {
+        logger.debug(userName + ": return to main menu.");
+        plConfigPageURL = null;
+    }
+    
+    // User selected Study to work on, and has decided to proceed to pipeline
+    // configuration page.
+    public String proceedToConfig() {
+        // Save the Study ID, pipeline name and haveNewData selection in the 
+        // session map to be use by pipeline configuration bean.
+        FacesContext.getCurrentInstance().getExternalContext().
+                getSessionMap().put("study_id", study_id);
+        FacesContext.getCurrentInstance().getExternalContext().
+                getSessionMap().put("haveNewData", haveNewData);
+        FacesContext.getCurrentInstance().getExternalContext().
+                getSessionMap().put("pipeline", plName);
+        
+        logger.debug(userName + ": selected " + plName);
+        logger.debug(haveNewData?"User have new data to upload.":
+                     "No new data to upload.");
+        // Proceed to pipeline configuration page.
+        return plConfigPageURL;
+    }
+    
+    // Only allow user to proceed to pipeline configuration page if a Study ID
+    // has been selected.
+    public Boolean getStudySelectedStatus() {
+        return study_id != null;
+    }
+    
+    // Return the list of Study ID setup for this user's department.
+    public LinkedHashMap<String, String> getStudyList() {
+        return studyList;
+    }
+
+    // Setup the NGSConfigBean according to the specific pipeline selected.
+    public String ngsPipeline() {
+        return Constants.NGS_PAGE;
+    }
+    
+    // Machine generated getters and setters
+    public String getStudy_id() { return study_id; }
+    public void setStudy_id(String study_id) { this.study_id = study_id; }
+    public String getPlName() { return plName; }
+    public void setPlName(String plName) { this.plName = plName; }
+    public Boolean getHaveNewData() { return haveNewData; }
+    public void setHaveNewData(Boolean haveNewData) 
+    { this.haveNewData = haveNewData; }
+    
+    /*
+    
+    // NOT IN USE.
     // Setup config_page for GEX Illumina pipeline processing.
     public void gexIllumina() {
         config_page = Constants.GEX_ILLUMINA_PAGE;
@@ -88,55 +150,5 @@ public class MenuSelectionBean implements Serializable{
         config_page = Constants.CNV_PIPELINE_PAGE;
     }
     
-    // User decided not to proceed to pipeline configuration page. Stay at the
-    // current page.
-    public void backToMainMenu() {
-        logger.debug(userName + ": return to main menu.");
-        config_page = null;
-    }
-    
-    // User selected Study to work on, and has decided to proceed to pipeline
-    // configuration page.
-    public String proceedToConfig() {
-        // Save the Study ID and haveNewData selection in the session map to be
-        // use by pipeline configuration bean.
-        FacesContext.getCurrentInstance().getExternalContext().
-                getSessionMap().put("study_id", study_id);
-        FacesContext.getCurrentInstance().getExternalContext().
-                getSessionMap().put("haveNewData", haveNewData);
-        
-        logger.debug(userName + ": selected " + config_page);
-        logger.debug(haveNewData?"User have new data to upload.":
-                     "No new data to upload.");
-        // Proceed to pipeline configuration page.
-        return config_page;
-    }
-    
-    // Only allow user to proceed to pipeline configuration page if a Study ID
-    // has been selected.
-    public Boolean getStudySelectedStatus() {
-        return study_id != null;
-    }
-    
-    // Return the list of Study ID setup for this user's department.
-    public LinkedHashMap<String, String> getStudyList() {
-        return studyList;
-    }
-
-    // Setup the NGSConfigBean according to the specific pipeline selected.
-    public String ngsPipeline() {
-        return Constants.NGS_PAGE;
-    }
-    
-    // For testing DataRetriever
-    public String dataRetriever() {
-        return Constants.NGS_PAGE;
-    }
-    
-    // Machine generated getters and setters
-    public String getStudy_id() { return study_id; }
-    public void setStudy_id(String study_id) { this.study_id = study_id; }
-    public Boolean getHaveNewData() { return haveNewData; }
-    public void setHaveNewData(Boolean haveNewData) 
-    { this.haveNewData = haveNewData; }
+    */
 }
