@@ -9,6 +9,7 @@ import Clinical.Data.Sink.Database.SubmittedJob;
 import Clinical.Data.Sink.Database.SubmittedJobDB;
 import Clinical.Data.Sink.General.Constants;
 import java.sql.SQLException;
+import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
 
@@ -21,11 +22,14 @@ import javax.faces.bean.ViewScoped;
  * Revision History
  * 19-Jan-2016 - Initial creation by extending GEXIlluminaBean. Override the
  * insertJob method.
+ * 20-Jan-2016 - Changed from extending GEXIlluminaBean to GEXAffymetrixBean
+ * because CNV need to support multiple input files upload.
  */
 
 @ManagedBean (name="cnvPBean")
 @ViewScoped
-public class CNVPipelineBean extends GEXIlluminaBean {
+public class CNVPipelineBean extends GEXAffymetrixBean {
+    private FileUploadBean ctrlFile;
 
     public CNVPipelineBean() {
         pipelineName = Constants.CNV_PIPELINE;
@@ -35,6 +39,41 @@ public class CNVPipelineBean extends GEXIlluminaBean {
         logger.debug("CNVPipelineBean created.");
     }
     
+    @PostConstruct
+    @Override
+    public void initFiles() {
+        init();
+        if (haveNewData) {
+            ctrlFile = new FileUploadBean(studyID, submitTimeInFilename);            
+        }
+    }
+    
+    @Override
+    public void updateJobSubmissionStatus() {
+        if (!haveNewData) {
+            // Only update the jobSubmissionStatus if data has been selected 
+            // for reuse.
+            if (selectedInput != null) {
+                setJobSubmissionStatus(true);
+                logger.debug("Data uploaded on " + selectedInput.getDate() + 
+                             " has been selected for reuse.");
+            }
+            else {
+                // No data is being selected for reuse, display error message.
+                logger.debug("No data selected for reuse!");
+            }
+        }
+        else {
+            // Only update the jobSubmissionStatus if all the input files are 
+            // uploaded.
+            if (!(inputFile.isFilelistEmpty() || sampleFile.isFilelistEmpty() ||
+                ctrlFile.isFilelistEmpty())) {
+                inputFile.createInputList();
+                setJobSubmissionStatus(true);            
+            }
+        }
+    }
+
     @Override
     public Boolean insertJob(String outputFilePath, String reportFilePath) {
         Boolean result = Constants.OK;
@@ -67,5 +106,37 @@ public class CNVPipelineBean extends GEXIlluminaBean {
         }
 
         return result;
+    }
+    
+    @Override
+    public void renameAnnotCtrlFiles() {
+        ctrlFile.renameCtrlProbeFile();
+        super.renameAnnotCtrlFiles();
+    }
+    
+    // Make the necessary setup to those attributes that are relevant to this
+    // pipeline, and then call the base class method to create the Config File.
+    @Override
+    public Boolean createConfigFile() {
+        if (haveNewData) {
+            ctrl = ctrlFile.getLocalDirectoryPath() + 
+                   Constants.getCONTROL_PROBE_FILE_NAME() +
+                   Constants.getCONTROL_PROBE_FILE_EXT();
+        }
+        else {
+            ctrl = selectedInput.getFilepath() + 
+                   Constants.getCONTROL_PROBE_FILE_NAME() +
+                   Constants.getCONTROL_PROBE_FILE_EXT();
+        }
+        // Call the base class method to create the Config File.        
+        return super.createConfigFile();
+    }
+
+    // Machine generated getters and setters
+    public FileUploadBean getCtrlFile() {
+        return ctrlFile;
+    }
+    public void setCtrlFile(FileUploadBean ctrlFile) {
+        this.ctrlFile = ctrlFile;
     }
 }

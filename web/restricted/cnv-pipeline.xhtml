@@ -14,10 +14,11 @@
             <p:panel id="inputcontrol" visible="#{cnvPBean.haveNewData}" 
                      header="Upload Sample and Control Probe Files">
                 <p:growl id="uploadStatus" sticky="true"/>
-                <p:fileUpload mode="advanced" update="uploadStatus" 
-                              label="Select Sample File"
+                <p:fileUpload mode="advanced" multiple="true"
+                              update="uploadStatus" 
+                              label="Select Sample Files"
                               allowTypes="/(\.|\/)(txt)$/"
-                              fileUploadListener="#{cnvPBean.inputFile.singleFileUploadListener}"/>
+                              fileUploadListener="#{cnvPBean.inputFile.multipleFileUploadListener}"/>
                 <p:inputText id="inputdescription" 
                              value="#{cnvPBean.inputFileDesc}" 
                              autocomplete="off" size="200" styleClass="configinput"/>
