@@ -4,6 +4,7 @@
 package Clinical.Data.Sink.Database;
 
 import Clinical.Data.Sink.General.Constants;
+import Clinical.Data.Sink.General.ResourceRetriever;
 import java.io.Serializable;
 
 /**
@@ -30,6 +31,8 @@ import java.io.Serializable;
  * finalized job.
  * 18-Jan-2016 - Changed the type of variable sample_average from String to
  * Boolean.
+ * 21-Jan-2016 - Added one new method, getPlDescription() to return the text 
+ * description for this pipeline.
  */
 
 public class SubmittedJob implements Serializable {
@@ -112,6 +115,12 @@ public class SubmittedJob implements Serializable {
         else {
             return Constants.TRUE;
         }
+    }
+    
+    // Retrieve and return the text description for this pipeline from the 
+    // resource bundle.
+    public String getPlDescription() {
+        return ResourceRetriever.getMsg(pipeline_name);
     }
     
     // Machine generated getters and setters

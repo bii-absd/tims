@@ -43,9 +43,11 @@ import org.apache.logging.log4j.LogManager;
  * 06-Jan-2016 - Moved the common function download() to FileLoader class.
  * 12-Jan-2016 - Fix the static variable issues in AuthenticationBean.
  * 13-Jan-2016 - Removed all the static variables in Job Status module.
+ * 21-Jan-2016 - To allow the users to view the pipeline parameters setup at
+ * the job status page through a context menu.
  */
 
-@ManagedBean(name = "jobStatusBean")
+@ManagedBean(name = "jsBean")
 @ViewScoped
 public class JobStatusBean implements Serializable {
     // Get the logger for Log4j
@@ -54,6 +56,7 @@ public class JobStatusBean implements Serializable {
     // For JSF 2.2, since we are using @ViewScoped we cannot bind any UIComponent.
 //    private transient UIData jobStatusTable;
     private List<SubmittedJob> jobSubmission;
+    private SubmittedJob selectedJob;
     // Store the user ID of the current user.
     private final String userName;
     
@@ -67,7 +70,7 @@ public class JobStatusBean implements Serializable {
     @PostConstruct
     public void init() {
         // Need to assign the jobSubmission here, else the sorting will not work.
-        jobSubmission = SubmittedJobDB.getSubmittedJobs(userName);
+        jobSubmission = SubmittedJobDB.getJobsFullDetail(userName);
     }
     
     // Download the pipeline output for user.
@@ -91,6 +94,13 @@ public class JobStatusBean implements Serializable {
     }
 
     // Machine generated getters and setters
+    public SubmittedJob getSelectedJob() {
+        return selectedJob;
+    }
+    public void setSelectedJob(SubmittedJob selectedJob) {
+        this.selectedJob = selectedJob;
+    }
+    
     /* @ViewScoped will breaks when any UIComponent is bound to the bean
        using binding attribute or when using JSTL tags in the view; the bean
        will behave like a request scoped one.
@@ -101,29 +111,6 @@ public class JobStatusBean implements Serializable {
     */
     
     /* No longer in use.
-    
-    public void sort(ActionEvent actionEvent) {
-        // Order the query result according to the column selected by the user.
-        // For Submission Date, order by job_id will be used.
-        SubmittedJobDB.setQueryOrderBy(actionEvent.getComponent().getId());
-    }
-
-    // Setup the variables file and type according to the pipeline output.
-    public void preOutput() {
-        // Need to pass in the parameter from JSF
-        // <f:param name="output" value="#{submittedJob.output_file}"/>
-        String output = getExternalContext().getRequestParameterMap().get("output");
-        file = new File(output);
-        type = getFacesContext().getExternalContext().getMimeType(file.getName());
-    }
-    
-    // Setup the variables file and type according to the pipeline report.
-    public void preReport() {
-        String report = getExternalContext().getRequestParameterMap().get("report");        
-        file = new File(report);
-        type = getFacesContext().getExternalContext().getMimeType(file.getName());
-    }
-    
     // Return the file to be downloaded.
     public StreamedContent getFile() throws FileNotFoundException {
         logger.info(AuthenticationBean.getUserName() + ": downloaded " +

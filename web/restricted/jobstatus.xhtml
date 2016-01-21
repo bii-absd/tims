@@ -7,42 +7,84 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
     
-    <ui:define name="title">Job Status</ui:define>
-    <ui:param name="link" value="Job Status"/>
+    <ui:define name="title">Pipeline Job Status</ui:define>
+    <ui:param name="link" value="#{msg['job-status']}"/>
     <ui:define name="content">
         <h:form id="jobForm">
-            <p:dataTable var="submittedJob" rows="10" id="jobTable"
-                         value="#{jobStatusBean.jobSubmission}" 
+            <p:contextMenu for="jobTable">
+                <p:menuitem value="View Parameters" update="jobDetail" 
+                            icon="ui-icon-search" 
+                            oncomplete="PF('jobDialog').show()"/>
+            </p:contextMenu>
+            
+            <p:dataTable var="job" rows="10" id="jobTable"
+                         value="#{jsBean.jobSubmission}" 
+                         rowKey="#{job.job_id}" 
+                         selection="#{jsBean.selectedJob}" 
+                         selectionMode="single"
                          paginator="true" paginatorTemplate="{RowsPerPageDropdown} 
                          {FirstPageLink} {PreviousPageLink} {CurrentPageReport} 
                          {NextPageLink} {LastPageLink}"
                          rowsPerPageTemplate="5,10,15"
                          styleClass="table-odd-row table-even-row">
-                <p:column headerText="Study ID" sortBy="#{submittedJob.study_id}">
-                    <h:outputText value="#{submittedJob.study_id}"/>
+                <f:facet name="header">
+                    <h:outputText value="Right click to view pipeline parameters" 
+                                  style="color: blue; font-size: 11pt"/>
+                </f:facet>
+                <p:column headerText="Study ID" sortBy="#{job.study_id}" 
+                          styleClass="jsmedcol">
+                    <h:outputText value="#{job.study_id}"/>
                 </p:column>
-                <p:column headerText="Pipeline" sortBy="#{submittedJob.pipeline_name}">
-                    <h:outputText value="#{submittedJob.pipeline_name}"/>
+                <p:column headerText="Pipeline" sortBy="#{job.plDescription}" 
+                          style="text-align: left">
+                    <h:outputText value="#{job.plDescription}"/>
                 </p:column>
-                <p:column headerText="Submission Time" sortBy="#{submittedJob.submit_time}">
-                    <h:outputText value="#{submittedJob.submit_time}"/>
+                <p:column headerText="Submission Time" sortBy="#{job.submit_time}" 
+                          styleClass="jsmedcol">
+                    <h:outputText value="#{job.submit_time}"/>
                 </p:column>
-                <p:column headerText="Job Status" sortBy="#{submittedJob.status_name}">
-                    <h:outputText value="#{submittedJob.status_name}"/>
+                <p:column headerText="Job Status" sortBy="#{job.status_name}" 
+                          styleClass="jssmallcol">
+                    <h:outputText value="#{job.status_name}"/>
                 </p:column>
-                <p:column headerText="Output File">
+                <p:column headerText="Output File" styleClass="jssmallcol">
                     <p:commandLink ajax="false" value="Download" 
-                                   action="#{jobStatusBean.downloadOutput(submittedJob)}"
-                                   disabled="#{submittedJob.available}">
+                                   action="#{jsBean.downloadOutput(job)}"
+                                   disabled="#{job.available}">
                     </p:commandLink>
                 </p:column>
-                <p:column headerText="Report">
+                <p:column headerText="Report" styleClass="jssmallcol">
                     <p:commandLink ajax="false" value="Download" 
-                                   action="#{jobStatusBean.downloadReport(submittedJob)}" 
-                                   disabled="#{submittedJob.available}">
+                                   action="#{jsBean.downloadReport(job)}" 
+                                   disabled="#{job.available}">
                     </p:commandLink>
                 </p:column>
             </p:dataTable>
+            
+            <p:dialog header="Pipeline Parameters" widgetVar="jobDialog" 
+                      modal="true" showEffect="fade" hideEffect="fade" 
+                      resizable="false">
+                <p:outputPanel id="jobDetail">
+                    <p:panelGrid columns="2">
+                        <h:outputText value="Chip Type: "/>
+                        <h:outputText value="#{jsBean.selectedJob.chip_type}"/>
+                        <h:outputText value="Probe Filtering: "/>
+                        <h:outputText value="#{jsBean.selectedJob.probe_filtering}"/>
+                        <h:outputText value="Normalization Method: "/>
+                        <h:outputText value="#{jsBean.selectedJob.normalization}"/>
+                        <h:outputText value="Phenotype Column: "/>
+                        <h:outputText value="#{jsBean.selectedJob.phenotype_column}"/>
+                        <h:outputText value="Probe Selection: "/>
+                        <h:outputText value="#{jsBean.selectedJob.probe_select?'Yes':'No'}"/>
+                        <h:outputText value="Standardization Method: "/>
+                        <h:outputText value="#{jsBean.selectedJob.standardization}"/>
+                        <h:outputText value="Sample Averaging: "/>
+                        <h:outputText value="#{jsBean.selectedJob.sample_average?'Yes':'No'}"/>
+                        <h:outputText value="Summarization: "/>
+                        <h:outputText value="#{jsBean.selectedJob.summarization}"/>
+                    </p:panelGrid>
+                </p:outputPanel>
+            </p:dialog>
         </h:form>
     </ui:define>
 </ui:composition>

@@ -21,7 +21,7 @@ import org.apache.logging.log4j.LogManager;
  * database.
  * 
  * Author: Tay Wei Hong
- * Date: 2-Oct-2015
+ * Date: 02-Oct-2015
  * 
  * Revision History
  * 02-Oct-2015 - First baseline with two static methods (insertJob and 
@@ -57,6 +57,9 @@ import org.apache.logging.log4j.LogManager;
  * 13-Jan-2016 - Removed all the static variables in Job Status module.
  * 18-Jan-2016 - Changed the type of variable sample_average from String to
  * Boolean.
+ * 21-Jan-2016 - Added 3 new methods; getJobsFullDetail to return the list of
+ * full detail SubmittedJob objects, getPipelineExeInStudy to return the
+ * list of pipeline executed in the study, and updateJobStatusToWaiting.
  */
 
 public abstract class SubmittedJobDB {
@@ -116,6 +119,9 @@ public abstract class SubmittedJobDB {
     }
 
     // The following functions update the status_id of the submitted_job
+    public static void updateJobStatusToWaiting(int job_id) {
+        updateJobStatus(job_id, 1);
+    }
     public static void updateJobStatusToInprogress(int job_id) {
         updateJobStatus(job_id, 2);
     }    
@@ -176,6 +182,30 @@ public abstract class SubmittedJobDB {
         return tidList;
     }
     
+    // Return the list of distinct pipeline that have been executed in this study.
+    public static List<String> getPipelineExeInStudy(String studyID) {
+        List<String> plList = new ArrayList<>();
+        String queryStr = "SELECT DISTINCT pipeline_name FROM submitted_job "
+                        + "WHERE study_id = ? ORDER BY pipeline_name";
+        
+        try (PreparedStatement queryStm = conn.prepareStatement(queryStr)) {
+            queryStm.setString(1, studyID);
+            ResultSet rs = queryStm.executeQuery();
+            
+            while (rs.next()) {
+                plList.add(rs.getString("pipeline_name"));
+            }
+            logger.debug("Pipeline executed in " + studyID + ": " + 
+                         plList.toString());
+        }
+        catch (SQLException e) {
+            logger.error("FAIL to retrieve pipeline executed!");
+            logger.error(e.getMessage());
+        }
+        
+        return plList;
+    }
+    
     // Return the list of completed jobs that are ready to be finalized for
     // this study.
     public static List<FinalizingJobEntry> getCompletedJobsInStudy
@@ -206,6 +236,51 @@ public abstract class SubmittedJobDB {
         catch (SQLException e) {
             logger.error("FAIL to retrieve completed jobs for " + studyID);
             logger.error(e.getMessage());
+        }
+        
+        return jobList;
+    }
+
+    // Return the list of jobs (full detail) that have been submitted by 
+    // this user.
+    public static List<SubmittedJob> getJobsFullDetail(String user_id) {
+        List<SubmittedJob> jobList = new ArrayList<>();
+        // Don't retrieve those jobs which are in finalizing stage.
+        String queryStr = "SELECT * FROM submitted_job WHERE user_id = ? AND "
+                        + "status_id NOT IN (4) ORDER BY job_id DESC"; 
+
+        try (PreparedStatement queryStm = conn.prepareStatement(queryStr)) {
+            queryStm.setString(1, user_id);
+            ResultSet rs = queryStm.executeQuery();
+            
+            while (rs.next()) {
+                SubmittedJob job = new SubmittedJob(
+                                rs.getInt("job_id"),
+                                rs.getString("study_id"),
+                                user_id,
+                                rs.getString("pipeline_name"),
+                                rs.getInt("status_id"),
+                                rs.getString("submit_time"),
+                                rs.getString("chip_type"),
+                                rs.getString("input_path"),
+                                rs.getString("normalization"),
+                                rs.getString("probe_filtering"),
+                                rs.getBoolean("probe_select"),
+                                rs.getString("phenotype_column"),
+                                rs.getString("summarization"),
+                                rs.getString("output_file"),
+                                rs.getBoolean("sample_average"),
+                                rs.getString("standardization"),
+                                rs.getString("region"),
+                                rs.getString("report"));
+                
+                jobList.add(job);
+            }
+            logger.debug("Jobs full detail retrieved for " + user_id);
+        } 
+        catch (SQLException e) {
+                logger.error("FAIL to retrieve jobs full detail!");
+                logger.error(e.getMessage());
         }
         
         return jobList;

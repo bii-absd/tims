@@ -167,3 +167,19 @@
     font-family: courier, arial, monospace;
     font-size: 12px;
 }
+
+/* Style defined for job status column (job status, output and report) width 
+   and text alignment
+*/
+.jssmallcol {
+    width: 90px;
+    text-align: left !important;
+}
+
+/* Style defined for job status column (Study ID and Submission Time) width
+   and text alignment
+*/
+.jsmedcol {
+    width: 200px;
+    text-align: left !important;
+}   
