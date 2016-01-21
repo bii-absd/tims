@@ -31,6 +31,8 @@ import org.apache.logging.log4j.LogManager;
  * 08-Jan-2016 - To sort the list of input data in descending order.
  * 13-Jan-2016 - One new field user_id added in the input_data table; to 
  * identify the user who has uploaded this input data.
+ * 21-Jan-2016 - Added one new field pipeline_name in the input_data table; to
+ * associate this input_data with the respective pipeline.
  */
 
 public abstract class InputDataDB {
@@ -43,17 +45,18 @@ public abstract class InputDataDB {
     public static Boolean insertInputData(InputData idata) {
         Boolean result = Constants.OK;
         String insertStr = "INSERT INTO input_data(study_id,sn,user_id,"
-                         + "filename,filepath,description,date) "
-                         + "VALUES(?,?,?,?,?,?,?)";
+                         + "pipeline_name,filename,filepath,description,date) "
+                         + "VALUES(?,?,?,?,?,?,?,?)";
         
         try (PreparedStatement insertStm = conn.prepareStatement(insertStr)) {
             insertStm.setString(1, idata.getStudy_id());
             insertStm.setInt(2, idata.getSn());
             insertStm.setString(3, idata.getUser_id());
-            insertStm.setString(4, idata.getFilename());
-            insertStm.setString(5, idata.getFilepath());
-            insertStm.setString(6, idata.getDescription());
-            insertStm.setString(7, idata.getDate());
+            insertStm.setString(4, idata.getPipeline_name());
+            insertStm.setString(5, idata.getFilename());
+            insertStm.setString(6, idata.getFilepath());
+            insertStm.setString(7, idata.getDescription());
+            insertStm.setString(8, idata.getDate());
             
             insertStm.executeUpdate();
             logger.debug("New input data detail inserted into database: " +
@@ -68,19 +71,21 @@ public abstract class InputDataDB {
         return result;
     }
     
-    // Return the list of input data that belong to this study ID.
-    public static List<InputData> getIpList(String studyID) {
+    // Return the list of input data that belong to this study ID and pipeline.
+    public static List<InputData> getIpList(String studyID, String plName) {
         List<InputData> ipList = new ArrayList<>();
-        String queryStr = "SELECT * FROM input_data WHERE study_id = ? "
-                        + "ORDER BY sn DESC";
+        String queryStr = "SELECT * FROM input_data WHERE study_id = ? AND "
+                        + "pipeline_name = ? ORDER BY sn DESC";
         
         try (PreparedStatement queryStm = conn.prepareStatement(queryStr)) {
             queryStm.setString(1, studyID);
+            queryStm.setString(2, plName);
             ResultSet rs = queryStm.executeQuery();
             
             while (rs.next()) {
                 InputData tmp = new InputData(rs.getString("study_id"),
                                               rs.getString("user_id"),
+                                              rs.getString("pipeline_name"),
                                               rs.getString("filename"),
                                               rs.getString("filepath"),
                                               rs.getString("description"),

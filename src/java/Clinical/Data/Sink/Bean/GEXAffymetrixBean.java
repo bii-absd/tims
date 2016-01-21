@@ -5,7 +5,6 @@ package Clinical.Data.Sink.Bean;
 
 import Clinical.Data.Sink.Database.InputData;
 import Clinical.Data.Sink.Database.InputDataDB;
-import Clinical.Data.Sink.Database.PipelineDB;
 import Clinical.Data.Sink.Database.SubmittedJob;
 import Clinical.Data.Sink.Database.SubmittedJobDB;
 import Clinical.Data.Sink.General.Constants;
@@ -46,9 +45,11 @@ import javax.faces.bean.ViewScoped;
  * Boolean.
  * 20-Jan-2016 - To streamline the navigation flow and passing of pipeline name
  * from main menu to pipeline configuration pages.
+ * 21-Jan-2016 - Added one new field pipeline_name in the input_data table; to
+ * associate this input_data with the respective pipeline.
  */
 
-@ManagedBean (name="gexAffymetrixBean")
+@ManagedBean (name="gexAffyBean")
 @ViewScoped
 public class GEXAffymetrixBean extends ConfigBean {
 
@@ -127,9 +128,9 @@ public class GEXAffymetrixBean extends ConfigBean {
             sn = InputDataDB.getNextSn(studyID);
             // For Affymetrix, we will only store the filepath i.e. for 
             // filename, it is empty.
-            InputData newdata = new InputData(studyID, userName, "", 
-                    inputFile.getLocalDirectoryPath(),
-                    inputFileDesc, sn, submitTimeInDB);
+            InputData newdata = new InputData(studyID, userName, pipelineName,
+                    "", inputFile.getLocalDirectoryPath(), inputFileDesc, 
+                    sn, submitTimeInDB);
             InputDataDB.insertInputData(newdata);
         }
         catch (SQLException e) {

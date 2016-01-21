@@ -8,41 +8,41 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
     
     <ui:define name="title">GEX Pipeline (Illumina)</ui:define>
-    <ui:param name="link" value="#{gexIlluminaBean.breadCrumbLink}"/>
+    <ui:param name="link" value="#{gexIlluBean.breadCrumbLink}"/>
     <ui:define name="content">
         <h:form id="mainForm" enctype="multipart/form-data">
-            <p:panel id="inputcontrol" visible="#{gexIlluminaBean.haveNewData}" 
+            <p:panel id="inputcontrol" visible="#{gexIlluBean.haveNewData}" 
                      header="Upload Sample and Control Probe Files">
                 <p:growl id="uploadStatus" sticky="true"/>
                 <p:fileUpload mode="advanced" update="uploadStatus" 
                               label="Select Sample File"
                               allowTypes="/(\.|\/)(txt)$/"
-                              fileUploadListener="#{gexIlluminaBean.inputFile.singleFileUploadListener}">
+                              fileUploadListener="#{gexIlluBean.inputFile.singleFileUploadListener}">
                 </p:fileUpload>
                 <p:inputText id="inputdescription" 
-                             value="#{gexIlluminaBean.inputFileDesc}" 
+                             value="#{gexIlluBean.inputFileDesc}" 
                              autocomplete="off" size="200" styleClass="configinput"/>
                 <p:watermark for="inputdescription" 
                              value="Enter a brief description of the Sample File here."/>
                 <p:separator styleClass="configsep"/>
                 <p:fileUpload mode="advanced" update="uploadStatus" 
                               label="Select Control File"
-                              fileUploadListener="#{gexIlluminaBean.ctrlFile.singleFileUploadListener}"/>
+                              fileUploadListener="#{gexIlluBean.ctrlFile.singleFileUploadListener}"/>
             </p:panel>
-            <p:panel id="sample" visible="#{gexIlluminaBean.haveNewData}"
+            <p:panel id="sample" visible="#{gexIlluBean.haveNewData}"
                      header="Upload Samples Annotation File 
                      (Please upload this file for the Phenotype Column to be enable)">
                 <p:fileUpload mode="advanced"
                               update="uploadStatus phenotype"
                               label="Select Samples Annotation File"
-                              fileUploadListener="#{gexIlluminaBean.sampleAnnotFileUploadListener}"/>
+                              fileUploadListener="#{gexIlluBean.sampleAnnotFileUploadListener}"/>
             </p:panel>
 
-            <p:panel id="reuseInput" visible="#{!gexIlluminaBean.haveNewData}" 
+            <p:panel id="reuseInput" visible="#{!gexIlluBean.haveNewData}" 
                      header="Select Input Data to Reuse">
                 <p:dataTable id="inputTable" var="reuseIP" 
-                             value="#{gexIlluminaBean.inputDataList}" 
-                             selection="#{gexIlluminaBean.selectedInput}" 
+                             value="#{gexIlluBean.inputDataList}" 
+                             selection="#{gexIlluBean.selectedInput}" 
                              rowKey="#{reuseIP.sn}" 
                              styleClass="table-odd-row table-even-row">
                     <p:column headerText="Data Uploaded By" 
@@ -59,7 +59,7 @@
                     <p:column headerText="Select Data to Reuse" selectionMode="single" 
                               style="width: 120px; text-align: center"/>
                     <p:ajax event="rowSelectRadio" 
-                            listener="#{gexIlluminaBean.reuseInputRadioButtonSelected}"
+                            listener="#{gexIlluBean.reuseInputRadioButtonSelected}"
                             update=":mainForm:phenotype"/>
                 </p:dataTable>
             </p:panel>
@@ -71,7 +71,7 @@
                         <h:panelGrid columns="1">
                             <p:outputLabel value="Select Type" styleClass="configlabel"/>
                             <p:selectOneMenu id="type" required="true" 
-                                             value="#{gexIlluminaBean.type}">
+                                             value="#{gexIlluBean.type}">
                                 <f:selectItems value="#{menuBean.illuminaType}"/>
                             </p:selectOneMenu>
                         </h:panelGrid>
@@ -80,7 +80,7 @@
                         <p:outputLabel value="Probe Filtering" styleClass="configlabel" 
                                        title="#{msg['probe.filtering']}"/>
                         <p:selectManyMenu id="probefilter" showCheckbox="true"
-                                          value="#{gexIlluminaBean.probeFilters}">
+                                          value="#{gexIlluBean.probeFilters}">
                             <f:selectItem itemLabel="Low-expression" itemValue="low-expression"/>
                             <f:selectItem itemLabel="Non-unique" itemValue="non-unique"/>
                         </p:selectManyMenu>
@@ -90,7 +90,7 @@
                             <p:outputLabel value="Select Normalization Method" 
                                            styleClass="configlabel"/>
                             <p:selectOneMenu id="normalization" required="true" 
-                                             value="#{gexIlluminaBean.normalization}">
+                                             value="#{gexIlluBean.normalization}">
                                 <f:selectItem itemLabel="NEQC" itemValue="neqc"/>
                             </p:selectOneMenu>                            
                         </h:panelGrid>
@@ -100,10 +100,10 @@
                             <p:outputLabel value="Phenotype Column" 
                                            styleClass="configlabel"/>
                             <p:selectOneMenu id="phenotype" required="true" 
-                                             disabled="#{gexIlluminaBean.isAnnotationListReady()}"
+                                             disabled="#{gexIlluBean.isAnnotationListReady()}"
                                              title="#{msg['phenotype.column']}"
-                                             value="#{gexIlluminaBean.phenotype}">
-                                <f:selectItems value="#{gexIlluminaBean.annotationList}"/>
+                                             value="#{gexIlluBean.phenotype}">
+                                <f:selectItems value="#{gexIlluBean.annotationList}"/>
                             </p:selectOneMenu>
                         </h:panelGrid>
                     </p:column>
@@ -111,7 +111,7 @@
                         <p:outputLabel value="Probe Selection: " 
                                        styleClass="configlabel"/>
                         <p:selectBooleanButton id="probeselection" 
-                                               value="#{gexIlluminaBean.probeSelect}" 
+                                               value="#{gexIlluBean.probeSelect}" 
                                                title="#{msg['probe.selection']}"
                                                onLabel="Yes" offLabel="No"/>
                     </p:column>
@@ -126,7 +126,7 @@
                         <h:panelGrid columns="1">
                             <p:outputLabel value="Standardization Method" 
                                            styleClass="configlabel"/>
-                            <p:selectOneMenu id="stdlog2ratio" value="#{gexIlluminaBean.stdLog2Ratio}">
+                            <p:selectOneMenu id="stdlog2ratio" value="#{gexIlluBean.stdLog2Ratio}">
                                 <f:selectItem itemLabel="None"
                                               itemValue="none"/>
                                 <f:selectItem itemLabel="Standardize" itemValue="Standardize" 
@@ -140,7 +140,7 @@
                         <p:outputLabel value="Sample Averaging: " 
                                        styleClass="configlabel"/>
                         <p:selectBooleanButton id="averaging" 
-                                               value="#{gexIlluminaBean.sampleAverage}" 
+                                               value="#{gexIlluBean.sampleAverage}" 
                                                title="#{msg['sample.averaging']}" 
                                                onLabel="Yes" offLabel="No"/>
                     </p:column>
@@ -150,58 +150,58 @@
             <p:commandButton value="Submit" update="display @form"
                              oncomplete="PF('dlg').show()" 
                              icon="ui-icon-check" 
-                             action="#{gexIlluminaBean.updateJobSubmissionStatus}"/>
+                             action="#{gexIlluBean.updateJobSubmissionStatus}"/>
             
             <p:dialog header="Pipeline Configuration Review"
                       widgetVar="dlg"
                       resizable="false">
                 <p:panelGrid columns="2" id="display">
                     <h:outputText value="Study ID: "/>
-                    <h:outputText value="#{gexIlluminaBean.studyID}"/>
+                    <h:outputText value="#{gexIlluBean.studyID}"/>
                     <h:outputText value="Type: "/>
-                    <h:outputText value="#{gexIlluminaBean.type}"/>
-                    <h:outputText rendered="#{!gexIlluminaBean.haveNewData}" 
+                    <h:outputText value="#{gexIlluBean.type}"/>
+                    <h:outputText rendered="#{!gexIlluBean.haveNewData}" 
                                   value="Reusing data uploaded on: "/>
-                    <h:outputText rendered="#{!gexIlluminaBean.haveNewData}" 
-                                  value="#{gexIlluminaBean.reuseInputDate}"/>
-                    <h:outputText rendered="#{gexIlluminaBean.haveNewData}" 
+                    <h:outputText rendered="#{!gexIlluBean.haveNewData}" 
+                                  value="#{gexIlluBean.reuseInputDate}"/>
+                    <h:outputText rendered="#{gexIlluBean.haveNewData}" 
                                   value="Sample File: "/>
-                    <h:outputText rendered="#{gexIlluminaBean.haveNewData}" 
-                                  value="#{gexIlluminaBean.inputFile.inputFilename}"/>
-                    <h:outputText rendered="#{gexIlluminaBean.haveNewData}" 
+                    <h:outputText rendered="#{gexIlluBean.haveNewData}" 
+                                  value="#{gexIlluBean.inputFile.inputFilename}"/>
+                    <h:outputText rendered="#{gexIlluBean.haveNewData}" 
                                   value="Control File: "/>
-                    <h:outputText rendered="#{gexIlluminaBean.haveNewData}" 
-                                  value="#{gexIlluminaBean.ctrlFile.inputFilename}"/>
-                    <h:outputText rendered="#{gexIlluminaBean.haveNewData}" 
+                    <h:outputText rendered="#{gexIlluBean.haveNewData}" 
+                                  value="#{gexIlluBean.ctrlFile.inputFilename}"/>
+                    <h:outputText rendered="#{gexIlluBean.haveNewData}" 
                                   value="Samples Annotation File: "/>
-                    <h:outputText rendered="#{gexIlluminaBean.haveNewData}" 
-                                  value="#{gexIlluminaBean.sampleFile.inputFilename}"/>
+                    <h:outputText rendered="#{gexIlluBean.haveNewData}" 
+                                  value="#{gexIlluBean.sampleFile.inputFilename}"/>
                     <h:outputText value="Probe Filtering: "/>
-                    <p:dataList itemType="square" value="#{gexIlluminaBean.probeFilters}" 
+                    <p:dataList itemType="square" value="#{gexIlluBean.probeFilters}" 
                                 var="probe" styleClass="datalist" type="none">
                         <h:outputText value="#{probe}"/><br/>
                     </p:dataList>
                     <h:outputText value="Normalization: "/>
-                    <h:outputText value="#{gexIlluminaBean.normalization}"/>
+                    <h:outputText value="#{gexIlluBean.normalization}"/>
                     <h:outputText value="Phenotype Column: "/>
-                    <h:outputText value="#{gexIlluminaBean.phenotype}"/>
+                    <h:outputText value="#{gexIlluBean.phenotype}"/>
                     <h:outputText value="Probe Selection: "/>
-                    <h:outputText value="#{gexIlluminaBean.probeSelect?'Yes':'No'}"/>
-                    <h:outputText value="Sample Averaging: "/>
-                    <h:outputText value="#{gexIlluminaBean.sampleAverage?'Yes':'No'}"/>
+                    <h:outputText value="#{gexIlluBean.probeSelect?'Yes':'No'}"/>
                     <h:outputText value="Standardization Method: "/>
-                    <h:outputText value="#{gexIlluminaBean.stdLog2Ratio}"/>
+                    <h:outputText value="#{gexIlluBean.stdLog2Ratio}"/>
+                    <h:outputText value="Sample Averaging: "/>
+                    <h:outputText value="#{gexIlluBean.sampleAverage?'Yes':'No'}"/>
                 </p:panelGrid>
                 <p:separator styleClass="configsep"/>
                 <h:form>
                     <h:panelGrid columns="2" cellspacing="2" cellpadding="2">
                         <p:commandButton value="Cancel" title="Redo the configuration"
                                          style="width: 130px" oncomplete="PF('dlg').hide()"
-                                         action="#{gexIlluminaBean.cancelJob}"/>
+                                         action="#{gexIlluBean.cancelJob}"/>
                         <p:commandButton value="Confirm" title="Start the pipeline execution"
                                          style="width: 130px"
-                                         action="#{gexIlluminaBean.submitJob}" 
-                                         rendered="#{gexIlluminaBean.jobSubmissionStatus}"/>                        
+                                         action="#{gexIlluBean.submitJob}" 
+                                         rendered="#{gexIlluBean.jobSubmissionStatus}"/>                        
                     </h:panelGrid>
                 </h:form>
             </p:dialog>

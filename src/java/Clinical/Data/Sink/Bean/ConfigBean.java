@@ -76,6 +76,8 @@ import org.apache.logging.log4j.LogManager;
  * Boolean.
  * 20-Jan-2016 - To streamline the navigation flow and passing of pipeline name
  * from main menu to pipeline configuration pages.
+ * 21-Jan-2016 - Added one new field pipeline_name in the input_data table; to
+ * associate this input_data with the respective pipeline.
  */
 
 public abstract class ConfigBean implements Serializable {
@@ -151,7 +153,7 @@ public abstract class ConfigBean implements Serializable {
             sampleFile = new FileUploadBean(studyID, submitTimeInFilename);
         }
         else {
-            inputDataList = InputDataDB.getIpList(studyID);
+            inputDataList = InputDataDB.getIpList(studyID, pipelineName);
         }
         logger.debug(studyID + " ConfigBean - init().");
     }

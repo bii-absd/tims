@@ -5,7 +5,6 @@ package Clinical.Data.Sink.Bean;
 
 import Clinical.Data.Sink.Database.InputData;
 import Clinical.Data.Sink.Database.InputDataDB;
-import Clinical.Data.Sink.Database.PipelineDB;
 import Clinical.Data.Sink.Database.SubmittedJob;
 import Clinical.Data.Sink.Database.SubmittedJobDB;
 import Clinical.Data.Sink.General.Constants;
@@ -49,9 +48,11 @@ import javax.faces.bean.ViewScoped;
  * 19-Jan-2016 - Initialize the variable probeFilters in the constructor. 
  * 20-Jan-2016 - To streamline the navigation flow and passing of pipeline name
  * from main menu to pipeline configuration pages.
+ * 21-Jan-2016 - Added one new field pipeline_name in the input_data table; to
+ * associate this input_data with the respective pipeline.
  */
 
-@ManagedBean (name="gexIlluminaBean")
+@ManagedBean (name="gexIlluBean")
 @ViewScoped
 public class GEXIlluminaBean extends ConfigBean {
     private FileUploadBean ctrlFile;
@@ -135,7 +136,7 @@ public class GEXIlluminaBean extends ConfigBean {
         try {
             sn = InputDataDB.getNextSn(studyID);
             // Insert a new record into input_data table.
-            InputData newdata = new InputData(studyID, userName,
+            InputData newdata = new InputData(studyID, userName, pipelineName,
                     inputFile.getInputFilename(), 
                     inputFile.getLocalDirectoryPath(),
                     inputFileDesc, sn, submitTimeInDB);
