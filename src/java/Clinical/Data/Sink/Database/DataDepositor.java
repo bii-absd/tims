@@ -4,6 +4,7 @@
 package Clinical.Data.Sink.Database;
 
 import Clinical.Data.Sink.General.Constants;
+import Clinical.Data.Sink.General.ResourceRetriever;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -56,6 +57,9 @@ import org.apache.pdfbox.pdmodel.graphics.xobject.PDJpeg;
  * 12-Jan-2016 - Fix the static variable issues in AuthenticationBean.
  * 20-Jan-2016 - Updated study table in database; added one new variable closed, 
  * and renamed completed to finalized.
+ * 22-Jan-2016 - Study finalization logic change; finalization will be 
+ * performed for each pipeline instead of each technology. Changed the format
+ * of the summary report.
  */
 
 public class DataDepositor extends Thread {
@@ -108,7 +112,7 @@ public class DataDepositor extends Thread {
                 job_id = job.getJob_id();
                 fileUri = SubmittedJobDB.getOutputPath(job_id);
                 logger.debug("Data insertion for: " + study_id + " - " + 
-                             job.getTid() + " - Job ID: " + job_id);
+                             job.getPipeline_name() + " - Job ID: " + job_id);
                 
                 if (!insertFinalizedDataIntoDB()) {
                     // Error occurred during data insertion, stop the transaction.
@@ -221,25 +225,33 @@ public class DataDepositor extends Thread {
             
             // Write the body in plain.
             cs.beginText();
-            cs.setFont(plainFont, 12);
-            // Section 1
+            cs.setFont(plainFont, 11);
+            // Section A
             cs.moveTextPositionByAmount(subheadX, getNextHeaderYaxis());
-            cs.drawString("1. Technology employed - Pipeline executed - Date & Time");
+            cs.drawString("A. Pipeline job(s) selected for finalization");
             cs.endText();
+            int index = 1;
             
             for (FinalizingJobEntry job : jobList) {
-                StringBuilder tmp = new StringBuilder(job.getTid());
-                tmp.append(" - ").append(job.getPipeline_name());
-                tmp.append(" - ").append(job.getSubmit_time());
+                StringBuilder l1 = new StringBuilder
+                                (String.valueOf(index++)).append(". ");
+                l1.append(ResourceRetriever.getMsg(job.getPipeline_name()));
+                StringBuilder l2 = new StringBuilder
+                                ("(Submitted by ").append(job.getUserName());
+                l2.append(" @").append(job.getSubmit_time()).append(")");
                 cs.beginText();
                 cs.moveTextPositionByAmount(lineX, getNextLineYaxis());
-                cs.drawString(tmp.toString());
+                cs.drawString(l1.toString());
                 cs.endText();
+                cs.beginText();
+                cs.moveTextPositionByAmount(lineX, getNextLineYaxis());
+                cs.drawString(l2.toString());
+                cs.endText();                
             }
-            // Section 2
+            // Section B
             cs.beginText();
             cs.moveTextPositionByAmount(subheadX, getNextSubheaderYaxis());
-            cs.drawString("2. Identified Subject ID");
+            cs.drawString("B. Identified Subject ID");
             cs.endText();
             
             for (String sub : foundSubjects) {
@@ -248,10 +260,10 @@ public class DataDepositor extends Thread {
                 cs.drawString(sub);
                 cs.endText();
             }
-            // Section 3
+            // Section C
             cs.beginText();
             cs.moveTextPositionByAmount(subheadX, getNextSubheaderYaxis());
-            cs.drawString("3. Unidentified Subject ID");
+            cs.drawString("C. Unidentified Subject ID");
             cs.endText();
             
             for (String sub : missingSubjects) {
@@ -260,26 +272,36 @@ public class DataDepositor extends Thread {
                 cs.drawString(sub);
                 cs.endText();
             }
-            // Section 4
+            // Section D
             cs.beginText();
             cs.moveTextPositionByAmount(subheadX, getNextSubheaderYaxis());
-            cs.drawString("4. No of gene data available");
+            cs.drawString("D. No of gene data available");
             cs.endText();
             
             cs.beginText();
             cs.moveTextPositionByAmount(lineX, getNextLineYaxis());
             cs.drawString(String.valueOf(totalGene));
             cs.endText();
-            // Section 5
+            // Section E
             cs.beginText();
             cs.moveTextPositionByAmount(subheadX, getNextSubheaderYaxis());
-            cs.drawString("5. No of gene data stored");
+            cs.drawString("E. No of gene data stored");
             cs.endText();
             
             cs.beginText();
             cs.moveTextPositionByAmount(lineX, getNextLineYaxis());
             cs.drawString(String.valueOf(processedGene));
             cs.endText();
+            // Section F
+            cs.beginText();
+            cs.moveTextPositionByAmount(subheadX, getNextSubheaderYaxis());
+            cs.drawString("E. HG19 Annotation Version");
+            cs.endText();
+            
+            cs.beginText();
+            cs.moveTextPositionByAmount(lineX, getNextLineYaxis());
+            cs.drawString(annot_ver);
+            cs.endText();            
             // Ending section
             cs.beginText();
             cs.moveTextPositionByAmount(subheadX, getNextHeaderYaxis());
@@ -322,10 +344,11 @@ public class DataDepositor extends Thread {
         
         // Start to generate the summary report content
         summary.append(study_id).append("\n\n");
-        summary.append("1. Technology employed - Pipeline executed - Date & Time").append("\n");
+        summary.append("1. Technology - Pipeline - Requestor - Date & Time").append("\n");
         for (FinalizingJobEntry job : jobList) {
             summary.append("\t").append(job.getTid()).append(" - ");
             summary.append(job.getPipeline_name()).append(" - ");
+            summary.append(job.getUserName()).append(" - ");
             summary.append(job.getSubmit_time()).append("\n");
         }
         summary.append("\n").append("2. Identified Subject ID").append("\n");

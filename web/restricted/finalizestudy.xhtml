@@ -8,7 +8,7 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
     
     <ui:define name="title">Finalize Study</ui:define>
-    <ui:param name="link" value="Finalize Study"/>
+    <ui:param name="link" value="#{msg['finalize-study']}"/>
     <ui:define name="content">
     <h:form id="studyForm">
         <p:panel header="Select Study to finalize (Subject meta data need to be setup before finalization.)">
@@ -19,61 +19,95 @@
             </p:selectOneMenu>
         </p:panel>
         <p:panel id="jobsPanel" visible="#{finalizedBean.studySelectedStatus}" 
-                 header="Select job to finalize for each pipeline technology">
-            <p:dataTable id="tid0" rendered="#{finalizedBean.studySelectedStatus}" 
+                 header="Select job to finalize for each pipeline">
+            <p:dataTable id="pl0" rendered="#{finalizedBean.studySelectedStatus}" 
                          var="jobL0" value="#{finalizedBean.jobList0}" 
                          selection="#{finalizedBean.selectedJob0}" 
                          rowKey="#{jobL0.job_id}"
                          styleClass="table-odd-row table-even-row">
                 <f:facet name="header">
-                    <h:outputText value="#{finalizedBean.TID0}"/>
+                    <h:outputText value="#{finalizedBean.pl0}"/>
                 </f:facet>
-                <p:column headerText="Pipeline Name">
-                    <h:outputText value="#{jobL0.pipeline_name}"/>
+                <p:column headerText="#{msg['fstudy-header1']}">
+                    <h:outputText value="#{jobL0.tid}"/>
                 </p:column>
-                <p:column headerText="Submission Time">
+                <p:column headerText="#{msg['fstudy-header2']}">
+                    <h:outputText value="#{jobL0.userName}"/>
+                </p:column>
+                <p:column headerText="#{msg['fstudy-header3']}">
                     <h:outputText value="#{jobL0.submit_time}"/>
                 </p:column>
                 <p:column headerText="Finalize" selectionMode="single" 
                           style="width: 40px; text-align: center"/>
             </p:dataTable>
             <p:separator style="height: 12px" rendered="#{finalizedBean.jobList1Status}"/>
-            <p:dataTable id="tid1" rendered="#{finalizedBean.jobList1Status}" 
+            
+            <p:dataTable id="pl1" rendered="#{finalizedBean.jobList1Status}" 
                          var="jobL1" value="#{finalizedBean.jobList1}" 
                          selection="#{finalizedBean.selectedJob1}" 
                          rowKey="#{jobL1.job_id}"
                          styleClass="table-odd-row table-even-row">
                 <f:facet name="header">
-                    <h:outputText value="#{finalizedBean.TID1}"/>
+                    <h:outputText value="#{finalizedBean.pl1}"/>
                 </f:facet>
-                <p:column headerText="Pipeline Name">
-                    <h:outputText value="#{jobL1.pipeline_name}"/>
+                <p:column headerText="#{msg['fstudy-header1']}">
+                    <h:outputText value="#{jobL1.tid}"/>
                 </p:column>
-                <p:column headerText="Submission Time">
+                <p:column headerText="#{msg['fstudy-header2']}">
+                    <h:outputText value="#{jobL1.userName}"/>
+                </p:column>
+                <p:column headerText="#{msg['fstudy-header3']}">
                     <h:outputText value="#{jobL1.submit_time}"/>
                 </p:column>
                 <p:column headerText="Finalize" selectionMode="single" 
                           style="width: 40px; text-align: center"/>
             </p:dataTable>
             <p:separator style="height: 12px" rendered="#{finalizedBean.jobList2Status}"/>
-            <p:dataTable id="tid2" rendered="#{finalizedBean.jobList2Status}" 
+            
+            <p:dataTable id="pl2" rendered="#{finalizedBean.jobList2Status}" 
                          var="jobL2" value="#{finalizedBean.jobList2}" 
                          selection="#{finalizedBean.selectedJob2}" 
                          rowKey="#{jobL2.job_id}"
                          styleClass="table-odd-row table-even-row">
                 <f:facet name="header">
-                    <h:outputText value="#{finalizedBean.TID2}"/>
+                    <h:outputText value="#{finalizedBean.pl2}"/>
                 </f:facet>
-                <p:column headerText="Pipeline Name">
-                    <h:outputText value="#{jobL2.pipeline_name}"/>
+                <p:column headerText="#{msg['fstudy-header1']}">
+                    <h:outputText value="#{jobL2.tid}"/>
                 </p:column>
-                <p:column headerText="Submission Time">
+                <p:column headerText="#{msg['fstudy-header2']}">
+                    <h:outputText value="#{jobL2.userName}"/>
+                </p:column>
+                <p:column headerText="#{msg['fstudy-header3']}">
                     <h:outputText value="#{jobL2.submit_time}"/>
                 </p:column>
                 <p:column headerText="Finalize" selectionMode="single" 
                           style="width: 40px; text-align: center"/>
             </p:dataTable>
+            <p:separator style="height: 12px" rendered="#{finalizedBean.jobList3Status}"/>
+            
+            <p:dataTable id="pl3" rendered="#{finalizedBean.jobList3Status}" 
+                         var="jobL3" value="#{finalizedBean.jobList3}" 
+                         selection="#{finalizedBean.selectedJob3}" 
+                         rowKey="#{jobL3.job_id}"
+                         styleClass="table-odd-row table-even-row">
+                <f:facet name="header">
+                    <h:outputText value="#{finalizedBean.pl3}"/>
+                </f:facet>
+                <p:column headerText="#{msg['fstudy-header1']}">
+                    <h:outputText value="#{jobL3.tid}"/>
+                </p:column>
+                <p:column headerText="#{msg['fstudy-header2']}">
+                    <h:outputText value="#{jobL3.userName}"/>
+                </p:column>
+                <p:column headerText="#{msg['fstudy-header3']}">
+                    <h:outputText value="#{jobL3.submit_time}"/>
+                </p:column>
+                <p:column headerText="Finalize" selectionMode="single" 
+                          style="width: 40px; text-align: center"/>
+            </p:dataTable>
             <p:separator style="height: 20px"/>
+            
             <p:commandButton value="Finalize" icon="ui-icon-check" 
                              oncomplete="PF('dlg').show()" 
                              update="subjectMDStatus @form"

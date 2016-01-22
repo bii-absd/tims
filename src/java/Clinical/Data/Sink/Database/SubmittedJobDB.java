@@ -60,6 +60,8 @@ import org.apache.logging.log4j.LogManager;
  * 21-Jan-2016 - Added 3 new methods; getJobsFullDetail to return the list of
  * full detail SubmittedJob objects, getPipelineExeInStudy to return the
  * list of pipeline executed in the study, and updateJobStatusToWaiting.
+ * 22-Jan-2016 - Study finalization logic change; finalization will be 
+ * performed for each pipeline instead of each technology.
  */
 
 public abstract class SubmittedJobDB {
@@ -206,13 +208,50 @@ public abstract class SubmittedJobDB {
         return plList;
     }
     
+    // Return the list of completed jobs for this pipeline that are ready to
+    // be finalized for this study.
+    public static List<FinalizingJobEntry> getCompletedPlJobsInStudy
+        (String studyID, String pipeline) {
+        List<FinalizingJobEntry> jobList = new ArrayList<>();
+        String queryStr = "SELECT job_id, tid, submit_time, user_id "
+                        + "FROM submitted_job sj INNER JOIN pipeline pl "
+                        + "ON sj.pipeline_name = pl.name WHERE "
+                        + "status_id = 3 AND study_id = ? AND "
+                        + "pipeline_name = ? ORDER BY job_id";
+        
+        try (PreparedStatement queryStm = conn.prepareStatement(queryStr)) {
+            queryStm.setString(1, studyID);
+            queryStm.setString(2, pipeline);
+            ResultSet rs = queryStm.executeQuery();
+            
+            while (rs.next()) {
+                FinalizingJobEntry tmp = new FinalizingJobEntry(
+                                            rs.getInt("job_id"),
+                                            rs.getString("tid"),
+                                            pipeline,
+                                            rs.getString("submit_time"),
+                                            rs.getString("user_id"));
+                
+                jobList.add(tmp);
+            }
+            logger.debug("No of completed jobs for " + studyID + " under " +
+                         pipeline + " is " + jobList.size());
+        }
+        catch (SQLException e) {
+            logger.error("FAIL to retrieve completed pipeline jobs for " + studyID);
+            logger.error(e.getMessage());
+        }
+        
+        return jobList;
+    }
+    
     // Return the list of completed jobs that are ready to be finalized for
     // this study.
     public static List<FinalizingJobEntry> getCompletedJobsInStudy
         (String studyID, String tid) {
         List<FinalizingJobEntry> jobList = new ArrayList<>();
-        String queryStr = "SELECT job_id, tid, pipeline_name, submit_time "
-                        + "FROM submitted_job sj INNER JOIN pipeline pl "
+        String queryStr = "SELECT job_id, tid, pipeline_name, submit_time, "
+                        + "user_id FROM submitted_job sj INNER JOIN pipeline pl "
                         + "ON sj.pipeline_name = pl.name WHERE "
                         + "status_id = 3 AND study_id = ? AND tid = ? "
                         + "ORDER BY job_id";
@@ -227,7 +266,8 @@ public abstract class SubmittedJobDB {
                                             rs.getInt("job_id"),
                                             rs.getString("tid"),
                                             rs.getString("pipeline_name"),
-                                            rs.getString("submit_time"));
+                                            rs.getString("submit_time"),
+                                            rs.getString("user_id"));
                 jobList.add(tmp);
             }
             logger.debug("No of completed jobs for " + studyID + " under " +

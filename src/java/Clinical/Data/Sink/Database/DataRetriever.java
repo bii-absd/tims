@@ -31,6 +31,8 @@ import org.apache.logging.log4j.LogManager;
  * them to a text file. Using StringBuilder to build the data line for each 
  * record. Big improvement in the timing for retrieving and outputting 44 
  * records of 26,424 gene values; from 304 sec to 12 sec.
+ * 22-Jan-2016 - Study finalization logic change; finalization will be 
+ * performed for each pipeline instead of each technology.
  */
 
 public class DataRetriever extends Thread {
@@ -51,7 +53,7 @@ public class DataRetriever extends Thread {
                         Constants.getFINALIZE_PATH() + 
                         study_id + Constants.getFINALIZE_FILE_EXT();
         annot_ver = StudyDB.getAnnotVer(study_id);
-        opHeader.append("Subject|Technology");
+        opHeader.append("Subject|Pipeline");
         geneList = getGeneList();
         // Retrieve the list of OutputItems (i.e. Subject|Technology|Index)
         opItemsList = getOpItemsList();
@@ -72,7 +74,7 @@ public class DataRetriever extends Thread {
         long elapsedTime;
         long startTime = System.nanoTime();
         StringBuilder data = new StringBuilder();
-        data.append(item.getSubject_id()).append("|").append(item.getTid());
+        data.append(item.getSubject_id()).append("|").append(item.getPipeline());
         String queryStr = 
                 "SELECT data[?] FROM data_depository " +
                 "WHERE annot_ver = ? ORDER BY genename";
@@ -91,7 +93,7 @@ public class DataRetriever extends Thread {
                     (elapsedTime / 1000000.0) + " msec");
         }
         catch (SQLException e) {
-            logger.error("Failed to retrieve subject data!");
+            logger.error("FAIL to retrieve subject data!");
             logger.error(e.getMessage());
         }
         
@@ -118,7 +120,7 @@ public class DataRetriever extends Thread {
                     (elapsedTime / 1000000000.0) + " sec.");
         }
         catch (IOException ioe) {
-            logger.error("IOException when writing output to file!");
+            logger.error("FAIl to write output to file!");
             logger.error(ioe.getMessage());
         }
     }
@@ -148,16 +150,50 @@ public class DataRetriever extends Thread {
             logger.debug("Time taken: " + (elapsedTime / 1000000.0) + " msec.");
         }
         catch (SQLException e) {
-            logger.error("Failed to retrieve genename!");
+            logger.error("FAIL to retrieve genename!");
             logger.error(e.getMessage());
         }
         
         return gene;
     }
     
-    // Retrieve the output row information (i.e. subject_id|tid|array_index 
+    // Retrieve the output row information (i.e. subject_id|pipeline|array_index 
     // where gene's values are stored) from the database.
     private List<OutputItems> getOpItemsList() {
+        List<OutputItems> opList = new ArrayList<>();
+        String queryStr = 
+                "SELECT y.subject_id, x.pipeline_name, y.array_index FROM " +
+                "(SELECT job_id, pipeline_name FROM submitted_job " +
+                "WHERE study_id = ? AND status_id = 5) x " +
+                "NATURAL JOIN " +
+                "(SELECT * FROM finalized_output) y WHERE job_id = x.job_id " +
+                "ORDER BY y.subject_id, y.array_index";
+        
+        try (PreparedStatement queryStm = conn.prepareStatement(queryStr)) {
+            queryStm.setString(1, study_id);
+            ResultSet rs = queryStm.executeQuery();
+            
+            while (rs.next()) {
+                OutputItems item = new OutputItems(
+                                    rs.getString("subject_id"),
+                                    rs.getString("pipeline_name"),
+                                    rs.getInt("array_index"));
+                opList.add(item);                
+            }
+            
+            logger.debug("Total output row retrieved: " + opList.size());
+        }
+        catch (SQLException e) {
+            logger.error("FAIL to build output list!");
+            logger.error(e.getMessage());
+        }
+        
+        return opList;
+    }
+    
+    // Retrieve the output row information (i.e. subject_id|tid|array_index 
+    // where gene's values are stored) from the database.
+    private List<OutputItems> getOpItemsListByTID() {
         List<OutputItems> opList = new ArrayList<>();
         String queryStr = 
                 "SELECT y.subject_id, x.tid, y.array_index FROM " +
@@ -187,7 +223,7 @@ public class DataRetriever extends Thread {
             logger.debug("Total output row retrieved: " + opList.size());
         }
         catch (SQLException e) {
-            logger.error("SQLException when building output list!");
+            logger.error("FAIL to build output list!");
             logger.error(e.getMessage());
         }
         
