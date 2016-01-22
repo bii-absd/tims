@@ -100,8 +100,7 @@
                              action="#{cnvPBean.updateJobSubmissionStatus}"/>
             
             <p:dialog header="Pipeline Configuration Review"
-                      widgetVar="dlg"
-                      resizable="false">
+                      widgetVar="dlg" resizable="false">
                 <p:panelGrid columns="2" id="display">
                     <h:outputText value="Study ID: "/>
                     <h:outputText value="#{cnvPBean.studyID}"/>
@@ -110,9 +109,16 @@
                     <h:outputText rendered="#{!cnvPBean.haveNewData}" 
                                   value="#{cnvPBean.reuseInputDate}"/>
                     <h:outputText rendered="#{cnvPBean.haveNewData}" 
-                                  value="Sample File: "/>
-                    <h:outputText rendered="#{cnvPBean.haveNewData}" 
-                                  value="#{cnvPBean.inputFile.inputFilename}"/>
+                                  value="#{cnvPBean.inputFile.filesCount}"/>
+                    <p:dataList itemType="square" rows="20"
+                        paginator="true" paginatorTemplate="{FirstPageLink} 
+                        {PreviousPageLink} {CurrentPageReport} 
+                        {NextPageLink} {LastPageLink}"
+                        rendered="#{cnvPBean.haveNewData}"
+                        value="#{cnvPBean.inputFile.inputFileList}"
+                        var="filelist" styleClass="datalist" type="none">
+                        <h:outputText value="#{filelist}"/><br/>
+                    </p:dataList>
                     <h:outputText rendered="#{cnvPBean.haveNewData}" 
                                   value="Control File: "/>
                     <h:outputText rendered="#{cnvPBean.haveNewData}" 
@@ -125,7 +131,7 @@
                     <h:outputText value="#{cnvPBean.phenotype}"/>
                     <h:outputText value="Summarization: "/>
                     <h:outputText value="#{cnvPBean.summarization}"/>
-                </p:panelGrid>
+                </p:panelGrid>                    
                 <p:separator style="height: 20px"/>
                 <h:form>
                     <h:panelGrid columns="2" cellspacing="2" cellpadding="2">

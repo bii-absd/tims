@@ -140,8 +140,7 @@
                              action="#{gexAffyBean.updateJobSubmissionStatus()}"/>
             
             <p:dialog header="Pipeline Configuration Review"
-                      widgetVar="dlg"
-                      resizable="false">
+                      widgetVar="dlg" resizable="false">
                 <p:panelGrid columns="2" id="display">
                     <h:outputText value="Study ID: "/>
                     <h:outputText value="#{gexAffyBean.studyID}"/>
@@ -152,11 +151,14 @@
                     <h:outputText rendered="#{!gexAffyBean.haveNewData}" 
                                   value="#{gexAffyBean.reuseInputDate}"/>
                     <h:outputText rendered="#{gexAffyBean.haveNewData}" 
-                                  value="Sample File: "/>
-                    <p:dataList itemType="square" 
-                                rendered="#{gexAffyBean.haveNewData}"
-                                value="#{gexAffyBean.inputFile.inputFileList}"
-                                var="filelist" styleClass="datalist" type="none">
+                                  value="#{gexAffyBean.inputFile.filesCount}"/>
+                    <p:dataList itemType="square" rows="20"
+                        paginator="true" paginatorTemplate="{FirstPageLink} 
+                        {PreviousPageLink} {CurrentPageReport} 
+                        {NextPageLink} {LastPageLink}"
+                        rendered="#{gexAffyBean.haveNewData}"
+                        value="#{gexAffyBean.inputFile.inputFileList}"
+                        var="filelist" styleClass="datalist" type="none">
                         <h:outputText value="#{filelist}"/><br/>
                     </p:dataList>
                     <h:outputText rendered="#{gexAffyBean.haveNewData}" 

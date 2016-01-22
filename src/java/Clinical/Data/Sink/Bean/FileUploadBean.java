@@ -56,6 +56,8 @@ import org.apache.logging.log4j.LogManager;
  * 12-Jan-2016 - Fix the static variable issues in AuthenticationBean.
  * 14-Jan-2016 - Removed all the static variables in Pipeline Configuration
  * Management module.
+ * 22-Jan-2016 - Added new method getFilesCount(), to return the no of input
+ * files uploaded (i.e. as an indicator to the user during config review).
  */
 
 public class FileUploadBean implements Serializable {
@@ -203,6 +205,11 @@ public class FileUploadBean implements Serializable {
         return inputList;
     }
 
+    // Return the no of input files uploaded.
+    public String getFilesCount() {
+        return "Sample File: " + fileCount;
+    }
+    
     // Create the inputList for job submission confirmation by the user; use
     // for multiple files upload.
     public void createInputList() {

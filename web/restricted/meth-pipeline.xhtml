@@ -102,8 +102,7 @@
                              action="#{methPBean.updateJobSubmissionStatus()}"/>
             
             <p:dialog header="Pipeline Configuration Review"
-                      widgetVar="dlg"
-                      resizable="false">
+                      widgetVar="dlg" resizable="false">
                 <p:panelGrid columns="2" id="display">
                     <h:outputText value="Study ID: "/>
                     <h:outputText value="#{methPBean.studyID}"/>
@@ -112,11 +111,14 @@
                     <h:outputText rendered="#{!methPBean.haveNewData}" 
                                   value="#{methPBean.reuseInputDate}"/>
                     <h:outputText rendered="#{methPBean.haveNewData}" 
-                                  value="Sample File: "/>
-                    <p:dataList itemType="square" 
-                                rendered="#{methPBean.haveNewData}"
-                                value="#{methPBean.inputFile.inputFileList}"
-                                var="filelist" styleClass="datalist" type="none">
+                                  value="#{methPBean.inputFile.filesCount}"/>
+                    <p:dataList itemType="square" rows="20"
+                        paginator="true" paginatorTemplate="{FirstPageLink} 
+                        {PreviousPageLink} {CurrentPageReport} 
+                        {NextPageLink} {LastPageLink}"
+                        rendered="#{methPBean.haveNewData}"
+                        value="#{methPBean.inputFile.inputFileList}"
+                        var="filelist" styleClass="datalist" type="none">
                         <h:outputText value="#{filelist}"/><br/>
                     </p:dataList>
                     <h:outputText rendered="#{methPBean.haveNewData}" 
@@ -129,7 +131,7 @@
                     <h:outputText value="#{methPBean.phenotype}"/>
                     <h:outputText value="Probe Selection: "/>
                     <h:outputText value="#{methPBean.probeSelect?'Yes':'No'}"/>
-                </p:panelGrid>
+                </p:panelGrid>                    
                 <p:separator styleClass="configsep"/>
                 <h:form>
                     <h:panelGrid columns="2" cellspacing="2" cellpadding="2">
