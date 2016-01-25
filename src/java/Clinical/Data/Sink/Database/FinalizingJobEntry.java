@@ -15,24 +15,32 @@ package Clinical.Data.Sink.Database;
  * 22-Dec-2015 - Created with the necessary methods implemented.
  * 24-Dec-2015 - Added one method, toString() to return a string representation
  * of the object.
+ * 22-Jan-2016 - Added one new field, user_id and one new method getUserName().
  */
 
 public class FinalizingJobEntry {
     private int job_id;
-    private String tid, pipeline_name, submit_time;
+    private String tid, pipeline_name, submit_time, user_id;
 
     public FinalizingJobEntry(int job_id, String tid, String pipeline_name, 
-            String submit_time) {
+            String submit_time, String user_id) {
         this.job_id = job_id;
         this.tid = tid;
         this.pipeline_name = pipeline_name;
         this.submit_time = submit_time;
+        this.user_id = user_id;
     }
 
     // Return a string representation of this object.
     @Override
     public String toString() {
-        return job_id + " - " + pipeline_name + " - " + submit_time;
+        return job_id + " - " + pipeline_name + " - " + user_id 
+                + " - " + submit_time;
+    }
+    
+    // Returnt the user full name.
+    public String getUserName() {
+        return UserAccountDB.getFullName(user_id);
     }
     
     // Machine generated getters and setters.
@@ -52,4 +60,8 @@ public class FinalizingJobEntry {
     { return submit_time; }
     public void setSubmit_time(String submit_time) 
     { this.submit_time = submit_time; }
+    public String getUser_id() 
+    { return user_id; }
+    public void setUser_id(String user_id) 
+    { this.user_id = user_id; }
 }

@@ -10,6 +10,7 @@ import Clinical.Data.Sink.Database.SubjectDB;
 import Clinical.Data.Sink.Database.SubmittedJobDB;
 import Clinical.Data.Sink.Database.UserAccountDB;
 import Clinical.Data.Sink.General.Constants;
+import Clinical.Data.Sink.General.ResourceRetriever;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -55,6 +56,9 @@ import org.apache.logging.log4j.LogManager;
  * 13-Jan-2016 - Removed all the static variables in Job Status module.
  * 20-Jan-2016 - Updated study table in database; added one new variable closed, 
  * and renamed completed to finalized.
+ * 22-Jan-2016 - Study finalization logic change; finalization will be 
+ * performed for each pipeline instead of each technology. Added one more
+ * data table to support the 4th pipeline.
  */
 
 @ManagedBean (name="finalizedBean")
@@ -68,7 +72,9 @@ public class FinalizeStudyBean implements Serializable {
     // Store the status of the availability of subject meta data in the database.
     private String subMDAvailableStatus = null;
     private List<String> TIDList = new ArrayList<>();
-    private FinalizingJobEntry selectedJob0, selectedJob1, selectedJob2;
+    private List<String> plList = new ArrayList<>();
+    private FinalizingJobEntry selectedJob0, selectedJob1, selectedJob2, 
+                               selectedJob3;
     // Store the list of selected jobs.
     private List<FinalizingJobEntry> selectedJobs = new ArrayList<>();
     private List<List<FinalizingJobEntry>> jobEntryLists = 
@@ -123,6 +129,7 @@ public class FinalizeStudyBean implements Serializable {
             selectedJobs.add(0, selectedJob0);
             selectedJobs.add(1, selectedJob1);
             selectedJobs.add(2, selectedJob2);
+            selectedJobs.add(3, selectedJob3);
         
             // Check for subject meta data availability, and prepare the 
             // status update string.
@@ -227,11 +234,11 @@ public class FinalizeStudyBean implements Serializable {
     // Build new lists based on the study_id selected by user.
     private void buildLists() {
         int index = 0;
-        TIDList = SubmittedJobDB.getTIDUsedInStudy(study_id);
+        plList = SubmittedJobDB.getPipelineExeInStudy(study_id);
         
-        for (String tid : TIDList) {
+        for (String pipeline : plList) {
             jobEntryLists.add(index++, SubmittedJobDB.
-                    getCompletedJobsInStudy(study_id, tid));
+                    getCompletedPlJobsInStudy(study_id, pipeline));
         }
     }
     
@@ -250,9 +257,9 @@ public class FinalizeStudyBean implements Serializable {
     public List<FinalizingJobEntry> getJobList0() {
         return jobEntryLists.get(0);
     }
-    // Return the pipeline technology name; to be use as data table header title.
-    public String getTID0() {
-        return TIDList.get(0) + " Technology";
+    // Return the pipeline description; to be use as data table header title.
+    public String getPl0() {
+        return ResourceRetriever.getMsg(plList.get(0));
     }
     // Job selected for the first pipeline technology.
     public void setSelectedJob0(FinalizingJobEntry job) {
@@ -271,8 +278,8 @@ public class FinalizeStudyBean implements Serializable {
     public List<FinalizingJobEntry> getJobList1() {
         return jobEntryLists.get(1);
     }
-    public String getTID1() {
-        return TIDList.get(1) + " Technology";
+    public String getPl1() {
+        return ResourceRetriever.getMsg(plList.get(1));
     }
     public void setSelectedJob1(FinalizingJobEntry job) {
         selectedJob1 = job;
@@ -288,14 +295,31 @@ public class FinalizeStudyBean implements Serializable {
     public List<FinalizingJobEntry> getJobList2() {
         return jobEntryLists.get(2);
     }
-    public String getTID2() {
-        return TIDList.get(2) + " Technology";
+    public String getPl2() {
+        return ResourceRetriever.getMsg(plList.get(2));
     }
     public void setSelectedJob2(FinalizingJobEntry job) {
         selectedJob2 = job;
     }
     public FinalizingJobEntry getSelectedJob2() {
         return selectedJob2;
+    }
+    
+    // Do the same for the fourth data table.
+    public Boolean getJobList3Status() {
+        return jobEntryLists.size()>3;
+    }
+    public List<FinalizingJobEntry> getJobList3() {
+        return jobEntryLists.get(3);
+    }
+    public String getPl3() {
+        return ResourceRetriever.getMsg(plList.get(3));
+    }
+    public void setSelectedJob3(FinalizingJobEntry job) {
+        selectedJob3 = job;
+    }
+    public FinalizingJobEntry getSelectedJob3() {
+        return selectedJob3;
     }
     
     // Retrieve the servlet context

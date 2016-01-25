@@ -22,17 +22,14 @@ import org.apache.logging.log4j.LogManager;
 
 public abstract class ResourceRetriever {
     // Get the logger for Log4j
-    private final static Logger logger = LogManager.
+    private static final Logger logger = LogManager.
             getLogger(ResourceRetriever.class.getName());
-    private static FacesContext fc = FacesContext.getCurrentInstance();
-    private static ResourceBundle msg = fc.getApplication().
+    private static final FacesContext fc = FacesContext.getCurrentInstance();
+    private static final ResourceBundle msg = fc.getApplication().
             evaluateExpressionGet(fc, "#{msg}", ResourceBundle.class);
     
     // Return the message content for this key defined in the resource bundle.
     public static String getMsg(String key) {
-        String content = msg.getString(key);
-        logger.debug(key + " - " + content);
-        
-        return content;
+        return msg.getString(key);
     }
 }
