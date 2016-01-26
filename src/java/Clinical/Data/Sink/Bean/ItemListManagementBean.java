@@ -3,7 +3,7 @@
  */
 package Clinical.Data.Sink.Bean;
 
-// Libraries for Log4j
+import Clinical.Data.Sink.Database.ActivityLogDB;
 import Clinical.Data.Sink.Database.Department;
 import Clinical.Data.Sink.Database.DepartmentDB;
 import Clinical.Data.Sink.Database.Institution;
@@ -37,6 +37,7 @@ import org.apache.logging.log4j.LogManager;
  * 12-Jan-2016 - Fix the static variable issues in AuthenticationBean.
  * 13-Dec-2016 - Removed all the static variables in Study and ItemList
  * management modules.
+ * 26-Jan-2016 - Implemented audit data capture module.
  */
 
 @ManagedBean (name="itemListMgntBean")
@@ -74,7 +75,10 @@ public class ItemListManagementBean implements Serializable {
         Institution newInst = new Institution(inst_id, inst_name);
         
         if (InstitutionDB.insertInstitution(newInst)) {
-            logger.info(userName + ": created new institution ID: " + inst_id);
+            // Record this institution creation activity into database.
+            String detail = "Institution " + inst_id;
+            ActivityLogDB.recordUserActivity(userName, Constants.CRE_ID, detail);
+            logger.info(userName + ": created " + detail);
             addFacesInfoMsg("New institution ID created.");
         }
         else {
@@ -90,7 +94,11 @@ public class ItemListManagementBean implements Serializable {
         Department newDept = new Department(inst_id, dept_id, dept_name);
         
         if (DepartmentDB.insertDepartment(newDept)) {
-            logger.info(userName + ": created new department ID: " + dept_id);
+            // Record this department creation activity into database.
+            String detail = "Department " + dept_id + " for institution " 
+                            + inst_id;
+            ActivityLogDB.recordUserActivity(userName, Constants.CRE_ID, detail);
+            logger.info(userName + ": created " + detail);
             addFacesInfoMsg("New department ID created.");
         }
         else {
@@ -104,7 +112,11 @@ public class ItemListManagementBean implements Serializable {
     // Update the institution table in the database.
     public void onInstRowEdit(RowEditEvent event) {
         if (InstitutionDB.updateInstitution((Institution) event.getObject())) {
-            logger.info(userName + ": updated Institution.");
+            // Record this institution update activity into database.
+            String detail = "Institution " + 
+                            ((Institution) event.getObject()).getInst_id();
+            ActivityLogDB.recordUserActivity(userName, Constants.CHG_ID, detail);
+            logger.info(userName + ": updated " + detail);
             addFacesInfoMsg("Institution updated.");
         }
         else {
@@ -121,7 +133,11 @@ public class ItemListManagementBean implements Serializable {
     // Update the department table in the database.
     public void onDeptRowEdit(RowEditEvent event) {
         if (DepartmentDB.updateDepartment((Department) event.getObject())) {
-            logger.info(userName + ": updated Department.");
+            // Record this department update activity into database.
+            String detail = "Department " + 
+                            ((Department) event.getObject()).getDept_id();
+            ActivityLogDB.recordUserActivity(userName, Constants.CHG_ID, detail);
+            logger.info(userName + ": updated " + detail);
             addFacesInfoMsg("Department updated.");
         }
         else {

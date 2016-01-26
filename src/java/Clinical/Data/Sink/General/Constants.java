@@ -75,6 +75,7 @@ import org.apache.logging.log4j.LogManager;
  * 11-Jan-2016 - Added 2 new constants, METH_PIPELINE and METH_PIPELINE_PAGE.
  * 19-Jan-2016 - Added 2 new constants, CNV_PIPELINE and CNV_PIPELINE_PAGE.
  * 20-Jan-2016 - Removed all pipeline related constants.
+ * 26-Jan-2016 - Added the constants for categories of activity.
  */
 
 @ManagedBean (name = "constants")
@@ -93,21 +94,21 @@ public class Constants {
     public final static String TRUE = "true";
     public final static String FALSE = "false";
     public final static String NONE = "none";
-    // Pipeline name
-//    public final static String GEX_ILLUMINA = "gex-illumina";
-//    public final static String GEX_AFFYMETRIX = "gex-affymetrix";
-//    public final static String METH_PIPELINE = "meth-pipeline";
-//    public final static String CNV_PIPELINE = "cnv-pipeline";
+    // Categories of activity (LOG, EXE, CRE, CHG & DWL).
+    public final static String LOG_IN = "Login";
+    public final static String LOG_OFF = "Logoff";
+    public final static String EXE_PL = "Run Pipeline";
+    public final static String EXE_FIN = "Finalize Study";
+    public final static String CRE_ID = "Create ID";
+    public final static String CHG_PWD = "Change Password";
+    public final static String CHG_ID = "Update ID";
+    public final static String DWL_FIL = "Download File";
     // Navigation Strings
     public final static String PAGES_DIR = "restricted/";
     // For Login page, we shouldn't redirect because most of the time the 
     // system is going from Login back to Login.
     public final static String LOGIN_PAGE = "/login";
     public final static String MAIN_PAGE = "main?faces-redirect=true";
-//    public final static String GEX_ILLUMINA_PAGE = "gex-illumina?faces-redirect=true";
-//    public final static String GEX_AFFYMETRIX_PAGE = "gex-affymetrix?faces-redirect=true";
-//    public final static String METH_PIPELINE_PAGE = "meth-pipeline?faces-redirect=true";
-//    public final static String CNV_PIPELINE_PAGE = "cnv-pipeline?faces-redirect=true";
     public final static String ACCOUNT_MANAGEMENT = "accountmanagement";
     public final static String PIPELINE_MANAGEMENT = 
                                 "pipelinemanagement";
@@ -172,7 +173,7 @@ public class Constants {
                 }
                 logger.debug(uri + " loaded.");
             } catch (IOException e) {
-                logger.error("IOException while loading " + uri);
+                logger.error("FAIL to load " + uri);
                 logger.error(e.getMessage());
                 return NOT_OK;
             }

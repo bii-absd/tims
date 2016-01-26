@@ -3,6 +3,7 @@
  */
 package Clinical.Data.Sink.Bean;
 
+import Clinical.Data.Sink.Database.ActivityLogDB;
 import Clinical.Data.Sink.Database.InputData;
 import Clinical.Data.Sink.Database.InputDataDB;
 import Clinical.Data.Sink.Database.Pipeline;
@@ -78,6 +79,7 @@ import org.apache.logging.log4j.LogManager;
  * from main menu to pipeline configuration pages.
  * 21-Jan-2016 - Added one new field pipeline_name in the input_data table; to
  * associate this input_data with the respective pipeline.
+ * 26-Jan-2016 - Implemented audit data capture module.
  */
 
 public abstract class ConfigBean implements Serializable {
@@ -302,6 +304,10 @@ public abstract class ConfigBean implements Serializable {
             // Create dummy pipeline files for user to download.
 //            createDummyFile(outputFilePath);
 //            createDummyFile(reportFilePath);
+            
+            // Record this pipeline execution activity into database.
+            ActivityLogDB.recordUserActivity(userName, Constants.EXE_PL, 
+                                             pipelineName);
         }
         else {
             result = Constants.ERROR;
@@ -315,7 +321,7 @@ public abstract class ConfigBean implements Serializable {
     public void cancelJob() {
         // Reset the jobSubmissionStatus.
         jobSubmissionStatus = false;
-        logger.info(userName + ": cancel " + pipelineName);
+        logger.debug(userName + ": cancel " + pipelineName);
     }
     
     // Lock down and record the time when the user enter the GEX page.

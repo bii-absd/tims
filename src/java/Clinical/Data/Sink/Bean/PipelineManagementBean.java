@@ -3,6 +3,7 @@
  */
 package Clinical.Data.Sink.Bean;
 
+import Clinical.Data.Sink.Database.ActivityLogDB;
 import Clinical.Data.Sink.Database.Pipeline;
 import Clinical.Data.Sink.Database.PipelineDB;
 import Clinical.Data.Sink.General.Constants;
@@ -35,6 +36,7 @@ import org.primefaces.event.RowEditEvent;
  * one variable tid (Technology ID).
  * 12-Jan-2016 - Fix the static variable issues in AuthenticationBean.
  * 13-Jan-2016 - Removed all the static variables in Pipeline Management module.
+ * 26-Jan-2016 - Implemented audit data capture module.
  */
 
 @ManagedBean (name="plMgntBean")
@@ -75,7 +77,11 @@ public class PipelineManagementBean implements Serializable {
        Pipeline newCmd = new Pipeline(pipeline_name, tid, code, parameter);
        
        if (PipelineDB.insertPipeline(newCmd)) {
-           logger.info(userName + ": created new Pipeline: " + pipeline_name);
+           // Record this pipeline creation activity into database.
+           String detail = "Pipeline " + pipeline_name + " for technology " 
+                         + tid;
+           ActivityLogDB.recordUserActivity(userName, Constants.CRE_ID, detail);
+           logger.info(userName + ": created " + detail);
            fc.addMessage(null, new FacesMessage(
                     FacesMessage.SEVERITY_INFO,
                     "New pipeline created.", ""));
@@ -95,8 +101,10 @@ public class PipelineManagementBean implements Serializable {
         FacesContext fc = getFacesContext();
         
         if (PipelineDB.updatePipeline((Pipeline) event.getObject())) {
-            logger.info(userName + ": updated pipeline " + 
-                    ((Pipeline) event.getObject()).getName());
+            // Record this pipeline update activity into database.
+            String detail = "Pipeline " + ((Pipeline) event.getObject()).getName();
+            ActivityLogDB.recordUserActivity(userName, Constants.CHG_ID, detail);
+            logger.info(userName + ": updated " + detail);
             fc.addMessage(null, new FacesMessage(
                         FacesMessage.SEVERITY_INFO,
                         "Pipeline updated.", ""));

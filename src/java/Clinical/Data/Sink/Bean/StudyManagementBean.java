@@ -3,6 +3,7 @@
  */
 package Clinical.Data.Sink.Bean;
 
+import Clinical.Data.Sink.Database.ActivityLogDB;
 import Clinical.Data.Sink.Database.DepartmentDB;
 import Clinical.Data.Sink.Database.Institution;
 import Clinical.Data.Sink.Database.InstitutionDB;
@@ -50,6 +51,7 @@ import org.apache.logging.log4j.LogManager;
  * created with completed flag set to true.
  * 20-Jan-2016 - Updated study table in database; added one new variable closed, 
  * and renamed completed to finalized.
+ * 26-Jan-2016 - Implemented audit data capture module.
  */
 
 @ManagedBean (name="studyMgntBean")
@@ -94,8 +96,10 @@ public class StudyManagementBean implements Serializable {
         }
 
         if (StudyDB.updateStudy((Study) event.getObject())) {
-            logger.debug(user_id + ": updated study " + 
-                    ((Study) event.getObject()).getStudy_id());
+            // Record this study update activity into database.
+            String detail = "Study " + ((Study) event.getObject()).getStudy_id();
+            ActivityLogDB.recordUserActivity(user_id, Constants.CHG_ID, detail);
+            logger.info(user_id + ": updated " + detail);
             fc.addMessage(null, new FacesMessage(
                     FacesMessage.SEVERITY_INFO, "Study updated.", ""));
         }
@@ -141,13 +145,16 @@ public class StudyManagementBean implements Serializable {
         if (StudyDB.insertStudy(study)) {
             // Create a separate input directory for the newly created Study ID.
             FileUploadBean.createStudyDirectory(study_id);
-            logger.info(user_id + ": created new Study ID: " + study_id);
+            // Record this study creation activity into database.
+            String detail = "Study " + study_id;
+            ActivityLogDB.recordUserActivity(user_id, Constants.CRE_ID, detail);
+            logger.info(user_id + ": created " + detail);
             fc.addMessage(null, new FacesMessage(
                     FacesMessage.SEVERITY_INFO,
                     "New Study ID created.", ""));
         }
         else {
-            logger.info("FAIL to create new Study ID: " + study_id);
+            logger.debug("FAIL to create new Study ID: " + study_id);
             fc.addMessage(null, new FacesMessage(
                     FacesMessage.SEVERITY_ERROR, 
                     "Failed to create new Study ID!", ""));

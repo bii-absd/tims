@@ -3,8 +3,10 @@
  */
 package Clinical.Data.Sink.Bean;
 
+import Clinical.Data.Sink.Database.ActivityLogDB;
 import Clinical.Data.Sink.Database.SubmittedJob;
 import Clinical.Data.Sink.Database.SubmittedJobDB;
+import Clinical.Data.Sink.General.Constants;
 import Clinical.Data.Sink.General.FileLoader;
 import java.io.Serializable;
 import java.util.List;
@@ -45,6 +47,7 @@ import org.apache.logging.log4j.LogManager;
  * 13-Jan-2016 - Removed all the static variables in Job Status module.
  * 21-Jan-2016 - To allow the users to view the pipeline parameters setup at
  * the job status page through a context menu.
+ * 26-Jan-2016 - Implemented audit data capture module.
  */
 
 @ManagedBean(name = "jsBean")
@@ -76,11 +79,15 @@ public class JobStatusBean implements Serializable {
     // Download the pipeline output for user.
     public void downloadOutput(SubmittedJob job) {
 //        String output = getExternalContext().getRequestParameterMap().get("output");
+        String detail = "Output " + job.getOutput_file();
+        ActivityLogDB.recordUserActivity(userName, Constants.DWL_FIL, detail);
         FileLoader.download(job.getOutput_file());
     }
     
     // Download the pipeline report for user.
     public void downloadReport(SubmittedJob job) {
+        String detail = "Report " + job.getReport();
+        ActivityLogDB.recordUserActivity(userName, Constants.DWL_FIL, detail);
         FileLoader.download(job.getReport());
     }
     
@@ -113,8 +120,6 @@ public class JobStatusBean implements Serializable {
     /* No longer in use.
     // Return the file to be downloaded.
     public StreamedContent getFile() throws FileNotFoundException {
-        logger.info(AuthenticationBean.getUserName() + ": downloaded " +
-                    file.getName());
         // Temporary hardcored to "text/plain"; should be using variable type
         return new DefaultStreamedContent(new FileInputStream(file),
                                           "text/plain",file.getName());

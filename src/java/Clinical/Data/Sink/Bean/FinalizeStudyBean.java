@@ -3,6 +3,7 @@
  */
 package Clinical.Data.Sink.Bean;
 
+import Clinical.Data.Sink.Database.ActivityLogDB;
 import Clinical.Data.Sink.Database.DataDepositor;
 import Clinical.Data.Sink.Database.FinalizingJobEntry;
 import Clinical.Data.Sink.Database.StudyDB;
@@ -59,6 +60,7 @@ import org.apache.logging.log4j.LogManager;
  * 22-Jan-2016 - Study finalization logic change; finalization will be 
  * performed for each pipeline instead of each technology. Added one more
  * data table to support the 4th pipeline.
+ * 26-Jan-2016 - Implemented audit data capture module.
  */
 
 @ManagedBean (name="finalizedBean")
@@ -71,7 +73,6 @@ public class FinalizeStudyBean implements Serializable {
     private LinkedHashMap<String, String> studyHash;
     // Store the status of the availability of subject meta data in the database.
     private String subMDAvailableStatus = null;
-    private List<String> TIDList = new ArrayList<>();
     private List<String> plList = new ArrayList<>();
     private FinalizingJobEntry selectedJob0, selectedJob1, selectedJob2, 
                                selectedJob3;
@@ -111,7 +112,7 @@ public class FinalizeStudyBean implements Serializable {
     public String prepareForFinalization() {
         FacesContext fc = FacesContext.getCurrentInstance();
         allowToProceed = true;
-        logger.info("Preparing for Study finalization.");
+        logger.debug("Preparing for Study finalization.");
         // Check whether the user select any of the job.
         if ((selectedJob0==null) && (selectedJob1==null) && (selectedJob2==null)) {
             // None of the job has been selected, display error message and
@@ -173,6 +174,8 @@ public class FinalizeStudyBean implements Serializable {
         // Remove all the null ojects in the list before proceeding to insert
         // the finalized pipeline output.
         selectedJobs.removeAll(Collections.singleton(null));
+        // Record this finalization of study into database.
+        ActivityLogDB.recordUserActivity(userName, Constants.EXE_FIN, study_id);
         logger.info(userName + " begin finalization process for " 
                     + study_id + ".");
         // Update job status to finalizing
@@ -226,7 +229,6 @@ public class FinalizeStudyBean implements Serializable {
     // Each time a new study is selected, the system need to clear the old 
     // lists and build new one.
     private void clearLists() {
-        TIDList.clear();
         jobEntryLists.clear();
         selectedJobs.clear();
     }

@@ -3,9 +3,11 @@
  */
 package Clinical.Data.Sink.Bean;
 
+import Clinical.Data.Sink.Database.ActivityLogDB;
 import Clinical.Data.Sink.Database.Study;
 import Clinical.Data.Sink.Database.StudyDB;
 import Clinical.Data.Sink.Database.UserAccountDB;
+import Clinical.Data.Sink.General.Constants;
 import Clinical.Data.Sink.General.FileLoader;
 import java.io.Serializable;
 import java.util.List;
@@ -29,6 +31,7 @@ import org.apache.logging.log4j.LogManager;
  * 12-Jan-2016 - Fix the static variable issues in AuthenticationBean.
  * 20-Jan-2016 - Updated study table in database; added one new variable closed, 
  * and renamed completed to finalized.
+ * 26-Jan-2016 - Implemented audit data capture module.
  */
 
 @ManagedBean (name = "SOSBean")
@@ -58,11 +61,15 @@ public class SummaryOfStudyBean implements Serializable {
     
     // Download the consolidated output for this study.
     public void downloadFinalizedOP(Study study) {
+        String detail = "Finalized output " + study.getFinalized_output();
+        ActivityLogDB.recordUserActivity(userName, Constants.DWL_FIL, detail);
         FileLoader.download(study.getFinalized_output());
     }
     
     // Download the finalized summary report for this study.
     public void downloadSummary(Study study) {
+        String detail = "Summary report " + study.getSummary();
+        ActivityLogDB.recordUserActivity(userName, Constants.DWL_FIL, detail);
         FileLoader.download(study.getSummary());
     }
     

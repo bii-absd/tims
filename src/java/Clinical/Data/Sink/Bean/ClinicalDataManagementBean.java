@@ -3,6 +3,7 @@
  */
 package Clinical.Data.Sink.Bean;
 
+import Clinical.Data.Sink.Database.ActivityLogDB;
 import Clinical.Data.Sink.Database.Subject;
 import Clinical.Data.Sink.Database.SubjectDB;
 import Clinical.Data.Sink.Database.UserAccountDB;
@@ -41,6 +42,7 @@ import org.primefaces.model.UploadedFile;
  * metaDataUpload.
  * 13-Jan-2016 - Removed all the static variables in Clinical Data Management
  * module.
+ * 26-Jan-2016 - Implemented audit data capture module.
  */
 
 @ManagedBean (name="clDataMgntBean")
@@ -91,8 +93,10 @@ public class ClinicalDataManagementBean implements Serializable {
                                       race, height, weight, dept_id);
         
         if (SubjectDB.insertSubject(subject)) {
-            logger.info(userName + ": inserted new subject meta data: " 
-                        + subject_id);
+            // Record this subject meta data creation into database.
+            String detail = "Subject " + subject_id;
+            ActivityLogDB.recordUserActivity(userName, Constants.CRE_ID, detail);
+            logger.info(userName + ": created " + detail); 
             fc.addMessage(null, new FacesMessage(
                     FacesMessage.SEVERITY_INFO,
                     "Subject meta data inserted into database.", ""));
@@ -153,7 +157,9 @@ public class ClinicalDataManagementBean implements Serializable {
             else {
                 faceStatus = FacesMessage.SEVERITY_WARN;
             }
-            
+            // Record this subject meta data upload activity into database.
+            ActivityLogDB.recordUserActivity(userName, Constants.CRE_ID, 
+                    uploadStatus.toString());
             logger.debug(uploadStatus);
             getFacesContext().addMessage(null, new FacesMessage(
                     faceStatus, uploadStatus.toString(), ""));
@@ -177,8 +183,11 @@ public class ClinicalDataManagementBean implements Serializable {
         FacesContext fc = getFacesContext();
         
         if (SubjectDB.updateSubject((Subject) event.getObject())) {
-            logger.info(userName + ": updated subject meta data " + 
-                    ((Subject) event.getObject()).getSubject_id());
+            // Record this subject meta data update into database.
+            String detail = "Subject " + ((Subject) event.getObject()).
+                            getSubject_id();
+            ActivityLogDB.recordUserActivity(userName, Constants.CHG_ID, detail);
+            logger.info(userName + ": updated " + detail);
             fc.addMessage(null, new FacesMessage(
                         FacesMessage.SEVERITY_INFO,
                         "Meta data updated.", ""));

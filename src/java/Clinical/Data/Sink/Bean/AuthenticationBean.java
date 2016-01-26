@@ -3,6 +3,7 @@
  */
 package Clinical.Data.Sink.Bean;
 
+import Clinical.Data.Sink.Database.ActivityLogDB;
 import Clinical.Data.Sink.Database.DBHelper;
 import Clinical.Data.Sink.Database.InstitutionDB;
 import Clinical.Data.Sink.Database.JobStatusDB;
@@ -75,6 +76,7 @@ import org.apache.logging.log4j.LogManager;
  * 14-Jan-2016 - Deleted method setupMenuList. The menu item list will be setup
  * in MenuBean.
  * 15-Jan-2016 - Enhanced the error handling during login.
+ * 26-Jan-2016 - Implemented audit data capture module.
  */
 
 @ManagedBean (name="authenticationBean")
@@ -168,6 +170,9 @@ public class AuthenticationBean implements Serializable {
         if (userAcct != null) {
             // Check is account enabled.
             if (userAcct.getActive()) {
+                // Record login success into database.
+                ActivityLogDB.recordUserActivity(loginName, Constants.LOG_IN, 
+                                                 "Success");
                 logger.info(loginName + ": login to the system.");
                 // Create user home directory once successfully login
                 String homeDir = Constants.getSYSTEM_PATH() + 
@@ -201,7 +206,7 @@ public class AuthenticationBean implements Serializable {
                         new FacesMessage(FacesMessage.SEVERITY_WARN,
                         "Your account is disabled. "
                         + "Please check with the administrator.", ""));
-                logger.info(loginName + ": account is disabled.");
+                logger.debug(loginName + ": account is disabled.");
                 // Account disabled, return to login page.
             }
         }
@@ -209,6 +214,8 @@ public class AuthenticationBean implements Serializable {
             getFacesContext().addMessage("global", new FacesMessage(
                     FacesMessage.SEVERITY_WARN, 
                     "Invalid name or password.", ""));
+            // Record login failure into database.
+            ActivityLogDB.recordUserActivity(loginName, Constants.LOG_IN, "Fail");
             logger.info(loginName + ": failed to login to the system!");
             // User ID/Password invalid, return to login page.
         }
@@ -222,6 +229,8 @@ public class AuthenticationBean implements Serializable {
         getFacesContext().getExternalContext().invalidateSession();
         getFacesContext().getExternalContext().getSessionMap().remove("User");
         
+        // Record this logout activity into database.
+        ActivityLogDB.recordUserActivity(loginName, Constants.LOG_OFF, "");
         logger.info(loginName + ": logout from the system.");
         // User logoff from system, redirect to Login Page.
         return Constants.LOGIN_PAGE + "?faces-redirect=true";
@@ -239,6 +248,11 @@ public class AuthenticationBean implements Serializable {
             // access. Role ID 1 is Admin; only Admin is allowed access.        
             return userAcct.getRole_id() == 1;            
         }
+    }
+    
+    // Return true if the role ID of the user is 2 (i.e. Supervisor).
+    public Boolean getSupervisorRight() {
+        return userAcct.getRole_id() == 2;
     }
     
     // Retrieve the faces context

@@ -60,6 +60,7 @@ import org.apache.pdfbox.pdmodel.graphics.xobject.PDJpeg;
  * 22-Jan-2016 - Study finalization logic change; finalization will be 
  * performed for each pipeline instead of each technology. Changed the format
  * of the summary report.
+ * 26-Jan-2016 - Implemented audit data capture module.
  */
 
 public class DataDepositor extends Thread {
@@ -295,7 +296,7 @@ public class DataDepositor extends Thread {
             // Section F
             cs.beginText();
             cs.moveTextPositionByAmount(subheadX, getNextSubheaderYaxis());
-            cs.drawString("E. HG19 Annotation Version");
+            cs.drawString("F. HG19 Annotation Version");
             cs.endText();
             
             cs.beginText();
@@ -494,7 +495,7 @@ public class DataDepositor extends Thread {
                         return Constants.NOT_OK;
                     }
                 }
-                logger.info("Subject records processed: " + processedRecord + 
+                logger.debug("Subject records processed: " + processedRecord + 
                             " out of " + totalRecord);
                 // Record those subject ID not found; finalized data will not be stored.
                 if (subjectNotFound.toString().isEmpty()) {

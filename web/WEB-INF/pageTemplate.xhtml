@@ -24,17 +24,21 @@
 
             <p:menubar>
                 <p:submenu label="Admin">
-                    <p:menuitem value="Account Management" icon="fa fa-user" 
+                    <p:menuitem value="#{msg['acct-mgnt']}" icon="fa fa-user" 
                                 url="accountmanagement.xhtml"/>
-                    <p:menuitem value="Study ID Management" icon="fa fa-book" 
+                    <p:menuitem value="#{msg['study-mgnt']}" icon="fa fa-book" 
                                 url="studymanagement.xhtml" 
                                 rendered="#{authenticationBean.adminRight}"/>
-                    <p:menuitem value="Pipeline Management" icon="fa fa-flask"
+                    <p:menuitem value="#{msg['pipeline-mgnt']}" icon="fa fa-flask"
                                 url="pipelinemanagement.xhtml" 
                                 rendered="#{authenticationBean.adminRight}"/>
-                    <p:menuitem value="Item List Management" icon="fa fa-list-ul"
+                    <p:menuitem value="#{msg['item-mgnt']}" icon="fa fa-list-ul"
                                 url="itemlistmanagement.xhtml" 
                                 rendered="#{authenticationBean.adminRight}"/>
+                    <p:menuitem value="#{msg['act-track']}" 
+                                icon="fa fa-pencil-square-o" 
+                                url="activitytracking.xhtml" 
+                                rendered="#{authenticationBean.supervisorRight}"/>
                 </p:submenu>
                 <f:facet name="options">
                     <p:commandButton value="Logout" 

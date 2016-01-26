@@ -3,6 +3,7 @@
  */
 package Clinical.Data.Sink.Bean;
 
+import Clinical.Data.Sink.Database.ActivityLogDB;
 import Clinical.Data.Sink.Database.DepartmentDB;
 import Clinical.Data.Sink.Database.InstitutionDB;
 import Clinical.Data.Sink.Database.UserAccount;
@@ -50,6 +51,7 @@ import org.primefaces.event.RowEditEvent;
  * Database Classes.
  * 11-Jan-2016 - Fix the static variable issues in AuthenticationBean.
  * 13-Jan-2016 - Removed all the static variables in Account Management module.
+ * 26-Jan-2016 - Implemented audit data capture module.
  */
 
 @ManagedBean (name="acctMgntBean")
@@ -63,14 +65,11 @@ public class AccountManagementBean implements Serializable {
     private Boolean active;
     private int role_id;
     private String dept_id, inst_id, new_pwd, cfm_pwd;
-//    private String new_pwd, cfm_pwd;
     // Store the user ID of the current user.
     private final String userName;
     private List<UserAccount> userAcctList;
     private LinkedHashMap<String,String> instNameHash, deptIDHash, userIDHash;
-//    private LinkedHashMap<String,String> deptIDHash;
     private LinkedHashMap<String,Integer> roleNameHash;
-//    private LinkedHashMap<String,String> userIDHash;
     
     public AccountManagementBean() {
         userName = (String) getFacesContext().getExternalContext().
@@ -106,14 +105,17 @@ public class AccountManagementBean implements Serializable {
     public void onRowEdit(RowEditEvent event) {
         try {
             UserAccountDB.updateAccount((UserAccount) event.getObject());
-            logger.debug("User account: " + 
-                    ((UserAccount) event.getObject()).getUser_id() + 
-                    " updated.");
+            // Record this user account update activity into database.
+            String detail = "User account " + ((UserAccount) event.getObject())
+                            .getUser_id();
+            ActivityLogDB.recordUserActivity(userName, Constants.CHG_ID, detail);
+            logger.info(userName + ": updated " + detail);
             getFacesContext().addMessage(null, new FacesMessage(
                     FacesMessage.SEVERITY_INFO, "User account updated.", ""));
         }
         catch (SQLException e) {
             logger.error("Fail to update user account!");
+            logger.error(e.getMessage());
             getFacesContext().addMessage(null, new FacesMessage(
                     FacesMessage.SEVERITY_ERROR, 
                     "Failed to update user account!", ""));            
@@ -124,15 +126,18 @@ public class AccountManagementBean implements Serializable {
     // record into the user_account table.
     public String createUserAccount() {
         FacesContext facesContext = getFacesContext();
-        // By default, all new account will be active upon creation
+        // By default, all new account will be active upon creation.
         UserAccount newAcct = new UserAccount(user_id, role_id, first_name, 
                     last_name, email, true, pwd, dept_id, inst_id, " ");
         
         try {
-            // Insert the new account into database        
+            // Insert the new account into database.
             UserAccountDB.insertAccount(newAcct);
-            logger.info(userName + ": created new User ID " + user_id + " with " + 
-                        UserRoleDB.getRoleNameFromHash(role_id) + " right.");
+            String detail = "User ID " + user_id + " with " + 
+                         UserRoleDB.getRoleNameFromHash(role_id) + " right";
+            // Record account creation activity into database.
+            ActivityLogDB.recordUserActivity(userName, Constants.CRE_ID, detail);
+            logger.info(userName + ": create " + detail);
             facesContext.addMessage("newacctstatus", new FacesMessage(
                     FacesMessage.SEVERITY_INFO, "User Account: " 
                     + user_id + " successfully created.", ""));
@@ -166,23 +171,27 @@ public class AccountManagementBean implements Serializable {
             if (UserAccountDB.isAdministrator(userName) &&
                 (user_id.compareTo("none") != 0) ) {
                 id = user_id;
-                logger.info(userName + ": changing " + "the password of " + id);
+                // Record password change activity into database.
+                ActivityLogDB.recordUserActivity(userName, Constants.CHG_PWD, id);
+                logger.info(userName + ": change password of " + id);
             }
             
             try {
-                // Update the password of the current user into the database
+                // Update the password of the current user into database.
                 UserAccountDB.updatePassword(id, new_pwd);
+                // Record password change success into database.
+                ActivityLogDB.recordUserActivity(id, Constants.CHG_PWD, "Success");
                 logger.info(id + " password successfully updated.");
                 facesContext.addMessage("changepwdstatus", new FacesMessage(
                         FacesMessage.SEVERITY_INFO,
                         "Password successfully updated.", ""));
             }
             catch (SQLException e) {
-                logger.error("FAIL to update password!");
+                logger.error("FAIL to change password!");
                 logger.error(e.getMessage());
                 facesContext.addMessage("changepwdstatus", new FacesMessage(
                         FacesMessage.SEVERITY_FATAL, 
-                        "Database Error, failed to update password!", ""));            
+                        "Database Error, failed to change password!", ""));            
             }
         }
         else {
