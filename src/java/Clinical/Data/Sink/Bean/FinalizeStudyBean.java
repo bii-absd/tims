@@ -61,6 +61,9 @@ import org.apache.logging.log4j.LogManager;
  * performed for each pipeline instead of each technology. Added one more
  * data table to support the 4th pipeline.
  * 26-Jan-2016 - Implemented audit data capture module.
+ * 27-Jan-2016 - Bug fixes: To handle the case whereby the output file is empty,
+ * and the case whereby none of the subject meta data is available in the 
+ * database.
  */
 
 @ManagedBean (name="finalizedBean")
@@ -125,8 +128,9 @@ public class FinalizeStudyBean implements Serializable {
         }
         else {
             // At least one job has been selected, continue.
-            // String to store the subject ID that doesn't have meta data.
+            // String to store the subject ID that have and doesn't have meta data.
             StringBuilder subMetaDataNotFound = new StringBuilder();
+            StringBuilder subMetaDataFound = new StringBuilder();
             selectedJobs.add(0, selectedJob0);
             selectedJobs.add(1, selectedJob1);
             selectedJobs.add(2, selectedJob2);
@@ -138,7 +142,7 @@ public class FinalizeStudyBean implements Serializable {
                 try {
                     if (job != null) {
                         checkSubMDAvailability(job.getJob_id(), 
-                                subMetaDataNotFound);                    
+                                subMetaDataNotFound, subMetaDataFound);                    
                     }
                 }
                 catch (SQLException|IOException e) {
@@ -150,21 +154,35 @@ public class FinalizeStudyBean implements Serializable {
                 }
             }
 
-            if (subMetaDataNotFound.toString().isEmpty()) {
+            // Need to handle the case whereby none of the subject meta data is
+            // available.
+            if (subMetaDataFound.toString().isEmpty()) {
+                // None of the subject meta data is available, display error 
+                // message and return to the same page.
+                allowToProceed = false;
                 subMDAvailableStatus = 
-                    "All the subject's meta data are found in the database.\n" +
-                    "\nPlease proceed with the finalization of this Study.\n";
-                logger.debug("All the subject meta data is found.");
+                    "None of the subject meta data is available in the database.\n" +
+                    "\nFinalization will not proceed.\n";
+                logger.debug("None of the subject meta data is available in the database.");
             }
             else {
-                subMDAvailableStatus = 
-                    "The following subject's meta data are not found in the database: " +
-                    subMetaDataNotFound +
-                    "\n\nPlease upload the subject's meta data before proceeding" + 
-                    "\nwith the finalization of this Study.\n";
-                logger.debug("Subject meta data not found: " + subMetaDataNotFound);
+                if (subMetaDataNotFound.toString().isEmpty()) {
+                    subMDAvailableStatus = 
+                        "All the subject's meta data are found in the database.\n" +
+                        "\nPlease proceed with the finalization of this Study.\n";
+                    logger.debug("All the subject meta data is found.");
+                }
+                else {
+                    subMDAvailableStatus = 
+                        "The following subject's meta data are not found in the database: " +
+                        subMetaDataNotFound +
+                        "\n\nPlease upload the subject's meta data before proceeding" + 
+                        "\nwith the finalization of this Study.\n";
+                    logger.debug("Subject meta data not found: " + subMetaDataNotFound);
+                }
             }
         }
+        
         return null;
     }
     
@@ -198,22 +216,36 @@ public class FinalizeStudyBean implements Serializable {
     
     // Check the database for subject meta data. Construct a string with all
     // those subject ID having no meta data in the database.
-    private void checkSubMDAvailability(int jobID, StringBuilder metaDataNotFound) 
+    private void checkSubMDAvailability(int jobID, 
+            StringBuilder metaDataNotFound, StringBuilder metaDataFound) 
             throws SQLException, IOException {
         BufferedReader br = new BufferedReader(new FileReader
                             (SubmittedJobDB.getOutputPath(jobID)));
         String subjectLine = br.readLine();
-        String[] subjectID = subjectLine.split("\t");
-        // Ignore the first 2 strings (i.e. geneID and EntrezID); start at ndex 2.
-        for (int i = 2; i < subjectID.length; i++) {
-            // Check is subject meta data found in the database.
-            if (!SubjectDB.isSubjectExistInDept(subjectID[i], dept_id)) {
-                // Only want to store the unqiue subject ID that doesn't
-                // have meta data in the database.
-                if (!metaDataNotFound.toString().contains(subjectID[i])) {
-                    metaDataNotFound.append(subjectID[i]).append(" ");                        
+        
+        // To handle the case whereby the output file is empty. Throw an
+        // IOException if the input file is empty.
+        if (subjectLine != null) {
+            String[] subjectID = subjectLine.split("\t");
+            // Ignore the first 2 strings (i.e. geneID and EntrezID); start at ndex 2.
+            for (int i = 2; i < subjectID.length; i++) {
+                // Check is subject meta data found in the database.
+                if (!SubjectDB.isSubjectExistInDept(subjectID[i], dept_id)) {
+                    // Only want to store the unqiue subject ID that doesn't
+                    // have meta data in the database.
+                    if (!metaDataNotFound.toString().contains(subjectID[i])) {
+                        metaDataNotFound.append(subjectID[i]).append(" ");                        
+                    }
+                }
+                else {
+                    if (!metaDataFound.toString().contains(subjectID[i])) {
+                        metaDataFound.append(subjectID[i]).append(" ");                        
+                    }                    
                 }
             }
+        }
+        else {
+            throw new IOException("The output file is empty");
         }
     }
 

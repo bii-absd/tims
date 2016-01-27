@@ -61,6 +61,8 @@ import org.apache.pdfbox.pdmodel.graphics.xobject.PDJpeg;
  * performed for each pipeline instead of each technology. Changed the format
  * of the summary report.
  * 26-Jan-2016 - Implemented audit data capture module.
+ * 27-Jan-2016 - To revert the submitted job status back to completed if 
+ * finalization failed.
  */
 
 public class DataDepositor extends Thread {
@@ -150,7 +152,12 @@ public class DataDepositor extends Thread {
                 retrieverThread.start();
             }
             else {
-                // Update study to unfinalized.
+                // Finalization failed.
+                // Revert job status back to completed.
+                for (FinalizingJobEntry job : jobList) {
+                    SubmittedJobDB.updateJobStatusToCompleted(job.getJob_id());
+                }
+                // Revert study back to unfinalized.
                 StudyDB.updateStudyFinalizedStatus(study_id, false);
             }
         }
