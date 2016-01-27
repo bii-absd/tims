@@ -25,7 +25,7 @@
                 <p:column headerText="Study ID" style="width: 160px; text-align: left">
                     <h:outputText value="#{study.study_id}"/>
                 </p:column>
-                <p:column headerText="Department ID" style="width: 90px; text-align: left">
+                <p:column headerText="Department ID" styleClass="jssmallcol">
                     <p:cellEditor>
                         <f:facet name="output">
                             <h:outputText value="#{study.dept_id}"/>
@@ -50,7 +50,7 @@
                         </f:facet>
                     </p:cellEditor>
                 </p:column>
-                <p:column headerText="Date" style="width: 90px; text-align: left">
+                <p:column headerText="Date" styleClass="jssmallcol">
                     <p:cellEditor>
                         <f:facet name="output">
                             <h:outputText value="#{study.sqlDate}"/>
@@ -61,10 +61,10 @@
                         </f:facet>
                     </p:cellEditor>
                 </p:column>
-                <p:column headerText="Finalized" style="width: 70px; text-align: left">
+                <p:column headerText="Finalized" style="width: 60px">
                     <h:outputText value="#{study.finalized?'Yes':'No'}"/>
                 </p:column>
-                <p:column headerText="Closed" style="width: 70px; text-align: left">
+                <p:column headerText="Closed" style="width: 60px">
                     <p:cellEditor>
                         <f:facet name="output">
                             <h:outputText value="#{study.closed?'Yes':'No'}"/>

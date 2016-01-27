@@ -12,12 +12,19 @@
     <ui:define name="content">
         <h:form id="actForm">
             <p:panel header="Select User ID to view the activities of the user">
-                <p:selectOneMenu id="userID" value="#{actiBean.trackUser}">
-                    <f:selectItem itemLabel="Select User ID" itemValue=""/>
-                    <f:selectItems value="#{actiBean.userIDHash}"/>
-                    <p:ajax update="useracti" 
-                            listener="#{actiBean.trackUserChange()}"/>
-                </p:selectOneMenu>
+                <h:panelGrid id="uapanel" columns="2" cellpadding="5" cellspacing="5">
+                    <p:selectOneMenu id="userID" value="#{actiBean.trackUser}">
+                        <f:selectItem itemLabel="Select User ID" itemValue=""/>
+                        <f:selectItems value="#{actiBean.userIDHash}"/>
+                        <p:ajax update="useracti uapanel" 
+                                listener="#{actiBean.trackUserChange()}"/>
+                    </p:selectOneMenu>
+                    <p:commandButton rendered="#{actiBean.userSelectedStatus}" 
+                                     value="Export as Excel" ajax="false">
+                        <p:dataExporter type="xls" target="actitable" 
+                                        fileName="UserActivities"/>
+                    </p:commandButton>
+                </h:panelGrid>
             </p:panel>
             <p:panel id="useracti" visible="#{actiBean.userSelectedStatus}">
                 <p:dataTable id="actitable" rows="10"
@@ -46,12 +53,20 @@
             </p:panel>
             
             <p:panel header="Select activity to view activity log">
-                <p:selectOneMenu id="activity" value="#{actiBean.trackActi}">
-                    <f:selectItem itemLabel="Select Activity" itemValue=""/>
-                    <f:selectItems value="#{menuBean.activityList}"/>
-                    <p:ajax update="actilog" 
-                            listener="#{actiBean.trackActiChange()}"/>
-                </p:selectOneMenu>
+                <h:panelGrid id="logpanel" columns="2" cellpadding="5" cellspacing="5">
+                    <p:selectOneMenu id="activity" value="#{actiBean.trackActi}">
+                        <f:selectItem itemLabel="Select Activity" itemValue=""/>
+                        <f:selectItems value="#{menuBean.activityList}"/>
+                        <p:ajax update="actilog logpanel" 
+                                listener="#{actiBean.trackActiChange()}"/>
+                    </p:selectOneMenu>
+                    <p:commandButton rendered="#{actiBean.actiSelectedStatus}" 
+                                     value="Export as Excel" ajax="false">
+                        <p:dataExporter type="xls" target="logtable" 
+                                        fileName="ActivityLog"/>
+                    </p:commandButton>
+                    
+                </h:panelGrid>
             </p:panel>
             <p:panel id="actilog" visible="#{actiBean.actiSelectedStatus}">
                 <p:dataTable id="logtable" rows="10" 
@@ -69,7 +84,7 @@
                               style="width: 200px">
                         <h:outputText value="#{alog.timeString}"/>
                     </p:column>
-                    <p:column headerText="Action" sortBy="#{alog.user_id}" 
+                    <p:column headerText="User ID" sortBy="#{alog.user_id}" 
                               style="width: 120px">
                         <h:outputText value="#{alog.user_id}"/>
                     </p:column>

@@ -24,10 +24,12 @@
                              styleClass="table-odd-row table-even-row" editable="true">
                     <p:ajax event="rowEdit" listener="#{acctMgntBean.onRowEdit}"
                             update="acctMsg"/>
-                    <p:column headerText="User ID" sortBy="#{acct.user_id}">
+                    <p:column headerText="User ID" styleClass="jssmallcol" 
+                              sortBy="#{acct.user_id}">
                         <h:outputText value="#{acct.user_id}"/>
                     </p:column>
-                    <p:column headerText="Last Name" sortBy="#{acct.last_name}">
+                    <p:column headerText="Last Name" styleClass="jssmallcol" 
+                              sortBy="#{acct.last_name}">
                         <p:cellEditor>
                             <f:facet name="output">
                                 <h:outputText value="#{acct.last_name}"/>                                
@@ -37,7 +39,8 @@
                             </f:facet>
                         </p:cellEditor>
                     </p:column>
-                    <p:column headerText="First Name" sortBy="#{acct.first_name}">
+                    <p:column headerText="First Name" styleClass="jssmallcol" 
+                              sortBy="#{acct.first_name}">
                         <p:cellEditor>
                             <f:facet name="output">
                                 <h:outputText value="#{acct.first_name}"/>                                
@@ -47,7 +50,8 @@
                             </f:facet>
                         </p:cellEditor>
                     </p:column>
-                    <p:column headerText="Institution ID" sortBy="#{acct.inst_id}">
+                    <p:column headerText="Institution ID" styleClass="jssmallcol"
+                              sortBy="#{acct.inst_id}">
                         <p:cellEditor>
                             <f:facet name="output">
                                 <h:outputText value="#{acct.inst_id}"/>                                
@@ -61,7 +65,7 @@
                             </f:facet>
                         </p:cellEditor>
                     </p:column>
-                    <p:column headerText="Department ID">
+                    <p:column headerText="Department ID" styleClass="jssmallcol">
                         <p:cellEditor>
                             <f:facet name="output">
                                 <h:outputText value="#{acct.dept_id}"/>                                
@@ -75,7 +79,8 @@
                             </f:facet>
                         </p:cellEditor>
                     </p:column>
-                    <p:column headerText="Role" sortBy="#{acct.role_id}">
+                    <p:column headerText="Role" styleClass="jssmallcol" 
+                              sortBy="#{acct.role_id}">
                         <p:cellEditor>
                             <f:facet name="output">
                                 <h:outputText value="#{acct.roleName}"/>
@@ -97,7 +102,7 @@
                             </f:facet>
                         </p:cellEditor>
                     </p:column>
-                    <p:column headerText="Status">
+                    <p:column headerText="Status" styleClass="jssmallcol">
                         <p:cellEditor>
                             <f:facet name="output">
                                 <h:outputText value="#{acct.activeStatus}"/>                                
@@ -110,7 +115,7 @@
                             </f:facet>
                         </p:cellEditor>
                     </p:column>
-                    <p:column headerText="Last Login">
+                    <p:column headerText="Last Login" style="width: 150px">
                         <h:outputText value="#{acct.last_login}"/>
                     </p:column>
                     <p:column style="width: 32px">
