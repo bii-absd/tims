@@ -12,34 +12,30 @@
     <ui:define name="content">
         <h:form id="mainForm" enctype="multipart/form-data">
             <p:panel id="inputcontrol" visible="#{gexIlluBean.haveNewData}" 
-                     header="Upload Sample and Control Probe Files">
+                     header="#{msg['config-ulsamctlpro']}">
                 <p:growl id="uploadStatus" sticky="true"/>
                 <p:fileUpload mode="advanced" update="uploadStatus" 
-                              label="Select Sample File"
+                              label="#{msg['config-selsam']}"
                               allowTypes="/(\.|\/)(txt)$/"
                               fileUploadListener="#{gexIlluBean.inputFile.singleFileUploadListener}">
                 </p:fileUpload>
                 <p:inputText id="inputdescription" 
                              value="#{gexIlluBean.inputFileDesc}" 
                              autocomplete="off" size="200" styleClass="configinput"/>
-                <p:watermark for="inputdescription" 
-                             value="Enter a brief description of the Sample File here."/>
+                <p:watermark for="inputdescription" value="#{msg['config-ipdesc']}"/>
                 <p:separator styleClass="configsep"/>
                 <p:fileUpload mode="advanced" update="uploadStatus" 
-                              label="Select Control File"
+                              label="#{msg['config-selctl']}"
                               fileUploadListener="#{gexIlluBean.ctrlFile.singleFileUploadListener}"/>
             </p:panel>
-            <p:panel id="sample" visible="#{gexIlluBean.haveNewData}"
-                     header="Upload Samples Annotation File 
-                     (Please upload this file for the Phenotype Column to be enable)">
+            <p:panel id="sample" visible="#{gexIlluBean.haveNewData}" header="#{msg['config-ulannot']}">
                 <p:fileUpload mode="advanced"
                               update="uploadStatus phenotype"
-                              label="Select Samples Annotation File"
+                              label="#{msg['config-selannot']}"
                               fileUploadListener="#{gexIlluBean.sampleAnnotFileUploadListener}"/>
             </p:panel>
 
-            <p:panel id="reuseInput" visible="#{!gexIlluBean.haveNewData}" 
-                     header="Select Input Data to Reuse">
+            <p:panel id="reuseInput" visible="#{!gexIlluBean.haveNewData}" header="#{msg['config-reuse']}">
                 <p:dataTable id="inputTable" var="reuseIP" 
                              value="#{gexIlluBean.inputDataList}" 
                              selection="#{gexIlluBean.selectedInput}" 
@@ -65,11 +61,11 @@
             </p:panel>
             <p:separator styleClass="configsep"/>
 
-            <p:panel id="required" header="#{msg['parameter1']}">
-                <h:panelGrid columns="6" cellpadding="5" cellspacing="7" styleClass="configcolumn">
+            <p:panel id="required" header="#{msg['config-para1']}">
+                <h:panelGrid columns="5" cellpadding="5" cellspacing="7" styleClass="configcolumn">
                     <p:column>
                         <h:panelGrid columns="1">
-                            <p:outputLabel value="Select Type" styleClass="configlabel"/>
+                            <p:outputLabel value="#{msg['config-type']}" styleClass="configlabel"/>
                             <p:selectOneMenu id="type" required="true" 
                                              value="#{gexIlluBean.type}">
                                 <f:selectItems value="#{menuBean.illuminaType}"/>
@@ -77,7 +73,7 @@
                         </h:panelGrid>
                     </p:column>
                     <p:column>
-                        <p:outputLabel value="Probe Filtering" styleClass="configlabel" 
+                        <p:outputLabel value="#{msg['config-profil']}" styleClass="configlabel" 
                                        title="#{msg['probe.filtering']}"/>
                         <p:selectManyMenu id="probefilter" showCheckbox="true"
                                           value="#{gexIlluBean.probeFilters}">
@@ -87,8 +83,7 @@
                     </p:column>
                     <p:column>
                         <h:panelGrid columns="1">
-                            <p:outputLabel value="Select Normalization Method" 
-                                           styleClass="configlabel"/>
+                            <p:outputLabel value="#{msg['config-norm']}" styleClass="configlabel"/>
                             <p:selectOneMenu id="normalization" required="true" 
                                              value="#{gexIlluBean.normalization}">
                                 <f:selectItem itemLabel="NEQC" itemValue="neqc"/>
@@ -97,8 +92,7 @@
                     </p:column>
                     <p:column>
                         <h:panelGrid columns="1">
-                            <p:outputLabel value="Phenotype Column" 
-                                           styleClass="configlabel"/>
+                            <p:outputLabel value="#{msg['config-pheno']}" styleClass="configlabel"/>
                             <p:selectOneMenu id="phenotype" required="true" 
                                              disabled="#{gexIlluBean.isAnnotationListReady()}"
                                              title="#{msg['phenotype.column']}"
@@ -108,37 +102,32 @@
                         </h:panelGrid>
                     </p:column>
                     <p:column>
-                        <p:outputLabel value="Probe Selection: " 
-                                       styleClass="configlabel"/>
+                        <h:outputText value="#{msg['config-prosel']}" styleClass="configlabel"/>
                         <p:selectBooleanButton id="probeselection" 
                                                value="#{gexIlluBean.probeSelect}" 
                                                title="#{msg['probe.selection']}"
                                                onLabel="Yes" offLabel="No"/>
                     </p:column>
-                    <h:message for="type" styleClass="errors"/>
                 </h:panelGrid>
             </p:panel>
             <p:separator styleClass="configsep"/>
 
-            <p:panel id="optional" header="#{msg['parameter2']}">
+            <p:panel id="optional" header="#{msg['config-para2']}">
                 <h:panelGrid columns="2" cellpadding="5" cellspacing="7" styleClass="configcolumn">
                     <p:column>
                         <h:panelGrid columns="1">
-                            <p:outputLabel value="Standardization Method" 
-                                           styleClass="configlabel"/>
+                            <p:outputLabel value="#{msg['config-std']}" styleClass="configlabel"/>
                             <p:selectOneMenu id="stdlog2ratio" value="#{gexIlluBean.stdLog2Ratio}">
-                                <f:selectItem itemLabel="None"
-                                              itemValue="none"/>
+                                <f:selectItem itemLabel="None" itemValue="none"/>
                                 <f:selectItem itemLabel="Standardize" itemValue="Standardize" 
                                               itemDescription="#{msg['standardization']}"/>
                                 <f:selectItem itemLabel="Log2Ratio" itemValue="Log2Ratio" 
                                               itemDescription="#{msg['log2ratio']}"/>
-                            </p:selectOneMenu>                            
+                            </p:selectOneMenu>
                         </h:panelGrid>
                     </p:column>
                     <p:column>
-                        <p:outputLabel value="Sample Averaging: " 
-                                       styleClass="configlabel"/>
+                        <h:outputText value="#{msg['config-samave']}" styleClass="configlabel"/>
                         <p:selectBooleanButton id="averaging" 
                                                value="#{gexIlluBean.sampleAverage}" 
                                                title="#{msg['sample.averaging']}" 
@@ -152,53 +141,51 @@
                              icon="ui-icon-check" 
                              action="#{gexIlluBean.updateJobSubmissionStatus}"/>
             
-            <p:dialog header="Pipeline Configuration Review"
-                      widgetVar="dlg"
-                      resizable="false">
+            <p:dialog header="#{msg['revcfg-head']}" widgetVar="dlg" resizable="false">
                 <p:panelGrid columns="2" id="display">
-                    <h:outputText value="Study ID: "/>
+                    <h:outputText value="#{msg['config-study']}"/>
                     <h:outputText value="#{gexIlluBean.studyID}"/>
-                    <h:outputText value="Type: "/>
+                    <h:outputText value="#{msg['revcfg-type']}"/>
                     <h:outputText value="#{gexIlluBean.type}"/>
                     <h:outputText rendered="#{!gexIlluBean.haveNewData}" 
-                                  value="Reusing data uploaded on: "/>
+                                  value="#{msg['revcfg-reuse']}"/>
                     <h:outputText rendered="#{!gexIlluBean.haveNewData}" 
                                   value="#{gexIlluBean.reuseInputDate}"/>
                     <h:outputText rendered="#{gexIlluBean.haveNewData}" 
-                                  value="Sample File: "/>
+                                  value="#{msg['revcfg-sam']}"/>
                     <h:outputText rendered="#{gexIlluBean.haveNewData}" 
                                   value="#{gexIlluBean.inputFile.inputFilename}"/>
                     <h:outputText rendered="#{gexIlluBean.haveNewData}" 
-                                  value="Control File: "/>
+                                  value="#{msg['revcfg-ctl']}"/>
                     <h:outputText rendered="#{gexIlluBean.haveNewData}" 
                                   value="#{gexIlluBean.ctrlFile.inputFilename}"/>
                     <h:outputText rendered="#{gexIlluBean.haveNewData}" 
-                                  value="Samples Annotation File: "/>
+                                  value="#{msg['revcfg-annot']}"/>
                     <h:outputText rendered="#{gexIlluBean.haveNewData}" 
                                   value="#{gexIlluBean.sampleFile.inputFilename}"/>
-                    <h:outputText value="Probe Filtering: "/>
+                    <h:outputText value="#{msg['config-profil']}"/>
                     <p:dataList itemType="square" value="#{gexIlluBean.probeFilters}" 
                                 var="probe" styleClass="datalist" type="none">
                         <h:outputText value="#{probe}"/><br/>
                     </p:dataList>
-                    <h:outputText value="Normalization: "/>
+                    <h:outputText value="#{msg['revcfg-norm']}"/>
                     <h:outputText value="#{gexIlluBean.normalization}"/>
-                    <h:outputText value="Phenotype Column: "/>
+                    <h:outputText value="#{msg['config-pheno']}"/>
                     <h:outputText value="#{gexIlluBean.phenotype}"/>
-                    <h:outputText value="Probe Selection: "/>
+                    <h:outputText value="#{msg['config-prosel']}"/>
                     <h:outputText value="#{gexIlluBean.probeSelect?'Yes':'No'}"/>
-                    <h:outputText value="Standardization Method: "/>
+                    <h:outputText value="#{msg['config-std']}"/>
                     <h:outputText value="#{gexIlluBean.stdLog2Ratio}"/>
-                    <h:outputText value="Sample Averaging: "/>
+                    <h:outputText value="#{msg['config-samave']}"/>
                     <h:outputText value="#{gexIlluBean.sampleAverage?'Yes':'No'}"/>
                 </p:panelGrid>
                 <p:separator styleClass="configsep"/>
                 <h:form>
                     <h:panelGrid columns="2" cellspacing="2" cellpadding="2">
-                        <p:commandButton value="Cancel" title="Redo the configuration"
+                        <p:commandButton value="Cancel" title="#{msg['revcfg-cantit']}"
                                          style="width: 130px" oncomplete="PF('dlg').hide()"
                                          action="#{gexIlluBean.cancelJob}"/>
-                        <p:commandButton value="Confirm" title="Start the pipeline execution"
+                        <p:commandButton value="Confirm" title="#{msg['revcfg-cfmtit']}"
                                          style="width: 130px"
                                          action="#{gexIlluBean.submitJob}" 
                                          rendered="#{gexIlluBean.jobSubmissionStatus}"/>                        

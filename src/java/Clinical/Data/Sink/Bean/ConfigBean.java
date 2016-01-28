@@ -80,6 +80,8 @@ import org.apache.logging.log4j.LogManager;
  * 21-Jan-2016 - Added one new field pipeline_name in the input_data table; to
  * associate this input_data with the respective pipeline.
  * 26-Jan-2016 - Implemented audit data capture module.
+ * 28-Jan-2016 - Added the pipeline name into the config file content and 
+ * filename. Added the seconds timing into the filename.
  */
 
 public abstract class ConfigBean implements Serializable {
@@ -328,7 +330,7 @@ public abstract class ConfigBean implements Serializable {
     private void createJobTimestamp() {
         // inputFilesDir is used to create the directory for input files 
         // i.e. cannot have space in its format.
-        DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HHmm");
+        DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HHmm_ss");
         submitTimeInFilename = dateFormat.format(new Date());
         // submitTimeInDB will be stored in the submitted_job table and will
         // be display to the user in Job Status page.
@@ -411,7 +413,8 @@ public abstract class ConfigBean implements Serializable {
         // Config File will be send to the pipeline during execution
         File configFile = new File(configDir + 
                 Constants.getCONFIG_FILE_NAME() + getStudyID() + "_" + 
-                submitTimeInFilename + Constants.getCONFIG_FILE_EXT());
+                pipelineName + "_" + submitTimeInFilename + 
+                Constants.getCONFIG_FILE_EXT());
 
         pipelineConfig = configFile.getAbsolutePath();
 
@@ -421,7 +424,7 @@ public abstract class ConfigBean implements Serializable {
             // Write to the config file according to the format needed 
             // by the pipeline. Sample annotation file will be having the same
             // common name for all pipelines.
-            fw.write("### INPUT parameters\n" +
+            fw.write("### INPUT parameters for " + pipelineName + "\n" +
                      "STUDY_ID\t=\t" + getStudyID() +
                      "\nTYPE\t=\t" + getType() +
                      "\nINPUT\t=\t" + input +

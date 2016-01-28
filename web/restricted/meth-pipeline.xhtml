@@ -11,34 +11,29 @@
     <ui:param name="link" value="#{methPBean.breadCrumbLink}"/>
     <ui:define name="content">
         <h:form id="mainForm" enctype="multipart/form-data">
-            <p:panel id="inputfile" visible="#{methPBean.haveNewData}" 
-                     header="Upload Sample Probe Files">
+            <p:panel id="inputfile" visible="#{methPBean.haveNewData}" header="#{msg['config-ulsampro']}">
                 <p:growl id="uploadStatus" sticky="true"/>
                 <p:fileUpload mode="advanced" multiple="true"
                               update="uploadStatus" 
-                              label="Select Sample Files"
+                              label="#{msg['config-selsam']}"
                               allowTypes="/(\.|\/)(idat)$/"
                               fileUploadListener="#{methPBean.inputFile.multipleFileUploadListener}">
                 </p:fileUpload>
                 <p:inputText id="inputdescription" 
                              value="#{methPBean.inputFileDesc}" 
                              autocomplete="off" size="200" styleClass="configinput"/>
-                <p:watermark for="inputdescription" 
-                             value="Enter a brief description of the Sample File here."/>
+                <p:watermark for="inputdescription" value="#{msg['config-ipdesc']}"/>
             </p:panel>
             <p:separator styleClass="configsep"/>
 
-            <p:panel id="annotfile" visible="#{methPBean.haveNewData}"
-                     header="Upload Samples Annotation File 
-                     (Please upload this file for the Phenotype Column to be enable)">
+            <p:panel id="annotfile" visible="#{methPBean.haveNewData}" header="#{msg['config-ulannot']}">
                 <p:fileUpload mode="advanced"
                               update="uploadStatus phenotype"
-                              label="Select Samples Annotation File"
+                              label="#{msg['config-selannot']}"
                               fileUploadListener="#{methPBean.sampleAnnotFileUploadListener}"/>
             </p:panel>
             
-            <p:panel id="reuseInput" visible="#{!methPBean.haveNewData}" 
-                     header="Select Input Data to Reuse">
+            <p:panel id="reuseInput" visible="#{!methPBean.haveNewData}" header="#{msg['config-reuse']}">
                 <p:dataTable id="inputTable" var="reuseIP" 
                              value="#{methPBean.inputDataList}" 
                              selection="#{methPBean.selectedInput}" 
@@ -64,34 +59,35 @@
             </p:panel>
             <p:separator styleClass="configsep"/>
             
-            <p:panel id="required" header="#{msg['parameter1']}">
-                <h:panelGrid columns="4" cellpadding="5">
+            <p:panel id="required" header="#{msg['config-para1']}">
+                <h:panelGrid columns="3" cellpadding="5" cellspacing="7" styleClass="configcolumn">
                     <p:column>
-                        <p:selectOneMenu id="normalization" required="true"
-                                         value="#{methPBean.normalization}">
-                            <f:selectItem itemLabel="Select Normalization Method" 
-                                          itemValue=""/>
-                            <f:selectItem itemLabel="SWAN" itemValue="Swan"/>
-                        </p:selectOneMenu>
+                        <h:panelGrid columns="1">
+                            <p:outputLabel value="#{msg['config-norm']}" styleClass="configlabel"/>
+                            <p:selectOneMenu id="normalization" required="true"
+                                             value="#{methPBean.normalization}">
+                                <f:selectItem itemLabel="SWAN" itemValue="Swan"/>
+                            </p:selectOneMenu>
+                        </h:panelGrid>
                     </p:column>
                     <p:column>
-                        <p:selectOneMenu id="phenotype" required="true" 
-                                         disabled="#{methPBean.isAnnotationListReady()}"
-                                         title="#{msg['phenotype.column']}"
-                                         value="#{methPBean.phenotype}">
-                            <f:selectItem itemLabel="Phenotype Column"
-                                          itemValue=""/>
-                            <f:selectItems value="#{methPBean.annotationList}"/>
-                        </p:selectOneMenu>
+                        <h:panelGrid columns="1">
+                            <p:outputLabel value="#{msg['config-pheno']}" styleClass="configlabel"/>
+                            <p:selectOneMenu id="phenotype" required="true" 
+                                             disabled="#{methPBean.isAnnotationListReady()}"
+                                             title="#{msg['phenotype.column']}"
+                                             value="#{methPBean.phenotype}">
+                                <f:selectItems value="#{methPBean.annotationList}"/>
+                            </p:selectOneMenu>
+                        </h:panelGrid>
                     </p:column>
                     <p:column>
-                        <h:outputText value="Probe Selection: "/>
+                        <h:outputText value="#{msg['config-prosel']}" styleClass="configlabel"/>
                         <p:selectBooleanButton id="probeselection" 
                                                value="#{methPBean.probeSelect}" 
                                                title="#{msg['probe.selection']}"
                                                onLabel="Yes" offLabel="No"/>
                     </p:column>
-                    <h:message for="phenotype" styleClass="errors"/>
                 </h:panelGrid>
             </p:panel>
             <p:separator styleClass="configsep"/>
@@ -101,13 +97,12 @@
                              icon="ui-icon-check" 
                              action="#{methPBean.updateJobSubmissionStatus()}"/>
             
-            <p:dialog header="Pipeline Configuration Review"
-                      widgetVar="dlg" resizable="false">
+            <p:dialog header="#{msg['revcfg-head']}" widgetVar="dlg" resizable="false">
                 <p:panelGrid columns="2" id="display">
-                    <h:outputText value="Study ID: "/>
+                    <h:outputText value="#{msg['config-study']}"/>
                     <h:outputText value="#{methPBean.studyID}"/>
                     <h:outputText rendered="#{!methPBean.haveNewData}" 
-                                  value="Reusing data uploaded on: "/>
+                                  value="#{msg['revcfg-reuse']}"/>
                     <h:outputText rendered="#{!methPBean.haveNewData}" 
                                   value="#{methPBean.reuseInputDate}"/>
                     <h:outputText rendered="#{methPBean.haveNewData}" 
@@ -122,23 +117,23 @@
                         <h:outputText value="#{filelist}"/><br/>
                     </p:dataList>
                     <h:outputText rendered="#{methPBean.haveNewData}" 
-                                  value="Samples Annotation File: "/>
+                                  value="#{msg['revcfg-annot']}"/>
                     <h:outputText rendered="#{methPBean.haveNewData}" 
                                   value="#{methPBean.sampleFile.inputFilename}"/>
-                    <h:outputText value="Normalization: "/>
+                    <h:outputText value="#{msg['revcfg-norm']}"/>
                     <h:outputText value="#{methPBean.normalization}"/>
-                    <h:outputText value="Phenotype Column: "/>
+                    <h:outputText value="#{msg['config-pheno']}"/>
                     <h:outputText value="#{methPBean.phenotype}"/>
-                    <h:outputText value="Probe Selection: "/>
+                    <h:outputText value="#{msg['config-prosel']}"/>
                     <h:outputText value="#{methPBean.probeSelect?'Yes':'No'}"/>
                 </p:panelGrid>                    
                 <p:separator styleClass="configsep"/>
                 <h:form>
                     <h:panelGrid columns="2" cellspacing="2" cellpadding="2">
-                        <p:commandButton value="Cancel" title="Redo the configuration"
+                        <p:commandButton value="Cancel" title="#{msg['revcfg-cantit']}"
                                          style="width: 130px" oncomplete="PF('dlg').hide()"
                                          action="#{methPBean.cancelJob}"/>
-                        <p:commandButton value="Confirm" title="Start the pipeline execution"
+                        <p:commandButton value="Confirm" title="#{msg['revcfg-cfmtit']}"
                                          style="width: 130px"
                                          action="#{methPBean.submitJob}" 
                                          rendered="#{methPBean.jobSubmissionStatus}"/>                        

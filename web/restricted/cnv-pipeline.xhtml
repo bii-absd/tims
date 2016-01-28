@@ -12,35 +12,30 @@
     <ui:define name="content">
         <h:form id="mainForm" enctype="multipart/form-data">
             <p:panel id="inputcontrol" visible="#{cnvPBean.haveNewData}" 
-                     header="Upload Sample and Control Probe Files">
+                     header="#{msg['config-ulsamctlpro']}">
                 <p:growl id="uploadStatus" sticky="true"/>
                 <p:fileUpload mode="advanced" multiple="true"
                               update="uploadStatus" 
-                              label="Select Sample Files"
+                              label="#{msg['config-selsam']}"
                               allowTypes="/(\.|\/)(txt)$/"
                               fileUploadListener="#{cnvPBean.inputFile.multipleFileUploadListener}"/>
                 <p:inputText id="inputdescription" 
                              value="#{cnvPBean.inputFileDesc}" 
                              autocomplete="off" size="200" styleClass="configinput"/>
-                <p:watermark for="inputdescription" 
-                             value="Enter a brief description of the Sample File here."/>
+                <p:watermark for="inputdescription" value="#{msg['config-ipdesc']}"/>
                 <p:separator styleClass="configsep"/>
                 <p:fileUpload mode="advanced" update="uploadStatus" 
                               label="Select Control File"
                               fileUploadListener="#{cnvPBean.ctrlFile.singleFileUploadListener}"/>
             </p:panel>
 
-            <p:panel id="sample" visible="#{cnvPBean.haveNewData}"
-                     header="Upload Samples Annotation File 
-                     (Please upload this file for the Phenotype Column to be enable)">
-                <p:fileUpload mode="advanced"
-                              update="uploadStatus phenotype"
-                              label="Select Samples Annotation File"
+            <p:panel id="sample" visible="#{cnvPBean.haveNewData}" header="#{msg['config-ulannot']}">
+                <p:fileUpload mode="advanced" update="uploadStatus phenotype"
+                              label="#{msg['config-selannot']}"
                               fileUploadListener="#{cnvPBean.sampleAnnotFileUploadListener}"/>
             </p:panel>
 
-            <p:panel id="reuseInput" visible="#{!cnvPBean.haveNewData}" 
-                     header="Select Input Data to Reuse">
+            <p:panel id="reuseInput" visible="#{!cnvPBean.haveNewData}" header="#{msg['config-reuse']}">
                 <p:dataTable id="inputTable" var="reuseIP" 
                              value="#{cnvPBean.inputDataList}" 
                              selection="#{cnvPBean.selectedInput}" 
@@ -64,13 +59,13 @@
                             update=":mainForm:phenotype"/>
                 </p:dataTable>
             </p:panel>
-            <p:separator style="height: 20px"/>
+            <p:separator styleClass="configsep"/>
 
-            <p:panel id="required" header="#{msg['parameter1']}">
-                <h:panelGrid columns="6" cellpadding="5" cellspacing="7" styleClass="configcolumn">
+            <p:panel id="required" header="#{msg['config-para1']}">
+                <h:panelGrid columns="2" cellpadding="5" cellspacing="7" styleClass="configcolumn">
                     <p:column>
                         <h:panelGrid columns="1">
-                            <p:outputLabel value="Phenotype Column" styleClass="configlabel"/>
+                            <p:outputLabel value="#{msg['config-pheno']}" styleClass="configlabel"/>
                             <p:selectOneMenu id="phenotype" required="true" 
                                              disabled="#{cnvPBean.isAnnotationListReady()}"
                                              title="#{msg['phenotype.column']}"
@@ -81,7 +76,7 @@
                     </p:column>
                     <p:column>
                         <h:panelGrid columns="1">
-                            <p:outputLabel value="Summarization" styleClass="configlabel"/>
+                            <p:outputLabel value="#{msg['config-sum']}" styleClass="configlabel"/>
                             <p:selectOneMenu id="summarization" required="true"
                                              value="#{cnvPBean.summarization}">
                                 <f:selectItem itemLabel="Average" itemValue="Average"/>
@@ -89,7 +84,6 @@
                             </p:selectOneMenu>
                         </h:panelGrid>
                     </p:column>
-                    <h:message for="phenotype" styleClass="errors"/>
                 </h:panelGrid>
             </p:panel>
             
@@ -99,13 +93,12 @@
                              icon="ui-icon-check" 
                              action="#{cnvPBean.updateJobSubmissionStatus}"/>
             
-            <p:dialog header="Pipeline Configuration Review"
-                      widgetVar="dlg" resizable="false">
+            <p:dialog header="#{msg['revcfg-head']}" widgetVar="dlg" resizable="false">
                 <p:panelGrid columns="2" id="display">
-                    <h:outputText value="Study ID: "/>
+                    <h:outputText value="#{msg['config-study']}"/>
                     <h:outputText value="#{cnvPBean.studyID}"/>
                     <h:outputText rendered="#{!cnvPBean.haveNewData}" 
-                                  value="Reusing data uploaded on: "/>
+                                  value="#{msg['revcfg-reuse']}"/>
                     <h:outputText rendered="#{!cnvPBean.haveNewData}" 
                                   value="#{cnvPBean.reuseInputDate}"/>
                     <h:outputText rendered="#{cnvPBean.haveNewData}" 
@@ -120,25 +113,25 @@
                         <h:outputText value="#{filelist}"/><br/>
                     </p:dataList>
                     <h:outputText rendered="#{cnvPBean.haveNewData}" 
-                                  value="Control File: "/>
+                                  value="#{msg['revcfg-ctl']}"/>
                     <h:outputText rendered="#{cnvPBean.haveNewData}" 
                                   value="#{cnvPBean.ctrlFile.inputFilename}"/>
                     <h:outputText rendered="#{cnvPBean.haveNewData}" 
-                                  value="Samples Annotation File: "/>
+                                  value="#{msg['revcfg-annot']}"/>
                     <h:outputText rendered="#{cnvPBean.haveNewData}" 
                                   value="#{cnvPBean.sampleFile.inputFilename}"/>
-                    <h:outputText value="Phenotype Column: "/>
+                    <h:outputText value="#{msg['config-pheno']}"/>
                     <h:outputText value="#{cnvPBean.phenotype}"/>
-                    <h:outputText value="Summarization: "/>
+                    <h:outputText value="#{msg['config-sum']}"/>
                     <h:outputText value="#{cnvPBean.summarization}"/>
                 </p:panelGrid>                    
-                <p:separator style="height: 20px"/>
+                <p:separator styleClass="configsep"/>
                 <h:form>
                     <h:panelGrid columns="2" cellspacing="2" cellpadding="2">
-                        <p:commandButton value="Cancel" title="Redo the configuration"
+                        <p:commandButton value="Cancel" title="#{msg['revcfg-cantit']}"
                                          style="width: 130px" oncomplete="PF('dlg').hide()"
                                          action="#{cnvPBean.cancelJob}"/>
-                        <p:commandButton value="Confirm" title="Start the pipeline execution"
+                        <p:commandButton value="Confirm" title="#{msg['revcfg-cfmtit']}"
                                          style="width: 130px"
                                          action="#{cnvPBean.submitJob}" 
                                          rendered="#{cnvPBean.jobSubmissionStatus}"/>                        
