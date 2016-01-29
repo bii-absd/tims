@@ -3,6 +3,7 @@
  */
 package Clinical.Data.Sink.General;
 
+import Clinical.Data.Sink.Bean.FileUploadBean;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -76,6 +77,7 @@ import org.apache.logging.log4j.LogManager;
  * 19-Jan-2016 - Added 2 new constants, CNV_PIPELINE and CNV_PIPELINE_PAGE.
  * 20-Jan-2016 - Removed all pipeline related constants.
  * 26-Jan-2016 - Added the constants for categories of activity.
+ * 29-Jan-2016 - To use a common system setup file for both Windows and Linux OS.
  */
 
 @ManagedBean (name = "constants")
@@ -152,7 +154,7 @@ public class Constants {
     
     // No setters for the setup parameters will be provided.
     // Function setup will load the parameters value from the file passed in uri.
-    public static Boolean setup(String uri) {
+    public static Boolean setup(String uri, String root) {
         // The scope for this class is application, hence we can skip the 
         // loading from the setup file if it has already been done.
         if (DATABASE_DRIVER == null) {
@@ -172,14 +174,14 @@ public class Constants {
                     }
                 }
                 logger.debug(uri + " loaded.");
-            } catch (IOException e) {
+            } catch (IOException|NullPointerException e) {
                 logger.error("FAIL to load " + uri);
                 logger.error(e.getMessage());
                 return NOT_OK;
             }
         
             // Setup the config parameters
-            SYSTEM_PATH = setup.get("SYSTEM_PATH");
+            SYSTEM_PATH = root + File.separator + setup.get("APP_NAME");
             USERS_PATH = 
                     File.separator + setup.get("USERS_PATH") + File.separator;
             OUTPUT_PATH = 

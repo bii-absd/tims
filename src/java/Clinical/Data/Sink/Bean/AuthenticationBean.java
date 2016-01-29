@@ -10,6 +10,7 @@ import Clinical.Data.Sink.Database.JobStatusDB;
 import Clinical.Data.Sink.Database.UserAccount;
 import Clinical.Data.Sink.Database.UserAccountDB;
 import Clinical.Data.Sink.General.Constants;
+import java.io.File;
 
 import java.io.Serializable;
 import java.sql.SQLException;
@@ -77,6 +78,7 @@ import org.apache.logging.log4j.LogManager;
  * in MenuBean.
  * 15-Jan-2016 - Enhanced the error handling during login.
  * 26-Jan-2016 - Implemented audit data capture module.
+ * 29-Jan-2016 - To use a common system setup file for both Windows and Linux OS.
  */
 
 @ManagedBean (name="authenticationBean")
@@ -97,21 +99,22 @@ public class AuthenticationBean implements Serializable {
     // Setup the database configuration, input and config file path according 
     // to the OS the application is hosted on.
     private Boolean setupConstants(ServletContext context) {
-        String setupFile;
+        String setupFile, root;
         String OS = System.getProperty("os.name");
-        
-        // Load the setup file from context-param according to the Operating
-        // System the application is hosted on.
+        // Load the system setup file location from context-param.
+        setupFile = context.getInitParameter("setup");
+        // Setup the application root directory accordingly to the Operating 
+        // System the application is hosted on, 
         if (OS.startsWith("Windows")) {
-            setupFile = context.getInitParameter("windows");
+            root = "C:";
         }
         else {
-            setupFile = context.getInitParameter("linux");            
+            root = File.separator + "var";
         }
 
         logger.debug("Application is hosted on: " + OS);
         // Setup the constants using the parameters defined in setup
-        return Constants.setup(context.getRealPath(setupFile));
+        return Constants.setup(context.getRealPath(setupFile), root);
     }
     
     // Setup the system, check the user login and password against the 
@@ -129,7 +132,7 @@ public class AuthenticationBean implements Serializable {
             getFacesContext().addMessage("global", new FacesMessage(
                     FacesMessage.SEVERITY_ERROR, 
                     "System failure. Please contact the administrator.", ""));
-            logger.error("FAIL to create system constants!");
+            logger.error("FAIL to load system constants!");
             // Return to login page.
             return Constants.LOGIN_PAGE;
         }

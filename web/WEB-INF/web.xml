@@ -13,12 +13,8 @@
         <param-value>Development</param-value>
     </context-param>
     <context-param>
-        <param-name>windows</param-name>
-        <param-value>/config/windows.txt</param-value>
-    </context-param>
-    <context-param>
-        <param-name>linux</param-name>
-        <param-value>/config/linux.txt</param-value>
+        <param-name>setup</param-name>
+        <param-value>/config/system-config.txt</param-value>
     </context-param>
     <context-param>
         <param-name>log4j2w</param-name>
