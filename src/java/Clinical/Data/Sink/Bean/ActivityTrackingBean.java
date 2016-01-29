@@ -25,6 +25,8 @@ import org.apache.logging.log4j.LogManager;
  * Revision History
  * 26-Jan-2016 - Implemented the module for tracking user activities, and 
  * specific activity.
+ * 29-Jan-2016 - Joined the methods for tracking user activities and specific
+ * activity into one method.
  */
 
 @ManagedBean (name = "actiBean")
@@ -33,8 +35,7 @@ public class ActivityTrackingBean implements Serializable {
     // Get the logger for Log4j
     private final static Logger logger = LogManager.
             getLogger(ActivityTrackingBean.class.getName());
-    private List<ActivityLog> userActivities;
-    private List<ActivityLog> actiLog;
+    private List<ActivityLog> activityLog;
     private final LinkedHashMap<String,String> userIDHash;
     private String trackUser, trackActi;
     // Store the user ID of the current user.
@@ -48,22 +49,27 @@ public class ActivityTrackingBean implements Serializable {
         logger.info(userName + ": access Activity Tracking page.");
     }
 
-    // A useer or activity has been selected, proceed to build the list of 
+    // A useer and/or activity has been selected, proceed to build the list of 
     // activity log.
-    public void trackUserChange() {
-        userActivities = ActivityLogDB.retrieveUserActivities(trackUser);
-    }
-    public void trackActiChange() {
-        actiLog = ActivityLogDB.retrieveActivityRecords(trackActi);
+    public void retrieveActivity() {
+        if ((trackUser.compareTo("All") == 0) && (trackActi.compareTo("All") == 0)) {
+            activityLog = ActivityLogDB.retrieveAllActivities();
+        }
+        else if (trackUser.compareTo("All") == 0) {
+            activityLog = ActivityLogDB.retrieveActivityRecords(trackActi);
+        }
+        else if (trackActi.compareTo("All") == 0) {
+            activityLog = ActivityLogDB.retrieveUserActivities(trackUser);
+        }
+        else {
+            activityLog = ActivityLogDB.retrieveActivities(trackUser, trackActi);
+        }
     }
     
-    // A user or activity has been selected, proceed to display the activities 
-    // or log.
-    public Boolean getUserSelectedStatus() {
-        return trackUser != null;
-    }
-    public Boolean getActiSelectedStatus() {
-        return trackActi != null;
+    // A user and/or activity has been selected, proceed to display the 
+    // activity log.
+    public Boolean getActiLogStatus() {
+        return (trackUser != null) || (trackActi != null);
     }
     
     // Machine generated getters.
@@ -82,10 +88,7 @@ public class ActivityTrackingBean implements Serializable {
     public void setTrackActi(String trackActi) {
         this.trackActi = trackActi;
     }
-    public List<ActivityLog> getUserActivities() {
-        return userActivities;
-    }
-    public List<ActivityLog> getActiLog() {
-        return actiLog;
+    public List<ActivityLog> getActivityLog() {
+        return activityLog;
     }
 }

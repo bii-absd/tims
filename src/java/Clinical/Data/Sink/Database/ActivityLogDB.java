@@ -26,6 +26,9 @@ import org.apache.logging.log4j.LogManager;
  * Revision History
  * 26-Jan-2016 - First baseline with three static methods, recordUserActivity,
  * retrieveUserActivities and retrieveActivityRecords.
+ * 29-Jan-2016 - Added 2 new query methods, retrieveAllActivities and 
+ * retrieveActivities. Enhanced the query methods to reuse the common code used 
+ * in retrieving the log from database.
  */
 
 public abstract class ActivityLogDB {
@@ -56,46 +59,15 @@ public abstract class ActivityLogDB {
         }
     }
 
-    // Retrieve all the activties for this user.
-    public static List<ActivityLog> retrieveUserActivities(String user_id) {
+    // Build and return the activity log based on the query passed in.
+    private static List<ActivityLog> buildActivityLog(String query) {
         List<ActivityLog> logs = new ArrayList<>();
-        String queryStr = "SELECT activity, detail, time FROM activity_log "
-                        + "WHERE user_id = ? ORDER BY sn DESC";
+        ResultSet rs = DBHelper.runQuery(query);
         
-        try (PreparedStatement queryStm = conn.prepareStatement(queryStr)) {
-            queryStm.setString(1, user_id);
-            ResultSet rs = queryStm.executeQuery();
-            
-            while (rs.next()) {
-                ActivityLog tmp = new ActivityLog(user_id, 
-                                                  rs.getString("activity"),
-                                                  rs.getString("detail"),
-                                                  rs.getTimestamp("time"));
-                logs.add(tmp);
-            }
-            logger.debug("Retrieved activity log for " + user_id);
-        }
-        catch (SQLException e) {
-            logger.error("FAIL to retrieve user activities!");
-            logger.error(e.getMessage());
-        }
-        
-        return logs;
-    }
-    
-    // Retrieve all the log for this activity.
-    public static List<ActivityLog> retrieveActivityRecords(String activity) {
-        List<ActivityLog> logs = new ArrayList<>();
-        String queryStr = "SELECT user_id, detail, time FROM activity_log "
-                        + "WHERE activity = ? ORDER BY sn DESC";
-        
-        try (PreparedStatement queryStm = conn.prepareStatement(queryStr)) {
-            queryStm.setString(1, activity);
-            ResultSet rs = queryStm.executeQuery();
-            
+        try {
             while (rs.next()) {
                 ActivityLog tmp = new ActivityLog(rs.getString("user_id"),
-                                                  activity,
+                                                  rs.getString("activity"),
                                                   rs.getString("detail"),
                                                   rs.getTimestamp("time"));
                 logs.add(tmp);
@@ -106,7 +78,40 @@ public abstract class ActivityLogDB {
             logger.error("FAIL to retrieve activity log!");
             logger.error(e.getMessage());
         }
-        
+
         return logs;
+    }
+    
+    // Retrieve all the activity log.
+    public static List<ActivityLog> retrieveAllActivities() {
+        String query = "SELECT * FROM activity_log ORDER BY sn DESC";
+        
+        return buildActivityLog(query);
+    }
+    
+    // Retrieve the log for this user performing this activity.
+    public static List<ActivityLog> retrieveActivities(String user_id, 
+            String activity) {
+        String query = "SELECT * FROM activity_log WHERE user_id = \'" 
+                     + user_id + "\' AND activity = \'" 
+                     + activity + "\' ORDER BY sn DESC";
+        
+        return buildActivityLog(query);
+    }
+    
+    // Retrieve all the activties for this user.
+    public static List<ActivityLog> retrieveUserActivities(String user_id) {
+        String query = "SELECT * FROM activity_log WHERE user_id = \'" 
+                     + user_id + "\' ORDER BY sn DESC";
+
+        return buildActivityLog(query);
+    }
+    
+    // Retrieve all the log for this activity.
+    public static List<ActivityLog> retrieveActivityRecords(String activity) {
+        String query = "SELECT * FROM activity_log WHERE activity = \'" 
+                        + activity + "\' ORDER BY sn DESC";
+        
+        return buildActivityLog(query);
     }
 }

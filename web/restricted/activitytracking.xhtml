@@ -11,89 +11,58 @@
     <ui:param name="link" value="#{msg['act-track']}"/>
     <ui:define name="content">
         <h:form id="actForm">
-            <p:panel header="Select User ID to view the activities of the user">
-                <h:panelGrid id="uapanel" columns="2" cellpadding="5" cellspacing="5">
-                    <p:selectOneMenu id="userID" value="#{actiBean.trackUser}">
-                        <f:selectItem itemLabel="Select User ID" itemValue=""/>
-                        <f:selectItems value="#{actiBean.userIDHash}"/>
-                        <p:ajax update="useracti uapanel" 
-                                listener="#{actiBean.trackUserChange()}"/>
-                    </p:selectOneMenu>
-                    <p:commandButton rendered="#{actiBean.userSelectedStatus}" 
-                                     value="Export as Excel" ajax="false">
-                        <p:dataExporter type="xls" target="actitable" 
-                                        fileName="UserActivities"/>
-                    </p:commandButton>
-                </h:panelGrid>
-            </p:panel>
-            <p:panel id="useracti" visible="#{actiBean.userSelectedStatus}">
-                <p:dataTable id="actitable" rows="10"
-                             rendered="#{actiBean.userSelectedStatus}" 
-                             var="uacti" value="#{actiBean.userActivities}" 
-                             paginator="true" paginatorTemplate="{RowsPerPageDropdown} 
-                             {FirstPageLink} {PreviousPageLink} {CurrentPageReport} 
-                             {NextPageLink} {LastPageLink}"
-                             rowsPerPageTemplate="10,15,20"
-                             styleClass="table-odd-row table-even-row">
-                    <f:facet name="header">
-                        <h:outputText value="#{actiBean.trackUser}"/>
-                    </f:facet>
-                    <p:column headerText="Date and Time" sortBy="#{uacti.now}" 
-                              style="width: 200px">
-                        <h:outputText value="#{uacti.timeString}"/>
-                    </p:column>
-                    <p:column headerText="Action" sortBy="#{uacti.activity}" 
-                              style="width: 120px">
-                        <h:outputText value="#{uacti.activity}"/>
-                    </p:column>
-                    <p:column headerText="Result or Target">
-                        <h:outputText value="#{uacti.detail}"/>
-                    </p:column>
-                </p:dataTable>
-            </p:panel>
-            
-            <p:panel header="Select activity to view activity log">
-                <h:panelGrid id="logpanel" columns="2" cellpadding="5" cellspacing="5">
-                    <p:selectOneMenu id="activity" value="#{actiBean.trackActi}">
-                        <f:selectItem itemLabel="Select Activity" itemValue=""/>
-                        <f:selectItems value="#{menuBean.activityList}"/>
-                        <p:ajax update="actilog logpanel" 
-                                listener="#{actiBean.trackActiChange()}"/>
-                    </p:selectOneMenu>
-                    <p:commandButton rendered="#{actiBean.actiSelectedStatus}" 
-                                     value="Export as Excel" ajax="false">
-                        <p:dataExporter type="xls" target="logtable" 
-                                        fileName="ActivityLog"/>
-                    </p:commandButton>
+            <p:panel header="Select User ID and/or activity to retrieve activity log">
+                <h:panelGrid id="activitypanel" columns="4" cellpadding="2" cellspacing="7">
+                    <h:outputText value="Select User ID" styleClass="configlabel"/>
+                    <h:outputText value="Select Activity" styleClass="configlabel"/>
+                    <h:panelGroup/>
+                    <h:panelGroup/>
                     
+                    <p:selectOneMenu id="idmenu" value="#{actiBean.trackUser}">
+                        <f:selectItem itemLabel="All User" itemValue="All"/>
+                        <f:selectItems value="#{actiBean.userIDHash}"/>
+                    </p:selectOneMenu>
+                    <p:selectOneMenu id="actimenu" value="#{actiBean.trackActi}">
+                        <f:selectItem itemLabel="All Activity" itemValue="All"/>
+                        <f:selectItems value="#{menuBean.activityList}"/>
+                    </p:selectOneMenu>
+                    <p:commandButton id="retrieve" value="Retrieve Activity Log" 
+                                     update="logpanel" action="#{actiBean.retrieveActivity}"/>
+                    <p:commandButton value="Export as Excel" ajax="false">
+                        <p:dataExporter type="xls" target="logdt" 
+                                        fileName="Activity-Log"/>
+                    </p:commandButton>
                 </h:panelGrid>
             </p:panel>
-            <p:panel id="actilog" visible="#{actiBean.actiSelectedStatus}">
-                <p:dataTable id="logtable" rows="10" 
-                             rendered="#{actiBean.actiSelectedStatus}" 
-                             var="alog" value="#{actiBean.actiLog}"
+            <p:panel id="logpanel" visible="#{actiBean.actiLogStatus}">
+                <p:dataTable id="logdt" rows="10"
+                             rendered="#{actiBean.actiLogStatus}" 
+                             var="actlog" value="#{actiBean.activityLog}" 
                              paginator="true" paginatorTemplate="{RowsPerPageDropdown} 
                              {FirstPageLink} {PreviousPageLink} {CurrentPageReport} 
                              {NextPageLink} {LastPageLink}"
                              rowsPerPageTemplate="10,15,20"
                              styleClass="table-odd-row table-even-row">
                     <f:facet name="header">
-                        <h:outputText value="#{actiBean.trackActi}"/>
+                        <h:outputText value="Activity Log"/>
                     </f:facet>
-                    <p:column headerText="Date and Time" sortBy="#{alog.now}" 
+                    <p:column headerText="Date and Time" sortBy="#{actlog.now}" 
                               style="width: 200px">
-                        <h:outputText value="#{alog.timeString}"/>
+                        <h:outputText value="#{actlog.timeString}"/>
                     </p:column>
-                    <p:column headerText="User ID" sortBy="#{alog.user_id}" 
+                    <p:column headerText="User ID" sortBy="#{actlog.user_id}" 
                               style="width: 120px">
-                        <h:outputText value="#{alog.user_id}"/>
+                        <h:outputText value="#{actlog.user_id}"/>
+                    </p:column>
+                    <p:column headerText="Action" sortBy="#{actlog.activity}" 
+                              style="width: 120px">
+                        <h:outputText value="#{actlog.activity}"/>
                     </p:column>
                     <p:column headerText="Result or Target">
-                        <h:outputText value="#{alog.detail}"/>
-                    </p:column>                    
+                        <h:outputText value="#{actlog.detail}"/>
+                    </p:column>
                 </p:dataTable>
-            </p:panel>
-
+            </p:panel>            
         </h:form>
     </ui:define>
 </ui:composition>
