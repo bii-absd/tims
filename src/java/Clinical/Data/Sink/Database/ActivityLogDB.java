@@ -29,6 +29,8 @@ import org.apache.logging.log4j.LogManager;
  * 29-Jan-2016 - Added 2 new query methods, retrieveAllActivities and 
  * retrieveActivities. Enhanced the query methods to reuse the common code used 
  * in retrieving the log from database.
+ * 01-Feb-2016 - Further enhanced the query logic by combing the 4 query methods
+ * into one, and to include the time (from and/or to) for user selection.
  */
 
 public abstract class ActivityLogDB {
@@ -82,35 +84,26 @@ public abstract class ActivityLogDB {
         return logs;
     }
     
-    // Retrieve all the activity log.
-    public static List<ActivityLog> retrieveAllActivities() {
-        String query = "SELECT * FROM activity_log ORDER BY sn DESC";
+    // Build the query string based on the parameters selected by the user.
+    public static List<ActivityLog> retrieveActivityLog(List<String> paraList) {
+        String query = "SELECT * FROM activity_log";
         
-        return buildActivityLog(query);
-    }
-    
-    // Retrieve the log for this user performing this activity.
-    public static List<ActivityLog> retrieveActivities(String user_id, 
-            String activity) {
-        String query = "SELECT * FROM activity_log WHERE user_id = \'" 
-                     + user_id + "\' AND activity = \'" 
-                     + activity + "\' ORDER BY sn DESC";
+        for (int ind = 0; ind < paraList.size(); ind++) {
+            // Check that this is the first parameter.
+            if (ind == 0) {
+                query += " WHERE ";
+            }
+            
+            query += paraList.get(ind);
+            // Check that this is not the last parameter.
+            if (ind < paraList.size()-1) {
+                query += " AND ";
+            }
+        }
         
-        return buildActivityLog(query);
-    }
-    
-    // Retrieve all the activties for this user.
-    public static List<ActivityLog> retrieveUserActivities(String user_id) {
-        String query = "SELECT * FROM activity_log WHERE user_id = \'" 
-                     + user_id + "\' ORDER BY sn DESC";
-
-        return buildActivityLog(query);
-    }
-    
-    // Retrieve all the log for this activity.
-    public static List<ActivityLog> retrieveActivityRecords(String activity) {
-        String query = "SELECT * FROM activity_log WHERE activity = \'" 
-                        + activity + "\' ORDER BY sn DESC";
+        query += " ORDER BY sn DESC";
+  
+        logger.debug("Query activity log table: " + query);
         
         return buildActivityLog(query);
     }

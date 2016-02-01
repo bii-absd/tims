@@ -7,6 +7,10 @@ import Clinical.Data.Sink.Database.ActivityLog;
 import Clinical.Data.Sink.Database.ActivityLogDB;
 import Clinical.Data.Sink.Database.UserAccountDB;
 import java.io.Serializable;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import javax.faces.bean.ManagedBean;
@@ -27,6 +31,8 @@ import org.apache.logging.log4j.LogManager;
  * specific activity.
  * 29-Jan-2016 - Joined the methods for tracking user activities and specific
  * activity into one method.
+ * 01-Feb-2016 - Further enhanced the query logic by combing the 4 query methods
+ * into one, and to include the time (from and/or to) for user selection.
  */
 
 @ManagedBean (name = "actiBean")
@@ -38,6 +44,7 @@ public class ActivityTrackingBean implements Serializable {
     private List<ActivityLog> activityLog;
     private final LinkedHashMap<String,String> userIDHash;
     private String trackUser, trackActi;
+    private Date from, to;
     // Store the user ID of the current user.
     private final String userName;
     
@@ -49,27 +56,29 @@ public class ActivityTrackingBean implements Serializable {
         logger.info(userName + ": access Activity Tracking page.");
     }
 
-    // A useer and/or activity has been selected, proceed to build the list of 
-    // activity log.
+    // Proceed to retrieve the activity log based on user selection.
     public void retrieveActivity() {
-        if ((trackUser.compareTo("All") == 0) && (trackActi.compareTo("All") == 0)) {
-            activityLog = ActivityLogDB.retrieveAllActivities();
+        List<String> para = new ArrayList<>();
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        String fromStr = null;
+        String toStr = null;
+
+        if (trackUser != null) {
+            para.add("user_id = \'" + trackUser + "\'");
         }
-        else if (trackUser.compareTo("All") == 0) {
-            activityLog = ActivityLogDB.retrieveActivityRecords(trackActi);
+        if (trackActi != null) {
+            para.add("activity = \'" + trackActi + "\'");
         }
-        else if (trackActi.compareTo("All") == 0) {
-            activityLog = ActivityLogDB.retrieveUserActivities(trackUser);
+        if (from != null) {
+            fromStr = df.format(from);
+            para.add("time >= \'" + fromStr + "\'");
         }
-        else {
-            activityLog = ActivityLogDB.retrieveActivities(trackUser, trackActi);
+        if (to != null) {
+            toStr = df.format(to);
+            para.add("time <= \'" + toStr + "\'");
         }
-    }
-    
-    // A user and/or activity has been selected, proceed to display the 
-    // activity log.
-    public Boolean getActiLogStatus() {
-        return (trackUser != null) || (trackActi != null);
+
+        activityLog = ActivityLogDB.retrieveActivityLog(para);
     }
     
     // Machine generated getters.
@@ -90,5 +99,17 @@ public class ActivityTrackingBean implements Serializable {
     }
     public List<ActivityLog> getActivityLog() {
         return activityLog;
+    }
+    public Date getFrom() {
+        return from;
+    }
+    public void setFrom(Date from) {
+        this.from = from;
+    }
+    public Date getTo() {
+        return to;
+    }
+    public void setTo(Date to) {
+        this.to = to;
     }
 }

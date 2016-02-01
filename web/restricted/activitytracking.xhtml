@@ -12,20 +12,24 @@
     <ui:define name="content">
         <h:form id="actForm">
             <p:panel header="Select User ID and/or activity to retrieve activity log">
-                <h:panelGrid id="activitypanel" columns="4" cellpadding="2" cellspacing="7">
+                <h:panelGrid id="activitypanel" columns="6" cellpadding="2" cellspacing="7">
                     <h:outputText value="Select User ID" styleClass="configlabel"/>
                     <h:outputText value="Select Activity" styleClass="configlabel"/>
+                    <h:outputText value="From" styleClass="configlabel"/>
+                    <h:outputText value="To" styleClass="configlabel"/>
                     <h:panelGroup/>
                     <h:panelGroup/>
                     
                     <p:selectOneMenu id="idmenu" value="#{actiBean.trackUser}">
-                        <f:selectItem itemLabel="All User" itemValue="All"/>
+                        <f:selectItem itemLabel="All User" itemValue=""/>
                         <f:selectItems value="#{actiBean.userIDHash}"/>
                     </p:selectOneMenu>
                     <p:selectOneMenu id="actimenu" value="#{actiBean.trackActi}">
-                        <f:selectItem itemLabel="All Activity" itemValue="All"/>
+                        <f:selectItem itemLabel="All Activity" itemValue=""/>
                         <f:selectItems value="#{menuBean.activityList}"/>
                     </p:selectOneMenu>
+                    <p:calendar id="fromdate" value="#{actiBean.from}" pattern="dd-MM-yyyy hh:mma"/>
+                    <p:calendar id="todate" value="#{actiBean.to}" pattern="dd-MM-yyyy hh:mma"/>
                     <p:commandButton id="retrieve" value="Retrieve Activity Log" 
                                      update="logpanel" action="#{actiBean.retrieveActivity}"/>
                     <p:commandButton value="Export as Excel" ajax="false">
@@ -34,9 +38,8 @@
                     </p:commandButton>
                 </h:panelGrid>
             </p:panel>
-            <p:panel id="logpanel" visible="#{actiBean.actiLogStatus}">
+            <p:panel id="logpanel">
                 <p:dataTable id="logdt" rows="10"
-                             rendered="#{actiBean.actiLogStatus}" 
                              var="actlog" value="#{actiBean.activityLog}" 
                              paginator="true" paginatorTemplate="{RowsPerPageDropdown} 
                              {FirstPageLink} {PreviousPageLink} {CurrentPageReport} 
