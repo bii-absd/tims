@@ -45,6 +45,9 @@ import org.apache.logging.log4j.LogManager;
  * 19-Jan-2016 - Added the support for CNV pipeline.
  * 20-Jan-2016 - To streamline the navigation flow and passing of pipeline name
  * from main menu to pipeline configuration pages.
+ * 01-Feb-2016 - When retrieving submitted jobs, there are now 2 options 
+ * available i.e. to retrieve for single user or all users (enable for 
+ * administrator only).
  */
 
 @ManagedBean (name="menuSelectionBean")
@@ -62,6 +65,9 @@ public class MenuSelectionBean implements Serializable{
     public MenuSelectionBean() {
         userName = (String) FacesContext.getCurrentInstance().
                 getExternalContext().getSessionMap().get("User");
+        // Set the single user mode to false when the user enter the main page.
+        FacesContext.getCurrentInstance().getExternalContext().
+                getSessionMap().put("singleUser", false);
         logger.debug("MenuSelectionBean created.");
     }
     
@@ -116,6 +122,15 @@ public class MenuSelectionBean implements Serializable{
     // Setup the NGSConfigBean according to the specific pipeline selected.
     public String ngsPipeline() {
         return Constants.NGS_PAGE;
+    }
+    
+    // User accessing his/her work area. Set the single user mode to true.
+    public String userJobStatus() {
+        // Save the single user mode selection in the session map to be use by
+        // job status bean.
+        FacesContext.getCurrentInstance().getExternalContext().
+                getSessionMap().put("singleUser", true);
+        return Constants.JOB_STATUS;
     }
     
     // Machine generated getters and setters

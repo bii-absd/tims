@@ -3,7 +3,6 @@
  */
 package Clinical.Data.Sink.General;
 
-import Clinical.Data.Sink.Bean.FileUploadBean;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -78,6 +77,7 @@ import org.apache.logging.log4j.LogManager;
  * 20-Jan-2016 - Removed all pipeline related constants.
  * 26-Jan-2016 - Added the constants for categories of activity.
  * 29-Jan-2016 - To use a common system setup file for both Windows and Linux OS.
+ * 01-Feb-2016 - Added one new constant, JOB_STATUS.
  */
 
 @ManagedBean (name = "constants")
@@ -119,6 +119,7 @@ public class Constants {
     public final static String STUDY_MANAGEMENT = "studymanagement";
     public final static String CLINICAL_DATA_MANAGEMENT = 
                                 "clinicaldatamanagement";
+    public final static String JOB_STATUS = "jobstatus?faces-redirect=true";
     public final static String FINALIZE_STUDY = "finalizestudy";
     public final static String SUMMARY_OF_STUDY = "summaryofstudy";
     public final static String NGS_PAGE = "ngs?faces-redirect=true";

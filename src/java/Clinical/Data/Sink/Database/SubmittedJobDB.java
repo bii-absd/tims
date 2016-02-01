@@ -62,6 +62,9 @@ import org.apache.logging.log4j.LogManager;
  * list of pipeline executed in the study, and updateJobStatusToWaiting.
  * 22-Jan-2016 - Study finalization logic change; finalization will be 
  * performed for each pipeline instead of each technology.
+ * 01-Feb-2016 - When retrieving submitted jobs, there are now 2 options 
+ * available i.e. to retrieve for single user or all users (enable for 
+ * administrator only).
  */
 
 public abstract class SubmittedJobDB {
@@ -280,24 +283,35 @@ public abstract class SubmittedJobDB {
         
         return jobList;
     }
-
-    // Return the list of jobs (full detail) that have been submitted by 
-    // this user.
-    public static List<SubmittedJob> getJobsFullDetail(String user_id) {
-        List<SubmittedJob> jobList = new ArrayList<>();
+    
+    // Return the list of jobs that have been submitted by all the users.
+    public static List<SubmittedJob> getAllUsersJobs() {
+        String query = "SELECT * FROM submitted_job ORDER BY user_id, job_id DESC";
+        
+        return getJobsFullDetail(query);
+    }
+    
+    // Return the list of jobs that have been submitted by this user.
+    public static List<SubmittedJob> getUserJobs(String user_id) {
         // Don't retrieve those jobs which are in finalizing stage.
-        String queryStr = "SELECT * FROM submitted_job WHERE user_id = ? AND "
-                        + "status_id NOT IN (4) ORDER BY job_id DESC"; 
+        String query = "SELECT * FROM submitted_job WHERE user_id = \'" 
+                        + user_id + "\' AND status_id NOT IN (4) ORDER BY job_id DESC"; 
+        
+        return getJobsFullDetail(query);
+    }
+    
+    // Return the list of jobs (full detail) based on the query.
+    public static List<SubmittedJob> getJobsFullDetail(String query) {
+        List<SubmittedJob> jobList = new ArrayList<>();
 
-        try (PreparedStatement queryStm = conn.prepareStatement(queryStr)) {
-            queryStm.setString(1, user_id);
-            ResultSet rs = queryStm.executeQuery();
+        try {
+            ResultSet rs = DBHelper.runQuery(query);
             
             while (rs.next()) {
                 SubmittedJob job = new SubmittedJob(
                                 rs.getInt("job_id"),
                                 rs.getString("study_id"),
-                                user_id,
+                                rs.getString("user_id"),
                                 rs.getString("pipeline_name"),
                                 rs.getInt("status_id"),
                                 rs.getString("submit_time"),
@@ -316,7 +330,7 @@ public abstract class SubmittedJobDB {
                 
                 jobList.add(job);
             }
-            logger.debug("Jobs full detail retrieved for " + user_id);
+            logger.debug("Jobs full detail retrieved.");
         } 
         catch (SQLException e) {
                 logger.error("FAIL to retrieve jobs full detail!");

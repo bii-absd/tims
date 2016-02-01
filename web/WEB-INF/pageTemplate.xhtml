@@ -35,6 +35,10 @@
                     <p:menuitem value="#{msg['item-mgnt']}" icon="fa fa-list-ul"
                                 url="itemlistmanagement.xhtml" 
                                 rendered="#{authenticationBean.adminRight}"/>
+                    <p:menuitem value="#{msg['job-mgnt']}" icon="fa fa-folder-open" 
+                                url="jobstatus.xhtml" 
+                                rendered="#{authenticationBean.adminRight}">
+                    </p:menuitem>
                     <p:menuitem value="#{msg['act-track']}" 
                                 icon="fa fa-pencil-square-o" 
                                 url="activitytracking.xhtml" 
@@ -78,5 +82,4 @@
         </div>
 
     </h:body>
-
 </html>

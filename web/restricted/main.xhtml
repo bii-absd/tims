@@ -75,10 +75,10 @@
             
         <p:tab id="job" title="My Work Area" titleStyleClass="tab-title">
             <h:panelGrid cellpadding="1">
-                <h:outputLink title="View my job submission status" 
-                              value="jobstatus.xhtml" styleClass="mainmenuitem">
-                    Job Status
-                </h:outputLink>
+                <h:commandLink title="View my job submission status" 
+                               value="Job Status" 
+                               action="#{menuSelectionBean.userJobStatus}" 
+                               styleClass="mainmenuitem"/>
                 <h:outputLink title="Finalize Study" value="finalizestudy.xhtml" 
                               styleClass="mainmenuitem">
                     Finalize Study

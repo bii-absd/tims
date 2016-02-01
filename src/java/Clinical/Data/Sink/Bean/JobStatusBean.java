@@ -48,6 +48,9 @@ import org.apache.logging.log4j.LogManager;
  * 21-Jan-2016 - To allow the users to view the pipeline parameters setup at
  * the job status page through a context menu.
  * 26-Jan-2016 - Implemented audit data capture module.
+ * 01-Feb-2016 - When retrieving submitted jobs, there are now 2 options 
+ * available i.e. to retrieve for single user or all users (enable for 
+ * administrator only).
  */
 
 @ManagedBean(name = "jsBean")
@@ -62,18 +65,32 @@ public class JobStatusBean implements Serializable {
     private SubmittedJob selectedJob;
     // Store the user ID of the current user.
     private final String userName;
+    // Indicator for retrieving and displaying the list of jobs for single 
+    // user or all users?
+    private boolean singleUser;
     
     public JobStatusBean() {
         userName = (String) FacesContext.getCurrentInstance().
                 getExternalContext().getSessionMap().get("User");
+        singleUser = (boolean) FacesContext.getCurrentInstance().
+                getExternalContext().getSessionMap().get("singleUser");
         logger.debug("JobStatusBean created.");
         logger.info(userName + ": access Job Status page.");
+        // Reset the single user mode to false.
+        FacesContext.getCurrentInstance().getExternalContext().
+                getSessionMap().put("singleUser", false);
     }
 
     @PostConstruct
     public void init() {
         // Need to assign the jobSubmission here, else the sorting will not work.
-        jobSubmission = SubmittedJobDB.getJobsFullDetail(userName);
+        if (singleUser) {
+            jobSubmission = SubmittedJobDB.getUserJobs(userName);
+        }
+        else {
+            // The administrator is accessing the submitted jobs from all the users.
+            jobSubmission = SubmittedJobDB.getAllUsersJobs();
+        }
     }
     
     // Download the pipeline output for user.
@@ -106,6 +123,9 @@ public class JobStatusBean implements Serializable {
     }
     public void setSelectedJob(SubmittedJob selectedJob) {
         this.selectedJob = selectedJob;
+    }
+    public boolean isSingleUser() {
+        return singleUser;
     }
     
     /* @ViewScoped will breaks when any UIComponent is bound to the bean

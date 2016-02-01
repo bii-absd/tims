@@ -39,6 +39,10 @@
                           style="text-align: left">
                     <h:outputText value="#{job.plDescription}"/>
                 </p:column>
+                <p:column headerText="Requestor" sortBy="#{job.user_id}" 
+                          rendered="#{!jsBean.singleUser}" style="width: 80px">
+                    <h:outputText value="#{job.user_id}"/>
+                </p:column>
                 <p:column headerText="Submission Time" sortBy="#{job.submit_time}" 
                           style="width: 140px">
                     <h:outputText value="#{job.submit_time}"/>
