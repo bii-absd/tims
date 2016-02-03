@@ -15,32 +15,19 @@
     text-align: left;
 }
 
-/* Styles defined for keeping the login page layout in proportion for all 
-   window sizes.
-*/
-.grid-left {
-    width: 35%;
-}
-.grid-centre {
-    width: 30%;
-    alignment-adjust: middle;
-    alignment-baseline: middle;
-}
-.grid-right {
-    width: 35%;
-}
-
-/* Style defined for displaying the application name at the login page.
+/* Style defined for displaying the application name (center aligned) at the 
+   login page.
 */
 .app-name {
     font-family: "Comic Sans MS", cursive, sans-serif;
     font-weight: 900;
     font-size: 18pt;
-    margin: 0.2em;
     color: rgb(0,124,188);
+    margin: 0 auto;
 }
 
-/* Style defined for displaying the input box at the login page.
+/* Style defined for displaying the input box (center aligned) at the login 
+   page.
 */
 .login-box {
     border-style: solid;
@@ -48,6 +35,7 @@
     border-spacing: 15px;
     color: rgb(204,204,204);
     font-size: 10pt;
+    margin: 0 auto;
 }
 
 /* Style defined for displaying the title in p:tab

@@ -66,7 +66,7 @@ public abstract class Postman {
             message.setFrom(new InternetAddress(from));
             // Set To: header field
             message.addRecipients(Message.RecipientType.TO, adminEmails);
-            message.setSubject("iCOMIC2S - User encountered Error.");
+            message.setSubject("TIMS - User encountered Error.");
             message.setText(userName + " hit the Error page, "
                     + "please help to take a look. Thank you!");
             // Send the message

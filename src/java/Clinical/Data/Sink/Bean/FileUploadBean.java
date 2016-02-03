@@ -134,8 +134,8 @@ public class FileUploadBean implements Serializable {
         return uFile.getFileName();
     }
     
-    // Create level one system directories i.e. .../iCOMIC2S/users
-    // .../iCOMIC2S/input .../iCOMIC2S/finalize_output
+    // Create level one system directories i.e. .../TIMS/users
+    // .../TIMS/input .../TIMS/finalize_output
     public static Boolean createSystemDirectories(String systemDir) {
         Boolean result = 
                 createSystemDirectory(systemDir + Constants.getUSERS_PATH()) &&
@@ -146,9 +146,9 @@ public class FileUploadBean implements Serializable {
     }
     
     // Create level two system directories for each user i.e.
-    // .../iCOMIC2S/users/whtay/output
-    // .../iCOMIC2S/users/whtay/config
-    // .../iCOMIC2S/users/whtay/log
+    // .../TIMS/users/whtay/output
+    // .../TIMS/users/whtay/config
+    // .../TIMS/users/whtay/log
     public static Boolean createUsersDirectories(String homeDir) {
         Boolean result = 
                 createSystemDirectory(homeDir) && 
@@ -160,7 +160,7 @@ public class FileUploadBean implements Serializable {
     }
     
     // Create level two system directory for each Study i.e.
-    // .../iCOMIC2S/input/Bayer
+    // .../TIMS/input/Bayer
     public static Boolean createStudyDirectory(String study_id) {
         return createSystemDirectory(Constants.getSYSTEM_PATH() + 
                                      Constants.getINPUT_PATH() + study_id);
@@ -222,7 +222,7 @@ public class FileUploadBean implements Serializable {
     }
     
     // Set the input files directory for this pipeline job i.e.
-    // .../iCOMIC2S/input/Bayer/20151210_1502
+    // .../TIMS/input/Bayer/20151210_1502
     // This method will be called by the constructor.
     private void setFileDirectory(String study_id, String submitTime) {
         fileDirectory = Constants.getSYSTEM_PATH() + 
