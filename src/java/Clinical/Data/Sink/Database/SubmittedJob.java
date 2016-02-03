@@ -33,6 +33,7 @@ import java.io.Serializable;
  * Boolean.
  * 21-Jan-2016 - Added one new method, getPlDescription() to return the text 
  * description for this pipeline.
+ * 03-Feb-2016 - Download link for report will also be enabled for failed job.
  */
 
 public class SubmittedJob implements Serializable {
@@ -104,8 +105,8 @@ public class SubmittedJob implements Serializable {
         return JobStatusDB.getStatusName(status_id);
     }
     
-    // Based on the job status, the download link at jobstatus.xhtml will be
-    // enabled or disabled accordingly.
+    // Based on the job status, the download link for output at jobstatus.xhtml 
+    // will be enabled or disabled accordingly.
     public String getAvailable() {
         if ( (JobStatusDB.getStatusName(status_id).compareTo("Completed") == 0) || 
              (JobStatusDB.getStatusName(status_id).compareTo("Finalized") == 0) )
@@ -115,6 +116,18 @@ public class SubmittedJob implements Serializable {
         else {
             return Constants.TRUE;
         }
+    }
+    // Download link for report will also be enabled for failed job.
+    public String getReportReady() {
+        if ( (JobStatusDB.getStatusName(status_id).compareTo("Completed") == 0) || 
+             (JobStatusDB.getStatusName(status_id).compareTo("Finalized") == 0) ||
+             (JobStatusDB.getStatusName(status_id).compareTo("Failed") == 0) )
+        {
+            return Constants.FALSE;
+        }
+        else {
+            return Constants.TRUE;
+        }        
     }
     
     // Retrieve and return the text description for this pipeline from the 

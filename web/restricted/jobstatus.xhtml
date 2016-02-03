@@ -60,7 +60,7 @@
                 <p:column headerText="Report" styleClass="jssmallcol">
                     <p:commandLink ajax="false" value="Download" 
                                    action="#{jsBean.downloadReport(job)}" 
-                                   disabled="#{job.available}">
+                                   disabled="#{job.reportReady}">
                     </p:commandLink>
                 </p:column>
             </p:dataTable>
