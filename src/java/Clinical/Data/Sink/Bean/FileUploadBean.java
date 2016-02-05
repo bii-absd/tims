@@ -58,6 +58,9 @@ import org.apache.logging.log4j.LogManager;
  * Management module.
  * 22-Jan-2016 - Added new method getFilesCount(), to return the no of input
  * files uploaded (i.e. as an indicator to the user during config review).
+ * 05-Feb-2016 - Enhance the input files directory creation sequence, so as to
+ * avoid race condition from happening when multiple files are being uploaded
+ * at the same time.
  */
 
 public class FileUploadBean implements Serializable {
@@ -71,10 +74,17 @@ public class FileUploadBean implements Serializable {
     private String localDirectoryPath = null;
     private List<String> inputList = null;
     private LinkedHashMap<Integer,String> fileList = null;
+    private Boolean inputDir = Constants.NOT_OK;
 
     public FileUploadBean(String study_id, String submitTime) {
         fileList = new LinkedHashMap<>();
         setFileDirectory(study_id, submitTime);
+    }
+    
+    // Create the input files directory before the uploading started. This 
+    // method is triggered for multiple files upload only.
+    public void createInputDirectory() {
+        inputDir = createSystemDirectory(fileDirectory);
     }
     
     // Used for multiple files upload.
@@ -84,6 +94,8 @@ public class FileUploadBean implements Serializable {
     
     // Used for single file upload.
     public void singleFileUploadListener(FileUploadEvent event) {
+        // Create the input files directory first.
+        inputDir = createSystemDirectory(fileDirectory);
         // For single file upload, we will always use the latest file.
         if (fileList.isEmpty()) {
             fileList.put(1, fileUploadListener(event));
@@ -97,8 +109,8 @@ public class FileUploadBean implements Serializable {
     public String fileUploadListener(FileUploadEvent event) {
         UploadedFile uFile = event.getFile();
         File file = new File(fileDirectory + uFile.getFileName());
-        
-        if (createSystemDirectory(fileDirectory)) {
+
+        if (inputDir) {
             try (FileOutputStream fop = new FileOutputStream(file);
                 InputStream filecontent = uFile.getInputstream(); ) {
                 int bytesRead;
@@ -124,7 +136,8 @@ public class FileUploadBean implements Serializable {
         else {
             // System failed to create the input files directory for this job,
             // shouldn't allow the user to continue.
-            logger.error("FAIL to create input files directory!");
+            logger.error("FAIL to create input directory for " + 
+                         uFile.getFileName());
             getFacesContext().addMessage(null, 
                     new FacesMessage(FacesMessage.SEVERITY_ERROR,
                                 "System failed to create input directory!\n"

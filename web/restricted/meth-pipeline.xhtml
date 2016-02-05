@@ -16,13 +16,15 @@
                 <p:fileUpload mode="advanced" multiple="true"
                               update="uploadStatus" 
                               label="#{msg['config-selsam']}"
-                              allowTypes="/(\.|\/)(idat)$/"
+                              allowTypes="/(\.|\/)(idat)$/" onstart="b4upload()"
                               fileUploadListener="#{methPBean.inputFile.multipleFileUploadListener}">
                 </p:fileUpload>
                 <p:inputText id="inputdescription" 
                              value="#{methPBean.inputFileDesc}" 
                              autocomplete="off" size="200" styleClass="configinput"/>
                 <p:watermark for="inputdescription" value="#{msg['config-ipdesc']}"/>
+                <p:remoteCommand name="b4upload" partialSubmit="true" process="@this" 
+                                 actionListener="#{methPBean.inputFile.createInputDirectory}"/>
             </p:panel>
             <p:separator styleClass="configsep"/>
 

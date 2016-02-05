@@ -17,12 +17,14 @@
                 <p:fileUpload mode="advanced" multiple="true"
                               update="uploadStatus" 
                               label="#{msg['config-selsam']}"
-                              allowTypes="/(\.|\/)(txt)$/"
+                              allowTypes="/(\.|\/)(txt)$/" onstart="b4upload()"
                               fileUploadListener="#{cnvPBean.inputFile.multipleFileUploadListener}"/>
                 <p:inputText id="inputdescription" 
                              value="#{cnvPBean.inputFileDesc}" 
                              autocomplete="off" size="200" styleClass="configinput"/>
                 <p:watermark for="inputdescription" value="#{msg['config-ipdesc']}"/>
+                <p:remoteCommand name="b4upload" partialSubmit="true" process="@this" 
+                                 actionListener="#{cnvPBean.inputFile.createInputDirectory}"/>
                 <p:separator styleClass="configsep"/>
                 <p:fileUpload mode="advanced" update="uploadStatus" 
                               label="Select Control File"
