@@ -91,13 +91,14 @@
                 </h:panelGrid>
             </p:panel>
             <p:separator styleClass="configsep"/>
-
-            <p:commandButton value="Submit" update="display @form"
+            <p:commandButton value="Submit" update=":revForm"
                              oncomplete="PF('dlg').show()"
                              icon="ui-icon-check" 
-                             action="#{methPBean.updateJobSubmissionStatus()}"/>
-            
-            <p:dialog header="#{msg['revcfg-head']}" widgetVar="dlg" resizable="false">
+                             action="#{methPBean.updateJobSubmissionStatus}"/>
+        </h:form>
+
+        <p:dialog header="#{msg['revcfg-head']}" widgetVar="dlg" resizable="false">
+            <h:form id="revForm">
                 <p:panelGrid columns="2" id="display">
                     <h:outputText value="#{msg['config-study']}"/>
                     <h:outputText value="#{methPBean.studyID}"/>
@@ -126,20 +127,18 @@
                     <h:outputText value="#{methPBean.phenotype}"/>
                     <h:outputText value="#{msg['config-prosel']}"/>
                     <h:outputText value="#{methPBean.probeSelect?'Yes':'No'}"/>
-                </p:panelGrid>                    
+                </p:panelGrid>
                 <p:separator styleClass="configsep"/>
-                <h:form>
-                    <h:panelGrid columns="2" cellspacing="2" cellpadding="2">
-                        <p:commandButton value="Cancel" title="#{msg['revcfg-cantit']}"
-                                         style="width: 130px" oncomplete="PF('dlg').hide()"
-                                         action="#{methPBean.cancelJob}"/>
-                        <p:commandButton value="Confirm" title="#{msg['revcfg-cfmtit']}"
-                                         style="width: 130px"
-                                         action="#{methPBean.submitJob}" 
-                                         rendered="#{methPBean.jobSubmissionStatus}"/>                        
-                    </h:panelGrid>
-                </h:form>
-            </p:dialog>
-        </h:form>
+                <h:panelGrid columns="2" cellspacing="2" cellpadding="2">
+                    <p:commandButton value="Cancel" title="#{msg['revcfg-cantit']}"
+                                     style="width: 130px" oncomplete="PF('dlg').hide()"
+                                     action="#{methPBean.cancelJob}"/>
+                    <p:commandButton value="Confirm" title="#{msg['revcfg-cfmtit']}"
+                                     style="width: 130px"
+                                     action="#{methPBean.submitJob}" 
+                                     rendered="#{methPBean.jobSubmissionStatus}"/>
+                </h:panelGrid>
+            </h:form>
+        </p:dialog>
     </ui:define>
 </ui:composition>

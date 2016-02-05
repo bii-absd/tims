@@ -132,13 +132,14 @@
                 </h:panelGrid>
             </p:panel>
             <p:separator styleClass="configsep"/>
-
-            <p:commandButton value="Submit" update="display @form"
+            <p:commandButton value="Submit" update=":revForm"
                              oncomplete="PF('dlg').show()"
                              icon="ui-icon-check" 
                              action="#{gexAffyBean.updateJobSubmissionStatus()}"/>
-            
-            <p:dialog header="#{msg['revcfg-head']}" widgetVar="dlg" resizable="false">
+        </h:form>
+
+        <p:dialog header="#{msg['revcfg-head']}" widgetVar="dlg" resizable="false">
+            <h:form id="revForm">
                 <p:panelGrid columns="2" id="display">
                     <h:outputText value="#{msg['config-study']}"/>
                     <h:outputText value="#{gexAffyBean.studyID}"/>
@@ -177,18 +178,16 @@
                     <h:outputText value="#{gexAffyBean.sampleAverage?'Yes':'No'}"/>
                 </p:panelGrid>
                 <p:separator styleClass="configsep"/>
-                <h:form>
-                    <h:panelGrid columns="2" cellspacing="2" cellpadding="2">
-                        <p:commandButton value="Cancel" title="#{msg['revcfg-cantit']}"
-                                         style="width: 130px" oncomplete="PF('dlg').hide()"
-                                         action="#{gexAffyBean.cancelJob}"/>
-                        <p:commandButton value="Confirm" title="#{msg['revcfg-cfmtit']}"
-                                         style="width: 130px"
-                                         action="#{gexAffyBean.submitJob}" 
-                                         rendered="#{gexAffyBean.jobSubmissionStatus}"/>                        
-                    </h:panelGrid>
-                </h:form>
-            </p:dialog>
-        </h:form>
+                <h:panelGrid columns="2" cellspacing="2" cellpadding="2">
+                    <p:commandButton value="Cancel" title="#{msg['revcfg-cantit']}"
+                                     style="width: 130px" oncomplete="PF('dlg').hide()"
+                                     action="#{gexAffyBean.cancelJob}"/>
+                    <p:commandButton value="Confirm" title="#{msg['revcfg-cfmtit']}"
+                                     style="width: 130px"
+                                     action="#{gexAffyBean.submitJob}" 
+                                     rendered="#{gexAffyBean.jobSubmissionStatus}"/>
+                </h:panelGrid>
+            </h:form>
+        </p:dialog>
     </ui:define>
 </ui:composition>
