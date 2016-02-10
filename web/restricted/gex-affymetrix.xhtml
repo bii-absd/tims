@@ -14,11 +14,10 @@
             <p:panel id="inputfile" visible="#{gexAffyBean.haveNewData}" header="#{msg['config-ulsampro']}">
                 <p:growl id="uploadStatus" sticky="true"/>
                 <p:fileUpload mode="advanced" multiple="true"
-                              update="uploadStatus" 
+                              update="uploadStatus" sequential="true"
                               label="#{msg['config-selsam']}"
                               allowTypes="/(\.|\/)(CEL)$/" onstart="b4upload()"
-                              fileUploadListener="#{gexAffyBean.inputFile.multipleFileUploadListener}">
-                </p:fileUpload>
+                              fileUploadListener="#{gexAffyBean.inputFile.multipleFileUploadListener}"/>
                 <p:inputText id="inputdescription" 
                              value="#{gexAffyBean.inputFileDesc}" 
                              autocomplete="off" size="200" styleClass="configinput"/>

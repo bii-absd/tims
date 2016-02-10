@@ -15,7 +15,7 @@
                      header="#{msg['config-ulsamctlpro']}">
                 <p:growl id="uploadStatus" sticky="true"/>
                 <p:fileUpload mode="advanced" multiple="true"
-                              update="uploadStatus" 
+                              update="uploadStatus" sequential="true"
                               label="#{msg['config-selsam']}"
                               allowTypes="/(\.|\/)(txt)$/" onstart="b4upload()"
                               fileUploadListener="#{cnvPBean.inputFile.multipleFileUploadListener}"/>
