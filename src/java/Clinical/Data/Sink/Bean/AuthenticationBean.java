@@ -81,7 +81,7 @@ import org.apache.logging.log4j.LogManager;
  * 29-Jan-2016 - To use a common system setup file for both Windows and Linux OS.
  */
 
-@ManagedBean (name="authenticationBean")
+@ManagedBean (name="authBean")
 @SessionScoped
 public class AuthenticationBean implements Serializable {
     // Get the logger for Log4j

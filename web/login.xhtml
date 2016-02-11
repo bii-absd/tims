@@ -9,45 +9,43 @@
     
     <ui:define name="title">TIMS</ui:define>
     <ui:define name="content">
-        <h:panelGrid columns="1" cellpadding="2" cellspacing="5" width="100%">
-                
-            <h:panelGroup>
+        <h:panelGroup>
                 <h:graphicImage library="images" name="Astar.jpg"/>
-                <h:graphicImage library="images" name="BII.jpg"/>                
-            </h:panelGroup>
-            
-            <h:panelGrid styleClass="app-name" cellspacing="10">
-                <h:outputText value="Translational Informatics Management System"/>
-            </h:panelGrid>
-            
-            <h:panelGrid styleClass="login-box" width="420px">
-                <h:form>
+                <h:graphicImage library="images" name="BII.jpg"/>
+        </h:panelGroup>
+        <h:panelGrid styleClass="app-name">
+            <h:outputText value="Translational Informatics Management System"/>
+        </h:panelGrid>
+
+        <h:panelGrid styleClass="login-box" width="417px">
+            <h:form id="loginform">
                 <p:messages id="msg" for="global" showDetail="true"/>
-                <h:panelGrid columns="3" border="0" cellpadding="8"
-                            cellspacing="3">
-                    <h:outputLabel value="User Name: "/>
-                    <h:inputText id="username" size="20" maxlength="20" 
-                                 autocomplete="off" required="true" 
-                                 value="#{authenticationBean.loginName}">
+                <h:panelGrid columns="1" cellpadding="1" cellspacing="2" 
+                             width="100%" style="color: black">
+                    <h:outputLabel value="Username"/>
+                    <p:inputText id="username" styleClass="login-input" 
+                                 maxlength="20" autocomplete="off" required="true"
+                                 value="#{authBean.loginName}">
                         <f:validateLength minimum="5"/>
-                    </h:inputText>
+                    </p:inputText>
                     <p:message id="id-error" for="username" display="text"/>
 
-                    <h:outputLabel value="Password: "/>
-                    <h:inputSecret id="password" size="20" maxlength="20" 
-                                   required="true" 
-                                   value="#{authenticationBean.password}">
+                    <h:outputLabel value="Password"/>
+                    <p:password id="password" styleClass="login-input" 
+                                maxlength="20" required="true" 
+                                value="#{authBean.password}">
                         <f:validateLength minimum="5"/>
-                    </h:inputSecret>
+                    </p:password>
                     <p:message id="pwd-error" for="password" display="text"/>
-                
                     <h:panelGroup/>
-                    <h:commandButton action="#{authenticationBean.login}" 
-                                     style="width:150px" value="Login"/>
                     <h:panelGroup/>
+                    
+                    <h:panelGrid style="margin: 0 auto">
+                        <h:commandButton id="loginbtn" action="#{authBean.login}"
+                                         styleClass="login-button" value="Login"/>                        
+                    </h:panelGrid>
                 </h:panelGrid>
-                </h:form>
-            </h:panelGrid>
+            </h:form>
         </h:panelGrid>
     </ui:define>
 </ui:composition>

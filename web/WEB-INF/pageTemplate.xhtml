@@ -28,32 +28,32 @@
                                 url="accountmanagement.xhtml"/>
                     <p:menuitem value="#{msg['study-mgnt']}" icon="fa fa-book" 
                                 url="studymanagement.xhtml" 
-                                rendered="#{authenticationBean.adminRight}"/>
+                                rendered="#{authBean.adminRight}"/>
                     <p:menuitem value="#{msg['pipeline-mgnt']}" icon="fa fa-flask"
                                 url="pipelinemanagement.xhtml" 
-                                rendered="#{authenticationBean.adminRight}"/>
+                                rendered="#{authBean.adminRight}"/>
                     <p:menuitem value="#{msg['item-mgnt']}" icon="fa fa-list-ul"
                                 url="itemlistmanagement.xhtml" 
-                                rendered="#{authenticationBean.adminRight}"/>
+                                rendered="#{authBean.adminRight}"/>
                     <p:menuitem value="#{msg['job-mgnt']}" icon="fa fa-folder-open" 
                                 url="jobstatus.xhtml" 
-                                rendered="#{authenticationBean.adminRight}">
+                                rendered="#{authBean.adminRight}">
                     </p:menuitem>
                     <p:menuitem value="#{msg['act-track']}" 
                                 icon="fa fa-pencil-square-o" 
                                 url="activitytracking.xhtml" 
-                                rendered="#{authenticationBean.supervisorRight}"/>
+                                rendered="#{authBean.supervisorRight}"/>
                 </p:submenu>
                 <f:facet name="options">
                     <p:commandButton value="Logout" 
-                                     action="#{authenticationBean.logout}"
+                                     action="#{authBean.logout}"
                                      icon="ui-icon-extlink"/>
                 </f:facet>
             </p:menubar>
  
             <h:panelGrid cellpadding="2" cellspacing="2" styleClass="user-info">
-                <h:outputText value="#{authenticationBean.getHeaderFullName()}"/>
-                <h:outputText value="#{authenticationBean.getHeaderInstDept()}"/>
+                <h:outputText value="#{authBean.getHeaderFullName()}"/>
+                <h:outputText value="#{authBean.getHeaderInstDept()}"/>
             </h:panelGrid>
         </h:panelGrid>
         <p:breadCrumb>
@@ -72,7 +72,7 @@
             <p:menuitem value="Change Password" icon="/resources/images/Password.jpg" 
                         url="accountmanagement.xhtml"/>
             <p:menuitem value="Logout" icon="/resources/images/Logoff.png" 
-                        action="#{authenticationBean.logout}"/>
+                        action="#{authBean.logout}"/>
         </p:dock>
         </h:form>
         <hr class="underline"/>

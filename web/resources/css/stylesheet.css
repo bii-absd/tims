@@ -20,21 +20,46 @@
 */
 .app-name {
     font-family: "Comic Sans MS", cursive, sans-serif;
-    font-weight: 900;
-    font-size: 18pt;
-    color: rgb(0,124,188);
+    font-weight: 500;
+    font-size: 14pt;
+    height: 45px;
+    color: white;
+    background-color: rgb(54,100,139);
     margin: 0 auto;
+}
+
+/* Style defined for the input box at the login page.
+*/
+.login-input {
+    font-family: courier, arial, monospace;
+    font-size: 14pt;
+    width: 100%;
+    box-shadow: none;
+    border-radius: 5px;
+    padding: 4px 4px;
+}
+
+/* Style defined for the Login button.
+*/
+.login-button {
+    font-family: courier, arial, monospace;
+    font-size: 14pt;
+    border-radius: 3px;
+    height: 35px;
+    width: 100px;
+    background-color: rgb(234,239,243);
 }
 
 /* Style defined for displaying the input box (center aligned) at the login 
    page.
 */
 .login-box {
+    font-family: courier, arial, monospace;
+    font-size: 14pt;
     border-style: solid;
-    border-width: thick;
+    border-width: thin;
     border-spacing: 15px;
     color: rgb(204,204,204);
-    font-size: 10pt;
     margin: 0 auto;
 }
 
