@@ -13,39 +13,42 @@
                 <h:graphicImage library="images" name="Astar.jpg"/>
                 <h:graphicImage library="images" name="BII.jpg"/>
         </h:panelGroup>
-        <h:panelGrid styleClass="app-name">
-            <h:outputText value="Translational Informatics Management System"/>
-        </h:panelGrid>
+        <h:panelGrid style="margin: 0 auto" cellpadding="0" cellspacing="0">
+            <h:panelGrid styleClass="app-name">
+                <h:outputText value="Translational Informatics Management System"/>
+            </h:panelGrid>
 
-        <h:panelGrid styleClass="login-box" width="417px">
-            <h:form id="loginform">
-                <p:messages id="msg" for="global" showDetail="true"/>
-                <h:panelGrid columns="1" cellpadding="1" cellspacing="2" 
-                             width="100%" style="color: black">
-                    <h:outputLabel value="Username"/>
-                    <p:inputText id="username" styleClass="login-input" 
-                                 maxlength="20" autocomplete="off" required="true"
-                                 value="#{authBean.loginName}">
-                        <f:validateLength minimum="5"/>
-                    </p:inputText>
-                    <p:message id="id-error" for="username" display="text"/>
+            <h:panelGrid styleClass="login-box" width="417px">
+                <h:form id="loginform">
+                    <p:messages id="msg" for="global" showDetail="true"/>
+                    <h:panelGrid columns="1" cellpadding="1" cellspacing="2" 
+                                 width="100%" style="color: black">
+                        <h:outputLabel value="Username"/>
+                        <p:inputText id="username" styleClass="login-input" 
+                                     maxlength="20" autocomplete="off" required="true"
+                                     value="#{authBean.loginName}">
+                            <f:validateLength minimum="5"/>
+                        </p:inputText>
+                        <p:message id="id-error" for="username" display="text"/>
 
-                    <h:outputLabel value="Password"/>
-                    <p:password id="password" styleClass="login-input" 
-                                maxlength="20" required="true" 
-                                value="#{authBean.password}">
-                        <f:validateLength minimum="5"/>
-                    </p:password>
-                    <p:message id="pwd-error" for="password" display="text"/>
-                    <h:panelGroup/>
-                    <h:panelGroup/>
+                        <h:outputLabel value="Password"/>
+                        <p:password id="password" styleClass="login-input" 
+                                    maxlength="20" required="true" 
+                                    value="#{authBean.password}">
+                            <f:validateLength minimum="5"/>
+                        </p:password>
+                        <p:message id="pwd-error" for="password" display="text"/>
+                        <h:panelGroup/>
+                        <h:panelGroup/>
                     
-                    <h:panelGrid style="margin: 0 auto">
-                        <h:commandButton id="loginbtn" action="#{authBean.login}"
-                                         styleClass="login-button" value="Login"/>                        
+                        <h:panelGrid style="margin: 0 auto">
+                            <h:commandButton id="loginbtn" action="#{authBean.login}"
+                                             styleClass="login-button" value="Login"/>                        
+                        </h:panelGrid>
                     </h:panelGrid>
-                </h:panelGrid>
-            </h:form>
+                </h:form>
+            </h:panelGrid>
+            <h:outputText style="font-size: 10pt" value="Hosted on ISO/IEC 27001:2013 network"/>
         </h:panelGrid>
     </ui:define>
 </ui:composition>
