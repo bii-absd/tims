@@ -45,8 +45,7 @@
                                 rendered="#{authBean.supervisorRight}"/>
                 </p:submenu>
                 <f:facet name="options">
-                    <p:commandButton value="Logout" 
-                                     action="#{authBean.logout}"
+                    <p:commandButton value="Logout" action="#{authBean.logout}"
                                      icon="ui-icon-extlink"/>
                 </f:facet>
             </p:menubar>
@@ -66,20 +65,19 @@
         
         <h:form>
             <p:separator style="width: 100%; height: 10px"/>
-        <p:dock position="top">
-            <p:menuitem value="Home" icon="/resources/images/Home.png" 
-                        url="main.xhtml"/>
-            <p:menuitem value="Change Password" icon="/resources/images/Password.jpg" 
-                        url="accountmanagement.xhtml"/>
-            <p:menuitem value="Logout" icon="/resources/images/Logoff.png" 
-                        action="#{authBean.logout}"/>
-        </p:dock>
+            <p:dock position="bottom">
+                <p:menuitem value="Home" icon="/resources/images/Home.png" 
+                            url="main.xhtml"/>
+                <p:menuitem value="Change Password" icon="/resources/images/Password.jpg" 
+                            url="accountmanagement.xhtml"/>
+                <p:menuitem value="Logout" icon="/resources/images/Logoff.png" 
+                            action="#{authBean.logout}"/>
+            </p:dock>
         </h:form>
         <hr class="underline"/>
         <div>
             <p class="alignleft">Biomolecular Function Discovery Division</p>
             <p class="alignright">Analytics of Biological Sequence Data Group</p>
         </div>
-
     </h:body>
 </html>

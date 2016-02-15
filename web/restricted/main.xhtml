@@ -76,12 +76,16 @@
         <p:tab id="job" title="My Work Area" titleStyleClass="tab-title">
             <h:panelGrid cellpadding="1">
                 <h:commandLink title="View my job submission status" 
-                               value="Job Status" 
+                               value="#{msg['job-status']}" 
                                action="#{menuSelectionBean.userJobStatus}" 
                                styleClass="mainmenuitem"/>
-                <h:outputLink title="Finalize Study" value="finalizestudy.xhtml" 
+                <h:outputLink title="#{msg['finalize-study']}" value="finalizestudy.xhtml" 
                               styleClass="mainmenuitem">
                     Finalize Study
+                </h:outputLink>
+                <h:outputLink title="#{msg['unfinalize-study']}" value="unfinalizestudy.xhtml" 
+                              styleClass="mainmenuitem" rendered="#{authBean.adminRight}">
+                    Unfinalize Study
                 </h:outputLink>
                 <h:outputLink title="Download consolidated output and summary report" 
                               value="summaryofstudy.xhtml" styleClass="mainmenuitem">
@@ -92,28 +96,30 @@
     </p:accordionPanel>
     </h:form>
         
-    <p:dialog modal="true" header="Select Study to work on" 
-              widgetVar="dlg" resizable="false">
+    <p:dialog modal="true" header="Select Study to work on" widgetVar="dlg" 
+              resizable="false">
         <h:form>
             <h:panelGrid columns="2">
-            <p:selectOneMenu id="studyID" value="#{menuSelectionBean.study_id}">
-                <f:selectItem itemLabel="Select Study" itemValue=""/>
-                <f:selectItems value="#{menuSelectionBean.studyList}"/>
-                <p:ajax update="selPanel"/>
-            </p:selectOneMenu><h:panelGroup/>
-            <h:outputText value="New data to upload?"/>
-            <p:selectBooleanButton id="newdatastatus" 
-                                   value="#{menuSelectionBean.haveNewData}" 
-                                   onLabel="Yes" offLabel="No"/>
+                <p:selectOneMenu id="studyID" value="#{menuSelectionBean.study_id}">
+                    <f:selectItem itemLabel="Select Study" itemValue=""/>
+                    <f:selectItems value="#{menuSelectionBean.studyList}"/>
+                    <p:ajax update="selPanel"/>
+                </p:selectOneMenu><h:panelGroup/>
+                <h:outputText value="New data to upload?"/>
+                <p:selectBooleanButton id="newdatastatus" 
+                                       value="#{menuSelectionBean.haveNewData}" 
+                                       onLabel="Yes" offLabel="No"/>
             </h:panelGrid>
             <p:separator styleClass="configsep"/>
             
             <h:panelGrid id="selPanel" columns="2" cellspacing="2" cellpadding="2">
                 <p:commandButton value="Cancel" oncomplete="PF('dlg').hide()" 
-                                 action="#{menuSelectionBean.backToMainMenu}"/>
+                                 action="#{menuSelectionBean.backToMainMenu}" 
+                                 style="width: 100%"/>
                 <p:commandButton value="Proceed" 
                                  rendered="#{menuSelectionBean.studySelectedStatus}" 
-                                 action="#{menuSelectionBean.proceedToConfig}"/>
+                                 action="#{menuSelectionBean.proceedToConfig}" 
+                                 style="width: 100%"/>
             </h:panelGrid>
         </h:form>
     </p:dialog>

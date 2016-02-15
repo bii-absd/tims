@@ -65,6 +65,8 @@ import org.apache.logging.log4j.LogManager;
  * 01-Feb-2016 - When retrieving submitted jobs, there are now 2 options 
  * available i.e. to retrieve for single user or all users (enable for 
  * administrator only).
+ * 15-Feb-2016 - Added one new method getFinalizedJobIDs, to return all the
+ * finalized job ID for the respective study ID.
  */
 
 public abstract class SubmittedJobDB {
@@ -376,6 +378,29 @@ public abstract class SubmittedJobDB {
         return jobList;
     }
 
+    // Retrieve all the finalized job IDs for this study ID.
+    public static List<Integer> getFinalizedJobIDs(String study_id) {
+        List<Integer> jobIDList = new ArrayList<>();
+        String queryStr = "SELECT job_id FROM submitted_job WHERE status_id = 5"
+                        + " AND study_id = ?";
+        
+        try (PreparedStatement queryStm = conn.prepareStatement(queryStr)) {
+            queryStm.setString(1, study_id);
+            ResultSet rs = queryStm.executeQuery();
+            
+            while (rs.next()) {
+                jobIDList.add(rs.getInt("job_id"));
+            }
+            logger.debug("All finalized job IDs retrieved for " + study_id);
+        }
+        catch (SQLException e) {
+            logger.error("FAIL to retrieve finalized job IDs!");
+            logger.error(e.getMessage());
+        }
+        
+        return jobIDList;
+    }
+    
     // Return the output filepath for this job.
     public static String getOutputPath(int jobID) {
         String path = Constants.DATABASE_INVALID_STR;

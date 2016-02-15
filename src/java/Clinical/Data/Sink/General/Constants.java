@@ -11,6 +11,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+// Libraries for Java Extension
 import javax.faces.bean.ApplicationScoped;
 import javax.faces.bean.ManagedBean;
 // Libraries for Log4j
@@ -78,6 +79,7 @@ import org.apache.logging.log4j.LogManager;
  * 26-Jan-2016 - Added the constants for categories of activity.
  * 29-Jan-2016 - To use a common system setup file for both Windows and Linux OS.
  * 01-Feb-2016 - Added one new constant, JOB_STATUS.
+ * 12-Feb-2016 - Added one new constant, EXE_UNFIN.
  */
 
 @ManagedBean (name = "constants")
@@ -101,6 +103,7 @@ public class Constants {
     public final static String LOG_OFF = "Logoff";
     public final static String EXE_PL = "Run Pipeline";
     public final static String EXE_FIN = "Finalize Study";
+    public final static String EXE_UNFIN = "Unfinalize Study";
     public final static String CRE_ID = "Create ID";
     public final static String CHG_PWD = "Change Password";
     public final static String CHG_ID = "Update ID";
