@@ -11,9 +11,9 @@ import Clinical.Data.Sink.Database.UserAccount;
 import Clinical.Data.Sink.Database.UserAccountDB;
 import Clinical.Data.Sink.General.Constants;
 import java.io.File;
-
 import java.io.Serializable;
 import java.sql.SQLException;
+// Libraries for Java Extension
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.servlet.ServletContext;
@@ -79,6 +79,8 @@ import org.apache.logging.log4j.LogManager;
  * 15-Jan-2016 - Enhanced the error handling during login.
  * 26-Jan-2016 - Implemented audit data capture module.
  * 29-Jan-2016 - To use a common system setup file for both Windows and Linux OS.
+ * 17-Feb-2016 - To alert the user one minute before session timeout, and to 
+ * allow the user to extend the session.
  */
 
 @ManagedBean (name="authBean")
@@ -224,6 +226,12 @@ public class AuthenticationBean implements Serializable {
         }
         
         return result;
+    }
+    
+    // This is a dummy method used to reset the session timer.
+    public void extendSession() {
+        // Do nothing, just log the event.
+        logger.debug(loginName + " extended browser's session." );
     }
     
     // To invalidate the session and remove the user credential after the 

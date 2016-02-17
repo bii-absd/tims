@@ -55,12 +55,28 @@
                 <h:outputText value="#{authBean.getHeaderInstDept()}"/>
             </h:panelGrid>
         </h:panelGrid>
-        <p:breadCrumb>
-            <p:menuitem value="Array Data" url="main.xhtml" title="Back to Main Page"/>
-            <p:menuitem styleClass="subheading" value="#{link}"/>
-        </p:breadCrumb>
+            <p:breadCrumb>
+                <p:menuitem value="Array Data" url="main.xhtml" title="Back to Main Page"/>
+                <p:menuitem styleClass="subheading" value="#{link}"/>
+            </p:breadCrumb>
         </h:form>
-
+        <h:form>
+            <!-- One minute before session is about to expire, warn the user about it -->
+            <p:idleMonitor timeout="#{session.maxInactiveInterval * 1000 - 60000}" 
+                           onidle="PF('warndlg').show()"/>
+            <!-- Need to keep the dialog non modal (i.e. modal = "false"), else -->
+            <!-- it will interference with the no cache filter logic -->
+            <p:dialog id="expdlg" header="Your session is about to end in one minute!" 
+                      widgetVar="warndlg" width="300px">
+                <!-- ajax must be set to false in order for the session to be extended -->
+                <p:commandButton ajax="false" value="Extend Session" 
+                                 oncomplete="PF('warndlg').hide()" 
+                                 action="#{authBean.extendSession}" style="width: 48%"/>
+                <p:commandButton ajax="false" value="Logout" title="Back to Login page" 
+                                 oncomplete="PF('warndlg').hide()" 
+                                 action="#{authBean.logout}" style="width: 48%"/>
+            </p:dialog>
+        </h:form>
         <ui:insert name="content">Content</ui:insert>
         
         <h:form>
