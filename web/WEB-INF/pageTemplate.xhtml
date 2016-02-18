@@ -36,7 +36,7 @@
                                 url="itemlistmanagement.xhtml" 
                                 rendered="#{authBean.adminRight}"/>
                     <p:menuitem value="#{msg['job-mgnt']}" icon="fa fa-folder-open" 
-                                url="jobstatus.xhtml" 
+                                action="#{authBean.allUsersJobStatus}"
                                 rendered="#{authBean.adminRight}">
                     </p:menuitem>
                     <p:menuitem value="#{msg['act-track']}" 

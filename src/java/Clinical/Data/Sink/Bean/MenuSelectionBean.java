@@ -7,6 +7,7 @@ import Clinical.Data.Sink.Database.StudyDB;
 import Clinical.Data.Sink.General.Constants;
 import java.io.Serializable;
 import java.util.LinkedHashMap;
+// Libraries for Java Extension
 import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
@@ -48,6 +49,7 @@ import org.apache.logging.log4j.LogManager;
  * 01-Feb-2016 - When retrieving submitted jobs, there are now 2 options 
  * available i.e. to retrieve for single user or all users (enable for 
  * administrator only).
+ * 18-Feb-2016 - Moved method userJobStatus() to AuthenticationBean.
  */
 
 @ManagedBean (name="menuSelectionBean")
@@ -124,46 +126,11 @@ public class MenuSelectionBean implements Serializable{
         return Constants.NGS_PAGE;
     }
     
-    // User accessing his/her work area. Set the single user mode to true.
-    public String userJobStatus() {
-        // Save the single user mode selection in the session map to be use by
-        // job status bean.
-        FacesContext.getCurrentInstance().getExternalContext().
-                getSessionMap().put("singleUser", true);
-        return Constants.JOB_STATUS;
-    }
-    
     // Machine generated getters and setters
     public String getStudy_id() { return study_id; }
     public void setStudy_id(String study_id) { this.study_id = study_id; }
     public String getPlName() { return plName; }
     public void setPlName(String plName) { this.plName = plName; }
     public Boolean getHaveNewData() { return haveNewData; }
-    public void setHaveNewData(Boolean haveNewData) 
-    { this.haveNewData = haveNewData; }
-    
-    /*
-    
-    // NOT IN USE.
-    // Setup config_page for GEX Illumina pipeline processing.
-    public void gexIllumina() {
-        config_page = Constants.GEX_ILLUMINA_PAGE;
-    }
-    
-    // Setup config_page for GEX Affymetrix pipeline processing.
-    public void gexAffymetrix() {
-        config_page = Constants.GEX_AFFYMETRIX_PAGE;
-    }
-    
-    // Setup config_page for METH pipeline processing.
-    public void methPipeline() {
-        config_page = Constants.METH_PIPELINE_PAGE;
-    }
-    
-    // Setup config_page for CNV pipeline processing.
-    public void cnvPipeline() {
-        config_page = Constants.CNV_PIPELINE_PAGE;
-    }
-    
-    */
+    public void setHaveNewData(Boolean haveNewData) { this.haveNewData = haveNewData; }
 }

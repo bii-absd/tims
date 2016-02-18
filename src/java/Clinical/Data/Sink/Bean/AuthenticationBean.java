@@ -81,6 +81,8 @@ import org.apache.logging.log4j.LogManager;
  * 29-Jan-2016 - To use a common system setup file for both Windows and Linux OS.
  * 17-Feb-2016 - To alert the user one minute before session timeout, and to 
  * allow the user to extend the session.
+ * 18-Feb-2016 - Added 2 new methods, allUsersJobStatus() and 
+ * singleUserJobStatus(), to set the single user mode in the session map.
  */
 
 @ManagedBean (name="authBean")
@@ -298,6 +300,25 @@ public class AuthenticationBean implements Serializable {
         }
     }
     
+    // Administrator accessing job management page. Set the single user mode to 
+    // false.
+    public String allUsersJobStatus() {
+        // Save the single user mode selection in the session map to be use by
+        // job status bean.
+        FacesContext.getCurrentInstance().getExternalContext().
+                getSessionMap().put("singleUser", false);
+        return Constants.JOB_STATUS;
+    }
+    
+    // User accessing his/her work area. Set the single user mode to true.
+    public String singleUserJobStatus() {
+        // Save the single user mode selection in the session map to be use by
+        // job status bean.
+        FacesContext.getCurrentInstance().getExternalContext().
+                getSessionMap().put("singleUser", true);
+        return Constants.JOB_STATUS;
+    }
+
     // Machine generated getters and setters
     public String getLoginName() { return loginName; }
     public void setLoginName(String loginName) { this.loginName = loginName; }

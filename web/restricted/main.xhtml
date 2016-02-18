@@ -78,7 +78,7 @@
             <h:panelGrid cellpadding="1">
                 <h:commandLink title="View my job submission status" 
                                value="#{msg['job-status']}" 
-                               action="#{menuSelectionBean.userJobStatus}" 
+                               action="#{authBean.singleUserJobStatus}" 
                                styleClass="mainmenuitem"/>
                 <h:outputLink title="#{msg['finalize-study']}" value="finalizestudy.xhtml" 
                               styleClass="mainmenuitem">

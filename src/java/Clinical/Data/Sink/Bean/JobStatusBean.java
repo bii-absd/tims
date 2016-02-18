@@ -10,6 +10,7 @@ import Clinical.Data.Sink.General.Constants;
 import Clinical.Data.Sink.General.FileLoader;
 import java.io.Serializable;
 import java.util.List;
+// Libraries for Java Extension
 import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
@@ -51,6 +52,9 @@ import org.apache.logging.log4j.LogManager;
  * 01-Feb-2016 - When retrieving submitted jobs, there are now 2 options 
  * available i.e. to retrieve for single user or all users (enable for 
  * administrator only).
+ * 18-Feb-2016 - Bug fix: In job status page, after refresh the user is able to
+ * view everybody job status. To fix: User should only see his/her job in job
+ * status page.
  */
 
 @ManagedBean(name = "jsBean")
@@ -76,9 +80,6 @@ public class JobStatusBean implements Serializable {
                 getExternalContext().getSessionMap().get("singleUser");
         logger.debug("JobStatusBean created.");
         logger.info(userName + ": access Job Status page.");
-        // Reset the single user mode to false.
-        FacesContext.getCurrentInstance().getExternalContext().
-                getSessionMap().put("singleUser", false);
     }
 
     @PostConstruct
@@ -95,7 +96,6 @@ public class JobStatusBean implements Serializable {
     
     // Download the pipeline output for user.
     public void downloadOutput(SubmittedJob job) {
-//        String output = getExternalContext().getRequestParameterMap().get("output");
         String detail = "Output " + job.getOutput_file();
         ActivityLogDB.recordUserActivity(userName, Constants.DWL_FIL, detail);
         FileLoader.download(job.getOutput_file());
@@ -136,13 +136,4 @@ public class JobStatusBean implements Serializable {
         this.jobStatusTable = jobStatusTable;
     }
     */
-    
-    /* No longer in use.
-    // Return the file to be downloaded.
-    public StreamedContent getFile() throws FileNotFoundException {
-        // Temporary hardcored to "text/plain"; should be using variable type
-        return new DefaultStreamedContent(new FileInputStream(file),
-                                          "text/plain",file.getName());
-    }
-    */    
 }
