@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.LinkedHashMap;
 import java.util.List;
+// Libraries for Java Extension
 import javax.annotation.PostConstruct;
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
@@ -52,6 +53,8 @@ import org.apache.logging.log4j.LogManager;
  * 20-Jan-2016 - Updated study table in database; added one new variable closed, 
  * and renamed completed to finalized.
  * 26-Jan-2016 - Implemented audit data capture module.
+ * 18-Feb-2016 - During creation of study ID, automatically append the 
+ * institution ID and department ID to the study ID.
  */
 
 @ManagedBean (name="studyMgntBean")
@@ -137,6 +140,9 @@ public class StudyManagementBean implements Serializable {
     // Create new Study
     public String createNewStudy() {
         FacesContext fc = getFacesContext();
+        // Append the institution ID and department ID to the study ID.
+        study_id = DepartmentDB.getInstID(dept_id) + "-" + dept_id + "-" + 
+                   study_id.toUpperCase();
         // New Study will always be created with empty finalized_output and 
         // summary fields.
         Study study = new Study(study_id, dept_id, user_id, annot_ver, 

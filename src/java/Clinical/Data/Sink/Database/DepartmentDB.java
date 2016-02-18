@@ -38,6 +38,8 @@ import org.apache.logging.log4j.LogManager;
  * use.
  * 13-Dec-2016 - Removed all the static variables in Study and ItemList
  * management modules.
+ * 18-Feb-2016 - Added new method getInstID, to retrieve the institution ID 
+ * from the dept table.
  */
 
 public abstract class DepartmentDB implements Serializable {
@@ -163,5 +165,25 @@ public abstract class DepartmentDB implements Serializable {
         }
         
         return allDeptHash;
+    }
+    
+    // Retrieve the institution ID that this department belongs to.
+    public static String getInstID(String dept_id) {
+        String inst_id = Constants.DATABASE_INVALID_STR;
+        String queryStr = "SELECT inst_id FROM dept WHERE dept_id = \'" 
+                        + dept_id + "\'";
+        ResultSet rs = DBHelper.runQuery(queryStr);
+        
+        try {
+            if (rs.next()) {
+                inst_id = rs.getString("inst_id");
+            }
+        }
+        catch (SQLException e) {
+            logger.error("FAIL to retrieve institution ID for department!");
+            logger.error(e.getMessage());
+        }
+        
+        return inst_id;
     }
 }
