@@ -115,6 +115,19 @@
                         var="filelist" styleClass="datalist" type="none">
                         <h:outputText value="#{filelist}"/><br/>
                     </p:dataList>
+                    <h:outputText rendered="#{cnvPBean.missingFilesStatus}" 
+                                  value="#{msg['revcfg-misfiles']}" 
+                                  style="color: red; font-weight: bold"/>
+                    <p:dataList itemType="square" rows="10"
+                                paginator="true" paginatorTemplate="{FirstPageLink} 
+                                {PreviousPageLink} {CurrentPageReport} 
+                                {NextPageLink} {LastPageLink}"
+                                rendered="#{cnvPBean.missingFilesStatus}" 
+                                value="#{cnvPBean.missingFiles}" 
+                                var="missfile" styleClass="datalist" 
+                                type="none">
+                        <h:outputText value="#{missfile}"/><br/>
+                    </p:dataList>
                     <h:outputText rendered="#{cnvPBean.haveNewData}" 
                                   value="#{msg['revcfg-ctl']}"/>
                     <h:outputText rendered="#{cnvPBean.haveNewData}" 
@@ -131,10 +144,10 @@
                 <p:separator styleClass="configsep"/>
                 <h:panelGrid columns="2" cellspacing="2" cellpadding="2">
                     <p:commandButton value="Cancel" title="#{msg['revcfg-cantit']}"
-                                     style="width: 130px" oncomplete="PF('dlg').hide()"
+                                     style="width: 150px" oncomplete="PF('dlg').hide()"
                                      action="#{cnvPBean.cancelJob}"/>
                     <p:commandButton value="Confirm" title="#{msg['revcfg-cfmtit']}"
-                                     style="width: 130px"
+                                     style="width: 150px"
                                      action="#{cnvPBean.submitJob}" 
                                      rendered="#{cnvPBean.jobSubmissionStatus}"/>
                 </h:panelGrid>

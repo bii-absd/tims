@@ -8,6 +8,7 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
     
     <ui:define name="title">TIMS</ui:define>
+    <ui:param name="link" value="Home"/>
     <ui:define name="content">
     <h:form>
     <p:accordionPanel>
@@ -99,20 +100,24 @@
     <p:dialog modal="true" header="Select Study to work on" widgetVar="dlg" 
               resizable="false">
         <h:form>
-            <h:panelGrid columns="2">
-                <p:selectOneMenu id="studyID" value="#{menuSelectionBean.study_id}">
-                    <f:selectItem itemLabel="Select Study" itemValue=""/>
-                    <f:selectItems value="#{menuSelectionBean.studyList}"/>
-                    <p:ajax update="selPanel"/>
-                </p:selectOneMenu><h:panelGroup/>
-                <h:outputText value="New data to upload?"/>
-                <p:selectBooleanButton id="newdatastatus" 
-                                       value="#{menuSelectionBean.haveNewData}" 
-                                       onLabel="Yes" offLabel="No"/>
+            <h:panelGrid columns="1">
+                <h:panelGroup>
+                    <p:selectOneMenu id="studyID" value="#{menuSelectionBean.study_id}">
+                        <f:selectItem itemLabel="Select Study" itemValue=""/>
+                        <f:selectItems value="#{menuSelectionBean.studyList}"/>
+                        <p:ajax update="selPanel"/>
+                    </p:selectOneMenu>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <h:outputText value="New data to upload? " style="font-weight:bold"/>
+                    <p:selectBooleanButton id="newdatastatus" 
+                                           value="#{menuSelectionBean.haveNewData}" 
+                                           onLabel="Yes" offLabel="No"/>                    
+                </h:panelGroup>
             </h:panelGrid>
             <p:separator styleClass="configsep"/>
             
-            <h:panelGrid id="selPanel" columns="2" cellspacing="2" cellpadding="2">
+            <h:panelGrid id="selPanel" width="100%" columns="2" cellspacing="2" cellpadding="2">
                 <p:commandButton value="Cancel" oncomplete="PF('dlg').hide()" 
                                  action="#{menuSelectionBean.backToMainMenu}" 
                                  style="width: 100%"/>

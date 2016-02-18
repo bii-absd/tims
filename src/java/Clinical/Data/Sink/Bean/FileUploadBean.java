@@ -15,6 +15,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+// Libraries for Java Extension
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 // Libraries for PrimeFaces
@@ -61,6 +62,9 @@ import org.apache.logging.log4j.LogManager;
  * 05-Feb-2016 - Enhance the input files directory creation sequence, so as to
  * avoid race condition from happening when multiple files are being uploaded
  * at the same time.
+ * 18-Feb-2016 - To check the input files received with the filename listed in
+ * the annotation file. List out the missing files (if any) and notice the user
+ * during pipeline configuration review.
  */
 
 public class FileUploadBean implements Serializable {
@@ -196,6 +200,37 @@ public class FileUploadBean implements Serializable {
         }
         
         return result;
+    }
+    
+    // Compare the filename listed in the annotation file with the list of 
+    // files received by the application. Return the list of filenames not
+    // received by the application.
+    public List<String> compareFileList(List<String> annotList) {
+        boolean received = false;
+        List<String> missingList = new ArrayList<>();
+        
+        // Compare all the filename listed in the annotation file with the 
+        // files received.
+        for (String filename : annotList) {
+            for (int i = 0; i < inputList.size(); i++) {
+                if (filename.compareToIgnoreCase(inputList.get(i)) == 0) {
+                    // Input file is received by the application.
+                    received = true;
+                    break;
+                }
+            }
+
+            if (received) {
+                received = false;
+            }
+            else {
+                // Add the filename to the missing list as it is not received
+                // by the application.
+                missingList.add(filename);
+            }
+        }
+        
+        return missingList;
     }
     
     // Setup and store the local path of the input files folder; to be use in

@@ -17,6 +17,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -28,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
+// Libraries for Java Extension
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 // Libraries for PrimeFaces
@@ -82,6 +84,9 @@ import org.apache.logging.log4j.LogManager;
  * 26-Jan-2016 - Implemented audit data capture module.
  * 28-Jan-2016 - Added the pipeline name into the config file content and 
  * filename. Added the seconds timing into the filename.
+ * 18-Feb-2016 - To check the input files received with the filename listed in
+ * the annotation file. List out the missing files (if any) and notice the user
+ * during pipeline configuration review.
  */
 
 public abstract class ConfigBean implements Serializable {
@@ -168,6 +173,33 @@ public abstract class ConfigBean implements Serializable {
         sampleFile.renameAnnotFile();
     }
     
+    // Read in all the filename listed in the annotation file.
+    public List<String> getAllFilenameFromAnnot() {
+        List<String> filenameList = new ArrayList<>();
+        String[] content;
+        
+        try (BufferedReader br = new BufferedReader(
+                                 new FileReader(sampleFile.getLocalDirectoryPath() + 
+                                                sampleFile.getInputFilename())))
+        {
+            // First line is the header; not needed here.
+            String lineRead = br.readLine();
+            // Start processing from the second line.
+            while ((lineRead = br.readLine()) != null) {
+                content = lineRead.split("\t");
+                // The second column is the filename, store it.
+                filenameList.add(content[1]);
+            }
+            logger.debug("All filename read from annotation file.");
+        }
+        catch (IOException e) {
+            logger.error("FAIL to read annotation file!");
+            logger.error(e.getMessage());
+        }
+        
+        return filenameList;
+    }
+    
     // To build the annotation list for user selection based on file passed in.
     private void buildAnnotationList(File file) {
         try (FileInputStream fis = new FileInputStream(file);
@@ -181,11 +213,11 @@ public abstract class ConfigBean implements Serializable {
             for (int i = 0; i < annotList.length; i++) {
                 annotationList.put(annotList[i], annotList[i]);
             }
-            logger.debug("Annotation subject line: " + line);
             logger.debug("Annotation List: " + annotationList.toString());
         }
         catch (IOException e) {
-            logger.debug("FAIL to read the annotation file!");
+            logger.error("FAIL to read annotation file!");
+            logger.error(e.getMessage());
             getFacesContext().addMessage(null, new FacesMessage(
                                 FacesMessage.SEVERITY_ERROR,
                                 "Failed to create annotation list!", ""));
@@ -204,7 +236,7 @@ public abstract class ConfigBean implements Serializable {
             if (!sampleFile.isFilelistEmpty() && annotationList.isEmpty()) {
                 // Retrieve the sample annotation file from local drive
                 file = new File(sampleFile.getLocalDirectoryPath() +
-                                     sampleFile.getInputFilename());
+                                sampleFile.getInputFilename());
                 buildAnnotationList(file);
             }
         }
@@ -213,8 +245,8 @@ public abstract class ConfigBean implements Serializable {
             // selected for reuse and the selection list has yet to be build.
             if ((selectedInput != null) && annotationList.isEmpty()) {
                 file = new File(selectedInput.getFilepath() +
-                                     Constants.getSAMPLE_ANNOT_FILE_NAME() +
-                                     Constants.getSAMPLE_ANNOT_FILE_EXT());
+                                Constants.getSAMPLE_ANNOT_FILE_NAME() +
+                                Constants.getSAMPLE_ANNOT_FILE_EXT());
                 buildAnnotationList(file);
             }
         }

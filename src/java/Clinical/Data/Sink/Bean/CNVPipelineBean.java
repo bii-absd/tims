@@ -4,11 +4,11 @@
 package Clinical.Data.Sink.Bean;
 
 import static Clinical.Data.Sink.Bean.ConfigBean.logger;
-import Clinical.Data.Sink.Database.PipelineDB;
 import Clinical.Data.Sink.Database.SubmittedJob;
 import Clinical.Data.Sink.Database.SubmittedJobDB;
 import Clinical.Data.Sink.General.Constants;
 import java.sql.SQLException;
+// Libraries for Java Extension
 import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
@@ -26,6 +26,9 @@ import javax.faces.bean.ViewScoped;
  * because CNV need to support multiple input files upload.
  * 20-Jan-2016 - To streamline the navigation flow and passing of pipeline name
  * from main menu to pipeline configuration pages.
+ * 18-Feb-2016 - To check the input files received with the filename listed in
+ * the annotation file. List out the missing files (if any) and notice the user
+ * during pipeline configuration review.
  */
 
 @ManagedBean (name="cnvPBean")
@@ -66,7 +69,16 @@ public class CNVPipelineBean extends GEXAffymetrixBean {
             // uploaded.
             if (!(inputFile.isFilelistEmpty() || sampleFile.isFilelistEmpty() ||
                 ctrlFile.isFilelistEmpty())) {
+                // Create the input filename list (Need to do first).
                 inputFile.createInputList();
+                // New input files are being uploaded, need to make sure the
+                // application received all the input files as listed in the 
+                // annotation file.
+                missingFiles = inputFile.compareFileList(getAllFilenameFromAnnot());
+                
+                if (!missingFiles.isEmpty()) {
+                    logger.debug("File(s) not received: " + missingFiles.toString());                    
+                }
                 setJobSubmissionStatus(true);            
             }
         }

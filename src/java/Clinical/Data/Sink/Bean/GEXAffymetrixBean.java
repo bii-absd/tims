@@ -9,6 +9,8 @@ import Clinical.Data.Sink.Database.SubmittedJob;
 import Clinical.Data.Sink.Database.SubmittedJobDB;
 import Clinical.Data.Sink.General.Constants;
 import java.sql.SQLException;
+import java.util.List;
+// Libraries for Java Extension
 import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
@@ -47,11 +49,15 @@ import javax.faces.bean.ViewScoped;
  * from main menu to pipeline configuration pages.
  * 21-Jan-2016 - Added one new field pipeline_name in the input_data table; to
  * associate this input_data with the respective pipeline.
+ * 18-Feb-2016 - To check the input files received with the filename listed in
+ * the annotation file. List out the missing files (if any) and notice the user
+ * during pipeline configuration review.
  */
 
 @ManagedBean (name="gexAffyBean")
 @ViewScoped
 public class GEXAffymetrixBean extends ConfigBean {
+    protected List<String> missingFiles = null;
 
     public GEXAffymetrixBean() {
         logger.debug("GEXAffymetrixBean created.");
@@ -81,7 +87,16 @@ public class GEXAffymetrixBean extends ConfigBean {
             // Only update the jobSubmissionStatus if all the input files are 
             // uploaded.
             if (!(inputFile.isFilelistEmpty() || sampleFile.isFilelistEmpty())) {
+                // Create the input filename list (Need to do first).
                 inputFile.createInputList();
+                // New input files are being uploaded, need to make sure the
+                // application received all the input files as listed in the 
+                // annotation file.
+                missingFiles = inputFile.compareFileList(getAllFilenameFromAnnot());
+                
+                if (!missingFiles.isEmpty()) {
+                    logger.debug("File(s) not received: " + missingFiles.toString());
+                }
                 setJobSubmissionStatus(true);
             }
         }
@@ -157,5 +172,23 @@ public class GEXAffymetrixBean extends ConfigBean {
         }
         // Call the base class method to create the Config File.        
         return super.createConfigFile();
+    }
+    
+    // Return true if missing files information is available (i.e. new input
+    // files uploaded and there are files not received by the system).
+    public boolean getMissingFilesStatus() {
+        if (missingFiles != null) {
+            return !missingFiles.isEmpty();
+        }
+        
+        return Constants.NOT_OK;
+    }
+    
+    // Machine generated getters and setters.
+    public List<String> getMissingFiles() {
+        return missingFiles;
+    }
+    public void setMissingFiles(List<String> missingFiles) {
+        this.missingFiles = missingFiles;
     }
 }

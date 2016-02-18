@@ -3,11 +3,17 @@
  */
 package Clinical.Data.Sink.Bean;
 
-import Clinical.Data.Sink.Database.PipelineDB;
+import static Clinical.Data.Sink.Bean.ConfigBean.logger;
 import Clinical.Data.Sink.Database.SubmittedJob;
 import Clinical.Data.Sink.Database.SubmittedJobDB;
 import Clinical.Data.Sink.General.Constants;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+// Libraries for Java Extension
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
 
@@ -27,6 +33,9 @@ import javax.faces.bean.ViewScoped;
  * Boolean.
  * 20-Jan-2016 - To streamline the navigation flow and passing of pipeline name
  * from main menu to pipeline configuration pages.
+ * 18-Feb-2016 - To check the input files received with the filename listed in
+ * the annotation file. List out the missing files (if any) and notice the user
+ * during pipeline configuration review.
  */
 
 @ManagedBean (name="methPBean")
@@ -67,5 +76,35 @@ public class METHPipelineBean extends GEXAffymetrixBean {
         }
 
         return result;
-    }    
+    }
+    
+    // Read in all the filename listed in the annotation file.
+    @Override
+    public List<String> getAllFilenameFromAnnot() {
+        List<String> filenameList = new ArrayList<>();
+        String[] content;
+        
+        try (BufferedReader br = new BufferedReader(
+                                 new FileReader(sampleFile.getLocalDirectoryPath() + 
+                                                sampleFile.getInputFilename())))
+        {
+            // First line is the header; not needed here.
+            String lineRead = br.readLine();
+            // Start processing from the second line.
+            while ((lineRead = br.readLine()) != null) {
+                content = lineRead.split("\t");
+                // The second column contains the filename header; for
+                // Methylation pipeline, each header will have 2 filenames.
+                filenameList.add(content[1] + "_Grn.idat");
+                filenameList.add(content[1] + "_Red.idat");
+            }
+            logger.debug("All filename read from annotation file.");
+        }
+        catch (IOException e) {
+            logger.error("FAIL to read annotation file!");
+            logger.error(e.getMessage());
+        }
+        
+        return filenameList;
+    }
 }
