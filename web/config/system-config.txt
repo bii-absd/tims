@@ -3,6 +3,7 @@
 # all operating systems (i.e. Windows and Linux).
 APP_NAME TIMS
 USERS_PATH users
+PIC_PATH images
 OUTPUT_PATH output
 INPUT_PATH input
 CONFIG_PATH config

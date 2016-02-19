@@ -7,6 +7,7 @@ import static Clinical.Data.Sink.Bean.ConfigBean.logger;
 import Clinical.Data.Sink.Database.SubmittedJob;
 import Clinical.Data.Sink.Database.SubmittedJobDB;
 import Clinical.Data.Sink.General.Constants;
+import java.io.File;
 import java.sql.SQLException;
 // Libraries for Java Extension
 import javax.annotation.PostConstruct;
@@ -29,6 +30,9 @@ import javax.faces.bean.ViewScoped;
  * 18-Feb-2016 - To check the input files received with the filename listed in
  * the annotation file. List out the missing files (if any) and notice the user
  * during pipeline configuration review.
+ * 19-Feb-2016 - To use the new generic method renameFilename in FileUploadBean
+ * class when renaming annotation and control files. To use the new generic
+ * constructor in FileUploadBean class when creating new object.
  */
 
 @ManagedBean (name="cnvPBean")
@@ -45,7 +49,10 @@ public class CNVPipelineBean extends GEXAffymetrixBean {
     public void initFiles() {
         init();
         if (haveNewData) {
-            ctrlFile = new FileUploadBean(studyID, submitTimeInFilename);            
+            String dir = Constants.getSYSTEM_PATH() + Constants.getINPUT_PATH() 
+                       + studyID + File.separator 
+                       + submitTimeInFilename + File.separator;
+            ctrlFile = new FileUploadBean(dir);            
         }
     }
     
@@ -120,7 +127,9 @@ public class CNVPipelineBean extends GEXAffymetrixBean {
     
     @Override
     public void renameAnnotCtrlFiles() {
-        ctrlFile.renameCtrlProbeFile();
+        // Rename control probe file.
+        ctrlFile.renameFilename(Constants.getCONTROL_PROBE_FILE_NAME() + 
+                                Constants.getCONTROL_PROBE_FILE_EXT());
         super.renameAnnotCtrlFiles();
     }
     

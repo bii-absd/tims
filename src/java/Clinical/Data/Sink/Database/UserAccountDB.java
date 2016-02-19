@@ -47,6 +47,7 @@ import org.mindrot.jbcrypt.BCrypt;
  * 13-Jan-2016 - Removed all the static variables in Account Management module.
  * 18-Jan-2016 - Added new method, getAdminEmails() to retrieve all the 
  * administrator email addresses.
+ * 19-Feb-2016 - To support user account with picture uploaded.
  */
 
 public abstract class UserAccountDB {
@@ -90,6 +91,7 @@ public abstract class UserAccountDB {
                                         rs.getInt("role_id"),
                                         rs.getString("first_name"),
                                         rs.getString("last_name"),
+                                        rs.getString("photo"),
                                         rs.getString("email"),
                                         rs.getBoolean("active"),
                                         "password",
@@ -125,6 +127,7 @@ public abstract class UserAccountDB {
                                        rs.getInt("role_id"),
                                        rs.getString("first_name"),
                                        rs.getString("last_name"),
+                                       rs.getString("photo"),
                                        rs.getString("email"),
                                        rs.getBoolean("active"),
                                        "password",
@@ -209,10 +212,10 @@ public abstract class UserAccountDB {
         {
             // Build the query condition using the parameter user_id.
             queryPwd.setString(1, user_id);
-            ResultSet queryResult = queryPwd.executeQuery();
+            ResultSet rs = queryPwd.executeQuery();
             
-            if (queryResult.next()) {
-                pwd_hash = queryResult.getString("pwd");
+            if (rs.next()) {
+                pwd_hash = rs.getString("pwd");
             }
 
             if (pwd_hash != null) {
@@ -220,15 +223,16 @@ public abstract class UserAccountDB {
                     logger.info(user_id + ": password valid.");
                     // Construct a UserAccount object based on the return result
                     // BUT set the password and last_login to default value.
-                    acct = new UserAccount(queryResult.getString("user_id"),
-                                           queryResult.getInt("role_id"),
-                                           queryResult.getString("first_name"),
-                                           queryResult.getString("last_name"),
-                                           queryResult.getString("email"),
-                                           queryResult.getBoolean("active"),
+                    acct = new UserAccount(rs.getString("user_id"),
+                                           rs.getInt("role_id"),
+                                           rs.getString("first_name"),
+                                           rs.getString("last_name"),
+                                           rs.getString("photo"),
+                                           rs.getString("email"),
+                                           rs.getBoolean("active"),
                                            "password",
-                                           queryResult.getString("dept_id"),
-                                           queryResult.getString("inst_id"),
+                                           rs.getString("dept_id"),
+                                           rs.getString("inst_id"),
                                            "last-login");
                 }
             }
@@ -253,8 +257,8 @@ public abstract class UserAccountDB {
         String pwd_hash = BCrypt.hashpw(newAcct.getPwd(), BCrypt.gensalt());
 
         String insertStr = "INSERT INTO user_account"
-                + "(user_id, role_id, first_name, last_name, email, pwd, "
-                + "active, dept_id) VALUES (?,?,?,?,?,?,?,?)";
+                + "(user_id, role_id, first_name, last_name, photo, email, pwd, "
+                + "active, dept_id) VALUES (?,?,?,?,?,?,?,?,?)";
         PreparedStatement insertStm = conn.prepareStatement(insertStr);
         
         // Build the INSERT statement using the values from the current
@@ -263,10 +267,11 @@ public abstract class UserAccountDB {
         insertStm.setInt(2, newAcct.getRole_id());
         insertStm.setString(3, newAcct.getFirst_name());
         insertStm.setString(4, newAcct.getLast_name());
-        insertStm.setString(5, newAcct.getEmail());
-        insertStm.setString(6, pwd_hash);
-        insertStm.setBoolean(7, newAcct.getActive());
-        insertStm.setString(8, newAcct.getDept_id());
+        insertStm.setString(5, newAcct.getPhoto());
+        insertStm.setString(6, newAcct.getEmail());
+        insertStm.setString(7, pwd_hash);
+        insertStm.setBoolean(8, newAcct.getActive());
+        insertStm.setString(9, newAcct.getDept_id());
         // Execute the INSERT statement
         insertStm.executeUpdate();
     }
@@ -308,7 +313,7 @@ public abstract class UserAccountDB {
     // will be throw and to be handled by the caller.
     public static void updateAccount(UserAccount user) throws SQLException {
         String updateStr = "UPDATE user_account SET dept_id = ?, "
-                         + "first_name = ?, last_name = ?, "
+                         + "first_name = ?, last_name = ?, photo = ?, "
                          + "email = ?, active = ?, role_id = ? WHERE "
                          + "user_id = ?";
         
@@ -316,10 +321,11 @@ public abstract class UserAccountDB {
         updateStm.setString(1, user.getDept_id());
         updateStm.setString(2, user.getFirst_name());
         updateStm.setString(3, user.getLast_name());
-        updateStm.setString(4, user.getEmail());
-        updateStm.setBoolean(5, user.getActive());
-        updateStm.setInt(6, user.getRole_id());
-        updateStm.setString(7, user.getUser_id());
+        updateStm.setString(4, user.getPhoto());
+        updateStm.setString(5, user.getEmail());
+        updateStm.setBoolean(6, user.getActive());
+        updateStm.setInt(7, user.getRole_id());
+        updateStm.setString(8, user.getUser_id());
         // Excute the UPDATE statement
         updateStm.executeUpdate();
     }
@@ -339,6 +345,7 @@ public abstract class UserAccountDB {
                                           rs.getInt("role_id"),
                                           rs.getString("first_name"),
                                           rs.getString("last_name"),
+                                          rs.getString("photo"),
                                           rs.getString("email"),
                                           rs.getBoolean("active"),
                                           "password",

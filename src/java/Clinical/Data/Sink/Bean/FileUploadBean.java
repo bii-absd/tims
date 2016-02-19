@@ -65,6 +65,9 @@ import org.apache.logging.log4j.LogManager;
  * 18-Feb-2016 - To check the input files received with the filename listed in
  * the annotation file. List out the missing files (if any) and notice the user
  * during pipeline configuration review.
+ * 19-Feb-2016 - Enhanced this class to make it reusable for all file upload.
+ * Combined the methods, renameAnnotFile() and renameCtrlProbeFile(), into a 
+ * generic method, renameFilename.
  */
 
 public class FileUploadBean implements Serializable {
@@ -77,12 +80,15 @@ public class FileUploadBean implements Serializable {
     // config file creation).
     private String localDirectoryPath = null;
     private List<String> inputList = null;
-    private LinkedHashMap<Integer,String> fileList = null;
+    private LinkedHashMap<Integer,String> fileList = new LinkedHashMap<>();
     private Boolean inputDir = Constants.NOT_OK;
 
-    public FileUploadBean(String study_id, String submitTime) {
-        fileList = new LinkedHashMap<>();
-        setFileDirectory(study_id, submitTime);
+    // Generic constructor for common file upload. File uploaded will be stored 
+    // into the directory.
+    public FileUploadBean(String directory) {
+        fileDirectory = directory;
+
+        setFileDirectory();
     }
     
     // Create the input files directory before the uploading started. This 
@@ -144,26 +150,27 @@ public class FileUploadBean implements Serializable {
                          uFile.getFileName());
             getFacesContext().addMessage(null, 
                     new FacesMessage(FacesMessage.SEVERITY_ERROR,
-                                "System failed to create input directory!\n"
-                                + "Pipeline will not run!", ""));
+                                "System failed to create directory!\n"
+                                + "Task will not execute!", ""));
         }
         
         return uFile.getFileName();
     }
     
-    // Create level one system directories i.e. .../TIMS/users
+    // Create TIMS system directories i.e. .../TIMS/users .../TIMS/users/photo
     // .../TIMS/input .../TIMS/finalize_output
     public static Boolean createSystemDirectories(String systemDir) {
         Boolean result = 
                 createSystemDirectory(systemDir + Constants.getUSERS_PATH()) &&
+                createSystemDirectory(systemDir + Constants.getUSERS_PATH() 
+                                      + Constants.getPIC_PATH()) &&
                 createSystemDirectory(systemDir + Constants.getINPUT_PATH()) &&
                 createSystemDirectory(systemDir + Constants.getFINALIZE_PATH());
         
         return result;
     }
     
-    // Create level two system directories for each user i.e.
-    // .../TIMS/users/whtay/output
+    // Create user system directories i.e. .../TIMS/users/whtay/output
     // .../TIMS/users/whtay/config
     // .../TIMS/users/whtay/log
     public static Boolean createUsersDirectories(String homeDir) {
@@ -176,14 +183,13 @@ public class FileUploadBean implements Serializable {
         return result;
     }
     
-    // Create level two system directory for each Study i.e.
-    // .../TIMS/input/Bayer
+    // Create study system directory i.e. .../TIMS/input/Bayer
     public static Boolean createStudyDirectory(String study_id) {
         return createSystemDirectory(Constants.getSYSTEM_PATH() + 
                                      Constants.getINPUT_PATH() + study_id);
     }
     
-    // Create the system directory used for storing input files.
+    // Helper function to create system directory.
     public static Boolean createSystemDirectory(String systemDir) {
         Boolean result = Constants.OK;
         File dir = new File(systemDir);
@@ -233,8 +239,7 @@ public class FileUploadBean implements Serializable {
         return missingList;
     }
     
-    // Setup and store the local path of the input files folder; to be use in
-    // config file creation.
+    // Setup and store the local path of the file directory.
     private void setLocalDirectoryPath(String fullpath) {
         localDirectoryPath = fullpath + File.separator;
     }
@@ -269,15 +274,9 @@ public class FileUploadBean implements Serializable {
         return fileDirectory;
     }
     
-    // Set the input files directory for this pipeline job i.e.
-    // .../TIMS/input/Bayer/20151210_1502
-    // This method will be called by the constructor.
-    private void setFileDirectory(String study_id, String submitTime) {
-        fileDirectory = Constants.getSYSTEM_PATH() + 
-                        Constants.getINPUT_PATH() +
-                        study_id + File.separator +
-                        submitTime + File.separator;
-        
+    // Set the file directory for this upload. This method will be called by 
+    // the constructor.
+    private void setFileDirectory() {
         File local = new File(fileDirectory);
         // Set the local file path; to be use during config file creation.
         setLocalDirectoryPath(local.getAbsolutePath());
@@ -299,6 +298,40 @@ public class FileUploadBean implements Serializable {
         }
     }
     
+    // Rename the single file name to the new filename.
+    public void renameFilename(String newFilename) {
+        Path from = FileSystems.getDefault().getPath
+            (localDirectoryPath + getInputFilename());
+        Path to = FileSystems.getDefault().getPath
+            (localDirectoryPath + newFilename);
+        // Rename the filename (from -> to).
+        try {
+            Files.move(from, to);
+            logger.debug(getInputFilename() + " renamed to " + newFilename);
+        }
+        catch (IOException ioe) {
+            logger.error("FAIL to rename " + getInputFilename());
+            logger.error(ioe.getMessage());
+        }        
+    }
+    
+    // Retrieve the faces context
+    private FacesContext getFacesContext() {
+	return FacesContext.getCurrentInstance();
+    }
+    
+    /* NOT IN USE ANYMORE
+    
+    // Constructor for pipeline input files.
+    public FileUploadBean(String study_id, String submitTime) {
+        fileDirectory = Constants.getSYSTEM_PATH() + Constants.getINPUT_PATH() 
+                        + study_id + File.separator + submitTime + File.separator;
+        
+        setFileDirectory();
+    }
+
+    // Use method renameFilename instead
+
     // Rename the sample annotation file to a common filename 
     // (i.e. ANNOTATION.txt)
     public void renameAnnotFile() {
@@ -318,7 +351,7 @@ public class FileUploadBean implements Serializable {
             logger.error(ioe.getMessage());
         }
     }
-    
+
     // Rename the control probe file to a common filename 
     // (i.e. CONTROL_PROBE.txt)
     public void renameCtrlProbeFile() {
@@ -338,9 +371,5 @@ public class FileUploadBean implements Serializable {
             logger.error(ioe.getMessage());
         }
     }
-    
-    // Retrieve the faces context
-    private FacesContext getFacesContext() {
-	return FacesContext.getCurrentInstance();
-    }
+    */
 }

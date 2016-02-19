@@ -10,10 +10,12 @@ import Clinical.Data.Sink.Database.UserAccount;
 import Clinical.Data.Sink.Database.UserAccountDB;
 import Clinical.Data.Sink.Database.UserRoleDB;
 import Clinical.Data.Sink.General.Constants;
+import java.io.File;
 import java.io.Serializable;
 import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.List;
+// Libraries for Java Extension
 import javax.annotation.PostConstruct;
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
@@ -52,6 +54,7 @@ import org.primefaces.event.RowEditEvent;
  * 11-Jan-2016 - Fix the static variable issues in AuthenticationBean.
  * 13-Jan-2016 - Removed all the static variables in Account Management module.
  * 26-Jan-2016 - Implemented audit data capture module.
+ * 19-Feb-2016 - To support user account with picture uploaded.
  */
 
 @ManagedBean (name="acctMgntBean")
@@ -70,6 +73,8 @@ public class AccountManagementBean implements Serializable {
     private List<UserAccount> userAcctList;
     private LinkedHashMap<String,String> instNameHash, deptIDHash, userIDHash;
     private LinkedHashMap<String,Integer> roleNameHash;
+    // For uploading of user photo.
+    private FileUploadBean photo = null;
     
     public AccountManagementBean() {
         userName = (String) getFacesContext().getExternalContext().
@@ -122,13 +127,34 @@ public class AccountManagementBean implements Serializable {
         }
     }
 
+    // Create the FileUploadBean object to store the photo of the user.
+    public void preparePhotoUpload() {
+        if (photo == null) {
+            // All the user photo will be store in TIMS/users/photo/ directory.
+            photo = new FileUploadBean(Constants.getSYSTEM_PATH() + 
+                                       Constants.getUSERS_PATH() +
+                                       Constants.getPIC_PATH() + File.separator);            
+        }
+    }
+    
     // Create a new UserAccount object and call insertAccount to insert a new 
     // record into the user_account table.
     public String createUserAccount() {
         FacesContext facesContext = getFacesContext();
+        // Filepath of the photo uploaded (if uploaded).
+        String filename = "NA";
+        if (!photo.isFilelistEmpty()) {
+            filename = photo.getInputFilename();
+            int ext = filename.indexOf(".");
+            // Rename the photo filename to be the same as the deptID-userID, 
+            // but keep the file extentsion.
+            filename = dept_id + "-" + user_id + filename.substring(ext);
+            // Rename the stored photo filename.
+            photo.renameFilename(filename);
+        }
         // By default, all new account will be active upon creation.
         UserAccount newAcct = new UserAccount(user_id, role_id, first_name, 
-                    last_name, email, true, pwd, dept_id, inst_id, " ");
+                    last_name, filename, email, true, pwd, dept_id, inst_id, " ");
         
         try {
             // Insert the new account into database.
@@ -250,14 +276,13 @@ public class AccountManagementBean implements Serializable {
     public void setUser_id(String user_id) { this.user_id = user_id; }
     public void setFirst_name(String first_name) { this.first_name = first_name; }
     public void setLast_name(String last_name) { this.last_name = last_name; }
+    public void setPhoto(FileUploadBean photo) { this.photo = photo; }
     public void setEmail(String email) { this.email = email; }
     public void setActive(Boolean active) { this.active = active; }
     public void setPwd(String pwd) { this.pwd = pwd; }
     public void setRole_id(int role_id) { this.role_id = role_id; }
-    public void setDept_id(String dept_id) 
-    {   this.dept_id = dept_id;   }
-    public void setInst_id(String inst_id) 
-    {   this.inst_id = inst_id; }
+    public void setDept_id(String dept_id) { this.dept_id = dept_id; }
+    public void setInst_id(String inst_id) { this.inst_id = inst_id; }
     public void setNew_pwd(String new_pwd) { this.new_pwd = new_pwd; }
     public void setCfm_pwd(String cfm_pwd) { this.cfm_pwd = cfm_pwd; }
 
@@ -265,6 +290,7 @@ public class AccountManagementBean implements Serializable {
     public String getUser_id() { return user_id; }
     public String getFirst_name() { return first_name; }
     public String getLast_name() { return last_name; }
+    public FileUploadBean getPhoto() { return photo; }
     public String getEmail() { return email; }
     public Boolean getActive() { return active; }
     public String getPwd() { return pwd; }

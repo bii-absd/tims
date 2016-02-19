@@ -80,6 +80,7 @@ import org.apache.logging.log4j.LogManager;
  * 29-Jan-2016 - To use a common system setup file for both Windows and Linux OS.
  * 01-Feb-2016 - Added one new constant, JOB_STATUS.
  * 12-Feb-2016 - Added one new constant, EXE_UNFIN.
+ * 19-Feb-2016 - Added one new constant, PIC_PATH.
  */
 
 @ManagedBean (name = "constants")
@@ -130,6 +131,7 @@ public class Constants {
     // Constants read in from setup file.
     private static String SYSTEM_PATH = null;
     private static String USERS_PATH = null;
+    private static String PIC_PATH = null;
     private static String OUTPUT_PATH = null;
     private static String INPUT_PATH = null;
     private static String CONFIG_PATH = null;
@@ -188,6 +190,7 @@ public class Constants {
             SYSTEM_PATH = root + File.separator + setup.get("APP_NAME");
             USERS_PATH = 
                     File.separator + setup.get("USERS_PATH") + File.separator;
+            PIC_PATH = setup.get("PIC_PATH");
             OUTPUT_PATH = 
                     File.separator + setup.get("OUTPUT_PATH") + File.separator;
             INPUT_PATH = 
@@ -235,6 +238,7 @@ public class Constants {
     // Machine generated getters
     public static String getSYSTEM_PATH() { return SYSTEM_PATH; }
     public static String getUSERS_PATH() { return USERS_PATH; }
+    public static String getPIC_PATH() { return PIC_PATH; }
     public static String getOUTPUT_PATH() { return OUTPUT_PATH; }
     public static String getINPUT_PATH() { return INPUT_PATH; }
     public static String getCONFIG_PATH() { return CONFIG_PATH; }

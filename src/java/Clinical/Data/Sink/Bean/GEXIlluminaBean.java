@@ -8,6 +8,7 @@ import Clinical.Data.Sink.Database.InputDataDB;
 import Clinical.Data.Sink.Database.SubmittedJob;
 import Clinical.Data.Sink.Database.SubmittedJobDB;
 import Clinical.Data.Sink.General.Constants;
+import java.io.File;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,6 +51,9 @@ import javax.faces.bean.ViewScoped;
  * from main menu to pipeline configuration pages.
  * 21-Jan-2016 - Added one new field pipeline_name in the input_data table; to
  * associate this input_data with the respective pipeline.
+ * 19-Feb-2016 - To use the new generic method renameFilename in FileUploadBean
+ * class when renaming annotation and control files. To use the new generic
+ * constructor in FileUploadBean class when creating new object.
  */
 
 @ManagedBean (name="gexIlluBean")
@@ -68,7 +72,10 @@ public class GEXIlluminaBean extends ConfigBean {
     public void initFiles() {
         init();
         if (haveNewData) {
-            ctrlFile = new FileUploadBean(studyID, submitTimeInFilename);            
+            String dir = Constants.getSYSTEM_PATH() + Constants.getINPUT_PATH() 
+                       + studyID + File.separator 
+                       + submitTimeInFilename + File.separator;
+            ctrlFile = new FileUploadBean(dir);            
         }
     }
     
@@ -150,7 +157,9 @@ public class GEXIlluminaBean extends ConfigBean {
 
     @Override
     public void renameAnnotCtrlFiles() {
-        ctrlFile.renameCtrlProbeFile();
+        // Rename control probe file.
+        ctrlFile.renameFilename(Constants.getCONTROL_PROBE_FILE_NAME() + 
+                                Constants.getCONTROL_PROBE_FILE_EXT());
         super.renameAnnotCtrlFiles();
     }
     

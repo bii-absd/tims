@@ -87,6 +87,9 @@ import org.apache.logging.log4j.LogManager;
  * 18-Feb-2016 - To check the input files received with the filename listed in
  * the annotation file. List out the missing files (if any) and notice the user
  * during pipeline configuration review.
+ * 19-Feb-2016 - To use the new generic method renameFilename in FileUploadBean
+ * class when renaming annotation and control files. To use the new generic
+ * constructor in FileUploadBean class when creating new object.
  */
 
 public abstract class ConfigBean implements Serializable {
@@ -158,8 +161,11 @@ public abstract class ConfigBean implements Serializable {
         createJobTimestamp();
         
         if (haveNewData) {
-            inputFile = new FileUploadBean(studyID, submitTimeInFilename);
-            sampleFile = new FileUploadBean(studyID, submitTimeInFilename);
+            String dir = Constants.getSYSTEM_PATH() + Constants.getINPUT_PATH() 
+                       + studyID + File.separator 
+                       + submitTimeInFilename + File.separator;
+            inputFile = new FileUploadBean(dir);
+            sampleFile = new FileUploadBean(dir);
         }
         else {
             inputDataList = InputDataDB.getIpList(studyID, pipelineName);
@@ -170,7 +176,9 @@ public abstract class ConfigBean implements Serializable {
     // Rename the sample annotation file (and control probe file) to a common 
     // name for future use.
     public void renameAnnotCtrlFiles() {
-        sampleFile.renameAnnotFile();
+        // Rename sample annotation file.
+        sampleFile.renameFilename(Constants.getSAMPLE_ANNOT_FILE_NAME() + 
+                                  Constants.getSAMPLE_ANNOT_FILE_EXT());
     }
     
     // Read in all the filename listed in the annotation file.

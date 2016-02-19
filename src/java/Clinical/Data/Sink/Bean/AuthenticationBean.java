@@ -83,6 +83,7 @@ import org.apache.logging.log4j.LogManager;
  * allow the user to extend the session.
  * 18-Feb-2016 - Added 2 new methods, allUsersJobStatus() and 
  * singleUserJobStatus(), to set the single user mode in the session map.
+ * 19-Feb-2016 - To support user account with picture uploaded.
  */
 
 @ManagedBean (name="authBean")
@@ -298,6 +299,21 @@ public class AuthenticationBean implements Serializable {
             // type of users.
             return "Welcome " +  userAcct.getFirst_name();
         }
+    }
+    
+    // Supply the user photo file path.
+    public String getUserPhoto() {
+        return userAcct.getPhoto();
+    }
+    
+    // Check whether the user has a photo uploaded. The return boolean will be
+    // used to decide whether to render the graphic image or not.
+    public boolean isUserPhotoAvailable() {
+        if (userAcct.getPhoto().compareTo("NA") == 0) {
+            return false;
+        }
+        // If control reaches here, user has a photo uploaded.
+        return true;
     }
     
     // Administrator accessing job management page. Set the single user mode to 

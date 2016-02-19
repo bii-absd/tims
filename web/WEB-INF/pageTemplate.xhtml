@@ -16,45 +16,53 @@
 
     <h:body>
         <h:form id="template">
-        <h:panelGrid columns="3" cellspacing="0" cellpadding="0" width="100%">
-            <h:panelGroup>
-                <h:graphicImage library="images" name="Astar.jpg" alt="AStar"/>
-                <h:graphicImage library="images" name="BII.jpg" alt="BII"/>                
-            </h:panelGroup>
+            <h:panelGrid columns="3" cellspacing="0" cellpadding="0" width="100%">
+                <h:panelGroup>
+                    <h:graphicImage library="images" name="Astar.jpg" alt="AStar"/>
+                    <h:graphicImage library="images" name="BII.jpg" alt="BII"/>                
+                </h:panelGroup>
 
-            <p:menubar>
-                <p:submenu label="Admin">
-                    <p:menuitem value="#{msg['acct-mgnt']}" icon="fa fa-user" 
-                                url="accountmanagement.xhtml"/>
-                    <p:menuitem value="#{msg['study-mgnt']}" icon="fa fa-book" 
-                                url="studymanagement.xhtml" 
-                                rendered="#{authBean.adminRight}"/>
-                    <p:menuitem value="#{msg['pipeline-mgnt']}" icon="fa fa-flask"
-                                url="pipelinemanagement.xhtml" 
-                                rendered="#{authBean.adminRight}"/>
-                    <p:menuitem value="#{msg['item-mgnt']}" icon="fa fa-list-ul"
-                                url="itemlistmanagement.xhtml" 
-                                rendered="#{authBean.adminRight}"/>
-                    <p:menuitem value="#{msg['job-mgnt']}" icon="fa fa-folder-open" 
-                                action="#{authBean.allUsersJobStatus}"
-                                rendered="#{authBean.adminRight}">
-                    </p:menuitem>
-                    <p:menuitem value="#{msg['act-track']}" 
-                                icon="fa fa-pencil-square-o" 
-                                url="activitytracking.xhtml" 
-                                rendered="#{authBean.supervisorRight}"/>
-                </p:submenu>
-                <f:facet name="options">
-                    <p:commandButton value="Logout" action="#{authBean.logout}"
-                                     icon="ui-icon-extlink"/>
-                </f:facet>
-            </p:menubar>
+                <p:menubar>
+                    <p:submenu label="Admin">
+                        <p:menuitem value="#{msg['acct-mgnt']}" icon="fa fa-user" 
+                                    url="accountmanagement.xhtml"/>
+                        <p:menuitem value="#{msg['study-mgnt']}" icon="fa fa-book" 
+                                    url="studymanagement.xhtml" 
+                                    rendered="#{authBean.adminRight}"/>
+                        <p:menuitem value="#{msg['pipeline-mgnt']}" icon="fa fa-flask"
+                                    url="pipelinemanagement.xhtml" 
+                                    rendered="#{authBean.adminRight}"/>
+                        <p:menuitem value="#{msg['item-mgnt']}" icon="fa fa-list-ul"
+                                    url="itemlistmanagement.xhtml" 
+                                    rendered="#{authBean.adminRight}"/>
+                        <p:menuitem value="#{msg['job-mgnt']}" icon="fa fa-folder-open" 
+                                    action="#{authBean.allUsersJobStatus}"
+                                    rendered="#{authBean.adminRight}">
+                        </p:menuitem>
+                        <p:menuitem value="#{msg['act-track']}" 
+                                    icon="fa fa-pencil-square-o" 
+                                    url="activitytracking.xhtml" 
+                                    rendered="#{authBean.supervisorRight}"/>
+                    </p:submenu>
+                    <f:facet name="options">
+                        <p:commandButton value="Logout" action="#{authBean.logout}"
+                                         icon="ui-icon-extlink"/>
+                    </f:facet>
+                </p:menubar>
  
-            <h:panelGrid cellpadding="2" cellspacing="2" styleClass="user-info">
-                <h:outputText value="#{authBean.getHeaderFullName()}"/>
-                <h:outputText value="#{authBean.getHeaderInstDept()}"/>
+                <h:panelGrid columns="2" cellpadding="2" cellspacing="2" styleClass="user-info">
+                    <h:panelGroup>
+                        <h:graphicImage value="/images/#{authBean.userPhoto}" 
+                                        rendered="#{authBean.userPhotoAvailable}" 
+                                        width="74px" height="100px"/>
+                    </h:panelGroup>
+                    <h:panelGroup>
+                        <h:outputText value="#{authBean.getHeaderFullName()}"/><br/>
+                        <h:outputText value="#{authBean.getHeaderInstDept()}"/>                        
+                    </h:panelGroup>
+                </h:panelGrid>
             </h:panelGrid>
-        </h:panelGrid>
+            
             <p:breadCrumb>
                 <p:menuitem value="Array Data" url="main.xhtml" title="Back to Main Page"/>
                 <p:menuitem styleClass="subheading" value="#{link}"/>
