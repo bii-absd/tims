@@ -13,7 +13,7 @@
     <p:growl id="acctMsg"/>
         <p:accordionPanel>
             <p:tab id="editaccount" title="Edit User Account" 
-                   rendered="#{authBean.adminRight}" 
+                   rendered="#{authBean.isAdministrator()}" 
                    titleStyleClass="tab-title">
             <h:form id="editAcctForm">
                 <p:dataTable var="acct" rows="5" id="editTable" 
@@ -127,7 +127,7 @@
 
             <p:tab id="newaccount" title="Create New User Account" 
                    titleStyleClass="tab-title"
-                   rendered="#{authBean.adminRight}">
+                   rendered="#{authBean.isAdministrator()}">
             <h:form id="newacct">
             <p:messages id="newacct-msg" for="newacctstatus" showDetail="true"/>
                 <h:panelGrid columns="3" border="0" cellpadding="4" 
@@ -223,7 +223,7 @@
             <p:messages id="changepwd-msg" for="changepwdstatus" showDetail="true"/>
                 <h:panelGrid columns="3" border="0" cellpadding="4" cellspacing="2">
                     <p:selectOneMenu value="#{acctMgntBean.user_id}" 
-                                     rendered="#{authBean.adminRight}" 
+                                     rendered="#{authBean.isAdministrator()}" 
                                      style="width: 175px">
                         <f:selectItem itemLabel="Select User ID" itemValue="none"/>
                         <f:selectItems value="#{acctMgntBean.userIDHash}"/>

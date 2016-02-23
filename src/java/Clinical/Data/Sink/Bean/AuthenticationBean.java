@@ -84,6 +84,7 @@ import org.apache.logging.log4j.LogManager;
  * 18-Feb-2016 - Added 2 new methods, allUsersJobStatus() and 
  * singleUserJobStatus(), to set the single user mode in the session map.
  * 19-Feb-2016 - To support user account with picture uploaded.
+ * 23-Feb-2016 - Implementation for database 3.0 (Part 1).
  */
 
 @ManagedBean (name="authBean")
@@ -253,7 +254,7 @@ public class AuthenticationBean implements Serializable {
     // Return true if the role ID of the user is 1 (i.e. Admin), else it will 
     // return false. The return value will be used to control the access to 
     // some control/link.
-    public Boolean getAdminRight() {
+    public Boolean isAdministrator() {
         if (loginName.compareTo("super") == 0) {
             return Constants.OK;
         }
@@ -264,9 +265,14 @@ public class AuthenticationBean implements Serializable {
         }
     }
     
-    // Return true if the role ID of the user is 2 (i.e. Supervisor).
-    public Boolean getSupervisorRight() {
-        return userAcct.getRole_id() == 2;
+    // Return true if the role ID of the user is 1 or 2 (i.e. Admin / Director).
+    public boolean isDirector() {
+        return isAdministrator() || (userAcct.getRole_id() == 2);
+    }
+
+    // Return true if the role ID of the user is 1 or 4 (i.e. Admin / PI).
+    public boolean isPI() {
+        return isAdministrator() || (userAcct.getRole_id() == 4);
     }
     
     // Retrieve the faces context

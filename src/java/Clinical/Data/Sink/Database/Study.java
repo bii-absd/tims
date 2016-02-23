@@ -23,43 +23,52 @@ import java.sql.Date;
  * null before checking whether the file is ready for download.
  * 20-Jan-2016 - Updated study table in database; added one new variable closed, 
  * and renamed completed to finalized.
+ * 23-Feb-2016 - Implementation for database 3.0 (Part 1).
  */
 
 public class Study {
     // study table attributes
-    private String study_id, dept_id, user_id, annot_ver, 
-                   description, finalized_output, summary;
-    private Date sqlDate;
+    private String study_id, owner_id, dept_id, annot_ver, description, 
+                   background, grant_info, finalized_output, summary;
+    private Date start_date, end_date;
     private Boolean finalized, closed;
 
     // This constructor is used when retrieving the study table for database.
-    public Study(String study_id, String dept_id, String user_id, 
-            String annot_ver, String description, String finalized_output,
-            String summary, Date sqlDate, Boolean finalized, Boolean closed) {
+    public Study(String study_id, String owner_id, String dept_id, String annot_ver, 
+                 String description, String background, String grant_info, 
+                 String finalized_output, String summary, Date start_date, 
+                 Date end_date, Boolean finalized, Boolean closed) {
         this.study_id = study_id;
+        this.owner_id = owner_id;
         this.dept_id = dept_id;
-        this.user_id = user_id;
         this.annot_ver = annot_ver;
         this.description = description;
+        this.background = background;
+        this.grant_info = grant_info;
         this.finalized_output = finalized_output;
         this.summary = summary;
-        this.sqlDate = sqlDate;
+        this.start_date = start_date;
+        this.end_date = end_date;
         this.finalized = finalized;
         this.closed = closed;
     }
     // This constructor is used for constructing new Study.
     // For every new Study created, the finalized_output and summary will be
     // empty, and closed status will be false (i.e. not closed).
-    public Study(String study_id, String dept_id, String user_id, 
-            String annot_ver, String description, Date sqlDate, 
-            Boolean finalized) {
+    public Study(String study_id, String owner_id, String dept_id, String annot_ver, 
+                 String description, String background, String grant_info, 
+                 Date start_date, Date end_date, Boolean finalized) {
         this.study_id = study_id;
+        this.owner_id = owner_id;
         this.dept_id = dept_id;
-        this.user_id = user_id;
+        this.owner_id = owner_id;
         this.annot_ver = annot_ver;
         this.description = description;
-        finalized_output = summary = null;
-        this.sqlDate = sqlDate;
+        this.background = background;
+        this.grant_info = grant_info;
+        finalized_output = summary = null;        
+        this.start_date = start_date;
+        this.end_date = end_date;
         this.finalized = finalized;
         closed = false;
     }
@@ -95,6 +104,11 @@ public class Study {
         
         return file.exists()?Constants.OK:Constants.NOT_OK;
     }
+
+    // Return the owner full name for this study.
+    public String getOwnerFullName() {
+        return UserAccountDB.getFullName(owner_id);
+    }
     
     // Machine generated getters and setters
     public String getStudy_id() {
@@ -103,17 +117,17 @@ public class Study {
     public void setStudy_id(String study_id) {
         this.study_id = study_id;
     }
+    public String getOwner_id() {
+        return owner_id;
+    }
+    public void setOwner_id(String owner_id) {
+        this.owner_id = owner_id;
+    }
     public String getDept_id() {
         return dept_id;
     }
     public void setDept_id(String dept_id) {
         this.dept_id = dept_id;
-    }
-    public String getUser_id() {
-        return user_id;
-    }
-    public void setUser_id(String user_id) {
-        this.user_id = user_id;
     }
     public String getAnnot_ver() {
         return annot_ver;
@@ -127,6 +141,30 @@ public class Study {
     public void setDescription(String description) {
         this.description = description;
     }
+    public String getBackground() {
+        return background;
+    }
+    public void setBackground(String background) {
+        this.background = background;
+    }
+    public String getGrant_info() {
+        return grant_info;
+    }
+    public void setGrant_info(String grant_info) {
+        this.grant_info = grant_info;
+    }
+    public Date getStart_date() {
+        return start_date;
+    }
+    public void setStart_date(Date start_date) {
+        this.start_date = start_date;
+    }
+    public Date getEnd_date() {
+        return end_date;
+    }
+    public void setEnd_date(Date end_date) {
+        this.end_date = end_date;
+    }
     public String getFinalized_output() {
         return finalized_output;
     }
@@ -138,12 +176,6 @@ public class Study {
     }
     public void setSummary(String summary) {
         this.summary = summary;
-    }
-    public Date getSqlDate() {
-        return sqlDate;
-    }
-    public void setSqlDate(Date sqlDate) {
-        this.sqlDate = sqlDate;
     }
     public Boolean getFinalized() {
         return finalized;

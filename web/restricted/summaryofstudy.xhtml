@@ -13,29 +13,31 @@
         <h:form id="sosForm">
             <p:dataTable var="cmpStudy" value="#{SOSBean.completedStudy}" 
                          styleClass="table-odd-row table-even-row">
-                <p:column headerText="Study ID" 
-                          style="width: 220px; text-align: left">
+                <p:column headerText="Study ID" styleClass="jsmedcol">
                     <h:outputText value="#{cmpStudy.study_id}"/>
                 </p:column>
-                <p:column headerText="Date" 
-                          style="width: 90px; text-align: left">
-                    <h:outputText value="#{cmpStudy.sqlDate}"/>
+                <p:column headerText="Principal Investigator" 
+                          style="width: 130px; text-align: left">
+                    <h:outputText value="#{cmpStudy.ownerFullName}"/>
+                </p:column>
+                <p:column headerText="Start Date" styleClass="jssmallcol">
+                    <h:outputText value="#{cmpStudy.start_date}"/>
+                </p:column>
+                <p:column headerText="End Date" styleClass="jssmallcol">
+                    <h:outputText value="#{cmpStudy.end_date}"/>
                 </p:column>
                 <p:column headerText="Description" style="text-align: left">
                     <h:outputText value="#{cmpStudy.description}"/>
                 </p:column>
-                <p:column headerText="Annotation Version" 
-                          style="width: 110px; text-align: left">
+                <p:column headerText="Annotation Version" styleClass="col120">
                     <h:outputText value="#{cmpStudy.annot_ver}"/>
                 </p:column>
-                <p:column headerText="Consolidated Ouput" 
-                          style="width: 120px; text-align: left">
+                <p:column headerText="Consolidated Ouput" styleClass="col120">
                     <p:commandLink ajax="false" value="Download" 
                                    disabled="#{cmpStudy.outputReadyStatus}"
                                    action="#{SOSBean.downloadFinalizedOP(cmpStudy)}"/>
                 </p:column>
-                <p:column headerText="Finalized Summary" 
-                          style="width: 120px; text-align: left">
+                <p:column headerText="Finalized Summary" styleClass="col120">
                     <p:commandLink ajax="false" value="Download" 
                                    disabled="#{cmpStudy.summaryReadyStatus}"
                                    action="#{SOSBean.downloadSummary(cmpStudy)}"/>

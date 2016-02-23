@@ -48,6 +48,8 @@ import org.mindrot.jbcrypt.BCrypt;
  * 18-Jan-2016 - Added new method, getAdminEmails() to retrieve all the 
  * administrator email addresses.
  * 19-Feb-2016 - To support user account with picture uploaded.
+ * 23-Feb-2016 - Added new method getPiIDHash(), to return the user ID of all
+ * the PIs in the system.
  */
 
 public abstract class UserAccountDB {
@@ -55,6 +57,28 @@ public abstract class UserAccountDB {
     private final static Logger logger = LogManager.
             getLogger(UserAccountDB.class.getName());
     private final static Connection conn = DBHelper.getDBConn();
+    
+    // Temporay method retrieve all the user ID of PI.
+    // In future, this method will be moved to grp Class.
+    public static LinkedHashMap<String, String> getPiIDHash() {
+        LinkedHashMap<String,String> piIDHash = new LinkedHashMap<>();
+        ResultSet rs = DBHelper.runQuery(
+            "SELECT user_id FROM user_account WHERE role_id = 4 ORDER BY user_id");
+
+        try {
+            while (rs.next()) {
+                String user_id = rs.getString("user_id");
+                piIDHash.put(user_id, user_id);
+            }
+            rs.close();
+        }
+        catch (SQLException e) {
+            logger.error("FAIL to retrieve PI ID!");
+            logger.error(e.getMessage());
+        }
+        
+        return piIDHash;
+    }
     
     // Return the list of all the user ID currently in the system.
     public static LinkedHashMap<String,String> getUserIDHash() {

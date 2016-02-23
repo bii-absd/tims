@@ -195,4 +195,11 @@
 .jsmedcol {
     width: 200px;
     text-align: left !important;
-}   
+}
+
+/* Style defined for p:column with width equal to 120px, and text align left.
+*/
+.col120 {
+    width: 120px;
+    text-align: left !important;
+}

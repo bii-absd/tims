@@ -11,7 +11,7 @@
     <ui:param name="link" value="#{msg['unfinalize-study']}"/>
     <ui:define name="content">
     <h:form id="studyForm">
-        <p:dataTable id="finstudy" rendered="#{authBean.adminRight}" 
+        <p:dataTable id="finstudy" rendered="#{authBean.isAdministrator()}" 
                      var="studies" value="#{unfinBean.finStudyList}" 
                      selection="#{unfinBean.selectedStudy}" 
                      rowKey="#{studies.study_id}"
@@ -20,18 +20,24 @@
                       style="width: 220px; text-align: left">
                 <h:outputText value="#{studies.study_id}"/>
             </p:column>
-            <p:column headerText="Date" style="width: 90px; text-align: left">
-                <h:outputText value="#{studies.sqlDate}"/>
+            <p:column headerText="Start Date" styleClass="jssmallcol">
+                <h:outputText value="#{studies.start_date}"/>
+            </p:column>
+            <p:column headerText="End Date" styleClass="jssmallcol">
+                <h:outputText value="#{studies.end_date}"/>
             </p:column>
             <p:column headerText="Description" style="text-align: left">
                 <h:outputText value="#{studies.description}"/>
+            </p:column>
+            <p:column headerText="Grant Information" style="text-align: left">
+                <h:outputText value="#{studies.grant_info}"/>
             </p:column>
             <p:column headerText="Unfinalize" selectionMode="single" 
                       style="width: 60px; text-align: center"/>
         </p:dataTable>
         <p:separator styleClass="configsep"/>
         <p:commandButton value="Unfinalize" icon="ui-icon-check"
-                         rendered="#{authBean.adminRight}" update="cfmdlg"
+                         rendered="#{authBean.isAdministrator()}" update="cfmdlg"
                          oncomplete="PF('cd').show()"/>
         
         <p:confirmDialog id="cfmdlg" message="#{unfinBean.message}" 

@@ -9,11 +9,11 @@ import Clinical.Data.Sink.Database.Institution;
 import Clinical.Data.Sink.Database.InstitutionDB;
 import Clinical.Data.Sink.Database.Study;
 import Clinical.Data.Sink.Database.StudyDB;
+import Clinical.Data.Sink.Database.UserAccountDB;
 import Clinical.Data.Sink.General.Constants;
 import java.io.Serializable;
 import java.sql.Date;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.LinkedHashMap;
 import java.util.List;
 // Libraries for Java Extension
@@ -55,6 +55,7 @@ import org.apache.logging.log4j.LogManager;
  * 26-Jan-2016 - Implemented audit data capture module.
  * 18-Feb-2016 - During creation of study ID, automatically append the 
  * institution ID and department ID to the study ID.
+ * 23-Feb-2016 - Implementation for database 3.0 (Part 1).
  */
 
 @ManagedBean (name="studyMgntBean")
@@ -64,26 +65,29 @@ public class StudyManagementBean implements Serializable {
     private final static Logger logger = LogManager.
             getLogger(StudyManagementBean.class.getName());
     // Attributes for Study object
-    private String study_id, dept_id, user_id, annot_ver, description;
-    private Date sqlDate;
-    private java.util.Date utilDate;
+    private String study_id, owner_id, dept_id, annot_ver, description, background, grant_info;
+    private Date start_date, end_date;
+    private java.util.Date util_start_date, util_end_date;
     private Boolean finalized;
-    private LinkedHashMap<String,String> annotHash, deptHash;
+    private LinkedHashMap<String,String> annotHash, deptHash, piIDHash;
     private List<SelectItem> grouping;
     private List<Study> studyList;
-    
+    // Store the user ID of the current user.
+    private final String userName;
+
     public StudyManagementBean() {
-        user_id = (String) getFacesContext().getExternalContext().
+        userName = (String) getFacesContext().getExternalContext().
                 getSessionMap().get("User");
-        sqlDate = new Date(Calendar.getInstance().getTime().getTime());
         logger.debug("StudyManagementBean created.");
-        logger.debug(user_id + ": access Study ID Management page.");
+        logger.debug(userName + ": access Study ID Management page.");
     }
     
     @PostConstruct
     public void init() {
+        start_date = end_date = null;
         annotHash = StudyDB.getAnnotHash();
         deptHash = DepartmentDB.getAllDeptHash();
+        piIDHash = UserAccountDB.getPiIDHash();
         studyList = StudyDB.queryStudy();
         grouping = new ArrayList<>();
         setupGrouping();
@@ -94,15 +98,18 @@ public class StudyManagementBean implements Serializable {
         FacesContext fc = getFacesContext();
         // Because the system is receiving the date as java.util.Date hence
         // we need to perform a conversion here before storing it into database.
-        if (utilDate != null) {
-            ((Study) event.getObject()).setSqlDate(new Date(utilDate.getTime()));            
+        if (util_start_date != null) {
+            ((Study) event.getObject()).setStart_date(new Date(util_start_date.getTime()));            
         }
-
+        if (util_end_date != null) {
+            ((Study) event.getObject()).setEnd_date(new Date(util_end_date.getTime()));
+        }
+        
         if (StudyDB.updateStudy((Study) event.getObject())) {
             // Record this study update activity into database.
             String detail = "Study " + ((Study) event.getObject()).getStudy_id();
-            ActivityLogDB.recordUserActivity(user_id, Constants.CHG_ID, detail);
-            logger.info(user_id + ": updated " + detail);
+            ActivityLogDB.recordUserActivity(userName, Constants.CHG_ID, detail);
+            logger.info(userName + ": updated " + detail);
             fc.addMessage(null, new FacesMessage(
                     FacesMessage.SEVERITY_INFO, "Study updated.", ""));
         }
@@ -143,27 +150,34 @@ public class StudyManagementBean implements Serializable {
         // Append the institution ID and department ID to the study ID.
         study_id = DepartmentDB.getInstID(dept_id) + "-" + dept_id + "-" + 
                    study_id.toUpperCase();
+        // Because the system is receiving the date as java.util.Date hence
+        // we need to perform a conversion here before storing it into database.
+        if (util_start_date != null) {
+            start_date = new Date(util_start_date.getTime());
+        }
+        if (util_end_date != null) {
+            end_date = new Date(util_end_date.getTime());
+        }
+        
         // New Study will always be created with empty finalized_output and 
         // summary fields.
-        Study study = new Study(study_id, dept_id, user_id, annot_ver, 
-                                description, sqlDate, finalized);
+        Study study = new Study(study_id, owner_id, dept_id, annot_ver, description, 
+                                background, grant_info, start_date, end_date, finalized);
         
         if (StudyDB.insertStudy(study)) {
             // Create a separate input directory for the newly created Study ID.
             FileUploadBean.createStudyDirectory(study_id);
             // Record this study creation activity into database.
             String detail = "Study " + study_id;
-            ActivityLogDB.recordUserActivity(user_id, Constants.CRE_ID, detail);
-            logger.info(user_id + ": created " + detail);
+            ActivityLogDB.recordUserActivity(userName, Constants.CRE_ID, detail);
+            logger.info(userName + ": created " + detail);
             fc.addMessage(null, new FacesMessage(
-                    FacesMessage.SEVERITY_INFO,
-                    "New Study ID created.", ""));
+                    FacesMessage.SEVERITY_INFO, "New Study ID created.", ""));
         }
         else {
             logger.debug("FAIL to create new Study ID: " + study_id);
             fc.addMessage(null, new FacesMessage(
-                    FacesMessage.SEVERITY_ERROR, 
-                    "Failed to create new Study ID!", ""));
+                    FacesMessage.SEVERITY_ERROR, "Failed to create new Study ID!", ""));
         }
 
         return Constants.STUDY_MANAGEMENT;
@@ -188,6 +202,11 @@ public class StudyManagementBean implements Serializable {
     public LinkedHashMap<String, String> getDeptHash() {
         return deptHash;
     }
+
+    // Return the list of user ID that belongs that to PIs.
+    public LinkedHashMap<String, String> getPiIDHash() {
+        return piIDHash;
+    }
     
     // Machine generated getters and setters
     public List<Study> getStudyList() {
@@ -202,14 +221,17 @@ public class StudyManagementBean implements Serializable {
     public void setStudy_id(String study_id) {
         this.study_id = study_id;
     }
+    public String getOwner_id() {
+        return owner_id;
+    }
+    public void setOwner_id(String owner_id) {
+        this.owner_id = owner_id;
+    }
     public String getDept_id() {
         return dept_id;
     }
     public void setDept_id(String dept_id) {
         this.dept_id = dept_id;
-    }
-    public String getUser_id() {
-        return user_id;
     }
     public String getAnnot_ver() {
         return annot_ver;
@@ -223,8 +245,17 @@ public class StudyManagementBean implements Serializable {
     public void setDescription(String description) {
         this.description = description;
     }
-    public Date getSqlDate() {
-        return sqlDate;
+    public String getBackground() {
+        return background;
+    }
+    public void setBackground(String background) {
+        this.background = background;
+    }
+    public String getGrant_info() {
+        return grant_info;
+    }
+    public void setGrant_info(String grant_info) {
+        this.grant_info = grant_info;
     }
     public void setFinalized(Boolean finalized) {
         this.finalized = finalized;
@@ -232,12 +263,18 @@ public class StudyManagementBean implements Serializable {
     public Boolean getFinalized() {
         return finalized;
     }
-    // utilDate is used as a temporary placement for attribute sqlDate during
-    // edit operation.
-    public java.util.Date getUtilDate() {
-        return utilDate;
+    // util_start_date and util_end_date are used to get the date inputs from
+    // the UI.
+    public java.util.Date getUtil_start_date() {
+        return util_start_date;
     }
-    public void setUtilDate(java.util.Date utilDate) {
-        this.utilDate = utilDate;
+    public void setUtil_start_date(java.util.Date util_start_date) {
+        this.util_start_date = util_start_date;
+    }
+    public java.util.Date getUtil_end_date() {
+        return util_end_date;
+    }
+    public void setUtil_end_date(java.util.Date util_end_date) {
+        this.util_end_date = util_end_date;
     }
 }

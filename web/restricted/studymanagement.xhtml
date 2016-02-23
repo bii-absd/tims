@@ -22,17 +22,18 @@
                          editable="true">
                 <p:ajax event="rowEdit" listener="#{studyMgntBean.onRowEdit}" 
                         update="studyMsg"/>
-                <p:column headerText="Study ID" style="width: 160px; text-align: left">
+                <p:column headerText="Study ID" styleClass="jsmedcol">
                     <h:outputText value="#{study.study_id}"/>
                 </p:column>
-                <p:column headerText="Department ID" styleClass="jssmallcol">
+                <p:column headerText="Principal Investigator" 
+                          style="width: 130px; text-align: left">
                     <p:cellEditor>
                         <f:facet name="output">
-                            <h:outputText value="#{study.dept_id}"/>
+                            <h:outputText value="#{study.ownerFullName}"/>
                         </f:facet>
                         <f:facet name="input">
-                            <p:selectOneMenu value="#{study.dept_id}" style="width: 100%">
-                                <f:selectItems value="#{studyMgntBean.deptHash}"/>
+                            <p:selectOneMenu value="#{study.owner_id}" style="width: 100%">
+                                <f:selectItems value="#{studyMgntBean.piIDHash}"/>
                             </p:selectOneMenu>
                         </f:facet>
                     </p:cellEditor>
@@ -50,13 +51,24 @@
                         </f:facet>
                     </p:cellEditor>
                 </p:column>
-                <p:column headerText="Date" styleClass="jssmallcol">
+                <p:column headerText="Start Date" styleClass="jssmallcol">
                     <p:cellEditor>
                         <f:facet name="output">
-                            <h:outputText value="#{study.sqlDate}"/>
+                            <h:outputText value="#{study.start_date}"/>
                         </f:facet>
                         <f:facet name="input">
-                            <p:calendar value="#{studyMgntBean.utilDate}" 
+                            <p:calendar value="#{studyMgntBean.util_start_date}" 
+                                        pattern="yyyy-MM-dd"/>
+                        </f:facet>
+                    </p:cellEditor>
+                </p:column>
+                <p:column headerText="End Date" styleClass="jssmallcol">
+                    <p:cellEditor>
+                        <f:facet name="output">
+                            <h:outputText value="#{study.end_date}"/>
+                        </f:facet>
+                        <f:facet name="input">
+                            <p:calendar value="#{studyMgntBean.util_end_date}" 
                                         pattern="yyyy-MM-dd"/>
                         </f:facet>
                     </p:cellEditor>
@@ -93,11 +105,19 @@
                 <p:watermark for="studyid" value="New Study ID"/>
                 
                 <p:multiSelectListbox value="#{studyMgntBean.dept_id}" 
-                                      effect="slide" header="For Institution - Department" 
+                                      effect="slide" header="For Institution - Department - Group" 
                                       showHeaders="true">
                     <f:selectItems value="#{studyMgntBean.grouping}"/>
                 </p:multiSelectListbox>
                 <h:panelGroup/>
+                <h:panelGroup/>
+                
+                <p:selectOneMenu id="owner" required="true" 
+                                 value="#{studyMgntBean.owner_id}" style="width: 180px">
+                    <f:selectItem itemLabel="Select PI Incharge" itemValue=""/>
+                    <f:selectItems value="#{studyMgntBean.piIDHash}"/>                
+                </p:selectOneMenu>
+                <h:message id="owner-status" for="owner" styleClass="errors"/>
                 <h:panelGroup/>
                 
                 <p:selectOneMenu id="annot" required="true" 
@@ -109,12 +129,24 @@
                 <h:message id="annot-status" for="annot" styleClass="errors"/>
                 <h:panelGroup/>
                 
-                <p:inputTextarea id="descript" cols="32" rows="3" value="#{studyMgntBean.description}"/>
-                <p:watermark for="descript" value="Enter description of this study here"/>
+                <p:inputTextarea id="descript" cols="50" rows="3" value="#{studyMgntBean.description}"/>
+                <p:watermark for="descript" value="Enter description of this study here."/>
+                <h:panelGroup/>
+                
+                <p:inputTextarea id="bkground" cols="50" rows="3" value="#{studyMgntBean.background}"/>
+                <p:watermark for="bkground" value="Enter the background of this study here."/>
+                <h:panelGroup/>
+                
+                <p:inputTextarea id="grant" cols="50" rows="3" value="#{studyMgntBean.grant_info}"/>
+                <p:watermark for="grant" value="Enter the grant information of this study here."/>
                 <h:panelGroup/>
                 
                 <p:column>
                     <h:panelGrid columns="2">
+                        <p:outputLabel value="Start Date:" styleClass="configlabel"/>
+                        <p:calendar value="#{studyMgntBean.util_start_date}" pattern="yyyy-MM-dd"/>
+                        <p:outputLabel value="End Date:" styleClass="configlabel"/>
+                        <p:calendar value="#{studyMgntBean.util_end_date}" pattern="yyyy-MM-dd"/>
                         <p:outputLabel value="Finalized?" styleClass="configlabel"/>
                         <p:selectBooleanButton id="finalized" title="#{msg['adhoc.study']}"
                                                value="#{studyMgntBean.finalized}" 

@@ -43,6 +43,7 @@ import org.apache.logging.log4j.LogManager;
  * created with completed flag set to true.
  * 20-Jan-2016 - Updated study table in database; added one new variable closed, 
  * and renamed completed to finalized.
+ * 23-Feb-2016 - Implementation for database 3.0 (Part 1).
  */
 
 public abstract class StudyDB {
@@ -55,19 +56,22 @@ public abstract class StudyDB {
     // the finalized_output and summary fields will be empty.
     public static Boolean insertStudy(Study study) {
         Boolean result = Constants.OK;
-        String insertStr = "INSERT INTO study(study_id,dept_id,user_id,"
-                         + "annot_ver,description,date,finalized,closed) "
-                         + "VALUES(?,?,?,?,?,?,?,?)";
+        String insertStr = "INSERT INTO study(study_id,owner_id,dept_id,annot_ver,"
+                         + "description,background,grant_info,start_date,"
+                         + "end_date,finalized,closed) VALUES(?,?,?,?,?,?,?,?,?,?,?)";
         
         try (PreparedStatement insertStm = conn.prepareStatement(insertStr)) {
             insertStm.setString(1, study.getStudy_id());
-            insertStm.setString(2, study.getDept_id());
-            insertStm.setString(3, study.getUser_id());
+            insertStm.setString(2, study.getOwner_id());
+            insertStm.setString(3, study.getDept_id());
             insertStm.setString(4, study.getAnnot_ver());
             insertStm.setString(5, study.getDescription());
-            insertStm.setDate(6, study.getSqlDate());
-            insertStm.setBoolean(7, study.getFinalized());
-            insertStm.setBoolean(8, study.getClosed());
+            insertStm.setString(6, study.getBackground());
+            insertStm.setString(7, study.getGrant_info());
+            insertStm.setDate(8, study.getStart_date());
+            insertStm.setDate(9, study.getEnd_date());
+            insertStm.setBoolean(10, study.getFinalized());
+            insertStm.setBoolean(11, study.getClosed());
 
             insertStm.executeUpdate();
             logger.debug("New Study ID inserted into database: " + 
@@ -84,15 +88,20 @@ public abstract class StudyDB {
     // Update the study information in the database.
     public static Boolean updateStudy(Study study) {
         Boolean result = Constants.OK;
-        String updateStr = "UPDATE study SET dept_id = ?, description = ?, "
-                         + "date = ?, closed = ? WHERE study_id = ?";
+        String updateStr = "UPDATE study SET owner_id = ?, dept_id = ?, "
+                         + "description = ?, background = ?, grant_info = ?, "
+                         + "start_date = ?, end_date = ?, closed = ? WHERE study_id = ?";
         
         try (PreparedStatement updateStm = conn.prepareStatement(updateStr)) {
-            updateStm.setString(1, study.getDept_id());
-            updateStm.setString(2, study.getDescription());
-            updateStm.setDate(3, study.getSqlDate());
-            updateStm.setBoolean(4, study.getClosed());
-            updateStm.setString(5, study.getStudy_id());
+            updateStm.setString(1, study.getOwner_id());
+            updateStm.setString(2, study.getDept_id());
+            updateStm.setString(3, study.getDescription());
+            updateStm.setString(4, study.getBackground());
+            updateStm.setString(5, study.getGrant_info());
+            updateStm.setDate(6, study.getStart_date());
+            updateStm.setDate(7, study.getEnd_date());
+            updateStm.setBoolean(8, study.getClosed());
+            updateStm.setString(9, study.getStudy_id());
             
             updateStm.executeUpdate();
             logger.debug("Updated study: " + study.getStudy_id());
@@ -248,7 +257,7 @@ public abstract class StudyDB {
     public static List<Study> queryFinalizedStudy(String dept_id) {
         List<Study> finalizedStudy = new ArrayList<>();
         String queryStr = "SELECT * FROM study WHERE dept_id = ? "
-                        + "AND finalized = true ORDER BY date DESC";
+                        + "AND finalized = true ORDER BY study_id";
         
         try (PreparedStatement queryStm = conn.prepareStatement(queryStr)) {
             queryStm.setString(1, dept_id);
@@ -257,13 +266,16 @@ public abstract class StudyDB {
             while (rs.next()) {
                 Study tmp = new Study(
                             rs.getString("study_id"),
+                            rs.getString("owner_id"),
                             rs.getString("dept_id"),
-                            rs.getString("user_id"),
                             rs.getString("annot_ver"),
                             rs.getString("description"),
+                            rs.getString("background"),
+                            rs.getString("grant_info"),
                             rs.getString("finalized_output"),
                             rs.getString("summary"),
-                            rs.getDate("date"),
+                            rs.getDate("start_date"),
+                            rs.getDate("end_date"),
                             rs.getBoolean("finalized"),
                             rs.getBoolean("closed"));
                 
@@ -284,19 +296,22 @@ public abstract class StudyDB {
     // administrator do.
     public static List<Study> queryStudy() {
         List<Study> studyList = new ArrayList<>();
-        ResultSet rs = DBHelper.runQuery("SELECT * FROM study ORDER BY date DESC");
+        ResultSet rs = DBHelper.runQuery("SELECT * FROM study ORDER BY study_id");
             
         try {
             while (rs.next()) {
                 Study tmp = new Study(
                             rs.getString("study_id"),
+                            rs.getString("owner_id"),
                             rs.getString("dept_id"),
-                            rs.getString("user_id"),
                             rs.getString("annot_ver"),
                             rs.getString("description"),
+                            rs.getString("background"),
+                            rs.getString("grant_info"),
                             rs.getString("finalized_output"),
                             rs.getString("summary"),
-                            rs.getDate("date"),
+                            rs.getDate("start_date"),
+                            rs.getDate("end_date"),
                             rs.getBoolean("finalized"),
                             rs.getBoolean("closed"));
                     

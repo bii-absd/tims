@@ -28,21 +28,21 @@
                                     url="accountmanagement.xhtml"/>
                         <p:menuitem value="#{msg['study-mgnt']}" icon="fa fa-book" 
                                     url="studymanagement.xhtml" 
-                                    rendered="#{authBean.adminRight}"/>
+                                    rendered="#{authBean.isAdministrator()}"/>
                         <p:menuitem value="#{msg['pipeline-mgnt']}" icon="fa fa-flask"
                                     url="pipelinemanagement.xhtml" 
-                                    rendered="#{authBean.adminRight}"/>
+                                    rendered="#{authBean.isAdministrator()}"/>
                         <p:menuitem value="#{msg['item-mgnt']}" icon="fa fa-list-ul"
                                     url="itemlistmanagement.xhtml" 
-                                    rendered="#{authBean.adminRight}"/>
+                                    rendered="#{authBean.isAdministrator()}"/>
                         <p:menuitem value="#{msg['job-mgnt']}" icon="fa fa-folder-open" 
                                     action="#{authBean.allUsersJobStatus}"
-                                    rendered="#{authBean.adminRight}">
+                                    rendered="#{authBean.isAdministrator()}">
                         </p:menuitem>
                         <p:menuitem value="#{msg['act-track']}" 
                                     icon="fa fa-pencil-square-o" 
                                     url="activitytracking.xhtml" 
-                                    rendered="#{authBean.supervisorRight}"/>
+                                    rendered="#{authBean.isDirector()}"/>
                     </p:submenu>
                     <f:facet name="options">
                         <p:commandButton value="Logout" action="#{authBean.logout}"

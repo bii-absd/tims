@@ -81,11 +81,11 @@
                                action="#{authBean.singleUserJobStatus}" 
                                styleClass="mainmenuitem"/>
                 <h:outputLink title="#{msg['finalize-study']}" value="finalizestudy.xhtml" 
-                              styleClass="mainmenuitem">
+                              styleClass="mainmenuitem" rendered="#{authBean.isPI()}">
                     Finalize Study
                 </h:outputLink>
                 <h:outputLink title="#{msg['unfinalize-study']}" value="unfinalizestudy.xhtml" 
-                              styleClass="mainmenuitem" rendered="#{authBean.adminRight}">
+                              styleClass="mainmenuitem" rendered="#{authBean.isAdministrator()}">
                     Unfinalize Study
                 </h:outputLink>
                 <h:outputLink title="Download consolidated output and summary report" 
