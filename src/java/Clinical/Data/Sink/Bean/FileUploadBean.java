@@ -12,6 +12,7 @@ import java.io.Serializable;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -68,6 +69,7 @@ import org.apache.logging.log4j.LogManager;
  * 19-Feb-2016 - Enhanced this class to make it reusable for all file upload.
  * Combined the methods, renameAnnotFile() and renameCtrlProbeFile(), into a 
  * generic method, renameFilename.
+ * 23-Feb-2016 - Enhanced the method renameFilename.
  */
 
 public class FileUploadBean implements Serializable {
@@ -304,10 +306,18 @@ public class FileUploadBean implements Serializable {
             (localDirectoryPath + getInputFilename());
         Path to = FileSystems.getDefault().getPath
             (localDirectoryPath + newFilename);
-        // Rename the filename (from -> to).
+        // Rename the filename (from -> to), and replace existing file if found.
         try {
-            Files.move(from, to);
+            // Check whether is there any existing file with the same name.
+            if (Files.exists(to)) {
+                Files.move(from, to, REPLACE_EXISTING);
+            }
+            else {
+                Files.move(from, to);
+            }
             logger.debug(getInputFilename() + " renamed to " + newFilename);
+            // Update file list to new filename.
+            fileList.replace(1, newFilename);
         }
         catch (IOException ioe) {
             logger.error("FAIL to rename " + getInputFilename());

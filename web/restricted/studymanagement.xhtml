@@ -8,7 +8,7 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
     
     <ui:define name="title">Study ID Management</ui:define>
-    <ui:param name="link" value="Study ID Management"/>
+    <ui:param name="link" value="#{msg['study-mgnt']}"/>
     <ui:define name="content">
     <p:growl id="studyMsg"/>
     <p:accordionPanel>
@@ -47,7 +47,8 @@
                             <h:outputText value="#{study.description}"/>
                         </f:facet>
                         <f:facet name="input">
-                            <p:inputText value="#{study.description}" style="width: 100%"/>
+                            <p:inputTextarea value="#{study.description}" 
+                                             rows="5" style="width: 100%"/>
                         </f:facet>
                     </p:cellEditor>
                 </p:column>
@@ -129,15 +130,15 @@
                 <h:message id="annot-status" for="annot" styleClass="errors"/>
                 <h:panelGroup/>
                 
-                <p:inputTextarea id="descript" cols="50" rows="3" value="#{studyMgntBean.description}"/>
+                <p:inputTextarea id="descript" cols="150" rows="5" value="#{studyMgntBean.description}"/>
                 <p:watermark for="descript" value="Enter description of this study here."/>
                 <h:panelGroup/>
                 
-                <p:inputTextarea id="bkground" cols="50" rows="3" value="#{studyMgntBean.background}"/>
+                <p:inputTextarea id="bkground" cols="150" rows="5" value="#{studyMgntBean.background}"/>
                 <p:watermark for="bkground" value="Enter the background of this study here."/>
                 <h:panelGroup/>
                 
-                <p:inputTextarea id="grant" cols="50" rows="3" value="#{studyMgntBean.grant_info}"/>
+                <p:inputTextarea id="grant" cols="150" rows="5" value="#{studyMgntBean.grant_info}"/>
                 <p:watermark for="grant" value="Enter the grant information of this study here."/>
                 <h:panelGroup/>
                 

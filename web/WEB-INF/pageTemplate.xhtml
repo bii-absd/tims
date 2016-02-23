@@ -32,8 +32,8 @@
                         <p:menuitem value="#{msg['pipeline-mgnt']}" icon="fa fa-flask"
                                     url="pipelinemanagement.xhtml" 
                                     rendered="#{authBean.isAdministrator()}"/>
-                        <p:menuitem value="#{msg['item-mgnt']}" icon="fa fa-list-ul"
-                                    url="itemlistmanagement.xhtml" 
+                        <p:menuitem value="#{msg['grp-mgnt']}" icon="fa fa-list-ul"
+                                    url="groupmanagement.xhtml" 
                                     rendered="#{authBean.isAdministrator()}"/>
                         <p:menuitem value="#{msg['job-mgnt']}" icon="fa fa-folder-open" 
                                     action="#{authBean.allUsersJobStatus}"

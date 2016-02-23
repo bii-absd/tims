@@ -12,18 +12,20 @@ import Clinical.Data.Sink.General.Constants;
 import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.List;
+// Libraries for Java Extension
 import javax.annotation.PostConstruct;
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
+// Libraries for PrimeFaces
 import org.primefaces.event.RowEditEvent;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 /**
- * ItemListManagementBean is the backing bean for the itemlistmanagement view.
+ * GroupManagementBean is the backing bean for the groupmanagement view.
  * 
  * Author: Tay Wei Hong
  * Date: 16-Nov-2015
@@ -38,14 +40,16 @@ import org.apache.logging.log4j.LogManager;
  * 13-Dec-2016 - Removed all the static variables in Study and ItemList
  * management modules.
  * 26-Jan-2016 - Implemented audit data capture module.
+ * 23-Feb-2016 - Rename class name from ItemListManagementBean to 
+ * GroupManagementBean.
  */
 
-@ManagedBean (name="itemListMgntBean")
+@ManagedBean (name="grpMgntBean")
 @ViewScoped
-public class ItemListManagementBean implements Serializable {
+public class GroupManagementBean implements Serializable {
     // Get the logger for Log4j
     private final static Logger logger = LogManager.
-            getLogger(ItemListManagementBean.class.getName());
+            getLogger(GroupManagementBean.class.getName());
     // Attributes for Institution object
     private String inst_id, inst_name;
     // Attributes for Department object
@@ -56,7 +60,7 @@ public class ItemListManagementBean implements Serializable {
     // Store the user ID of the current user.
     private final String userName;
     
-    public ItemListManagementBean() {
+    public GroupManagementBean() {
         userName = (String) getFacesContext().getExternalContext().
                 getSessionMap().get("User");
         logger.debug("ItemListManagementBean created.");
@@ -86,7 +90,7 @@ public class ItemListManagementBean implements Serializable {
             addFacesErrorMsg("Failed to create new institution ID!");
         }
         
-        return Constants.ITEM_LIST_MANAGEMENT;
+        return Constants.GROUP_MANAGEMENT;
     }
     
     // Create the new department ID
@@ -106,7 +110,7 @@ public class ItemListManagementBean implements Serializable {
             addFacesErrorMsg("Failed to create new department ID!");
         }
         
-        return Constants.ITEM_LIST_MANAGEMENT;
+        return Constants.GROUP_MANAGEMENT;
     }
     
     // Update the institution table in the database.

@@ -26,6 +26,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 // Libraries for PrimeFaces
 import org.primefaces.event.RowEditEvent;
+import org.primefaces.event.FileUploadEvent;
 
 /**
  * AccountManagementBean is the backing bean for the accountmanagement view.
@@ -55,6 +56,7 @@ import org.primefaces.event.RowEditEvent;
  * 13-Jan-2016 - Removed all the static variables in Account Management module.
  * 26-Jan-2016 - Implemented audit data capture module.
  * 19-Feb-2016 - To support user account with picture uploaded.
+ * 23-Feb-2016 - To allow user to update their picture ID.
  */
 
 @ManagedBean (name="acctMgntBean")
@@ -182,6 +184,31 @@ public class AccountManagementBean implements Serializable {
         }
         // Return to the same page, and recreate the AccountManagementBean.
         return Constants.ACCOUNT_MANAGEMENT;
+    }
+    
+    // Update the photo ID of the current user.
+    public void changePhotoIDListener(FileUploadEvent event) {
+        // Upload the new picture.
+        photo.singleFileUploadListener(event);
+        // Get user account.
+        UserAccount user = UserAccountDB.getUserAct(userName);
+        String filename = photo.getInputFilename();
+        int ext = filename.indexOf(".");
+        // Rename the photo filename to be the same as the deptID-userID, 
+        // but keep the file extentsion.
+        filename = user.getDept_id() + "-" + userName + filename.substring(ext);
+        // Rename the stored photo filename.
+        photo.renameFilename(filename);
+        // Update user account in database.
+        user.setPhoto(photo.getInputFilename());
+        try {
+            UserAccountDB.updateAccount(user);            
+            logger.debug(userName + " updated picture ID.");
+        }
+        catch (SQLException e) {
+            logger.error("FAIL to update picture ID!");
+            logger.error(e.getMessage());
+        }
     }
     
     // Update the password of the current user if the two passwords entered 

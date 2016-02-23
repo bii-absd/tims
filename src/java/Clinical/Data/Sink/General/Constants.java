@@ -81,6 +81,8 @@ import org.apache.logging.log4j.LogManager;
  * 01-Feb-2016 - Added one new constant, JOB_STATUS.
  * 12-Feb-2016 - Added one new constant, EXE_UNFIN.
  * 19-Feb-2016 - Added one new constant, PIC_PATH.
+ * 23-Feb-2016 - Changed constant name from ITEM_LIST_MANAGEMENT to 
+ * GROUP_MANAGEMENT.
  */
 
 @ManagedBean (name = "constants")
@@ -116,13 +118,10 @@ public class Constants {
     public final static String LOGIN_PAGE = "/login";
     public final static String MAIN_PAGE = "main?faces-redirect=true";
     public final static String ACCOUNT_MANAGEMENT = "accountmanagement";
-    public final static String PIPELINE_MANAGEMENT = 
-                                "pipelinemanagement";
-    public final static String ITEM_LIST_MANAGEMENT = 
-                                "itemlistmanagement";
+    public final static String PIPELINE_MANAGEMENT = "pipelinemanagement";
+    public final static String GROUP_MANAGEMENT = "groupmanagement";
     public final static String STUDY_MANAGEMENT = "studymanagement";
-    public final static String CLINICAL_DATA_MANAGEMENT = 
-                                "clinicaldatamanagement";
+    public final static String CLINICAL_DATA_MANAGEMENT = "clinicaldatamanagement";
     public final static String JOB_STATUS = "jobstatus?faces-redirect=true";
     public final static String FINALIZE_STUDY = "finalizestudy";
     public final static String SUMMARY_OF_STUDY = "summaryofstudy";
