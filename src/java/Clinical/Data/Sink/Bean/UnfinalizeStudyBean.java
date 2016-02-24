@@ -40,7 +40,7 @@ public class UnfinalizeStudyBean implements Serializable {
             getLogger(UnfinalizeStudyBean.class.getName());
     private Study selectedStudy;
     // Store the list of finalized study.
-    private List<Study> finStudyList = new ArrayList<>();
+    private List<Study> finalizedStudies = new ArrayList<>();
     // Store the user ID and dept ID of the current user.
     private final String userName, dept_id;
 
@@ -55,7 +55,7 @@ public class UnfinalizeStudyBean implements Serializable {
     @PostConstruct
     public void init() {
         // Get the list of finalized study from the user's department.
-        finStudyList = StudyDB.queryFinalizedStudy(dept_id);
+        finalizedStudies = StudyDB.queryFinalizedStudies(dept_id);
     }
     
     // User has selected the study and decided to proceed with the 
@@ -96,10 +96,7 @@ public class UnfinalizeStudyBean implements Serializable {
     public void setSelectedStudy(Study selectedStudy) {
         this.selectedStudy = selectedStudy;
     }
-    public List<Study> getFinStudyList() {
-        return finStudyList;
-    }
-    public void setFinStudyList(List<Study> finStudyList) {
-        this.finStudyList = finStudyList;
+    public List<Study> getFinalizedStudies() {
+        return finalizedStudies;
     }
 }

@@ -83,6 +83,7 @@ import org.apache.logging.log4j.LogManager;
  * 19-Feb-2016 - Added one new constant, PIC_PATH.
  * 23-Feb-2016 - Changed constant name from ITEM_LIST_MANAGEMENT to 
  * GROUP_MANAGEMENT.
+ * 24-Feb-2016 - Added one new constant, STUDIES_REVIEW for studies review page.
  */
 
 @ManagedBean (name = "constants")
@@ -125,6 +126,7 @@ public class Constants {
     public final static String JOB_STATUS = "jobstatus?faces-redirect=true";
     public final static String FINALIZE_STUDY = "finalizestudy";
     public final static String SUMMARY_OF_STUDY = "summaryofstudy";
+    public final static String STUDIES_REVIEW = "studiesreview?faces-redirect=true";
     public final static String NGS_PAGE = "ngs?faces-redirect=true";
     public final static String ERROR = "error?faces-redirect=true";
     // Constants read in from setup file.

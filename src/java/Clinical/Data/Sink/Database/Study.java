@@ -24,6 +24,8 @@ import java.sql.Date;
  * 20-Jan-2016 - Updated study table in database; added one new variable closed, 
  * and renamed completed to finalized.
  * 23-Feb-2016 - Implementation for database 3.0 (Part 1).
+ * 24-Feb-2016 - Added one new method, getReviewTitle() to return the title
+ * for each study in the studies review page.
  */
 
 public class Study {
@@ -108,6 +110,21 @@ public class Study {
     // Return the owner full name for this study.
     public String getOwnerFullName() {
         return UserAccountDB.getFullName(owner_id);
+    }
+    
+    // Return the review title for each study.
+    public String getReviewTitle() {
+        String status;
+        if (closed) {
+            status = "Closed";
+        }
+        else {
+            status = finalized?"Finalized":"Active";
+        }
+        
+        return study_id + "  [PI: " + getOwnerFullName() + 
+               "]  [Grant Duration: " + start_date + " to " + end_date + 
+               "]  [Status: " + status + "]";
     }
     
     // Machine generated getters and setters

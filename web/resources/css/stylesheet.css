@@ -50,6 +50,29 @@
     background-color: rgb(234,239,243);
 }
 
+/* Style defined for studies review title.
+*/
+.study-title {
+    font-family: courier, arial, monospace;
+    font-size: 14pt;
+    font-weight: 100;
+}
+
+/* Style defined for studies review panelGrid.
+*/
+.study-pg td {
+    background-color: rgb(253,239,231) !important;
+}
+
+/* Styles defined for the studies review columns.
+*/
+.study-col1 {
+    width: 20%;
+}
+.study-col2 {
+    width: 80%;
+}
+
 /* Style defined for displaying the input box (center aligned) at the login 
    page.
 */

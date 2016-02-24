@@ -92,7 +92,11 @@
             <p:dock position="bottom">
                 <p:menuitem value="Home" icon="/resources/images/Home.png" 
                             url="main.xhtml"/>
-                <p:menuitem value="Change Password" icon="/resources/images/Password.jpg" 
+                <p:menuitem value="#{msg['studies-rev']}" 
+                            icon="/resources/images/StudiesReview.jpg" 
+                            url="studiesreview.xhtml"/>
+                <p:menuitem value="Change Password" 
+                            icon="/resources/images/Password.jpg" 
                             url="accountmanagement.xhtml"/>
                 <p:menuitem value="Logout" icon="/resources/images/Logoff.png" 
                             action="#{authBean.logout}"/>

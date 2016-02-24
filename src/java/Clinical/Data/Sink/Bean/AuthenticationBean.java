@@ -9,9 +9,13 @@ import Clinical.Data.Sink.Database.InstitutionDB;
 import Clinical.Data.Sink.Database.JobStatusDB;
 import Clinical.Data.Sink.Database.UserAccount;
 import Clinical.Data.Sink.Database.UserAccountDB;
+import Clinical.Data.Sink.Database.UserRoleDB;
 import Clinical.Data.Sink.General.Constants;
 import java.io.File;
 import java.io.Serializable;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.SQLException;
 // Libraries for Java Extension
 import javax.faces.application.FacesMessage;
@@ -85,6 +89,9 @@ import org.apache.logging.log4j.LogManager;
  * singleUserJobStatus(), to set the single user mode in the session map.
  * 19-Feb-2016 - To support user account with picture uploaded.
  * 23-Feb-2016 - Implementation for database 3.0 (Part 1).
+ * 24-Feb-2016 - To direct user to different page based on their role. Fix the 
+ * bug where the application crashed because the user's photo has been removed 
+ * from the directory.
  */
 
 @ManagedBean (name="authBean")
@@ -162,6 +169,8 @@ public class AuthenticationBean implements Serializable {
         
         // Retrieve the job status definition from database
         JobStatusDB.buildJobStatusDef();
+        // Build the role list.
+        UserRoleDB.getRoleNameHash();
         
         // Temporary hack to allow me to enter to create user when the 
         // application is first deployed.
@@ -182,7 +191,7 @@ public class AuthenticationBean implements Serializable {
                 // Record login success into database.
                 ActivityLogDB.recordUserActivity(loginName, Constants.LOG_IN, 
                                                  "Success");
-                logger.info(loginName + ": login to the system.");
+                logger.info(loginName + ": login as " + userAcct.getRoleName());
                 // Create user home directory once successfully login
                 String homeDir = Constants.getSYSTEM_PATH() + 
                           Constants.getUSERS_PATH() + loginName;
@@ -198,7 +207,15 @@ public class AuthenticationBean implements Serializable {
                     // Save the institution name where this user belongs to.
                     instName = InstitutionDB.getInstName(userAcct.getInst_id());
                     // Everything is fine, proceed from login to /restricted folder
-                    result =  Constants.PAGES_DIR + Constants.MAIN_PAGE;
+                    if ( (userAcct.getRoleName().compareTo("Director") == 0) || 
+                         (userAcct.getRoleName().compareTo("HOD") == 0) ) {
+                        // For director and HOD, direct them to the studies review page.
+                        result = Constants.PAGES_DIR + Constants.STUDIES_REVIEW;
+                    }
+                    else {
+                        // For other users, direct them to the main page.
+                        result =  Constants.PAGES_DIR + Constants.MAIN_PAGE;
+                    }
                 }
                 else {
                     // Failed to create system directories, shouldn't let the user proceed.
@@ -315,11 +332,21 @@ public class AuthenticationBean implements Serializable {
     // Check whether the user has a photo uploaded. The return boolean will be
     // used to decide whether to render the graphic image or not.
     public boolean isUserPhotoAvailable() {
-        if (userAcct.getPhoto().compareTo("NA") == 0) {
-            return false;
+        if (userAcct.getPhoto().compareTo("NA") != 0) {
+            // User has a photo uploaded before, make sure the photo still 
+            // exists in the system.
+            Path photopath = FileSystems.getDefault().getPath(
+                            Constants.getSYSTEM_PATH() +
+                            Constants.getUSERS_PATH() +
+                            Constants.getPIC_PATH() + File.separator +
+                            userAcct.getPhoto());
+            
+            if (Files.exists(photopath)) {
+                return true;
+            }
         }
-        // If control reaches here, user has a photo uploaded.
-        return true;
+        // If control reaches here, user photo is not available.
+        return false;
     }
     
     // Administrator accessing job management page. Set the single user mode to 

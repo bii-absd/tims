@@ -44,6 +44,7 @@ import org.apache.logging.log4j.LogManager;
  * 20-Jan-2016 - Updated study table in database; added one new variable closed, 
  * and renamed completed to finalized.
  * 23-Feb-2016 - Implementation for database 3.0 (Part 1).
+ * 24-Feb-2016 - Implemented studies review module.
  */
 
 public abstract class StudyDB {
@@ -251,11 +252,60 @@ public abstract class StudyDB {
         return finStudyHash;
     }
     
-    // Return the list of finalized study that belong to the department. This
+    // Return the list of studies (all status) that belong to this institution.
+    public static List<Study> queryInstStudies(String inst_id) {
+        List<Study> instStudies = new ArrayList<>();
+        
+        return instStudies;
+    }
+    
+    // Return the list of studies (all status) that belong to this department.
+    public static List<Study> queryDeptStudies(String dept_id) {
+        List<Study> deptStudies = new ArrayList<>();
+        String queryStr = "SELECT * FROM study WHERE dept_id = \'" + dept_id 
+                        + "\' ORDER BY study_id";
+        ResultSet rs = DBHelper.runQuery(queryStr);
+        
+        try {
+            while (rs.next()) {
+                Study tmp = new Study(
+                            rs.getString("study_id"),
+                            rs.getString("owner_id"),
+                            rs.getString("dept_id"),
+                            rs.getString("annot_ver"),
+                            rs.getString("description"),
+                            rs.getString("background"),
+                            rs.getString("grant_info"),
+                            rs.getString("finalized_output"),
+                            rs.getString("summary"),
+                            rs.getDate("start_date"),
+                            rs.getDate("end_date"),
+                            rs.getBoolean("finalized"),
+                            rs.getBoolean("closed"));
+                
+                deptStudies.add(tmp);
+            }
+        }
+        catch (SQLException e) {
+            logger.error("FAIL to retrieve studies for " + dept_id);
+            logger.error(e.getMessage());
+        }
+        
+        return deptStudies;
+    }
+    
+    // Return the list of studies (all status) that belong to this group.
+    public static List<Study> queryGrpStudies(String grp_id) {
+        List<Study> grpStudies = new ArrayList<>();
+        
+        return grpStudies;
+    }
+    
+    // Return the list of finalized studies that belong to the department. This
     // list of study objects will be shown in the datatable in summary of study
     // view.
-    public static List<Study> queryFinalizedStudy(String dept_id) {
-        List<Study> finalizedStudy = new ArrayList<>();
+    public static List<Study> queryFinalizedStudies(String dept_id) {
+        List<Study> finalizedStudies = new ArrayList<>();
         String queryStr = "SELECT * FROM study WHERE dept_id = ? "
                         + "AND finalized = true ORDER BY study_id";
         
@@ -279,16 +329,16 @@ public abstract class StudyDB {
                             rs.getBoolean("finalized"),
                             rs.getBoolean("closed"));
                 
-                finalizedStudy.add(tmp);
+                finalizedStudies.add(tmp);
             }
-            logger.debug("Query finalized study for " + dept_id + " completed.");
+            logger.debug("Query finalized studies for " + dept_id + " completed.");
         }
         catch (SQLException e) {
-            logger.error("FAIL to retrieve finalized study!");
+            logger.error("FAIL to retrieve finalized studies!");
             logger.error(e.getMessage());
         }
         
-        return finalizedStudy;
+        return finalizedStudies;
     }
     
     // Return the list of Study ID setup in the system.

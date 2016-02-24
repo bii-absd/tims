@@ -11,36 +11,36 @@
     <ui:param name="link" value="Summary of Study"/>
     <ui:define name="content">
         <h:form id="sosForm">
-            <p:dataTable var="cmpStudy" value="#{SOSBean.completedStudy}" 
+            <p:dataTable var="finStudy" value="#{SOSBean.finalizedStudies}" 
                          styleClass="table-odd-row table-even-row">
                 <p:column headerText="Study ID" styleClass="jsmedcol">
-                    <h:outputText value="#{cmpStudy.study_id}"/>
+                    <h:outputText value="#{finStudy.study_id}"/>
                 </p:column>
                 <p:column headerText="Principal Investigator" 
                           style="width: 130px; text-align: left">
-                    <h:outputText value="#{cmpStudy.ownerFullName}"/>
+                    <h:outputText value="#{finStudy.ownerFullName}"/>
                 </p:column>
                 <p:column headerText="Start Date" styleClass="jssmallcol">
-                    <h:outputText value="#{cmpStudy.start_date}"/>
+                    <h:outputText value="#{finStudy.start_date}"/>
                 </p:column>
                 <p:column headerText="End Date" styleClass="jssmallcol">
-                    <h:outputText value="#{cmpStudy.end_date}"/>
+                    <h:outputText value="#{finStudy.end_date}"/>
                 </p:column>
                 <p:column headerText="Description" style="text-align: left">
-                    <h:outputText value="#{cmpStudy.description}"/>
+                    <h:outputText value="#{finStudy.description}"/>
                 </p:column>
                 <p:column headerText="Annotation Version" styleClass="col120">
-                    <h:outputText value="#{cmpStudy.annot_ver}"/>
+                    <h:outputText value="#{finStudy.annot_ver}"/>
                 </p:column>
                 <p:column headerText="Consolidated Ouput" styleClass="col120">
                     <p:commandLink ajax="false" value="Download" 
-                                   disabled="#{cmpStudy.outputReadyStatus}"
-                                   action="#{SOSBean.downloadFinalizedOP(cmpStudy)}"/>
+                                   disabled="#{finStudy.outputReadyStatus}"
+                                   action="#{SOSBean.downloadFinalizedOP(finStudy)}"/>
                 </p:column>
                 <p:column headerText="Finalized Summary" styleClass="col120">
                     <p:commandLink ajax="false" value="Download" 
-                                   disabled="#{cmpStudy.summaryReadyStatus}"
-                                   action="#{SOSBean.downloadSummary(cmpStudy)}"/>
+                                   disabled="#{finStudy.summaryReadyStatus}"
+                                   action="#{SOSBean.downloadSummary(finStudy)}"/>
                 </p:column>
             </p:dataTable>
         </h:form>
