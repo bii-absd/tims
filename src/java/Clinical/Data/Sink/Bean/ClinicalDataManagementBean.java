@@ -4,6 +4,7 @@
 package Clinical.Data.Sink.Bean;
 
 import Clinical.Data.Sink.Database.ActivityLogDB;
+import Clinical.Data.Sink.Database.NationalityDB;
 import Clinical.Data.Sink.Database.Subject;
 import Clinical.Data.Sink.Database.SubjectDB;
 import Clinical.Data.Sink.Database.UserAccountDB;
@@ -14,7 +15,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.sql.SQLException;
+import java.util.LinkedHashMap;
 import java.util.List;
+// Libraries for Java Extension
 import javax.annotation.PostConstruct;
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
@@ -43,6 +46,9 @@ import org.primefaces.model.UploadedFile;
  * 13-Jan-2016 - Removed all the static variables in Clinical Data Management
  * module.
  * 26-Jan-2016 - Implemented audit data capture module.
+ * 25-Feb-2016 - Implementation for database 3.0 (Part 2). Bug fix: To check
+ * that the strings read in from the meta data uploaded represent valid integer
+ * and float values.
  */
 
 @ManagedBean (name="clDataMgntBean")
@@ -51,13 +57,14 @@ public class ClinicalDataManagementBean implements Serializable {
     // Get the logger for Log4j
     private final static Logger logger = LogManager.
             getLogger(ClinicalDataManagementBean.class.getName());
-    private String subject_id, dept_id, race;
+    private String subject_id, dept_id, country_code, race;
     private char gender;
     private int age_at_diagnosis;
     private float height, weight;
     private List<Subject> subjectList;
     // Store the user ID of the current user.
     private final String userName;
+    private LinkedHashMap<String, String> nationalityCodeHash;
     
     public ClinicalDataManagementBean() {
         userName = (String) getFacesContext().getExternalContext().
@@ -69,6 +76,8 @@ public class ClinicalDataManagementBean implements Serializable {
     @PostConstruct
     public void init() {
         dept_id = UserAccountDB.getDeptID(userName);
+        // Retrieve the list of nationality code setup in the system.
+        nationalityCodeHash = NationalityDB.getNationalityCodeHash();
         buildSubjectList();
     }
 
@@ -90,7 +99,7 @@ public class ClinicalDataManagementBean implements Serializable {
     public String insertMetaData() {
         FacesContext fc = getFacesContext();
         Subject subject = new Subject(subject_id, age_at_diagnosis, gender,
-                                      race, height, weight, dept_id);
+                                      country_code, race, height, weight, dept_id);
         
         if (SubjectDB.insertSubject(subject)) {
             // Record this subject meta data creation into database.
@@ -114,33 +123,50 @@ public class ClinicalDataManagementBean implements Serializable {
     // Upload the subject meta data.
     public String metaDataUpload(FileUploadEvent event) {
         UploadedFile uFile = event.getFile();
+        StringBuilder uploadStatus = 
+                new StringBuilder("Incorrect meta data at line(s): ");
+        FacesMessage.Severity faceStatus = FacesMessage.SEVERITY_INFO;
 
         try (InputStream is = uFile.getInputstream();
              BufferedReader br = new BufferedReader(new InputStreamReader(is));)
         {
             String lineRead;
             String[] data;
-            StringBuilder uploadStatus = 
-                new StringBuilder("Incorrect meta data at line(s): ");
             int lineNum = 1;
             int incompleteLine = 0;
-            FacesMessage.Severity faceStatus = FacesMessage.SEVERITY_INFO;
 
             while ((lineRead = br.readLine()) != null) {
-                // Subject_ID|Age_at_diagnosis|gender|race|height|weight
+                // Subject_ID|Age_at_diagnosis|gender|nationality|race|height|weight
                 data = lineRead.split("\\|");
                 // The system will only insert the complete meta data into database.
-                if (data.length == 6) {
-                    Subject tmp = new Subject(data[0], Integer.parseInt(data[1]), 
-                                              data[2].charAt(0), data[3], 
-                                              Float.parseFloat(data[4]), 
-                                              Float.parseFloat(data[5]), 
-                                              dept_id);
-                    
-                    if (!SubjectDB.insertSubject(tmp)) {
-                        uploadStatus.append(lineNum).append(" ");
-                        incompleteLine++;
+                if (data.length == 7) {
+                    // By default, the nationality of all the subjects will be Singapore i.e. SGP.
+                    String country_code = "SGP";
+                    if (!data[3].isEmpty()) {
+                        country_code = data[3];
                     }
+                    // Need to make sure the strings represent valid integer and
+                    // float values.
+                    if (isInteger(data[1]) && isFloat(data[5]) && isFloat(data[6])) {
+                        Subject tmp = new Subject(data[0], Integer.parseInt(data[1]), 
+                                                  data[2].charAt(0), 
+                                                  country_code, data[4], 
+                                                  Float.parseFloat(data[5]), 
+                                                  Float.parseFloat(data[6]), 
+                                                  dept_id);
+                        
+                        if (!SubjectDB.insertSubject(tmp)) {
+                            uploadStatus.append(lineNum).append(" ");
+                            incompleteLine++;
+                        }
+                    }
+                    else {
+                        // Some of the strings does not represent valid integer
+                        // and/or float.
+                        uploadStatus.append(lineNum).append(" ");
+                        incompleteLine++;                        
+                    }
+                    
                 }
                 else {
                     uploadStatus.append(lineNum).append(" ");
@@ -161,17 +187,18 @@ public class ClinicalDataManagementBean implements Serializable {
             ActivityLogDB.recordUserActivity(userName, Constants.CRE_ID, 
                     uploadStatus.toString());
             logger.debug(uploadStatus);
-            getFacesContext().addMessage(null, new FacesMessage(
-                    faceStatus, uploadStatus.toString(), ""));
         }
         catch (IOException ioe) {
             logger.debug("FAIL to upload meta data!");
             logger.debug(ioe.getMessage());
-            getFacesContext().addMessage(null, new FacesMessage(
-                    FacesMessage.SEVERITY_ERROR,
-                    "Failed to upload meta data!", ""));
+            uploadStatus.replace(0, uploadStatus.length()-1, 
+                    "Failed to upload meta data!");
+            faceStatus = FacesMessage.SEVERITY_ERROR;
         }
         
+        // Display the growl message.
+        getFacesContext().addMessage(null, new FacesMessage(
+                    faceStatus, uploadStatus.toString(), ""));
         // Update the subject list.
         buildSubjectList();
         
@@ -189,20 +216,40 @@ public class ClinicalDataManagementBean implements Serializable {
             ActivityLogDB.recordUserActivity(userName, Constants.CHG_ID, detail);
             logger.info(userName + ": updated " + detail);
             fc.addMessage(null, new FacesMessage(
-                        FacesMessage.SEVERITY_INFO,
-                        "Meta data updated.", ""));
+                        FacesMessage.SEVERITY_INFO, "Meta data updated.", ""));
         }
         else {
             logger.error("FAIL to update meta data!");
             fc.addMessage(null, new FacesMessage(
-                        FacesMessage.SEVERITY_ERROR,
-                        "Failed to update meta data!", ""));
+                        FacesMessage.SEVERITY_ERROR, "Failed to update meta data!", ""));
         }
     }
     
     // Retrieve the faces context
     private FacesContext getFacesContext() {
 	return FacesContext.getCurrentInstance();
+    }
+    
+    // Return true if the string represent a number, else return false.
+    private boolean isInteger(String str) {
+        try {
+            Integer.parseInt(str);
+            return true;
+        }
+        catch (NumberFormatException nfe) {
+            return false;
+        }
+    }
+    
+    // Return true if the string represent a float, else return false.
+    private boolean isFloat(String str) {
+        try {
+            Float.parseFloat(str);
+            return true;
+        }
+        catch (NumberFormatException nfe) {
+            return false;
+        }        
     }
     
     // Machine generated getters and setters.
@@ -212,11 +259,11 @@ public class ClinicalDataManagementBean implements Serializable {
     public void setSubject_id(String subject_id) {
         this.subject_id = subject_id;
     }
-    public String getRace() {
-        return race;
+    public int getAge_at_diagnosis() {
+        return age_at_diagnosis;
     }
-    public void setRace(String race) {
-        this.race = race;
+    public void setAge_at_diagnosis(int age_at_diagnosis) {
+        this.age_at_diagnosis = age_at_diagnosis;
     }
     public char getGender() {
         return gender;
@@ -224,11 +271,17 @@ public class ClinicalDataManagementBean implements Serializable {
     public void setGender(char gender) {
         this.gender = gender;
     }
-    public int getAge_at_diagnosis() {
-        return age_at_diagnosis;
+    public String getCountry_code() {
+        return country_code;
     }
-    public void setAge_at_diagnosis(int age_at_diagnosis) {
-        this.age_at_diagnosis = age_at_diagnosis;
+    public void setCountry_code(String country_code) {
+        this.country_code = country_code;
+    }
+    public String getRace() {
+        return race;
+    }
+    public void setRace(String race) {
+        this.race = race;
     }
     public float getHeight() {
         return height;
@@ -246,5 +299,9 @@ public class ClinicalDataManagementBean implements Serializable {
     // the user.
     public List<Subject> getSubjectList() {
         return subjectList;
-    }    
+    }
+    // Return the list of nationality code setup in the system.
+    public LinkedHashMap<String, String> getNationalityCodeHash() {
+        return nationalityCodeHash;
+    }
 }

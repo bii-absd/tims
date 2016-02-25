@@ -29,6 +29,7 @@ import org.apache.logging.log4j.LogManager;
  * 04-Jan-2016 - Fix the bug in updateSubject (i.e. to setup the 6th parameter).
  * 13-Jan-2016 - Removed all the static variables in Clinical Data Management
  * module.
+ * 25-Feb-2016 - Implementation for database 3.0 (Part 2).
  */
 
 public abstract class SubjectDB {
@@ -41,17 +42,18 @@ public abstract class SubjectDB {
     public static Boolean insertSubject(Subject subject) {
         Boolean result = Constants.OK;
         String insertStr = "INSERT INTO subject(subject_id,dept_id,"
-                + "age_at_diagnosis,gender,race,height,weight) "
-                + "VALUES(?,?,?,?,?,?,?)";
+                + "age_at_diagnosis,gender,country_code,race,height,weight) "
+                + "VALUES(?,?,?,?,?,?,?,?)";
         
         try (PreparedStatement insertStm = conn.prepareStatement(insertStr)) {
             insertStm.setString(1, subject.getSubject_id());
             insertStm.setString(2, subject.getDept_id());
             insertStm.setInt(3, subject.getAge_at_diagnosis());
             insertStm.setString(4, String.valueOf(subject.getGender()));
-            insertStm.setString(5, subject.getRace());
-            insertStm.setFloat(6, subject.getHeight());
-            insertStm.setFloat(7, subject.getWeight());
+            insertStm.setString(5, subject.getCountry_code());
+            insertStm.setString(6, subject.getRace());
+            insertStm.setFloat(7, subject.getHeight());
+            insertStm.setFloat(8, subject.getWeight());
             
             insertStm.executeUpdate();
             logger.debug("New Subject ID inserted into database: " +
@@ -66,20 +68,22 @@ public abstract class SubjectDB {
     }
     
     // Update subject meta data in database.
-    // Only allow changes to age_at_diagnosis, gender, race, height and weight.
+    // Only allow changes to age_at_diagnosis, gender, nationality, race, 
+    // height and weight.
     public static Boolean updateSubject(Subject subject) {
         Boolean result = Constants.OK;
         String updateStr = "UPDATE subject SET age_at_diagnosis = ?, "
-                         + "gender = ?, race = ?, height = ?, weight = ? "
-                         + "WHERE subject_id = ?";
+                         + "gender = ?, country_code = ?, race = ?, height = ?, "
+                         + "weight = ? WHERE subject_id = ?";
         
         try (PreparedStatement updateStm = conn.prepareStatement(updateStr)) {
             updateStm.setInt(1, subject.getAge_at_diagnosis());
             updateStm.setString(2, String.valueOf(subject.getGender()));
-            updateStm.setString(3, subject.getRace());
-            updateStm.setFloat(4, subject.getHeight());
-            updateStm.setFloat(5, subject.getWeight());
-            updateStm.setString(6, subject.getSubject_id());
+            updateStm.setString(3, subject.getCountry_code());
+            updateStm.setString(4, subject.getRace());
+            updateStm.setFloat(5, subject.getHeight());
+            updateStm.setFloat(6, subject.getWeight());
+            updateStm.setString(7, subject.getSubject_id());
             
             updateStm.executeUpdate();
             logger.debug("Updated subject meta data: " + subject.getSubject_id());
@@ -107,6 +111,7 @@ public abstract class SubjectDB {
                             rs.getString("subject_id"),
                             rs.getInt("age_at_diagnosis"),
                             rs.getString("gender").charAt(0),
+                            rs.getString("country_code"),
                             rs.getString("race"),
                             rs.getFloat("height"),
                             rs.getFloat("weight"),

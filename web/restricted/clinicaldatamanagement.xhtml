@@ -8,7 +8,7 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
     
     <ui:define name="title">Clinical Data Management</ui:define>
-    <ui:param name="link" value="Clinical Data Management"/>
+    <ui:param name="link" value="#{msg['clinic-data']}"/>
     <ui:define name="content">
     <p:growl id="clDataMsg"/>
     <p:accordionPanel id="accPanel">
@@ -22,10 +22,10 @@
                              editable="true">
                     <p:ajax event="rowEdit" listener="#{clDataMgntBean.onRowEdit}" 
                             update="clDataMsg"/>
-                    <p:column headerText="Subject ID" style="text-align: left">
+                    <p:column headerText="Subject ID" styleClass="col120">
                         <h:outputText value="#{cldata.subject_id}"/>
                     </p:column>
-                    <p:column headerText="Age at Diagnosis" style="text-align: left">
+                    <p:column headerText="Age at Diagnosis" styleClass="col120">
                         <p:cellEditor>
                             <f:facet name="output">
                                 <h:outputText value="#{cldata.age_at_diagnosis}"/>
@@ -35,7 +35,7 @@
                             </f:facet>
                         </p:cellEditor>
                     </p:column>
-                    <p:column headerText="Gender" style="text-align: left">
+                    <p:column headerText="Gender" styleClass="jssmallcol">
                         <p:cellEditor>
                             <f:facet name="output">
                                 <h:outputText value="#{cldata.gender}"/>
@@ -48,7 +48,21 @@
                             </f:facet>
                         </p:cellEditor>
                     </p:column>
-                    <p:column headerText="Race" style="text-align: left">
+                    <p:column headerText="Nationality" style="text-align: left">
+                        <p:cellEditor>
+                            <f:facet name="output">
+                                <h:outputText value="#{cldata.country_name}"/>
+                            </f:facet>
+                            <f:facet name="input">
+                                <p:selectOneMenu value="#{cldata.country_code}" 
+                                                 style="width: 100%" filter="true" 
+                                                 filterMatchMode="startsWith">
+                                    <f:selectItems value="#{clDataMgntBean.nationalityCodeHash}"/>
+                                </p:selectOneMenu>
+                            </f:facet>
+                        </p:cellEditor>
+                    </p:column>
+                    <p:column headerText="Race" styleClass="jssmallcol">
                         <p:cellEditor>
                             <f:facet name="output">
                                 <h:outputText value="#{cldata.race}"/>
@@ -64,7 +78,7 @@
                             </f:facet>
                         </p:cellEditor>
                     </p:column>
-                    <p:column headerText="Height" style="text-align: left">
+                    <p:column headerText="Height" styleClass="jssmallcol">
                         <p:cellEditor>
                             <f:facet name="output">
                                 <h:outputText value="#{cldata.height}"/>
@@ -75,7 +89,7 @@
                             </f:facet>
                         </p:cellEditor>
                     </p:column>
-                    <p:column headerText="weight" style="text-align: left">
+                    <p:column headerText="weight" styleClass="jssmallcol">
                         <p:cellEditor>
                             <f:facet name="output">
                                 <h:outputText value="#{cldata.weight}"/>
@@ -94,12 +108,13 @@
         </p:tab>
         
         <p:tab id="uploadData" title="Upload New Meta Data (Format of Meta Data: 
-               Subject_ID|Age_at_diagnosis|Gender|Race|Height|Weight)" 
+               Subject_ID|Age_at_diagnosis|Gender|Nationality|Race|Height|Weight)" 
                titleStyleClass="tab-title">
             <h:form id="uploadDataForm" enctype="multipart/form-data">
                 <p:fileUpload id="uploadDataFile" mode="advanced" 
                               update="clDataMsg :accPanel:editDataForm:clTable" 
                               label="Select Meta Data File" 
+                              allowTypes="/(\.|\/)(txt)$/"
                               fileUploadListener="#{clDataMgntBean.metaDataUpload}"/>
             </h:form>
         </p:tab>
@@ -125,7 +140,15 @@
                         <f:selectItem itemLabel="Female" itemValue="F"/>
                     </p:selectOneRadio>
                     <h:message for="gender" styleClass="errors"/>
-                
+
+                    <h:outputText value="Nationality" styleClass="inputlabel"/>
+                    <p:selectOneMenu id="nationality" required="true" 
+                                     value="#{clDataMgntBean.country_code}" 
+                                     filter="true" filterMatchMode="startsWith">
+                        <f:selectItems value="#{clDataMgntBean.nationalityCodeHash}"/>
+                    </p:selectOneMenu>
+                    <h:message for="nationality" styleClass="errors"/>
+                    
                     <h:outputText value="Race" styleClass="inputlabel"/>
                     <p:selectOneMenu id="race" required="true" 
                                      value="#{clDataMgntBean.race}">
