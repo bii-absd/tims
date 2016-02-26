@@ -12,13 +12,17 @@
     <ui:define name="content">
     <h:form id="studyForm">
         <p:dataTable id="finstudy" rendered="#{authBean.isAdministrator()}" 
-                     var="studies" value="#{unfinBean.finStudyList}" 
+                     var="studies" value="#{unfinBean.finalizedStudies}" 
                      selection="#{unfinBean.selectedStudy}" 
                      rowKey="#{studies.study_id}"
                      styleClass="table-odd-row table-even-row">
             <p:column headerText="Study ID" 
                       style="width: 220px; text-align: left">
                 <h:outputText value="#{studies.study_id}"/>
+            </p:column>
+            <p:column headerText="Principal Investigator" 
+                      style="width: 130px; text-align: left">
+                <h:outputText value="#{studies.ownerFullName}"/>
             </p:column>
             <p:column headerText="Start Date" styleClass="jssmallcol">
                 <h:outputText value="#{studies.start_date}"/>

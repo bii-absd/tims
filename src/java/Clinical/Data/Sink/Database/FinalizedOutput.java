@@ -13,18 +13,20 @@ package Clinical.Data.Sink.Database;
  * Revision History
  * 02-Dec-2015 - Created with all the standard getters and setters.
  * 03-Dec-2015 - Added in one new attribute annot_ver.
+ * 26-Feb-2016 - Implementation for database 3.0 (Part 3).
  */
 
 public class FinalizedOutput {
-    String annot_ver, subject_id;
+    String annot_ver, subject_id, dept_id;
     int array_index, job_id;
 
     // Machine generated code
     public FinalizedOutput(int array_index, String annot_ver, String subject_id, 
-            int job_id) {
+            String dept_id, int job_id) {
         this.array_index = array_index;
         this.annot_ver = annot_ver;
         this.subject_id = subject_id;
+        this.dept_id = dept_id;
         this.job_id = job_id;
     }
     public int getArray_index() {
@@ -44,6 +46,12 @@ public class FinalizedOutput {
     }
     public void setSubject_id(String subject_id) {
         this.subject_id = subject_id;
+    }
+    public String getDept_id() {
+        return dept_id;
+    }
+    public void setDept_id(String dept_id) {
+        this.dept_id = dept_id;
     }
     public int getJob_id() {
         return job_id;

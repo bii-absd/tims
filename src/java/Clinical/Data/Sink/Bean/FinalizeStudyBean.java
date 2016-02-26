@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
+// Libraries for Java Extension
 import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
@@ -64,6 +65,8 @@ import org.apache.logging.log4j.LogManager;
  * 27-Jan-2016 - Bug fixes: To handle the case whereby the output file is empty,
  * and the case whereby none of the subject meta data is available in the 
  * database.
+ * 26-Feb-2016 - Bug fix: When preparing for finalization, need to check whether
+ * job3 is selected too.
  */
 
 @ManagedBean (name="finalizedBean")
@@ -117,7 +120,8 @@ public class FinalizeStudyBean implements Serializable {
         allowToProceed = true;
         logger.debug("Preparing for Study finalization.");
         // Check whether the user select any of the job.
-        if ((selectedJob0==null) && (selectedJob1==null) && (selectedJob2==null)) {
+        if ((selectedJob0==null) && (selectedJob1==null) && 
+            (selectedJob2==null) && (selectedJob3==null)) {
             // None of the job has been selected, display error message and
             // return to the same page.
             allowToProceed = false;
@@ -245,7 +249,7 @@ public class FinalizeStudyBean implements Serializable {
             }
         }
         else {
-            throw new IOException("The output file is empty");
+            throw new IOException("The output file is empty!");
         }
     }
 

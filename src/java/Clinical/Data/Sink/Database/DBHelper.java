@@ -1,5 +1,5 @@
 /*
- * Copyright @2015
+ * Copyright @2015-2016
  */
 package Clinical.Data.Sink.Database;
 
@@ -31,6 +31,8 @@ import org.apache.logging.log4j.LogManager;
  * while getting the database connection should be handle by the caller.
  * 17-Dec-2015 - Added 2 static methods, setDBTransactionIsolation and
  * checkDBTransactionIsolation().
+ * 26-Feb-2016 - According to Java SE 7 document, applications no longer need to
+ * explictly load JDBC drivers using Class.forName(). Removed that code.
  */
 
 @SessionScoped
@@ -50,7 +52,7 @@ public class DBHelper {
 
         // Debug Statement to print out the database driver used.
         logger.debug("Loading DB Driver: " + Constants.getDATABASE_DRIVER());
-        Class.forName(Constants.getDATABASE_DRIVER()).newInstance();
+//        Class.forName(Constants.getDATABASE_DRIVER()).newInstance();
         dbConn = DriverManager.getConnection(Constants.getDATABASE_NAME(), 
                  uname, pword);
     }

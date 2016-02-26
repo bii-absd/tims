@@ -63,6 +63,7 @@ import org.apache.pdfbox.pdmodel.graphics.xobject.PDJpeg;
  * 26-Jan-2016 - Implemented audit data capture module.
  * 27-Jan-2016 - To revert the submitted job status back to completed if 
  * finalization failed.
+ * 26-Feb-2016 - Implementation for database 3.0 (Part 3).
  */
 
 public class DataDepositor extends Thread {
@@ -402,6 +403,7 @@ public class DataDepositor extends Thread {
         stm.setString(2, record.getAnnot_ver());
         stm.setInt(3, record.getJob_id());
         stm.setString(4, record.getSubject_id());
+        stm.setString(5, record.getDept_id());
         stm.executeUpdate();
             
         logger.debug("Output for " + record.getSubject_id() + 
@@ -465,7 +467,8 @@ public class DataDepositor extends Thread {
             processedRecord = unprocessedRecord = 0;
             // INSERT statement to insert a record into finalized_output table.
             String insertStr = "INSERT INTO finalized_output(array_index,"
-                             + "annot_ver,job_id,subject_id) VALUES(?,?,?,?)";
+                             + "annot_ver,job_id,subject_id,dept_id) "
+                             + "VALUES(?,?,?,?,?)";
             
             try (PreparedStatement insertStm = conn.prepareStatement(insertStr)) {
                 // Ignore the first two strings (i.e. geneID and EntrezID); 
@@ -479,7 +482,7 @@ public class DataDepositor extends Thread {
                             processedRecord++;
                             arrayIndex[i] = getNextArrayInd();
                             FinalizedOutput record = new FinalizedOutput
-                                (arrayIndex[i], annot_ver, values[i], job_id);
+                                (arrayIndex[i], annot_ver, values[i], dept_id, job_id);
                             // Insert the finalized output record.
                             insertToFinalizedOutput(insertStm, record);                            
                             // At every 5th subject ID, place a marker '$'
