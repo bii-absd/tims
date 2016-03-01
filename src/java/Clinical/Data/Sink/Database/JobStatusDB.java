@@ -3,9 +3,13 @@
  */
 package Clinical.Data.Sink.Database;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
+// Libraries for Java Extension
+import javax.naming.NamingException;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -26,12 +30,14 @@ import org.apache.logging.log4j.LogManager;
  * 11-Dec-2015 - Changed to abstract class. Change class name from JobStatus to
  * JobStatusDB. Improve the method getJobStatusDef.
  * 22-Dec-2015 - To close the ResultSet after use.
+ * 29-Feb-2016 - Implementation of Data Source pooling. To use DataSource to 
+ * get the database connection instead of using DriverManager.
  */
 
 public abstract class JobStatusDB {
     // Get the logger for Log4j
     private final static Logger logger = LogManager.
-            getLogger(JobStatusDB.class.getName());    
+            getLogger(JobStatusDB.class.getName());
     private static HashMap<Integer, String> job_status = new HashMap<>();
 
     // Return the job status name based on the status_id passed in.
@@ -44,19 +50,28 @@ public abstract class JobStatusDB {
     public static void buildJobStatusDef() {
         // Only execute the query if the list is empty
         if (job_status.isEmpty()) {
-            ResultSet rs = DBHelper.runQuery(
-                    "SELECT status_id, status_name FROM job_status");
+            Connection conn = null;
+            String query = "SELECT status_id, status_name FROM job_status";
+            
             try {
+                conn = DBHelper.getDSConn();
+                PreparedStatement stm = conn.prepareStatement(query);
+                ResultSet rs = stm.executeQuery();
+                
                 while (rs.next()) {
                     job_status.put(rs.getInt("status_id"), 
                                    rs.getString("status_name"));
                 }
-                rs.close();
+
+                stm.close();
                 logger.debug("Job Status Definition: " + job_status.values());                
             }
-            catch (SQLException e) {
+            catch (SQLException|NamingException e) {
                 logger.error("FAIL to retrieve job status!");
                 logger.error(e.getMessage());
+            }
+            finally {
+                DBHelper.closeDSConn(conn);
             }
         }
     }    

@@ -10,11 +10,13 @@ import Clinical.Data.Sink.General.Constants;
 import java.io.Serializable;
 import java.sql.SQLException;
 import java.util.List;
+// Libraries for Java Extension
 import javax.annotation.PostConstruct;
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
+import javax.naming.NamingException;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -37,6 +39,8 @@ import org.primefaces.event.RowEditEvent;
  * 12-Jan-2016 - Fix the static variable issues in AuthenticationBean.
  * 13-Jan-2016 - Removed all the static variables in Pipeline Management module.
  * 26-Jan-2016 - Implemented audit data capture module.
+ * 29-Feb-2016 - Implementation of Data Source pooling. To use DataSource to 
+ * get the database connection instead of using DriverManager.
  */
 
 @ManagedBean (name="plMgntBean")
@@ -62,7 +66,7 @@ public class PipelineManagementBean implements Serializable {
         try {
             plList = PipelineDB.getAllPipeline();            
         }
-        catch (SQLException e) {
+        catch (SQLException|NamingException e) {
             logger.error("FAIL to retrieve pipeline info!");
             logger.error(e.getMessage());
             getFacesContext().addMessage(null, new FacesMessage(

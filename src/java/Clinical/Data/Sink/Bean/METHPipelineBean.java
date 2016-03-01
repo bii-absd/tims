@@ -16,6 +16,7 @@ import java.util.List;
 // Libraries for Java Extension
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
+import javax.naming.NamingException;
 
 /**
  * METHPipelineBean is used as the backing bean for the meth-pipeline view.
@@ -36,6 +37,8 @@ import javax.faces.bean.ViewScoped;
  * 18-Feb-2016 - To check the input files received with the filename listed in
  * the annotation file. List out the missing files (if any) and notice the user
  * during pipeline configuration review.
+ * 29-Feb-2016 - Implementation of Data Source pooling. To use DataSource to 
+ * get the database connection instead of using DriverManager.
  */
 
 @ManagedBean (name="methPBean")
@@ -69,7 +72,7 @@ public class METHPipelineBean extends GEXAffymetrixBean {
             // Store the job_id of the inserted record
             job_id = SubmittedJobDB.insertJob(newJob);
         }
-        catch (SQLException e) {
+        catch (SQLException|NamingException e) {
             result = Constants.NOT_OK;
             logger.error("FAIL to insert job!");
             logger.error(e.getMessage());

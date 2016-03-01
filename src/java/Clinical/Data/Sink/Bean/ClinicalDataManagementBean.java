@@ -23,6 +23,7 @@ import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
+import javax.naming.NamingException;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -49,6 +50,8 @@ import org.primefaces.model.UploadedFile;
  * 25-Feb-2016 - Implementation for database 3.0 (Part 2). Bug fix: To check
  * that the strings read in from the meta data uploaded represent valid integer
  * and float values.
+ * 29-Feb-2016 - Implementation of Data Source pooling. To use DataSource to 
+ * get the database connection instead of using DriverManager.
  */
 
 @ManagedBean (name="clDataMgntBean")
@@ -86,7 +89,7 @@ public class ClinicalDataManagementBean implements Serializable {
         try {
             subjectList = SubjectDB.getSubjectList(dept_id);
         }
-        catch (SQLException e) {
+        catch (SQLException|NamingException e) {
             logger.error("FAIL to build subject list!");
             logger.error(e.getMessage());
             getFacesContext().addMessage(null, new FacesMessage(

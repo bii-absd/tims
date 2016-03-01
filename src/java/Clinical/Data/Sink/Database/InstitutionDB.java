@@ -12,6 +12,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+// Libraries for Java Extension
+import javax.naming.NamingException;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -35,30 +37,39 @@ import org.apache.logging.log4j.LogManager;
  * 22-Dec-2015 - To close the ResultSet after use.
  * 13-Dec-2016 - Removed all the static variables in Study and ItemList
  * management modules.
+ * 29-Feb-2016 - Implementation of Data Source pooling. To use DataSource to 
+ * get the database connection instead of using DriverManager.
  */
 
 public abstract class InstitutionDB implements Serializable {
     // Get the logger for Log4j
     private final static Logger logger = LogManager.
             getLogger(InstitutionDB.class.getName());
-    private final static Connection conn = DBHelper.getDBConn();
     
     // Insert the new institution ID into database.
     public static Boolean insertInstitution(Institution inst) {
+        Connection conn = null;
         Boolean result = Constants.OK;
-        String insertStr = "INSERT INTO inst(inst_id,inst_name) VALUES(?,?)";
+        String query = "INSERT INTO inst(inst_id,inst_name) VALUES(?,?)";
         
-        try (PreparedStatement insertStm = conn.prepareStatement(insertStr)) {
-            insertStm.setString(1, inst.getInst_id());
-            insertStm.setString(2, inst.getInst_name());
-            insertStm.executeUpdate();
+        try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            stm.setString(1, inst.getInst_id());
+            stm.setString(2, inst.getInst_name());
+            stm.executeUpdate();
+            stm.close();
+            
             logger.debug("New institution ID inserted into database: " +
                     inst.getInst_id());
         }
-        catch (SQLException e) {
+        catch (SQLException|NamingException e) {
             result = Constants.NOT_OK;
             logger.error("FAIL to insert new institution!");
             logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
         }
         
         return result;
@@ -66,19 +77,27 @@ public abstract class InstitutionDB implements Serializable {
     
     // Only allow update to the institution name.
     public static Boolean updateInstitution(Institution inst) {
+        Connection conn = null;
         Boolean result = Constants.OK;
-        String updateStr = "UPDATE inst SET inst_name = ? WHERE inst_id = ?";
+        String query = "UPDATE inst SET inst_name = ? WHERE inst_id = ?";
         
-        try (PreparedStatement updateStm = conn.prepareStatement(updateStr)) {
-            updateStm.setString(1, inst.getInst_name());
-            updateStm.setString(2, inst.getInst_id());            
-            updateStm.executeUpdate();
+        try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            stm.setString(1, inst.getInst_name());
+            stm.setString(2, inst.getInst_id());            
+            stm.executeUpdate();
+            stm.close();
+            
             logger.debug("Institution " + inst.getInst_id() + " updated.");
         }
-        catch (SQLException e) {
+        catch (SQLException|NamingException e) {
             result = Constants.NOT_OK;
             logger.error("FAIL to update institution!");
             logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
         }
         
         return result;
@@ -86,23 +105,31 @@ public abstract class InstitutionDB implements Serializable {
     
     // Return the list of Institution in the database.
     public static List<Institution> getInstList() {
+        Connection conn = null;
+        String query = "SELECT * from inst ORDER BY inst_name";
         List<Institution> instList = new ArrayList<>();
-        ResultSet rs = DBHelper.runQuery
-                       ("SELECT * from inst ORDER BY inst_name");
 
         try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            ResultSet rs = stm.executeQuery();
+            
             while(rs.next()) {
                 Institution inst = new Institution
                                     (rs.getString("inst_id"),
                                      rs.getString("inst_name"));
                 instList.add(inst);    
             }
-            rs.close();
+            
+            stm.close();
             logger.debug("Institution list built.");
         }
-        catch (SQLException e) {
+        catch (SQLException|NamingException e) {
             logger.error("FAIL to build institution list!");
             logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
         }
         
         return instList;
@@ -110,21 +137,29 @@ public abstract class InstitutionDB implements Serializable {
     
     // Return the hashmap of institution setup in the database.
     public static LinkedHashMap<String, String> getInstNameHash() {
+        Connection conn = null;
+        String query = "SELECT * FROM inst ORDER BY inst_name";
         LinkedHashMap<String, String> instNameHash = new LinkedHashMap<>();
-        ResultSet rs = DBHelper.runQuery
-                       ("SELECT * FROM inst ORDER BY inst_name");
         
         try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            ResultSet rs = stm.executeQuery();
+            
             while (rs.next()) {
                 instNameHash.put(rs.getString("inst_name"), 
                                  rs.getString("inst_id"));
             }
-            rs.close();
+
+            stm.close();
             logger.debug("Institution name hash built.");
         }
-        catch (SQLException e) {
+        catch (SQLException|NamingException e) {
             logger.error("FAIL to build institution name hash!");
             logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
         }
         
         return instNameHash;
@@ -132,21 +167,29 @@ public abstract class InstitutionDB implements Serializable {
     
     // Return the name for this institution.
     public static String getInstName(String instID) {
+        Connection conn = null;
         String instName = Constants.DATABASE_INVALID_STR;
-        String queryStr = "SELECT inst_name FROM inst WHERE inst_id = ?";
+        String query = "SELECT inst_name FROM inst WHERE inst_id = ?";
 
-        try (PreparedStatement queryStm = conn.prepareStatement(queryStr)) {
-            queryStm.setString(1, instID);
-            ResultSet rs = queryStm.executeQuery();
+        try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            stm.setString(1, instID);
+            ResultSet rs = stm.executeQuery();
             
             if (rs.next()) {
                 instName = rs.getString("inst_name");
             }
+            
+            stm.close();
             logger.debug("Institution name for " + instID + " is " + instName);
         }
-        catch (SQLException e) {
+        catch (SQLException|NamingException e) {
             logger.error("FAIL to retrieve institution name!");
             logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
         }
         
         return instName;

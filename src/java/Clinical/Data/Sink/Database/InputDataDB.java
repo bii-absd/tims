@@ -10,6 +10,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+// Libraries for Java Extension
+import javax.naming.NamingException;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -33,39 +35,47 @@ import org.apache.logging.log4j.LogManager;
  * identify the user who has uploaded this input data.
  * 21-Jan-2016 - Added one new field pipeline_name in the input_data table; to
  * associate this input_data with the respective pipeline.
+ * 29-Feb-2016 - Implementation of Data Source pooling. To use DataSource to 
+ * get the database connection instead of using DriverManager.
  */
 
 public abstract class InputDataDB {
     // Get the logger for Log4j
     private final static Logger logger = LogManager.
             getLogger(InputDataDB.class.getName());
-    private final static Connection conn = DBHelper.getDBConn();
     
     // Insert the new input data detail into database.
     public static Boolean insertInputData(InputData idata) {
+        Connection conn = null;
         Boolean result = Constants.OK;
-        String insertStr = "INSERT INTO input_data(study_id,sn,user_id,"
-                         + "pipeline_name,filename,filepath,description,date) "
-                         + "VALUES(?,?,?,?,?,?,?,?)";
+        String query = "INSERT INTO input_data(study_id,sn,user_id,"
+                     + "pipeline_name,filename,filepath,description,date) "
+                     + "VALUES(?,?,?,?,?,?,?,?)";
         
-        try (PreparedStatement insertStm = conn.prepareStatement(insertStr)) {
-            insertStm.setString(1, idata.getStudy_id());
-            insertStm.setInt(2, idata.getSn());
-            insertStm.setString(3, idata.getUser_id());
-            insertStm.setString(4, idata.getPipeline_name());
-            insertStm.setString(5, idata.getFilename());
-            insertStm.setString(6, idata.getFilepath());
-            insertStm.setString(7, idata.getDescription());
-            insertStm.setString(8, idata.getDate());
+        try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            stm.setString(1, idata.getStudy_id());
+            stm.setInt(2, idata.getSn());
+            stm.setString(3, idata.getUser_id());
+            stm.setString(4, idata.getPipeline_name());
+            stm.setString(5, idata.getFilename());
+            stm.setString(6, idata.getFilepath());
+            stm.setString(7, idata.getDescription());
+            stm.setString(8, idata.getDate());
+            stm.executeUpdate();
+            stm.close();
             
-            insertStm.executeUpdate();
             logger.debug("New input data detail inserted into database: " +
                         idata.getStudy_id() + " - SN: " + idata.getSn());
         }
-        catch (SQLException e) {
+        catch (SQLException|NamingException e) {
             result = Constants.NOT_OK;
             logger.error("FAIL to insert input data!");
             logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
         }
         
         return result;
@@ -73,14 +83,17 @@ public abstract class InputDataDB {
     
     // Return the list of input data that belong to this study ID and pipeline.
     public static List<InputData> getIpList(String studyID, String plName) {
+        Connection conn = null;
         List<InputData> ipList = new ArrayList<>();
-        String queryStr = "SELECT * FROM input_data WHERE study_id = ? AND "
-                        + "pipeline_name = ? ORDER BY sn DESC";
+        String query = "SELECT * FROM input_data WHERE study_id = ? AND "
+                     + "pipeline_name = ? ORDER BY sn DESC";
         
-        try (PreparedStatement queryStm = conn.prepareStatement(queryStr)) {
-            queryStm.setString(1, studyID);
-            queryStm.setString(2, plName);
-            ResultSet rs = queryStm.executeQuery();
+        try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            stm.setString(1, studyID);
+            stm.setString(2, plName);
+            ResultSet rs = stm.executeQuery();
             
             while (rs.next()) {
                 InputData tmp = new InputData(rs.getString("study_id"),
@@ -93,28 +106,40 @@ public abstract class InputDataDB {
                                               rs.getString("date"));
                 ipList.add(tmp);
             }
+            
+            stm.close();
             logger.debug("Query input data completed.");
         }
-        catch (SQLException e) {
+        catch (SQLException|NamingException e) {
             logger.debug("FAIL to query input data!");
             logger.debug(e.getMessage());
         }
-
+        finally {
+            DBHelper.closeDSConn(conn);
+        }
+        
         return ipList;
     }
     
     // Return the next sn for the input data detail for this study.
-    public static int getNextSn(String studyID) throws SQLException {
+    public static int getNextSn(String studyID) throws SQLException, NamingException 
+    {
+        Connection conn = null;
         int nextSn = Constants.DATABASE_INVALID_ID;
-        String queryStr = "SELECT MAX(sn) FROM input_data WHERE study_id = ?";
-        PreparedStatement queryStm = conn.prepareStatement(queryStr);
-        queryStm.setString(1, studyID);
-        ResultSet rs = queryStm.executeQuery();
+        String query = "SELECT MAX(sn) FROM input_data WHERE study_id = ?";
+        
+        conn = DBHelper.getDSConn();
+        PreparedStatement stm = conn.prepareStatement(query);
+        stm.setString(1, studyID);
+        ResultSet rs = stm.executeQuery();
         
         if (rs.next()) {
             // To get the next sn, add 1 to the largest sn for this study_id.
             nextSn = rs.getInt(1) + 1;
         }
+
+        stm.close();
+        DBHelper.closeDSConn(conn);
         
         return nextSn;
     }

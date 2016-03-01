@@ -10,6 +10,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+// Libraries for Java Extension
+import javax.naming.NamingException;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -35,30 +37,39 @@ import org.apache.logging.log4j.LogManager;
  * 01-Dec-2015 - Implementation for database 2.0
  * 10-Dec-2015 - Changed to abstract class.
  * 13-Jan-2016 - Removed all the static variables in Pipeline Management module.
+ * 29-Feb-2016 - Implementation of Data Source pooling. To use DataSource to 
+ * get the database connection instead of using DriverManager.
  */
 
 public abstract class PipelineDB {
     // Get the logger for Log4j
     private final static Logger logger = LogManager.
             getLogger(PipelineDB.class.getName());
-    private final static Connection conn = DBHelper.getDBConn();
 
     // Return the pipeline technology for this pipeline name.
     public static String getPipelineTechnology(String pipeline_name) {
-        String queryStr = "SELECT tid FROM pipeline WHERE name = ?";
+        Connection conn = null;
+        String query = "SELECT tid FROM pipeline WHERE name = ?";
         String tid = null;
         
-        try (PreparedStatement queryStm = conn.prepareStatement(queryStr)) {
-            queryStm.setString(1, pipeline_name);
-            ResultSet result = queryStm.executeQuery();
+        try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            stm.setString(1, pipeline_name);
+            ResultSet result = stm.executeQuery();
             
             if (result.next()) {
                 tid = result.getString("tid");
             }
+            
+            stm.close();
         }
-        catch (SQLException e) {
+        catch (SQLException|NamingException e) {
             logger.error("FAIL to retrieve pipeline technology!");
             logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
         }
         
         return tid;
@@ -66,32 +77,45 @@ public abstract class PipelineDB {
     
     // Return the pipeline object for this pipeline.
     public static Pipeline getPipeline(String pipeline_name) 
-            throws SQLException {
+            throws SQLException, NamingException {
+        Connection conn = null;
         Pipeline command = null;
-        String queryStr = 
+        String query = 
                 "SELECT tid, code, parameter FROM pipeline WHERE name = ?";
-        PreparedStatement queryStm = conn.prepareStatement(queryStr);
         
-        queryStm.setString(1, pipeline_name);
-        ResultSet result = queryStm.executeQuery();
+        conn = DBHelper.getDSConn();
+        PreparedStatement stm = conn.prepareStatement(query);
         
-        if (result.next()) {
+        stm.setString(1, pipeline_name);
+        ResultSet rs = stm.executeQuery();
+        
+        if (rs.next()) {
             command = new Pipeline(pipeline_name,
-                            result.getString("tid"),
-                            result.getString("code"),
-                            result.getString("parameter"));
+                            rs.getString("tid"),
+                            rs.getString("code"),
+                            rs.getString("parameter"));
             
             logger.debug(command.toString());
         }
 
+        stm.close();
+        DBHelper.closeDSConn(conn);
+        
         return command;
     }
     
     // Return all the pipeline currently setup in the database.
-    public static List<Pipeline> getAllPipeline() throws SQLException {
-        List<Pipeline> plList = new ArrayList<>();
-        ResultSet rs = DBHelper.runQuery("SELECT * FROM pipeline");
+    public static List<Pipeline> getAllPipeline() 
+            throws SQLException, NamingException 
+    {
+        Connection conn = null;
         int index = 0;
+        List<Pipeline> plList = new ArrayList<>();
+        String query = "SELECT * FROM pipeline";
+        
+        conn = DBHelper.getDSConn();
+        PreparedStatement stm = conn.prepareStatement(query);
+        ResultSet rs = stm.executeQuery();
             
         while (rs.next()) {
             Pipeline tmp = new Pipeline(
@@ -103,28 +127,38 @@ public abstract class PipelineDB {
             plList.add(index++, tmp);
         }
 
+        stm.close();
+        DBHelper.closeDSConn(conn);
+        
         return plList;
     }
     
     // Update the pipeline command in the database.
     public static Boolean updatePipeline(Pipeline cmd) {
+        Connection conn = null;
         Boolean result = Constants.OK;
-        String updateStr = "UPDATE pipeline SET code = ?, "
-                + "parameter = ?, tid = ? WHERE name = ?";
+        String query = "UPDATE pipeline SET code = ?, "
+                     + "parameter = ?, tid = ? WHERE name = ?";
         
-        try (PreparedStatement updateStm = conn.prepareStatement(updateStr)) {
-            updateStm.setString(1, cmd.getCode());
-            updateStm.setString(2, cmd.getParameter());
-            updateStm.setString(3, cmd.getTid());
-            updateStm.setString(4, cmd.getName());
-        
-            updateStm.executeUpdate();
+        try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            stm.setString(1, cmd.getCode());
+            stm.setString(2, cmd.getParameter());
+            stm.setString(3, cmd.getTid());
+            stm.setString(4, cmd.getName());
+            stm.executeUpdate();
+            stm.close();
+            
             logger.debug("Updated pipeline: " + cmd.getName());
         }
-        catch (SQLException e) {
+        catch (SQLException|NamingException e) {
             result = Constants.NOT_OK;
             logger.error("FAIL to update pipeline: " + cmd.getName());
             logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
         }
         
         return result;
@@ -132,26 +166,31 @@ public abstract class PipelineDB {
     
     // Insert the new pipeline into database.
     public static Boolean insertPipeline(Pipeline cmd) {
+        Connection conn = null;
         Boolean result = Constants.OK;
-        String insertStr = "INSERT INTO pipeline"
-                + "(name,tid,code,parameter) VALUES(?,?,?,?)";
+        String query = "INSERT INTO pipeline"
+                     + "(name,tid,code,parameter) VALUES(?,?,?,?)";
         
-        try (PreparedStatement insertStm = conn.prepareStatement(insertStr)) {
-            insertStm.setString(1, cmd.getName());
-            insertStm.setString(2, cmd.getTid());
-            insertStm.setString(3, cmd.getCode());
-            insertStm.setString(4, cmd.getParameter());
+        try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            stm.setString(1, cmd.getName());
+            stm.setString(2, cmd.getTid());
+            stm.setString(3, cmd.getCode());
+            stm.setString(4, cmd.getParameter());            
+            stm.executeUpdate();
+            stm.close();
             
-            insertStm.executeUpdate();
-            // Clear the command list, so that it will be rebuild again.
-//            pipelineList.clear();
             logger.debug("New pipeline inserted into database: " + 
                     cmd.getName());
         }
-        catch (SQLException e) {
+        catch (SQLException|NamingException e) {
             result = Constants.NOT_OK;
             logger.error("FAIL to insert pipeline!");
             logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
         }
         
         return result;

@@ -13,6 +13,7 @@ import java.sql.SQLException;
 import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
+import javax.naming.NamingException;
 
 /**
  * CNVPipelineBean is used as the backing bean for the cnv-pipeline view.
@@ -33,6 +34,8 @@ import javax.faces.bean.ViewScoped;
  * 19-Feb-2016 - To use the new generic method renameFilename in FileUploadBean
  * class when renaming annotation and control files. To use the new generic
  * constructor in FileUploadBean class when creating new object.
+ * 29-Feb-2016 - Implementation of Data Source pooling. To use DataSource to 
+ * get the database connection instead of using DriverManager.
  */
 
 @ManagedBean (name="cnvPBean")
@@ -116,7 +119,7 @@ public class CNVPipelineBean extends GEXAffymetrixBean {
             // Store the job_id of the inserted record
             job_id = SubmittedJobDB.insertJob(newJob);
         }
-        catch (SQLException e) {
+        catch (SQLException|NamingException e) {
             result = Constants.NOT_OK;
             logger.error("FAIL to insert job!");
             logger.error(e.getMessage());

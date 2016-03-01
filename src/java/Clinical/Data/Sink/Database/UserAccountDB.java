@@ -11,6 +11,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+// Libraries for Java Extension
+import javax.naming.NamingException;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -50,65 +52,114 @@ import org.mindrot.jbcrypt.BCrypt;
  * 19-Feb-2016 - To support user account with picture uploaded.
  * 23-Feb-2016 - Added new method getPiIDHash(), to return the user ID of all
  * the PIs in the system.
+ * 29-Feb-2016 - Implementation of Data Source pooling. To use DataSource to 
+ * get the database connection instead of using DriverManager.
  */
 
 public abstract class UserAccountDB {
     // Get the logger for Log4j
     private final static Logger logger = LogManager.
             getLogger(UserAccountDB.class.getName());
-    private final static Connection conn = DBHelper.getDBConn();
+    
+    // If no user account has been setup, return false (i.e. the system has just
+    // been setup) else return true.
+    public static boolean isUserAccountSetup() {
+        Connection conn = null;
+        boolean isUserAcctSetup = false;
+        String query = "SELECT COUNT(*) FROM user_account";
+        
+        try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            ResultSet rs = stm.executeQuery();
+            
+            if (rs.next()) {
+                if (rs.getInt(1) > 0) {
+                    isUserAcctSetup = true;
+                }
+            }
+        }
+        catch (SQLException|NamingException e) {
+            logger.error("FAIL to retrieve user account count!");
+            logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
+        }
+        
+        return isUserAcctSetup;
+    }
     
     // Temporay method retrieve all the user ID of PI.
     // In future, this method will be moved to grp Class.
     public static LinkedHashMap<String, String> getPiIDHash() {
+        Connection conn = null;
         LinkedHashMap<String,String> piIDHash = new LinkedHashMap<>();
-        ResultSet rs = DBHelper.runQuery(
-            "SELECT user_id FROM user_account WHERE role_id = 4 ORDER BY user_id");
+        String query = "SELECT user_id FROM user_account "
+                     + "WHERE role_id = 4 ORDER BY user_id";
 
         try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            ResultSet rs = stm.executeQuery();
+            
             while (rs.next()) {
                 String user_id = rs.getString("user_id");
                 piIDHash.put(user_id, user_id);
-            }
-            rs.close();
+            }            
+            stm.close();
         }
-        catch (SQLException e) {
+        catch (SQLException|NamingException e) {
             logger.error("FAIL to retrieve PI ID!");
             logger.error(e.getMessage());
         }
-        
+        finally {
+            DBHelper.closeDSConn(conn);
+        }
+
         return piIDHash;
     }
     
     // Return the list of all the user ID currently in the system.
     public static LinkedHashMap<String,String> getUserIDHash() {
+        Connection conn = null;
         LinkedHashMap<String,String> userIDHash = new LinkedHashMap<>();
-        ResultSet rs = DBHelper.runQuery(
-                "SELECT user_id FROM user_account ORDER BY user_id");
+        String query = "SELECT user_id FROM user_account ORDER BY user_id";
         
         try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            ResultSet rs = stm.executeQuery();
+            
             while (rs.next()) {
                 String user_id = rs.getString("user_id");
                 userIDHash.put(user_id, user_id);
             }
-            rs.close();
+            stm.close();
         }
-        catch (SQLException e) {
+        catch (SQLException|NamingException e) {
             logger.error("FAIL to retrieve user ID!");
             logger.error(e.getMessage());
         }
-        
+        finally {
+            DBHelper.closeDSConn(conn);
+        }
+
         return userIDHash;
     }
     
     // Return the list of user accounts that are currently in the system.
     public static List<UserAccount> getAllUserAcct() {
+        Connection conn = null;
         List<UserAccount> userAcctList = new ArrayList<>();
-        String queryStr = "SELECT * FROM user_account u NATURAL JOIN dept d "
-                        + "WHERE u.dept_id = d.dept_id ORDER BY u.user_id";
-        ResultSet rs = DBHelper.runQuery(queryStr);
+        String query = "SELECT * FROM user_account u NATURAL JOIN dept d "
+                     + "WHERE u.dept_id = d.dept_id ORDER BY u.user_id";
         
         try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            ResultSet rs = stm.executeQuery();
+        
             while (rs.next()) {
                 UserAccount user = new UserAccount(
                                         rs.getString("user_id"),
@@ -125,27 +176,34 @@ public abstract class UserAccountDB {
                 
                 userAcctList.add(user);
             }
-            rs.close();
+            stm.close();
             logger.debug("No of user account retrieved: " + userAcctList.size());
         }
-        catch (SQLException e) {
+        catch (SQLException|NamingException e) {
             logger.error("FAIL to retrieve user accounts!");
             logger.error(e.getMessage());
         }
-        
+        finally {
+            DBHelper.closeDSConn(conn);
+        }
+
         return userAcctList;
     }
     
     // Return the user account that requested this job.
     public static UserAccount getJobRequestor(int jobID) {
+        Connection conn = null;
         UserAccount user = null;
-        String queryStr = "SELECT * FROM user_account u NATURAL JOIN dept d "
+        String query = "SELECT * FROM user_account u NATURAL JOIN dept d "
                 + "WHERE u.dept_id = d.dept_id AND u.user_id = (SELECT "
                 + "user_id FROM submitted_job WHERE job_id = "
                 + jobID + ")";
-        ResultSet rs = DBHelper.runQuery(queryStr);
         
         try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            ResultSet rs = stm.executeQuery();
+        
             if (rs.next()) {
                 user = new UserAccount(rs.getString("user_id"),
                                        rs.getInt("role_id"),
@@ -160,13 +218,16 @@ public abstract class UserAccountDB {
                                        rs.getString("last_login"));
                 
             }
-//            rs.close();
             logger.debug("For Job ID " + jobID + " User ID is " +
                     rs.getString("user_id"));
+            stm.close();
         }
-        catch (SQLException e) {
+        catch (SQLException|NamingException e) {
             logger.error("FAIL to retrieve user account!");
             logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
         }
 
         return user;
@@ -175,23 +236,30 @@ public abstract class UserAccountDB {
     // Return the email address of the user that requested this job.
     // Currently not in use.
     public static String getJobRequestorEmail(int jobID) {
-        String queryStr = "SELECT email FROM user_account WHERE user_id = ("
+        Connection conn = null;
+        String query = "SELECT email FROM user_account WHERE user_id = ("
                 + "SELECT user_id FROM submitted_job WHERE job_id = "
                 + jobID + ")";
         String email = null;
-        ResultSet rs = DBHelper.runQuery(queryStr);
         
         try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            ResultSet rs = stm.executeQuery();
+            
             if (rs.next()) {
                 email = rs.getString("email");
             }
-            rs.close();
+            stm.close();
             logger.debug("For Job ID " + jobID + " user email address is " +
                     email);
         }
-        catch (SQLException e) {
+        catch (SQLException|NamingException e) {
             logger.error("FAIL to retrieve email address!");
             logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
         }
        
         return email;
@@ -199,11 +267,14 @@ public abstract class UserAccountDB {
     
     // Return the list of administrator's email addresses i.e. email1,email2
     public static String getAdminEmails() {
+        Connection conn = null;
+        String query = "SELECT email FROM user_account WHERE role_id = 1";
         String emails = Constants.DATABASE_INVALID_STR;
-        ResultSet rs = DBHelper.runQuery(
-                "SELECT email FROM user_account WHERE role_id = 1");
         
         try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            ResultSet rs = stm.executeQuery();
             // The first administrator email.
             if (rs.next()) {
                 emails = rs.getString("email");
@@ -213,30 +284,35 @@ public abstract class UserAccountDB {
                 emails += ",";
                 emails += rs.getString("email");
             }
-            rs.close();
+            stm.close();
             logger.debug("Retrieved adminstrator email addresses.");
         }
-        catch (SQLException e) {
+        catch (SQLException|NamingException e) {
             logger.error("FAIL to retrieve administrator email addresses!");
             logger.error(e.getMessage());
         }
-        
+        finally {
+            DBHelper.closeDSConn(conn);
+        }
+
         return emails;
     }
     
     // Check the password entered by the user, and if the password is valid, 
     // a UserAccount object will be return.
     public static UserAccount checkPwd(String user_id, String pwd) {
-        String queryStr = "SELECT * FROM user_account u NATURAL JOIN dept d "
+        Connection conn = null;
+        String query = "SELECT * FROM user_account u NATURAL JOIN dept d "
                         + "WHERE u.dept_id = d.dept_id AND u.user_id = ?";
         String pwd_hash = null;
         UserAccount acct = null;
 
-        try (PreparedStatement queryPwd = conn.prepareStatement(queryStr)) 
-        {
+        try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
             // Build the query condition using the parameter user_id.
-            queryPwd.setString(1, user_id);
-            ResultSet rs = queryPwd.executeQuery();
+            stm.setString(1, user_id);
+            ResultSet rs = stm.executeQuery();
             
             if (rs.next()) {
                 pwd_hash = rs.getString("pwd");
@@ -260,11 +336,16 @@ public abstract class UserAccountDB {
                                            "last-login");
                 }
             }
-        } catch (SQLException e) {
+            stm.close();
+        } 
+        catch (SQLException|NamingException e) {
             logger.error("FAIL to check password!");
             logger.error(e.getMessage());
-        } 
-        
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
+        }
+
         // If acct is null, either password don't match or account
         // doesn't exists.
         if (acct == null) {
@@ -276,93 +357,122 @@ public abstract class UserAccountDB {
     
     // Insert the UserAccount object into the user_account table. Any exception 
     // encountered here will be throw and to be handled by the caller.
-    public static void insertAccount(UserAccount newAcct) throws SQLException {
+    public static void insertAccount(UserAccount newAcct) 
+            throws SQLException, NamingException 
+    {
+        Connection conn = null;
         // Hash the password using BCrypt before storing it into the database.
         String pwd_hash = BCrypt.hashpw(newAcct.getPwd(), BCrypt.gensalt());
-
-        String insertStr = "INSERT INTO user_account"
+        String query = "INSERT INTO user_account"
                 + "(user_id, role_id, first_name, last_name, photo, email, pwd, "
                 + "active, dept_id) VALUES (?,?,?,?,?,?,?,?,?)";
-        PreparedStatement insertStm = conn.prepareStatement(insertStr);
+        conn = DBHelper.getDSConn();
+        PreparedStatement stm = conn.prepareStatement(query);
         
         // Build the INSERT statement using the values from the current
         // UserAccount object.
-        insertStm.setString(1, newAcct.getUser_id());
-        insertStm.setInt(2, newAcct.getRole_id());
-        insertStm.setString(3, newAcct.getFirst_name());
-        insertStm.setString(4, newAcct.getLast_name());
-        insertStm.setString(5, newAcct.getPhoto());
-        insertStm.setString(6, newAcct.getEmail());
-        insertStm.setString(7, pwd_hash);
-        insertStm.setBoolean(8, newAcct.getActive());
-        insertStm.setString(9, newAcct.getDept_id());
+        stm.setString(1, newAcct.getUser_id());
+        stm.setInt(2, newAcct.getRole_id());
+        stm.setString(3, newAcct.getFirst_name());
+        stm.setString(4, newAcct.getLast_name());
+        stm.setString(5, newAcct.getPhoto());
+        stm.setString(6, newAcct.getEmail());
+        stm.setString(7, pwd_hash);
+        stm.setBoolean(8, newAcct.getActive());
+        stm.setString(9, newAcct.getDept_id());
         // Execute the INSERT statement
-        insertStm.executeUpdate();
+        stm.executeUpdate();
+        stm.close();
+        
+        DBHelper.closeDSConn(conn);
     }
     
     // Update the last login of this user.
     public static void updateLastLogin(String user_id, String last_login) {
-        String updateStr = "UPDATE user_account SET last_login = ? WHERE "
-                         + "user_id = ?";
+        Connection conn = null;
+        String query = "UPDATE user_account SET last_login = ? WHERE "
+                     + "user_id = ?";
         
-        try (PreparedStatement updateStm = conn.prepareStatement(updateStr)) {
-            updateStm.setString(1, last_login);
-            updateStm.setString(2, user_id);
+        try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            stm.setString(1, last_login);
+            stm.setString(2, user_id);
             // Execute the UPDATE statement
-            updateStm.executeUpdate();
+            stm.executeUpdate();
+            stm.close();
         }
-        catch (SQLException e) {
+        catch (SQLException|NamingException e) {
             logger.error("FAIL to update last login!");
             logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
         }
     }
     
     // Update the password of this user. Any exception encountered here will 
     // be throw and to be handled by the caller.
     public static void updatePassword(String user_id, String new_pwd) 
-            throws SQLException  {
+            throws SQLException, NamingException  
+    {
+        Connection conn = null;
         // Hash the password using BCrypt before storing it into the database.
         String pwd_hash = BCrypt.hashpw(new_pwd, BCrypt.gensalt());
-        String updateStr = "UPDATE user_account SET pwd = ? WHERE "
-                         + "user_id = ?";
+        String query = "UPDATE user_account SET pwd = ? WHERE "
+                     + "user_id = ?";
+        conn = DBHelper.getDSConn();
         
-        PreparedStatement updateStm = conn.prepareStatement(updateStr);
-        updateStm.setString(1, pwd_hash);
-        updateStm.setString(2, user_id);
+        PreparedStatement stm = conn.prepareStatement(query);
+        stm.setString(1, pwd_hash);
+        stm.setString(2, user_id);
         // Execute the UPDATE statement
-        updateStm.executeUpdate();
+        stm.executeUpdate();
+        stm.close();
+        
+        DBHelper.closeDSConn(conn);
     }
     
     // Update the account detail of this user. Any exception encountered here
     // will be throw and to be handled by the caller.
-    public static void updateAccount(UserAccount user) throws SQLException {
-        String updateStr = "UPDATE user_account SET dept_id = ?, "
-                         + "first_name = ?, last_name = ?, photo = ?, "
-                         + "email = ?, active = ?, role_id = ? WHERE "
-                         + "user_id = ?";
+    public static void updateAccount(UserAccount user) 
+            throws SQLException, NamingException 
+    {
+        Connection conn = null;
+        String query = "UPDATE user_account SET dept_id = ?, "
+                     + "first_name = ?, last_name = ?, photo = ?, "
+                     + "email = ?, active = ?, role_id = ? WHERE "
+                     + "user_id = ?";
+        conn = DBHelper.getDSConn();
         
-        PreparedStatement updateStm = conn.prepareStatement(updateStr);
-        updateStm.setString(1, user.getDept_id());
-        updateStm.setString(2, user.getFirst_name());
-        updateStm.setString(3, user.getLast_name());
-        updateStm.setString(4, user.getPhoto());
-        updateStm.setString(5, user.getEmail());
-        updateStm.setBoolean(6, user.getActive());
-        updateStm.setInt(7, user.getRole_id());
-        updateStm.setString(8, user.getUser_id());
+        PreparedStatement stm = conn.prepareStatement(query);
+        stm.setString(1, user.getDept_id());
+        stm.setString(2, user.getFirst_name());
+        stm.setString(3, user.getLast_name());
+        stm.setString(4, user.getPhoto());
+        stm.setString(5, user.getEmail());
+        stm.setBoolean(6, user.getActive());
+        stm.setInt(7, user.getRole_id());
+        stm.setString(8, user.getUser_id());
         // Excute the UPDATE statement
-        updateStm.executeUpdate();
+        stm.executeUpdate();
+        stm.close();
+        
+        DBHelper.closeDSConn(conn);
     }
     
     // Retrieve the user account info for this user ID.
     public static UserAccount getUserAct(String userID) {
+        Connection conn = null;
         UserAccount userAct = null;
-        String queryStr = "SELECT * FROM user_account u NATURAL JOIN dept d "
-                        + "WHERE user_id = ? AND u.dept_id = d.dept_id";
+        String query = "SELECT * FROM user_account u NATURAL JOIN dept d "
+                     + "WHERE user_id = ? AND u.dept_id = d.dept_id";
         
-        try (PreparedStatement queryStm = conn.prepareStatement(queryStr)) {
-            queryStm.setString(1, userID);
-            ResultSet rs = queryStm.executeQuery();
+        try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            stm.setString(1, userID);
+            ResultSet rs = stm.executeQuery();
             
             if (rs.next()) {
                 userAct = new UserAccount(rs.getString("user_id"),
@@ -377,12 +487,16 @@ public abstract class UserAccountDB {
                                           rs.getString("inst_id"),
                                           rs.getString("last_login"));
             }
+            stm.close();
         }
-        catch (SQLException e) {
+        catch (SQLException|NamingException e) {
             logger.error("FAIL to retrieve user account info!");
             logger.error(e.getMessage());
         }
-        
+        finally {
+            DBHelper.closeDSConn(conn);
+        }
+
         return userAct;
     }
     
@@ -437,24 +551,31 @@ public abstract class UserAccountDB {
     
     // Return the institution name and department ID for this user.
     public static String getInstNameDeptID(String userID) {
+        Connection conn = null;
         String instDept = Constants.DATABASE_INVALID_STR;
-        String queryStr = "SELECT d.inst_name, u.dept_id FROM user_account u "
-                        + "NATURAL JOIN (SELECT inst_name, dept_id FROM dept "
-                        + "NATURAL JOIN inst) d WHERE u.user_id = ? "
-                        + "AND u.dept_id = d.dept_id";
+        String query = "SELECT d.inst_name, u.dept_id FROM user_account u "
+                     + "NATURAL JOIN (SELECT inst_name, dept_id FROM dept "
+                     + "NATURAL JOIN inst) d WHERE u.user_id = ? "
+                     + "AND u.dept_id = d.dept_id";
         
-        try (PreparedStatement queryStm = conn.prepareStatement(queryStr)) {
-            queryStm.setString(1, userID);
-            ResultSet rs = queryStm.executeQuery();
+        try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            stm.setString(1, userID);
+            ResultSet rs = stm.executeQuery();
             
             if (rs.next()) {
                 instDept = rs.getString("inst_name") + " - " 
                             + rs.getString("dept_id");
             }
+            stm.close();
         }
-        catch (SQLException e) {
+        catch (SQLException|NamingException e) {
             logger.error("FAIL to retrieve institution name and department ID!");
             logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
         }
         
         return instDept;

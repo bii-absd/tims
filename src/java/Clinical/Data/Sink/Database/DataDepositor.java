@@ -17,6 +17,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+// Libraries for Java Extension
+import javax.naming.NamingException;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -64,13 +66,15 @@ import org.apache.pdfbox.pdmodel.graphics.xobject.PDJpeg;
  * 27-Jan-2016 - To revert the submitted job status back to completed if 
  * finalization failed.
  * 26-Feb-2016 - Implementation for database 3.0 (Part 3).
+ * 29-Feb-2016 - Implementation of Data Source pooling. To use DataSource to 
+ * get the database connection instead of using DriverManager.
  */
 
 public class DataDepositor extends Thread {
     // Get the logger for Log4j
     private final static Logger logger = LogManager.
             getLogger(DataDepositor.class.getName());
-    private final static Connection conn = DBHelper.getDBConn();
+    private Connection conn = null;
     private final String study_id, dept_id, annot_ver;
     private String fileUri, summaryReport;
     private int job_id, totalGene, processedGene;
@@ -86,7 +90,10 @@ public class DataDepositor extends Thread {
     private final String userName;
     
     public DataDepositor(String userName, String study_id, 
-            List<FinalizingJobEntry> jobList) {
+            List<FinalizingJobEntry> jobList) 
+            throws SQLException, NamingException
+    {
+        conn = DBHelper.getDSConn();
         this.userName = userName;
         this.study_id = study_id;
         this.jobList = jobList;
@@ -162,9 +169,12 @@ public class DataDepositor extends Thread {
                 StudyDB.updateStudyFinalizedStatus(study_id, false);
             }
         }
-        catch (SQLException e) {
+        catch (SQLException|NamingException e) {
             logger.error("FAIL to insert finalized data!");
             logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
         }
     }
     
@@ -414,11 +424,12 @@ public class DataDepositor extends Thread {
     // finalized_output table.
     private int getNextArrayInd() {
         int count = Constants.DATABASE_INVALID_ID;
-        String queryStr = "SELECT MAX(array_index) FROM finalized_output "
-                        + "WHERE annot_ver = \'" + annot_ver + "\'";
-        ResultSet rs = DBHelper.runQuery(queryStr);
+        String query = "SELECT MAX(array_index) FROM finalized_output "
+                     + "WHERE annot_ver = \'" + annot_ver + "\'";
         
-        try{
+        try (PreparedStatement stm = conn.prepareStatement(query)) {
+            ResultSet rs = stm.executeQuery();
+            
             if (rs.next()) {
                 count = rs.getInt(1) + 1;
             }
@@ -516,7 +527,7 @@ public class DataDepositor extends Thread {
                                  subjectNotFound);
                 }
             }
-            catch (SQLException e) {
+            catch (SQLException|NamingException e) {
                 logger.error("FAIL to insert finalized records!");
                 logger.error(e.getMessage());
                 // Error occurred, return to caller.

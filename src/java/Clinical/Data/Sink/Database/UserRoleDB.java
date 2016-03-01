@@ -5,9 +5,13 @@ package Clinical.Data.Sink.Database;
 
 import Clinical.Data.Sink.General.Constants;
 import java.io.Serializable;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.LinkedHashMap;
+// Libraries for Java Extension
+import javax.naming.NamingException;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -32,6 +36,8 @@ import org.apache.logging.log4j.LogManager;
  * 30-Nov-2015 - Implementation for database 2.0
  * 11-Dec-2015 - Changed to abstract class. Removed unused code.
  * 22-Dec-2015 - To close the ResultSet after use.
+ * 29-Feb-2016 - Implementation of Data Source pooling. To use DataSource to 
+ * get the database connection instead of using DriverManager.
  */
 
 public abstract class UserRoleDB implements Serializable {
@@ -47,9 +53,13 @@ public abstract class UserRoleDB implements Serializable {
     public static LinkedHashMap<String, Integer> getRoleNameHash() {
         // We will only build the roleList once
         if (roleNameHash.isEmpty()) {
-            ResultSet rs = DBHelper.runQuery
-                    ("SELECT * from user_role ORDER BY role_id");
+            Connection conn = null;
+            String query = "SELECT * from user_role ORDER BY role_id";
             try {
+                conn = DBHelper.getDSConn();
+                PreparedStatement stm = conn.prepareStatement(query);
+                ResultSet rs = stm.executeQuery();
+            
                 while (rs.next()) {
                     // Build the 2 Hash Map; One is Role ID -> Role Name, 
                     // the other is Role Name -> Role ID.
@@ -58,11 +68,15 @@ public abstract class UserRoleDB implements Serializable {
                     roleIDHash.put(rs.getInt("role_id"), 
                                    rs.getString("role_name"));
                 }
-                rs.close();
+                stm.close();
                 logger.debug("Role List: " + roleNameHash.toString());
-            } catch (SQLException e) {
+            } 
+            catch (SQLException|NamingException e) {
                 logger.error("SQLException when query user role!");
                 logger.error(e.getMessage());
+            }
+            finally {
+                DBHelper.closeDSConn(conn);
             }
         }
         

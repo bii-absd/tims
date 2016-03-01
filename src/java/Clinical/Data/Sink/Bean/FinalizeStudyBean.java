@@ -26,6 +26,7 @@ import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
+import javax.naming.NamingException;
 import javax.servlet.ServletContext;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
@@ -67,6 +68,8 @@ import org.apache.logging.log4j.LogManager;
  * database.
  * 26-Feb-2016 - Bug fix: When preparing for finalization, need to check whether
  * job3 is selected too.
+ * 29-Feb-2016 - Implementation of Data Source pooling. To use DataSource to 
+ * get the database connection instead of using DriverManager.
  */
 
 @ManagedBean (name="finalizedBean")
@@ -149,7 +152,7 @@ public class FinalizeStudyBean implements Serializable {
                                 subMetaDataNotFound, subMetaDataFound);                    
                     }
                 }
-                catch (SQLException|IOException e) {
+                catch (SQLException|IOException|NamingException e) {
                     // Error when checking for subject meta data. 
                     // Stop the finalization process and go to error page.
                     logger.error("FAIL to check for subject meta data availability!");
@@ -193,36 +196,47 @@ public class FinalizeStudyBean implements Serializable {
     // User has clicked on the Proceed button in the dialog; proceed with the 
     // finalization of the Study.
     public String proceedForFinalization() {
+        String nextpage = Constants.MAIN_PAGE;
         // Remove all the null ojects in the list before proceeding to insert
         // the finalized pipeline output.
         selectedJobs.removeAll(Collections.singleton(null));
         // Record this finalization of study into database.
         ActivityLogDB.recordUserActivity(userName, Constants.EXE_FIN, study_id);
-        logger.info(userName + " begin finalization process for " 
-                    + study_id + ".");
-        // Update job status to finalizing
-        for (FinalizingJobEntry job : selectedJobs) {
-            SubmittedJobDB.updateJobStatusToFinalizing(job.getJob_id());
-        }
-        // Setup the filepath of the Astar and Bii logo.
-        DataDepositor.setupLogo(
-                getServletContext().getRealPath("/resources/images/Astar.jpg"), 
-                getServletContext().getRealPath("/resources/images/BII.jpg"));
-        // Start a new thread to insert the finalized pipeline output into 
-        // database.
-        DataDepositor depositThread = new DataDepositor(userName, study_id, selectedJobs);
-        depositThread.start();
-        // Update study to finalized.
-        StudyDB.updateStudyFinalizedStatus(study_id, true);
         
-        return Constants.MAIN_PAGE;        
+        try {
+            // Start a new thread to insert the finalized pipeline output into 
+            // database.
+            DataDepositor depositThread = new DataDepositor
+                (userName, study_id, selectedJobs);
+            // Update job status to finalizing
+            for (FinalizingJobEntry job : selectedJobs) {
+                SubmittedJobDB.updateJobStatusToFinalizing(job.getJob_id());
+            }
+            // Setup the filepath of the Astar and Bii logo.
+            DataDepositor.setupLogo(
+                    getServletContext().getRealPath("/resources/images/Astar.jpg"), 
+                    getServletContext().getRealPath("/resources/images/BII.jpg"));
+            // Start the finalization thread.
+            depositThread.start();
+            // Update study to finalized.
+            StudyDB.updateStudyFinalizedStatus(study_id, true);
+            logger.info(userName + " begin finalization process for " 
+                        + study_id + ".");
+        }
+        catch (SQLException|NamingException e) {
+            nextpage = Constants.ERROR;
+            logger.error("FAIL to process with the finalization process!");
+            logger.error(e.getMessage());
+        }
+        
+        return nextpage;
     }
     
     // Check the database for subject meta data. Construct a string with all
     // those subject ID having no meta data in the database.
     private void checkSubMDAvailability(int jobID, 
             StringBuilder metaDataNotFound, StringBuilder metaDataFound) 
-            throws SQLException, IOException {
+            throws SQLException, IOException, NamingException {
         BufferedReader br = new BufferedReader(new FileReader
                             (SubmittedJobDB.getOutputPath(jobID)));
         String subjectLine = br.readLine();

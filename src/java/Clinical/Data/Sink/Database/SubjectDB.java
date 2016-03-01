@@ -10,6 +10,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+// Libraries for Java Extension
+import javax.naming.NamingException;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -30,40 +32,49 @@ import org.apache.logging.log4j.LogManager;
  * 13-Jan-2016 - Removed all the static variables in Clinical Data Management
  * module.
  * 25-Feb-2016 - Implementation for database 3.0 (Part 2).
+ * 29-Feb-2016 - Implementation of Data Source pooling. To use DataSource to 
+ * get the database connection instead of using DriverManager.
  */
 
 public abstract class SubjectDB {
     // Get the logger for Log4j
     private final static Logger logger = LogManager.
             getLogger(SubjectDB.class.getName());
-    private final static Connection conn = DBHelper.getDBConn();
 
     // Insert the new subject meta data into database
     public static Boolean insertSubject(Subject subject) {
+        Connection conn = null;
         Boolean result = Constants.OK;
-        String insertStr = "INSERT INTO subject(subject_id,dept_id,"
+        String query = "INSERT INTO subject(subject_id,dept_id,"
                 + "age_at_diagnosis,gender,country_code,race,height,weight) "
                 + "VALUES(?,?,?,?,?,?,?,?)";
         
-        try (PreparedStatement insertStm = conn.prepareStatement(insertStr)) {
-            insertStm.setString(1, subject.getSubject_id());
-            insertStm.setString(2, subject.getDept_id());
-            insertStm.setInt(3, subject.getAge_at_diagnosis());
-            insertStm.setString(4, String.valueOf(subject.getGender()));
-            insertStm.setString(5, subject.getCountry_code());
-            insertStm.setString(6, subject.getRace());
-            insertStm.setFloat(7, subject.getHeight());
-            insertStm.setFloat(8, subject.getWeight());
+        try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            stm.setString(1, subject.getSubject_id());
+            stm.setString(2, subject.getDept_id());
+            stm.setInt(3, subject.getAge_at_diagnosis());
+            stm.setString(4, String.valueOf(subject.getGender()));
+            stm.setString(5, subject.getCountry_code());
+            stm.setString(6, subject.getRace());
+            stm.setFloat(7, subject.getHeight());
+            stm.setFloat(8, subject.getWeight());
+            stm.executeUpdate();
+            stm.close();
             
-            insertStm.executeUpdate();
             logger.debug("New Subject ID inserted into database: " +
                     subject.getSubject_id());
         }
-        catch (SQLException e) {
+        catch (SQLException|NamingException e) {
             result = Constants.NOT_OK;
             logger.error("FAIL to insert subject!");
             logger.error(e.getMessage());
         }
+        finally {
+            DBHelper.closeDSConn(conn);
+        }
+        
         return result;
     }
     
@@ -71,27 +82,34 @@ public abstract class SubjectDB {
     // Only allow changes to age_at_diagnosis, gender, nationality, race, 
     // height and weight.
     public static Boolean updateSubject(Subject subject) {
+        Connection conn = null;
         Boolean result = Constants.OK;
-        String updateStr = "UPDATE subject SET age_at_diagnosis = ?, "
-                         + "gender = ?, country_code = ?, race = ?, height = ?, "
-                         + "weight = ? WHERE subject_id = ?";
+        String query = "UPDATE subject SET age_at_diagnosis = ?, "
+                     + "gender = ?, country_code = ?, race = ?, height = ?, "
+                     + "weight = ? WHERE subject_id = ?";
         
-        try (PreparedStatement updateStm = conn.prepareStatement(updateStr)) {
-            updateStm.setInt(1, subject.getAge_at_diagnosis());
-            updateStm.setString(2, String.valueOf(subject.getGender()));
-            updateStm.setString(3, subject.getCountry_code());
-            updateStm.setString(4, subject.getRace());
-            updateStm.setFloat(5, subject.getHeight());
-            updateStm.setFloat(6, subject.getWeight());
-            updateStm.setString(7, subject.getSubject_id());
+        try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            stm.setInt(1, subject.getAge_at_diagnosis());
+            stm.setString(2, String.valueOf(subject.getGender()));
+            stm.setString(3, subject.getCountry_code());
+            stm.setString(4, subject.getRace());
+            stm.setFloat(5, subject.getHeight());
+            stm.setFloat(6, subject.getWeight());
+            stm.setString(7, subject.getSubject_id());
+            stm.executeUpdate();
+            stm.close();
             
-            updateStm.executeUpdate();
             logger.debug("Updated subject meta data: " + subject.getSubject_id());
         }
-        catch (SQLException e) {
+        catch (SQLException|NamingException e) {
             result = Constants.NOT_OK;
             logger.error("FAIL to update subject meta data!");
             logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
         }
         
         return result;
@@ -99,12 +117,17 @@ public abstract class SubjectDB {
     
     // Return the list of subjects belonging to this department.
     // Exception thrown here need to be handle by the caller.
-    public static List<Subject> getSubjectList(String deptID) throws SQLException {
+    public static List<Subject> getSubjectList(String deptID) 
+            throws SQLException, NamingException 
+    {
+        Connection conn = null;
         List<Subject> subjectList = new ArrayList<>();
-        String queryStr = "SELECT * from subject WHERE dept_id = ? ORDER BY subject_id";
-        PreparedStatement queryStm = conn.prepareStatement(queryStr);
-        queryStm.setString(1, deptID);
-        ResultSet rs = queryStm.executeQuery();
+        String query = "SELECT * from subject WHERE dept_id = ? ORDER BY subject_id";
+        
+        conn = DBHelper.getDSConn();
+        PreparedStatement stm = conn.prepareStatement(query);
+        stm.setString(1, deptID);
+        ResultSet rs = stm.executeQuery();
 
         while (rs.next()) {
             Subject tmp = new Subject(
@@ -119,23 +142,33 @@ public abstract class SubjectDB {
 
             subjectList.add(tmp);
         }
-
         logger.debug("Query subject completed.");
+        
+        stm.close();
+        DBHelper.closeDSConn(conn);
+        
         return subjectList;
     }
     
     // Check whether the subject meta data exists in the database.
     // Exception thrown here need to be handle by the caller.
-    public static Boolean isSubjectExistInDept
-        (String subject_id, String dept_id) throws SQLException {
-        String queryStr = "SELECT * FROM subject WHERE subject_id = ? AND "
-                        + "dept_id = ?";
+    public static boolean isSubjectExistInDept
+        (String subject_id, String dept_id) throws SQLException, NamingException 
+    {
+        Connection conn = null;
+        String query = "SELECT * FROM subject WHERE subject_id = ? AND "
+                     + "dept_id = ?";
         
-        PreparedStatement queryStm = conn.prepareStatement(queryStr);
-        queryStm.setString(1, subject_id);
-        queryStm.setString(2, dept_id);
-        ResultSet rs = queryStm.executeQuery();
+        conn = DBHelper.getDSConn();
+        PreparedStatement stm = conn.prepareStatement(query);
+        stm.setString(1, subject_id);
+        stm.setString(2, dept_id);
+        ResultSet rs = stm.executeQuery();
+        boolean isSubjectExist = rs.isBeforeFirst()?Constants.OK:Constants.NOT_OK;
+        
+        stm.close();
+        DBHelper.closeDSConn(conn);
 
-        return rs.isBeforeFirst()?Constants.OK:Constants.NOT_OK;
+        return isSubjectExist;
     }
 }

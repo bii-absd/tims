@@ -10,6 +10,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+// Libraries for Java Extension
+import javax.naming.NamingException;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -24,18 +26,23 @@ import org.apache.logging.log4j.LogManager;
  * 
  * Revision History
  * 15-Feb-2016 - Implemented the module to unfinalize study..
+ * 29-Feb-2016 - Implementation of Data Source pooling. To use DataSource to 
+ * get the database connection instead of using DriverManager.
  */
 
 public class DataVoid extends Thread {
     // Get the logger for Log4j
     private final static Logger logger = LogManager.
             getLogger(DataVoid.class.getName());
-    private final static Connection conn = DBHelper.getDBConn();
+    private Connection conn = null;
     private List<Integer> jobIDList = new ArrayList<>();
     private List<Integer> arrayIndList = new ArrayList<>();
     private final String userName, study_id, annot_ver;
     
-    public DataVoid(String userName, String study_id) {
+    public DataVoid(String userName, String study_id) 
+            throws SQLException, NamingException
+    {
+        conn = DBHelper.getDSConn();
         this.userName = userName;
         this.study_id = study_id;
         annot_ver = StudyDB.getAnnotVer(study_id);
@@ -96,7 +103,10 @@ public class DataVoid extends Thread {
             logger.error("FAIL to unfinalize study!");
             logger.error(e.getMessage());
         }
-        
+        finally {
+            DBHelper.closeDSConn(conn);
+        }
+
         elapsedTime = System.nanoTime() - startTime;
         logger.debug("Total time taken to unfinalize " + study_id + 
                 " is " + (elapsedTime / 1000000000.0) + " sec.");
@@ -105,12 +115,13 @@ public class DataVoid extends Thread {
     // Retrieve all the array indexes that belong to this job ID.
     private List<Integer> getArrayIndexes(int job_id) {
         List<Integer> indexList = new ArrayList<>();
-        String queryStr = "SELECT array_index FROM finalized_output WHERE "
-                        + "annot_ver = \'" + annot_ver + "\' AND job_id = " 
-                        + job_id;
-        ResultSet rs = DBHelper.runQuery(queryStr);
+        String query = "SELECT array_index FROM finalized_output WHERE "
+                     + "annot_ver = \'" + annot_ver + "\' AND job_id = " 
+                     + job_id;
         
-        try {
+        try (PreparedStatement stm = conn.prepareStatement(query)) {
+            ResultSet rs = stm.executeQuery();
+            
             while (rs.next()) {
                 indexList.add(rs.getInt("array_index"));
             }
@@ -120,7 +131,7 @@ public class DataVoid extends Thread {
             logger.error("FAIL to retrieve array indexes!");
             logger.error(e.getMessage());
         }
-        
+
         return indexList;
     }
     
@@ -129,13 +140,13 @@ public class DataVoid extends Thread {
         Boolean result = Constants.OK;
         // To record the time taken to void the data.
         long startTime, elapsedTime;
-        String updateStr = "UPDATE data_depository SET data[?] = \'VOID\' "
-                         + "WHERE annot_ver = \'" + annot_ver + "\'";
+        String query = "UPDATE data_depository SET data[?] = \'VOID\' "
+                     + "WHERE annot_ver = \'" + annot_ver + "\'";
         
-        try (PreparedStatement updateStm = conn.prepareStatement(updateStr)) {
+        try (PreparedStatement stm = conn.prepareStatement(query)) {            
             for (Integer index : arrayIndList) {
                 startTime = System.nanoTime();
-                voidData(updateStm, index);
+                voidData(stm, index);
                 elapsedTime = System.nanoTime() - startTime;
                 logger.debug("Void data for index " + index + " took " + 
                             (elapsedTime / 1000000000.0) + " sec.");
@@ -162,14 +173,14 @@ public class DataVoid extends Thread {
     // job_id to 0 and subject_id to VOID.
     private Boolean voidAllFinalizedRecords() {
         Boolean result = Constants.OK;
-        String updateStr = "UPDATE finalized_output SET job_id = 0, "
-                         + "subject_id = \'VOID\' WHERE annot_ver = \'" 
-                         + annot_ver + "\' AND job_id = ?";
+        String query = "UPDATE finalized_output SET job_id = 0, "
+                     + "subject_id = \'VOID\' WHERE annot_ver = \'" 
+                     + annot_ver + "\' AND job_id = ?";
         
-        try (PreparedStatement updateStm = conn.prepareStatement(updateStr)) {
+        try (PreparedStatement stm = conn.prepareStatement(query)) {
             for (Integer jobID : jobIDList) {
-                updateStm.setInt(1, jobID);
-                updateStm.executeUpdate();
+                stm.setInt(1, jobID);
+                stm.executeUpdate();
                 // Revert job status to completed.
                 SubmittedJobDB.updateJobStatusToCompleted(jobID);
             }

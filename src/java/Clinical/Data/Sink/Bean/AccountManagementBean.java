@@ -21,6 +21,7 @@ import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
+import javax.naming.NamingException;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -57,6 +58,8 @@ import org.primefaces.event.FileUploadEvent;
  * 26-Jan-2016 - Implemented audit data capture module.
  * 19-Feb-2016 - To support user account with picture uploaded.
  * 23-Feb-2016 - To allow user to update their picture ID.
+ * 29-Feb-2016 - Implementation of Data Source pooling. To use DataSource to 
+ * get the database connection instead of using DriverManager.
  */
 
 @ManagedBean (name="acctMgntBean")
@@ -120,7 +123,7 @@ public class AccountManagementBean implements Serializable {
             getFacesContext().addMessage(null, new FacesMessage(
                     FacesMessage.SEVERITY_INFO, "User account updated.", ""));
         }
-        catch (SQLException e) {
+        catch (SQLException|NamingException e) {
             logger.error("Fail to update user account!");
             logger.error(e.getMessage());
             getFacesContext().addMessage(null, new FacesMessage(
@@ -170,7 +173,7 @@ public class AccountManagementBean implements Serializable {
                     FacesMessage.SEVERITY_INFO, "User Account: " 
                     + user_id + " successfully created.", ""));
         }
-        catch (SQLException e) {
+        catch (SQLException|NamingException e) {
             // Try to get the detail error message from the exception
             int start = e.getMessage().indexOf("Detail:");
             // Trim the detail error message by removing "Detail: " (i.e. 8 characters)
@@ -205,7 +208,7 @@ public class AccountManagementBean implements Serializable {
             UserAccountDB.updateAccount(user);            
             logger.debug(userName + " updated picture ID.");
         }
-        catch (SQLException e) {
+        catch (SQLException|NamingException e) {
             logger.error("FAIL to update picture ID!");
             logger.error(e.getMessage());
         }
@@ -239,7 +242,7 @@ public class AccountManagementBean implements Serializable {
                         FacesMessage.SEVERITY_INFO,
                         "Password successfully updated.", ""));
             }
-            catch (SQLException e) {
+            catch (SQLException|NamingException e) {
                 logger.error("FAIL to change password!");
                 logger.error(e.getMessage());
                 facesContext.addMessage("changepwdstatus", new FacesMessage(

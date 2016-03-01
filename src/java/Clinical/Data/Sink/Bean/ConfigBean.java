@@ -32,6 +32,7 @@ import java.util.List;
 // Libraries for Java Extension
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
+import javax.naming.NamingException;
 // Libraries for PrimeFaces
 import org.primefaces.event.FileUploadEvent;
 // Libraries for Log4j
@@ -90,6 +91,8 @@ import org.apache.logging.log4j.LogManager;
  * 19-Feb-2016 - To use the new generic method renameFilename in FileUploadBean
  * class when renaming annotation and control files. To use the new generic
  * constructor in FileUploadBean class when creating new object.
+ * 29-Feb-2016 - Implementation of Data Source pooling. To use DataSource to 
+ * get the database connection instead of using DriverManager.
  */
 
 public abstract class ConfigBean implements Serializable {
@@ -392,7 +395,7 @@ public abstract class ConfigBean implements Serializable {
 
             logger.debug("Pipeline from database: " + cmd.toString());
         }
-        catch (SQLException e) {
+        catch (SQLException|NamingException e) {
             logger.error("FAIL to retrieve pipeline command " +
                     pipelineName);
             logger.error(e.getMessage());

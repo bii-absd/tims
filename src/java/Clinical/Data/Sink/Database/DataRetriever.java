@@ -13,6 +13,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+// Libraries for Java Extension
+import javax.naming.NamingException;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -33,13 +35,15 @@ import org.apache.logging.log4j.LogManager;
  * records of 26,424 gene values; from 304 sec to 12 sec.
  * 22-Jan-2016 - Study finalization logic change; finalization will be 
  * performed for each pipeline instead of each technology.
+ * 29-Feb-2016 - Implementation of Data Source pooling. To use DataSource to 
+ * get the database connection instead of using DriverManager.
  */
 
 public class DataRetriever extends Thread {
     // Get the logger for Log4j
     private final static Logger logger = LogManager.
             getLogger(DataRetriever.class.getName());
-    private final static Connection conn = DBHelper.getDBConn();
+    private Connection conn = null;
     private final String study_id, annot_ver, finalize_file;
     private final List<OutputItems> opItemsList;
     private final List<String> geneList;
@@ -47,12 +51,16 @@ public class DataRetriever extends Thread {
     
     // Using the study_id received, DataRetriever will retrieve the finalized
     // data from the database.
-    public DataRetriever(String study_id) {
+    public DataRetriever(String study_id) throws SQLException, NamingException
+    {
         this.study_id = study_id;
         finalize_file = Constants.getSYSTEM_PATH() + 
                         Constants.getFINALIZE_PATH() + 
                         study_id + Constants.getFINALIZE_FILE_EXT();
         annot_ver = StudyDB.getAnnotVer(study_id);
+        // Get a data source connection for this thread.
+        conn = DBHelper.getDSConn();
+        
         opHeader.append("Subject|Pipeline");
         geneList = getGeneList();
         // Retrieve the list of OutputItems (i.e. Subject|Technology|Index)
@@ -64,6 +72,8 @@ public class DataRetriever extends Thread {
     public void run() {
         logger.debug("DataRetriever start running.");
         consolidateFinalizedData();
+        // Close the data source connection after use.
+        DBHelper.closeDSConn(conn);
         // Update the study with the finalized file path.
         StudyDB.updateStudyFinalizedFile(study_id, finalize_file);
     }
@@ -75,14 +85,13 @@ public class DataRetriever extends Thread {
         long startTime = System.nanoTime();
         StringBuilder data = new StringBuilder();
         data.append(item.getSubject_id()).append("|").append(item.getPipeline());
-        String queryStr = 
-                "SELECT data[?] FROM data_depository " +
-                "WHERE annot_ver = ? ORDER BY genename";
+        String query = "SELECT data[?] FROM data_depository " 
+                     + "WHERE annot_ver = ? ORDER BY genename";
         
-        try (PreparedStatement queryStm = conn.prepareStatement(queryStr)) {
-            queryStm.setInt(1, item.getArray_index());
-            queryStm.setString(2, annot_ver);
-            ResultSet rs = queryStm.executeQuery();
+        try (PreparedStatement stm = conn.prepareStatement(query)) {
+            stm.setInt(1, item.getArray_index());
+            stm.setString(2, annot_ver);
+            ResultSet rs = stm.executeQuery();
             
             while (rs.next()) {
                 data.append("|").append(rs.getString(1));
@@ -96,7 +105,7 @@ public class DataRetriever extends Thread {
             logger.error("FAIL to retrieve subject data!");
             logger.error(e.getMessage());
         }
-        
+
         return data.toString();
     }
     
@@ -132,13 +141,12 @@ public class DataRetriever extends Thread {
         // For time logging purpose.
         long elapsedTime;
         long startTime = System.nanoTime();
-        String queryStr = 
-                "SELECT genename FROM data_depository " +
-                "WHERE annot_ver = ? ORDER BY genename";
+        String query = "SELECT genename FROM data_depository " 
+                     + "WHERE annot_ver = ? ORDER BY genename";
         
-        try (PreparedStatement queryStm = conn.prepareStatement(queryStr)) {
-            queryStm.setString(1, annot_ver);
-            ResultSet rs = queryStm.executeQuery();
+        try (PreparedStatement stm = conn.prepareStatement(query)) {
+            stm.setString(1, annot_ver);
+            ResultSet rs = stm.executeQuery();
             
             while (rs.next()) {
                 gene.add(rs.getString("genename"));
@@ -153,7 +161,7 @@ public class DataRetriever extends Thread {
             logger.error("FAIL to retrieve genename!");
             logger.error(e.getMessage());
         }
-        
+
         return gene;
     }
     
@@ -161,7 +169,7 @@ public class DataRetriever extends Thread {
     // where gene's values are stored) from the database.
     private List<OutputItems> getOpItemsList() {
         List<OutputItems> opList = new ArrayList<>();
-        String queryStr = 
+        String query = 
                 "SELECT y.subject_id, x.pipeline_name, y.array_index FROM " +
                 "(SELECT job_id, pipeline_name FROM submitted_job " +
                 "WHERE study_id = ? AND status_id = 5) x " +
@@ -169,9 +177,9 @@ public class DataRetriever extends Thread {
                 "(SELECT * FROM finalized_output) y WHERE job_id = x.job_id " +
                 "ORDER BY y.subject_id, y.array_index";
         
-        try (PreparedStatement queryStm = conn.prepareStatement(queryStr)) {
-            queryStm.setString(1, study_id);
-            ResultSet rs = queryStm.executeQuery();
+        try (PreparedStatement stm = conn.prepareStatement(query)) {
+            stm.setString(1, study_id);
+            ResultSet rs = stm.executeQuery();
             
             while (rs.next()) {
                 OutputItems item = new OutputItems(
@@ -187,7 +195,7 @@ public class DataRetriever extends Thread {
             logger.error("FAIL to build output list!");
             logger.error(e.getMessage());
         }
-        
+
         return opList;
     }
     
@@ -195,7 +203,7 @@ public class DataRetriever extends Thread {
     // where gene's values are stored) from the database.
     private List<OutputItems> getOpItemsListByTID() {
         List<OutputItems> opList = new ArrayList<>();
-        String queryStr = 
+        String query = 
                 "SELECT y.subject_id, x.tid, y.array_index FROM " +
                 "(SELECT tid, job_id FROM submitted_job sj INNER JOIN pipeline pl " +
                 "ON sj.pipeline_name = pl.name " +
@@ -206,11 +214,11 @@ public class DataRetriever extends Thread {
                 "AND annot_ver = ?) y " +
                 "ORDER BY y.subject_id, y.array_index";
         
-        try (PreparedStatement queryStm = conn.prepareStatement(queryStr)) {
-            queryStm.setString(1, study_id);
-            queryStm.setString(2, study_id);
-            queryStm.setString(3, annot_ver);
-            ResultSet rs = queryStm.executeQuery();
+        try (PreparedStatement stm = conn.prepareStatement(query)) {
+            stm.setString(1, study_id);
+            stm.setString(2, study_id);
+            stm.setString(3, annot_ver);
+            ResultSet rs = stm.executeQuery();
             
             while (rs.next()) {
                 OutputItems item = new OutputItems(

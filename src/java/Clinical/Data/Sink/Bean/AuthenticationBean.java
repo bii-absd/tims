@@ -16,7 +16,6 @@ import java.io.Serializable;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.sql.SQLException;
 // Libraries for Java Extension
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
@@ -92,6 +91,8 @@ import org.apache.logging.log4j.LogManager;
  * 24-Feb-2016 - To direct user to different page based on their role. Fix the 
  * bug where the application crashed because the user's photo has been removed 
  * from the directory.
+ * 29-Feb-2016 - Implementation of Data Source pooling. To use DataSource to 
+ * get the database connection instead of using DriverManager.
  */
 
 @ManagedBean (name="authBean")
@@ -100,7 +101,6 @@ public class AuthenticationBean implements Serializable {
     // Get the logger for Log4j
     private final static Logger logger = LogManager.
             getLogger(AuthenticationBean.class.getName());
-    private static DBHelper dbHandle;
     private String loginName, password;
     private UserAccount userAcct;
     private String instName;
@@ -149,24 +149,9 @@ public class AuthenticationBean implements Serializable {
             // Return to login page.
             return Constants.LOGIN_PAGE;
         }
-        
-        try {
-            // Setup the database handler
-            dbHandle = new DBHelper();
-        }
-        // Shouldn't let the user proceed if the DBHelper cannot be created.
-        catch (ClassNotFoundException|InstantiationException|
-               SQLException|IllegalAccessException e) {
-            getFacesContext().addMessage("global", new FacesMessage(
-                    FacesMessage.SEVERITY_ERROR, 
-                    "System failed to access database. "
-                    + "Please contact administrator.", ""));
-            logger.error("FAIL to create DBHelper!");
-            logger.error(e.getMessage());
-            // Return to login page.
-            return Constants.LOGIN_PAGE;
-        }
-        
+
+        // Initialise the data source for TIMS.
+        DBHelper.initDataSource();        
         // Retrieve the job status definition from database
         JobStatusDB.buildJobStatusDef();
         // Build the role list.
@@ -176,14 +161,18 @@ public class AuthenticationBean implements Serializable {
         // application is first deployed.
         if ((loginName.compareTo("super")==0) && 
             (password.compareTo("super")==0)) {
-            getFacesContext().getExternalContext().getSessionMap().
-                    put("User", "super");
-            // "Super" user, no further check required. Proceed from 
-            // login to /restricted folder
-            return Constants.PAGES_DIR + Constants.MAIN_PAGE;
+            // "super" user is only allowed when the user account is not setup.
+            if (!UserAccountDB.isUserAccountSetup()) {
+                getFacesContext().getExternalContext().getSessionMap().
+                        put("User", "super");
+                // "Super" user, no further check required. Proceed from 
+                // login to /restricted folder
+                return Constants.PAGES_DIR + Constants.MAIN_PAGE;                
+            }
         }
-        
-        userAcct = UserAccountDB.checkPwd(loginName, password);
+        else {
+            userAcct = UserAccountDB.checkPwd(loginName, password);
+        }
         
         if (userAcct != null) {
             // Check is account enabled.
@@ -198,6 +187,10 @@ public class AuthenticationBean implements Serializable {
                 // Update the last login of this user            
                 UserAccountDB.updateLastLogin(loginName, Constants.getDateTime());
             
+                // THE CREATION OF USER DIRECTORIES SHOULD BE MOVED TO ACCOUNT
+                // CREATION i.e. ONCE ACCOUNT HAS BEEN CREATED, THE DIRECTORIES
+                // SHOULD BE CREATED.
+                
                 // Create system directories, follow by .../users/loginName directories
                 if ( FileUploadBean.createSystemDirectories(Constants.getSYSTEM_PATH()) &&
                     (FileUploadBean.createUsersDirectories(homeDir))) {
@@ -332,7 +325,10 @@ public class AuthenticationBean implements Serializable {
     // Check whether the user has a photo uploaded. The return boolean will be
     // used to decide whether to render the graphic image or not.
     public boolean isUserPhotoAvailable() {
-        if (userAcct.getPhoto().compareTo("NA") != 0) {
+        // Proceed to retrieve the uploaded photo only if this is not the 
+        // "super" user and photo has been uploaded before.
+        if ((loginName.compareTo("super") != 0) && 
+            (userAcct.getPhoto().compareTo("NA") != 0)) {
             // User has a photo uploaded before, make sure the photo still 
             // exists in the system.
             Path photopath = FileSystems.getDefault().getPath(

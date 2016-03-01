@@ -12,6 +12,8 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+// Libraries for Java Extension
+import javax.naming.NamingException;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -31,42 +33,59 @@ import org.apache.logging.log4j.LogManager;
  * in retrieving the log from database.
  * 01-Feb-2016 - Further enhanced the query logic by combing the 4 query methods
  * into one, and to include the time (from and/or to) for user selection.
+ * 29-Feb-2016 - Implementation of Data Source pooling. To use DataSource to 
+ * get the database connection instead of using DriverManager.
  */
 
 public abstract class ActivityLogDB {
     // Get the logger for Log4j
     private final static Logger logger = LogManager.
             getLogger(ActivityLogDB.class.getName());
-    private final static Connection conn = DBHelper.getDBConn();
     
     // Insert this activity into the database. There are 5 categories of 
     // activity: Login, Execute, Create, Change and Download.
     public static void recordUserActivity(String user_id, String activity, 
             String detail)
     {
-        String insertStr = "INSERT INTO activity_log(user_id, activity, "
+        // Do not record the activities of the "super" user.
+        if (user_id.compareTo("super") != 0) {
+            Connection conn = null;
+            String query = "INSERT INTO activity_log(user_id, activity, "
                          + "detail, time) VALUES(?,?,?,?)";
-        Timestamp now = new Timestamp(Calendar.getInstance().getTime().getTime());
+            Timestamp now = new Timestamp(Calendar.getInstance().
+                                            getTime().getTime());
         
-        try (PreparedStatement insertStm = conn.prepareStatement(insertStr)) {
-            insertStm.setString(1, user_id);
-            insertStm.setString(2, activity);
-            insertStm.setString(3, detail);
-            insertStm.setTimestamp(4, now);
-            insertStm.executeUpdate();
-        }
-        catch (SQLException e) {
-            logger.error("FAIL to record user activity!");
-            logger.error(e.getMessage());
+            try {
+                conn = DBHelper.getDSConn();
+                PreparedStatement stm = conn.prepareStatement(query);
+            
+                stm.setString(1, user_id);
+                stm.setString(2, activity);
+                stm.setString(3, detail);
+                stm.setTimestamp(4, now);
+                stm.executeUpdate();
+                stm.close();
+            }
+            catch (SQLException|NamingException e) {
+                logger.error("FAIL to record user activity!");
+                logger.error(e.getMessage());
+            }
+            finally {
+                DBHelper.closeDSConn(conn);
+            }
         }
     }
 
     // Build and return the activity log based on the query passed in.
     private static List<ActivityLog> buildActivityLog(String query) {
+        Connection conn = null;
         List<ActivityLog> logs = new ArrayList<>();
-        ResultSet rs = DBHelper.runQuery(query);
         
         try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            ResultSet rs = stm.executeQuery();
+            
             while (rs.next()) {
                 ActivityLog tmp = new ActivityLog(rs.getString("user_id"),
                                                   rs.getString("activity"),
@@ -74,11 +93,15 @@ public abstract class ActivityLogDB {
                                                   rs.getTimestamp("time"));
                 logs.add(tmp);
             }
+            stm.close();
             logger.debug("Retrieved activity log.");
         }
-        catch (SQLException e) {
+        catch (SQLException|NamingException e) {
             logger.error("FAIL to retrieve activity log!");
             logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
         }
 
         return logs;

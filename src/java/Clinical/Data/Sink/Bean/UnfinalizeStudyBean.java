@@ -10,6 +10,7 @@ import Clinical.Data.Sink.Database.StudyDB;
 import Clinical.Data.Sink.Database.UserAccountDB;
 import Clinical.Data.Sink.General.Constants;
 import java.io.Serializable;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 // Libraries for Java Extension
@@ -17,6 +18,7 @@ import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
+import javax.naming.NamingException;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -30,6 +32,8 @@ import org.apache.logging.log4j.LogManager;
  * Revision History
  * 15-Feb-2016 - Created with all the standard getters and setters. Implemented 
  * the module to unfinalize study.
+ * 29-Feb-2016 - Implementation of Data Source pooling. To use DataSource to 
+ * get the database connection instead of using DriverManager.
  */
 
 @ManagedBean (name="unfinBean")
@@ -64,11 +68,18 @@ public class UnfinalizeStudyBean implements Serializable {
         // Record this unfinalization of study into database.
         ActivityLogDB.recordUserActivity(userName, Constants.EXE_UNFIN, 
                 selectedStudy.getStudy_id());
-        logger.info(userName + " begin unfinalization process for " + 
-                selectedStudy.getStudy_id());
+        try {
+            DataVoid unfinThread = new DataVoid(userName, selectedStudy.getStudy_id());
+            logger.info(userName + " begin unfinalization process for " + 
+                        selectedStudy.getStudy_id());
         
-        DataVoid unfinThread = new DataVoid(userName, selectedStudy.getStudy_id());
-        unfinThread.start();
+            unfinThread.start();
+        }
+        catch (SQLException|NamingException e) {
+            logger.error("FAIL to begin unfinalization process for " + 
+                    selectedStudy.getStudy_id());
+            logger.error(e.getMessage());
+        }
         
         return Constants.MAIN_PAGE;
     }

@@ -12,6 +12,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+// Libraries for Java Extension
+import javax.naming.NamingException;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -40,21 +42,27 @@ import org.apache.logging.log4j.LogManager;
  * management modules.
  * 18-Feb-2016 - Added new method getInstID, to retrieve the institution ID 
  * from the dept table.
+ * 29-Feb-2016 - Implementation of Data Source pooling. To use DataSource to 
+ * get the database connection instead of using DriverManager.
  */
 
 public abstract class DepartmentDB implements Serializable {
     // Get the logger for Log4j
     private final static Logger logger = LogManager.
             getLogger(DepartmentDB.class.getName());
-    private final static Connection conn = DBHelper.getDBConn();
-    
+
     // Return the full list of Department setup in the system, and setup the 
     // deptHash.
     public static List<Department> getDeptList() {
+        Connection conn = null;
+        String query = "SELECT * FROM dept ORDER BY dept_id";
         List<Department> deptList = new ArrayList<>();
-        ResultSet rs = DBHelper.runQuery("SELECT * FROM dept ORDER BY dept_id");
 
         try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            ResultSet rs = stm.executeQuery();
+            
             while (rs.next()) {
                 Department dept = new Department(
                                         rs.getString("inst_id"),
@@ -62,56 +70,72 @@ public abstract class DepartmentDB implements Serializable {
                                         rs.getString("dept_name"));
                 deptList.add(dept);
             }
-            rs.close();
+            stm.close();
         }
-        catch (SQLException e) {
+        catch (SQLException|NamingException e) {
             logger.error("FAIL to build department list!");
             logger.error(e.getMessage());
         }
-        
+        finally {
+            DBHelper.closeDSConn(conn);
+        }
+
         return deptList;
     }
     
     // Insert the new department ID into database.
     public static Boolean insertDepartment(Department dept) {
+        Connection conn = null;
         Boolean result = Constants.OK;
-        String insertStr = "INSERT INTO dept(dept_id,inst_id,dept_name) VALUES(?,?,?)";
+        String query = "INSERT INTO dept(dept_id,inst_id,dept_name) VALUES(?,?,?)";
         
-        try (PreparedStatement insertStm = conn.prepareStatement(insertStr)) {
-            insertStm.setString(1, dept.getDept_id());
-            insertStm.setString(2, dept.getInst_id());
-            insertStm.setString(3, dept.getDept_name());
-            insertStm.executeUpdate();
+        try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            stm.setString(1, dept.getDept_id());
+            stm.setString(2, dept.getInst_id());
+            stm.setString(3, dept.getDept_name());
+            stm.executeUpdate();
+            stm.close();
             logger.debug("New department ID inserted into database: " + 
                     dept.getDept_id());
         }
-        catch (SQLException e) {
+        catch (SQLException|NamingException e) {
             result = Constants.NOT_OK;
             logger.error("FAIL to insert new department!");
             logger.error(e.getMessage());
         }
-        
+        finally {
+            DBHelper.closeDSConn(conn);
+        }
+
         return result;
     }
     
     // Update the department information in the database.
     public static Boolean updateDepartment(Department dept) {
+        Connection conn = null;
         Boolean result = Constants.OK;
-        String updateStr = "UPDATE dept SET inst_id = ?, dept_name = ? "
-                         + "WHERE dept_id = ?";
+        String query = "UPDATE dept SET inst_id = ?, dept_name = ? "
+                     + "WHERE dept_id = ?";
         
-        try (PreparedStatement updateStm = conn.prepareStatement(updateStr)) {
-            updateStm.setString(1, dept.getInst_id());
-            updateStm.setString(2, dept.getDept_name());
-            updateStm.setString(3, dept.getDept_id());
-            
-            updateStm.executeUpdate();
+        try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            stm.setString(1, dept.getInst_id());
+            stm.setString(2, dept.getDept_name());
+            stm.setString(3, dept.getDept_id());
+            stm.executeUpdate();
+            stm.close();
             logger.debug("Department " + dept.getDept_id() + " updated.");
         }
-        catch (SQLException e) {
+        catch (SQLException|NamingException e) {
             result = Constants.NOT_OK;
             logger.error("FAIL to update department!");
             logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
         }
         
         return result;
@@ -124,23 +148,30 @@ public abstract class DepartmentDB implements Serializable {
     
     // Return the HashMap of department ID setup under this institution.
     public static LinkedHashMap<String, String> getDeptHash(String inst_id) {
+        Connection conn = null;
         LinkedHashMap<String, String> deptHash = new LinkedHashMap<>();
-        String queryStr = "SELECT dept_id FROM dept WHERE inst_id = ?";
+        String query = "SELECT dept_id FROM dept WHERE inst_id = ?";
 
-        try (PreparedStatement queryStm = conn.prepareStatement(queryStr)) {
-            queryStm.setString(1, inst_id);
-            ResultSet rs = queryStm.executeQuery();
+        try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            stm.setString(1, inst_id);
+            ResultSet rs = stm.executeQuery();
             
             while (rs.next()) {
                 deptHash.put(rs.getString("dept_id"), 
                              rs.getString("dept_id"));
             }
+            stm.close();
             logger.debug("Department list for " + inst_id + ": " +
                     deptHash.toString());
         }
-        catch (SQLException e) {
+        catch (SQLException|NamingException e) {
             logger.error("FAIL to query department for " + inst_id);
             logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
         }
         
         return deptHash;
@@ -148,20 +179,27 @@ public abstract class DepartmentDB implements Serializable {
 
     // Return the HashMap of all the department IDs setup in the system.
     public static LinkedHashMap<String, String> getAllDeptHash() {
+        Connection conn = null;
+        String query = "SELECT dept_id FROM dept ORDER BY dept_id";
         LinkedHashMap<String, String> allDeptHash = new LinkedHashMap<>();
-        ResultSet rs = DBHelper.runQuery
-                       ("SELECT dept_id FROM dept ORDER BY dept_id");
         
         try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            ResultSet rs = stm.executeQuery();
+            
             while (rs.next()) {
                 allDeptHash.put(rs.getString("dept_id"), 
                                 rs.getString("dept_id"));
             }
-            rs.close();
+            stm.close();
         }
-        catch (SQLException e) {
+        catch (SQLException|NamingException e) {
             logger.error("FAIL to retrieve department ID for all!");
             logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
         }
         
         return allDeptHash;
@@ -169,19 +207,27 @@ public abstract class DepartmentDB implements Serializable {
     
     // Retrieve the institution ID that this department belongs to.
     public static String getInstID(String dept_id) {
+        Connection conn = null;
         String inst_id = Constants.DATABASE_INVALID_STR;
-        String queryStr = "SELECT inst_id FROM dept WHERE dept_id = \'" 
-                        + dept_id + "\'";
-        ResultSet rs = DBHelper.runQuery(queryStr);
+        String query = "SELECT inst_id FROM dept WHERE dept_id = \'" 
+                     + dept_id + "\'";
         
         try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            ResultSet rs = stm.executeQuery();
+            
             if (rs.next()) {
                 inst_id = rs.getString("inst_id");
             }
+            stm.close();
         }
-        catch (SQLException e) {
+        catch (SQLException|NamingException e) {
             logger.error("FAIL to retrieve institution ID for department!");
             logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
         }
         
         return inst_id;

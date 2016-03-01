@@ -5,12 +5,17 @@ package Clinical.Data.Sink.Database;
 
 import Clinical.Data.Sink.General.Constants;
 import java.sql.*;
-import javax.faces.bean.SessionScoped;
+// Libraries for Java Extension
+import javax.faces.bean.ApplicationScoped;
 import javax.faces.context.FacesContext;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import javax.servlet.ServletContext;
+import javax.sql.DataSource;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.postgresql.ds.PGPoolingDataSource;
 
 /**
  * DBHelper is a helper class that provide the postgresSQL database connection 
@@ -33,78 +38,96 @@ import org.apache.logging.log4j.LogManager;
  * checkDBTransactionIsolation().
  * 26-Feb-2016 - According to Java SE 7 document, applications no longer need to
  * explictly load JDBC drivers using Class.forName(). Removed that code.
+ * 29-Feb-2016 - Implementation of Data Source pooling. To use DataSource to 
+ * get the database connection instead of using DriverManager.
  */
 
-@SessionScoped
-public class DBHelper {
+@ApplicationScoped
+public abstract class DBHelper {
     // Get the logger for Log4j
     private final static Logger logger = LogManager.
             getLogger(DBHelper.class.getName());
+    private static PGPoolingDataSource ds = null;
     
-    private static Connection dbConn;
-    
-    public DBHelper() throws ClassNotFoundException, 
-            InstantiationException, IllegalAccessException, SQLException {
-        ServletContext context = getServletContext();
-        // Loading the DB username and password
-        String uname = context.getInitParameter("uname");
-        String pword = context.getInitParameter("pword");
-
-        // Debug Statement to print out the database driver used.
-        logger.debug("Loading DB Driver: " + Constants.getDATABASE_DRIVER());
-//        Class.forName(Constants.getDATABASE_DRIVER()).newInstance();
-        dbConn = DriverManager.getConnection(Constants.getDATABASE_NAME(), 
-                 uname, pword);
+    // Initialise the data source for TIMS.
+    public static void initDataSource() {
+        if (ds == null) {
+            logger.debug("Init data source for TIMS.");
+            ds = new PGPoolingDataSource();
+            ServletContext context = getServletContext();
+            // Loading the DB username and password
+            String uname = context.getInitParameter("uname");
+            String pword = context.getInitParameter("pword");
+            
+            ds.setDataSourceName("TIMS Data Source");
+            ds.setServerName("localhost");
+            ds.setDatabaseName(Constants.getDATABASE_NAME());
+            ds.setUser(uname);
+            ds.setPassword(pword);
+            ds.setMaxConnections(10);
+            
+            try {
+                new InitialContext().rebind("TIMS-DS", ds);
+            } catch (NamingException ne) {
+                logger.error("FAIL to rebind datasource!");
+                logger.error(ne.getMessage());
+            }
+        }
     }
     
     // Return the database connection to be use by the application.
-    public static Connection getDBConn() {
-        return dbConn;
+    public static Connection getDSConn() 
+            throws SQLException, NamingException 
+    {
+        DataSource source = (DataSource) new InitialContext().lookup("TIMS-DS");
+        
+        return source.getConnection();
     }
     
-    // Execute the query string passed in, and return the result.
-    // Important: Caller need to close the result after use!
-    public static ResultSet runQuery(String query) {
-        ResultSet queryResult = null;
-        
-        // DO NOT PUT the PreparedStatement inside try() because the 
-        // PreparedStatement will get closed, resulting in a empty result being
-        // returned to the caller.
-        try {
-            PreparedStatement queryStatement = dbConn.prepareStatement(query);
-            queryResult = queryStatement.executeQuery();
+    // Close the database connection after use by the individual modules.
+    public static void closeDSConn(Connection conn) {
+        if (conn != null) {
+            try {
+                conn.close();
+            }
+            catch (SQLException e) {
+                logger.error("FAIL to close data source connection!");
+                logger.error(e.getMessage());
+            }
         }
-        catch (SQLException e) {
-            logger.error("SQLException at runQuery: " + query);
-            logger.error(e.getMessage());
-        }
-        
-        return queryResult;
     }
     
     // getServletContext will return the servlet context
-    private ServletContext getServletContext() {
+    private static ServletContext getServletContext() {
         return (ServletContext) FacesContext.getCurrentInstance().
                 getExternalContext().getContext();
     }
     
     // Set the database transaction isolation level.
     public static void setDBTransactionIsolation(int level) {
+        Connection conn = null;
+        
         try {
-            dbConn.setTransactionIsolation(level);
+            conn = getDSConn();
+            conn.setTransactionIsolation(level);
         }
-        catch (SQLException e) {
+        catch (SQLException|NamingException e) {
             logger.error("SQLException when setting DB transaction isolation level!");
             logger.error(e.getMessage());
         }
-    } 
+        finally {
+            closeDSConn(conn);
+        }
+    }
     
     // Check the current database transaction isolation level.
     public static int checkDBTransactionIsolation() {
+        Connection conn = null;
         int txIso = Constants.DATABASE_INVALID_ID;
         
         try {
-            txIso = dbConn.getTransactionIsolation();
+            conn = getDSConn();
+            txIso = conn.getTransactionIsolation();
             
             switch (txIso) {
                 case Connection.TRANSACTION_NONE:
@@ -126,11 +149,14 @@ public class DBHelper {
                     System.out.println("UNKNOWN TRANSACTION ISOLATION.");
             }
         }
-        catch (SQLException e) {
+        catch (SQLException|NamingException e) {
             logger.error("SQLException when checking DB transaction isolation level!");
             logger.error(e.getMessage());
         }
-        
+        finally {
+            closeDSConn(conn);
+        }
+
         return txIso;
     }
 }

@@ -11,6 +11,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+// Libraries for Java Extension
+import javax.naming.NamingException;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -67,60 +69,67 @@ import org.apache.logging.log4j.LogManager;
  * administrator only).
  * 15-Feb-2016 - Added one new method getFinalizedJobIDs, to return all the
  * finalized job ID for the respective study ID.
+ * 29-Feb-2016 - Implementation of Data Source pooling. To use DataSource to 
+ * get the database connection instead of using DriverManager.
  */
 
 public abstract class SubmittedJobDB {
     // Get the logger for Log4j
     private final static Logger logger = LogManager.
             getLogger(SubmittedJobDB.class.getName());
-    private final static Connection conn = DBHelper.getDBConn();
     
     // Insert a new job request into the submitted_job table.
     // The job_id of the insert job request will be returned for further
     // processing. Any exception encountered here will be throw and to be 
     // handled by the caller.
-    public static int insertJob(SubmittedJob job) throws SQLException {
+    public static int insertJob(SubmittedJob job) 
+            throws SQLException, NamingException 
+    {
+        Connection conn = null;
         int job_id = Constants.DATABASE_INVALID_ID;
-        String insertStr = "INSERT INTO submitted_job"
-                + "(study_id, user_id, pipeline_name, status_id, "
-                + "submit_time, chip_type, input_path,"
-                + "normalization, probe_filtering, probe_select, "
-                + "phenotype_column, summarization, output_file, "
-                + "sample_average, standardization, region, report) "
-                + "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+        String query = "INSERT INTO submitted_job"
+                     + "(study_id, user_id, pipeline_name, status_id, "
+                     + "submit_time, chip_type, input_path,"
+                     + "normalization, probe_filtering, probe_select, "
+                     + "phenotype_column, summarization, output_file, "
+                     + "sample_average, standardization, region, report) "
+                     + "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+        
+        conn = DBHelper.getDSConn();
         // To request for the return of generated key upon successful insertion.
-        PreparedStatement insertStm = conn.prepareStatement(insertStr, 
-                Statement.RETURN_GENERATED_KEYS);
+        PreparedStatement stm = conn.prepareStatement(query, 
+                                Statement.RETURN_GENERATED_KEYS);
         // Build the INSERT statement using the variables retrieved from the
         // SubmittedJob object (i.e. job) passed in.
-        insertStm.setString(1, job.getStudy_id());
-        insertStm.setString(2, job.getUser_id());
-        insertStm.setString(3, job.getPipeline_name());
-        insertStm.setInt(4, job.getStatus_id());
-        insertStm.setString(5, job.getSubmit_time());
-        insertStm.setString(6, job.getChip_type());
-        insertStm.setString(7, job.getInput_path());
-        insertStm.setString(8, job.getNormalization());
-        insertStm.setString(9, job.getProbe_filtering());
-        insertStm.setBoolean(10, job.getProbe_select());
-        insertStm.setString(11, job.getPhenotype_column());
-        insertStm.setString(12, job.getSummarization());
-        insertStm.setString(13, job.getOutput_file());
-        insertStm.setBoolean(14, job.getSample_average());
-        insertStm.setString(15, job.getStandardization());
-        insertStm.setString(16, job.getRegion());
-        insertStm.setString(17, job.getReport());
+        stm.setString(1, job.getStudy_id());
+        stm.setString(2, job.getUser_id());
+        stm.setString(3, job.getPipeline_name());
+        stm.setInt(4, job.getStatus_id());
+        stm.setString(5, job.getSubmit_time());
+        stm.setString(6, job.getChip_type());
+        stm.setString(7, job.getInput_path());
+        stm.setString(8, job.getNormalization());
+        stm.setString(9, job.getProbe_filtering());
+        stm.setBoolean(10, job.getProbe_select());
+        stm.setString(11, job.getPhenotype_column());
+        stm.setString(12, job.getSummarization());
+        stm.setString(13, job.getOutput_file());
+        stm.setBoolean(14, job.getSample_average());
+        stm.setString(15, job.getStandardization());
+        stm.setString(16, job.getRegion());
+        stm.setString(17, job.getReport());
         // Execute the INSERT statement
-        insertStm.executeUpdate();
+        stm.executeUpdate();
         // Retrieve and store the last inserted Job ID
-        ResultSet rs = insertStm.getGeneratedKeys();
+        ResultSet rs = stm.getGeneratedKeys();
         
         if (rs.next()) {
             job_id = rs.getInt(1);
         }
-        
         logger.debug("New job request inserted into database. ID: " + job_id);
-        
+
+        stm.close();
+        DBHelper.closeDSConn(conn);
         // Return the job_id of the inserted job request
         return job_id;
     }
@@ -149,41 +158,55 @@ public abstract class SubmittedJobDB {
     // It will update the status_id of the job according to the status_id 
     // passed in.
     private static void updateJobStatus(int job_id, int status_id) {
-        String updateStr = "UPDATE submitted_job SET status_id = " + status_id 
-                         + " WHERE job_id = " + job_id;
+        Connection conn = null;
+        String query = "UPDATE submitted_job SET status_id = " + status_id 
+                     + " WHERE job_id = " + job_id;
 
-        try (PreparedStatement updateStm = conn.prepareStatement(updateStr))
-        {
-            updateStm.executeUpdate();
+        try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            stm.executeUpdate();
+            stm.close();
             logger.debug("Job ID " + job_id + ": status updated to " + 
                     JobStatusDB.getStatusName(status_id));
         }
-        catch (SQLException e) {
+        catch (SQLException|NamingException e) {
             logger.error("FAIL to update job status!");
             logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
         }
     }
     
     // Return the list of pipeline technologies used in this study.
     public static List<String> getTIDUsedInStudy(String studyID) {
+        Connection conn = null;
         List<String> tidList = new ArrayList<>();
-        String queryStr = "SELECT DISTINCT tid FROM submitted_job sj INNER JOIN "
-                        + "pipeline pl ON sj.pipeline_name = pl.name "
-                        + "WHERE study_id = ? ORDER BY tid";
+        String query = "SELECT DISTINCT tid FROM submitted_job sj INNER JOIN "
+                     + "pipeline pl ON sj.pipeline_name = pl.name "
+                     + "WHERE study_id = ? ORDER BY tid";
         
-        try (PreparedStatement queryStm = conn.prepareStatement(queryStr)) {
-            queryStm.setString(1, studyID);
-            ResultSet rs = queryStm.executeQuery();
+        try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            stm.setString(1, studyID);
+            ResultSet rs = stm.executeQuery();
             
             while (rs.next()) {
                 tidList.add(rs.getString("tid"));
             }
+            
+            stm.close();
             logger.debug("Pipeline technologies run for " + studyID + ": "
                          + tidList.toString());
         }
-        catch (SQLException e) {
+        catch (SQLException|NamingException e) {
             logger.error("FAIL to retrieve pipeline technologies executed!");
             logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
         }
         
         return tidList;
@@ -191,23 +214,31 @@ public abstract class SubmittedJobDB {
     
     // Return the list of distinct pipeline that have been executed in this study.
     public static List<String> getPipelineExeInStudy(String studyID) {
+        Connection conn = null;
         List<String> plList = new ArrayList<>();
-        String queryStr = "SELECT DISTINCT pipeline_name FROM submitted_job "
-                        + "WHERE study_id = ? ORDER BY pipeline_name";
+        String query = "SELECT DISTINCT pipeline_name FROM submitted_job "
+                     + "WHERE study_id = ? ORDER BY pipeline_name";
         
-        try (PreparedStatement queryStm = conn.prepareStatement(queryStr)) {
-            queryStm.setString(1, studyID);
-            ResultSet rs = queryStm.executeQuery();
+        try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            stm.setString(1, studyID);
+            ResultSet rs = stm.executeQuery();
             
             while (rs.next()) {
                 plList.add(rs.getString("pipeline_name"));
             }
+            
+            stm.close();
             logger.debug("Pipeline executed in " + studyID + ": " + 
                          plList.toString());
         }
-        catch (SQLException e) {
+        catch (SQLException|NamingException e) {
             logger.error("FAIL to retrieve pipeline executed!");
             logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
         }
         
         return plList;
@@ -217,17 +248,20 @@ public abstract class SubmittedJobDB {
     // be finalized for this study.
     public static List<FinalizingJobEntry> getCompletedPlJobsInStudy
         (String studyID, String pipeline) {
+        Connection conn = null;
         List<FinalizingJobEntry> jobList = new ArrayList<>();
-        String queryStr = "SELECT job_id, tid, submit_time, user_id "
-                        + "FROM submitted_job sj INNER JOIN pipeline pl "
-                        + "ON sj.pipeline_name = pl.name WHERE "
-                        + "status_id = 3 AND study_id = ? AND "
-                        + "pipeline_name = ? ORDER BY job_id";
+        String query = "SELECT job_id, tid, submit_time, user_id "
+                     + "FROM submitted_job sj INNER JOIN pipeline pl "
+                     + "ON sj.pipeline_name = pl.name WHERE "
+                     + "status_id = 3 AND study_id = ? AND "
+                     + "pipeline_name = ? ORDER BY job_id";
         
-        try (PreparedStatement queryStm = conn.prepareStatement(queryStr)) {
-            queryStm.setString(1, studyID);
-            queryStm.setString(2, pipeline);
-            ResultSet rs = queryStm.executeQuery();
+        try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            stm.setString(1, studyID);
+            stm.setString(2, pipeline);
+            ResultSet rs = stm.executeQuery();
             
             while (rs.next()) {
                 FinalizingJobEntry tmp = new FinalizingJobEntry(
@@ -239,12 +273,17 @@ public abstract class SubmittedJobDB {
                 
                 jobList.add(tmp);
             }
+            
+            stm.close();
             logger.debug("No of completed jobs for " + studyID + " under " +
                          pipeline + " is " + jobList.size());
         }
-        catch (SQLException e) {
+        catch (SQLException|NamingException e) {
             logger.error("FAIL to retrieve completed pipeline jobs for " + studyID);
             logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
         }
         
         return jobList;
@@ -254,17 +293,20 @@ public abstract class SubmittedJobDB {
     // this study.
     public static List<FinalizingJobEntry> getCompletedJobsInStudy
         (String studyID, String tid) {
+        Connection conn = null;
         List<FinalizingJobEntry> jobList = new ArrayList<>();
-        String queryStr = "SELECT job_id, tid, pipeline_name, submit_time, "
-                        + "user_id FROM submitted_job sj INNER JOIN pipeline pl "
-                        + "ON sj.pipeline_name = pl.name WHERE "
-                        + "status_id = 3 AND study_id = ? AND tid = ? "
-                        + "ORDER BY job_id";
+        String query = "SELECT job_id, tid, pipeline_name, submit_time, "
+                     + "user_id FROM submitted_job sj INNER JOIN pipeline pl "
+                     + "ON sj.pipeline_name = pl.name WHERE "
+                     + "status_id = 3 AND study_id = ? AND tid = ? "
+                     + "ORDER BY job_id";
 
-        try (PreparedStatement queryStm = conn.prepareStatement(queryStr)) {
-            queryStm.setString(1, studyID);
-            queryStm.setString(2, tid);
-            ResultSet rs = queryStm.executeQuery();
+        try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            stm.setString(1, studyID);
+            stm.setString(2, tid);
+            ResultSet rs = stm.executeQuery();
             
             while (rs.next()) {
                 FinalizingJobEntry tmp = new FinalizingJobEntry(
@@ -275,12 +317,17 @@ public abstract class SubmittedJobDB {
                                             rs.getString("user_id"));
                 jobList.add(tmp);
             }
+            
+            stm.close();
             logger.debug("No of completed jobs for " + studyID + " under " +
                          tid + " technology is " + jobList.size());
         }
-        catch (SQLException e) {
+        catch (SQLException|NamingException e) {
             logger.error("FAIL to retrieve completed jobs for " + studyID);
             logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
         }
         
         return jobList;
@@ -297,17 +344,20 @@ public abstract class SubmittedJobDB {
     public static List<SubmittedJob> getUserJobs(String user_id) {
         // Don't retrieve those jobs which are in finalizing stage.
         String query = "SELECT * FROM submitted_job WHERE user_id = \'" 
-                        + user_id + "\' AND status_id NOT IN (4) ORDER BY job_id DESC"; 
+                     + user_id + "\' AND status_id NOT IN (4) ORDER BY job_id DESC"; 
         
         return getJobsFullDetail(query);
     }
     
     // Return the list of jobs (full detail) based on the query.
     public static List<SubmittedJob> getJobsFullDetail(String query) {
+        Connection conn = null;
         List<SubmittedJob> jobList = new ArrayList<>();
 
         try {
-            ResultSet rs = DBHelper.runQuery(query);
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            ResultSet rs = stm.executeQuery();
             
             while (rs.next()) {
                 SubmittedJob job = new SubmittedJob(
@@ -332,11 +382,16 @@ public abstract class SubmittedJobDB {
                 
                 jobList.add(job);
             }
+            
+            stm.close();
             logger.debug("Jobs full detail retrieved.");
         } 
-        catch (SQLException e) {
+        catch (SQLException|NamingException e) {
                 logger.error("FAIL to retrieve jobs full detail!");
                 logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
         }
         
         return jobList;
@@ -344,16 +399,19 @@ public abstract class SubmittedJobDB {
 
     // Return the list of jobs that have been submitted by this user.
     public static List<SubmittedJob> getSubmittedJobs(String user_id) {
+        Connection conn = null;
         List<SubmittedJob> jobList = new ArrayList<>();
         // Don't retrieve those jobs which are in finalizing stage.
-        String queryStr = "SELECT job_id, study_id, pipeline_name, "
+        String query = "SELECT job_id, study_id, pipeline_name, "
                 + "status_id, submit_time, output_file, report FROM "
                 + "submitted_job WHERE user_id = ? AND status_id NOT IN (4) "
                 + "ORDER BY job_id DESC"; 
 
-        try (PreparedStatement queryStm = conn.prepareStatement(queryStr)) {
-            queryStm.setString(1, user_id);
-            ResultSet rs = queryStm.executeQuery();
+        try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            stm.setString(1, user_id);
+            ResultSet rs = stm.executeQuery();
             
             while (rs.next()) {
                 SubmittedJob job = new SubmittedJob(
@@ -368,11 +426,16 @@ public abstract class SubmittedJobDB {
                 
                 jobList.add(job);
             }
+            
+            stm.close();
             logger.debug("Submitted job retrieved for " + user_id);
         } 
-        catch (SQLException e) {
+        catch (SQLException|NamingException e) {
                 logger.error("FAIL to retrieve submitted job!");
                 logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
         }
         
         return jobList;
@@ -380,22 +443,30 @@ public abstract class SubmittedJobDB {
 
     // Retrieve all the finalized job IDs for this study ID.
     public static List<Integer> getFinalizedJobIDs(String study_id) {
+        Connection conn = null;
         List<Integer> jobIDList = new ArrayList<>();
-        String queryStr = "SELECT job_id FROM submitted_job WHERE status_id = 5"
-                        + " AND study_id = ?";
+        String query = "SELECT job_id FROM submitted_job WHERE status_id = 5"
+                     + " AND study_id = ?";
         
-        try (PreparedStatement queryStm = conn.prepareStatement(queryStr)) {
-            queryStm.setString(1, study_id);
-            ResultSet rs = queryStm.executeQuery();
+        try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            stm.setString(1, study_id);
+            ResultSet rs = stm.executeQuery();
             
             while (rs.next()) {
                 jobIDList.add(rs.getInt("job_id"));
             }
+            
+            stm.close();
             logger.debug("All finalized job IDs retrieved for " + study_id);
         }
-        catch (SQLException e) {
+        catch (SQLException|NamingException e) {
             logger.error("FAIL to retrieve finalized job IDs!");
             logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
         }
         
         return jobIDList;
@@ -403,22 +474,30 @@ public abstract class SubmittedJobDB {
     
     // Return the output filepath for this job.
     public static String getOutputPath(int jobID) {
+        Connection conn = null;
         String path = Constants.DATABASE_INVALID_STR;
         String query = "SELECT output_file FROM submitted_job WHERE job_id = " 
                      + jobID;
-        ResultSet rs = DBHelper.runQuery(query);
         
         try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            ResultSet rs = stm.executeQuery();
+            
             if (rs.next()) {
                 path = rs.getString("output_file");
                 logger.debug("Output file for job_id " + jobID + 
                              " stored at " + path);
             }
-            rs.close();
+            
+            stm.close();
         }
-        catch (SQLException e) {
+        catch (SQLException|NamingException e) {
             logger.error("FAIL to retrieve output filepath!");
             logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
         }
         
         return path;
@@ -426,20 +505,28 @@ public abstract class SubmittedJobDB {
 
     // Return the pipeline name for this job.
     public static String getPipelineName(int jobID) {
+        Connection conn = null;
         String plName = Constants.DATABASE_INVALID_STR;
-        String queryStr = "SELECT pipeline_name FROM submitted_job "
-                        + "WHERE job_id = " + jobID;
-        ResultSet rs = DBHelper.runQuery(queryStr);
+        String query = "SELECT pipeline_name FROM submitted_job "
+                     + "WHERE job_id = " + jobID;
         
         try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            ResultSet rs = stm.executeQuery();
+        
             if (rs.next()) {
                 plName = rs.getString("pipeline_name");
             }
-            rs.close();
+            
+            stm.close();
         }
-        catch (SQLException e) {
+        catch (SQLException|NamingException e) {
             logger.error("FAIL to retrieve pipeline name!");
             logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
         }
         
         return plName;
