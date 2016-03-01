@@ -49,6 +49,8 @@ import org.apache.logging.log4j.LogManager;
  * 24-Feb-2016 - Implemented studies review module.
  * 29-Feb-2016 - Implementation of Data Source pooling. To use DataSource to 
  * get the database connection instead of using DriverManager.
+ * 01-Mar-2016 - Changes due to one addition attribute (i.e. title) in Study
+ * class.
  */
 
 public abstract class StudyDB {
@@ -61,24 +63,25 @@ public abstract class StudyDB {
     public static Boolean insertStudy(Study study) {
         Connection conn = null;
         Boolean result = Constants.OK;
-        String query = "INSERT INTO study(study_id,owner_id,dept_id,annot_ver,"
-                     + "description,background,grant_info,start_date,"
-                     + "end_date,finalized,closed) VALUES(?,?,?,?,?,?,?,?,?,?,?)";
+        String query = "INSERT INTO study(study_id,title,owner_id,dept_id,"
+                     + "annot_ver,description,background,grant_info,start_date,"
+                     + "end_date,finalized,closed) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)";
         
         try {
             conn = DBHelper.getDSConn();
             PreparedStatement stm = conn.prepareStatement(query);
             stm.setString(1, study.getStudy_id());
-            stm.setString(2, study.getOwner_id());
-            stm.setString(3, study.getDept_id());
-            stm.setString(4, study.getAnnot_ver());
-            stm.setString(5, study.getDescription());
-            stm.setString(6, study.getBackground());
-            stm.setString(7, study.getGrant_info());
-            stm.setDate(8, study.getStart_date());
-            stm.setDate(9, study.getEnd_date());
-            stm.setBoolean(10, study.getFinalized());
-            stm.setBoolean(11, study.getClosed());
+            stm.setString(2, study.getTitle());
+            stm.setString(3, study.getOwner_id());
+            stm.setString(4, study.getDept_id());
+            stm.setString(5, study.getAnnot_ver());
+            stm.setString(6, study.getDescription());
+            stm.setString(7, study.getBackground());
+            stm.setString(8, study.getGrant_info());
+            stm.setDate(9, study.getStart_date());
+            stm.setDate(10, study.getEnd_date());
+            stm.setBoolean(11, study.getFinalized());
+            stm.setBoolean(12, study.getClosed());
             stm.executeUpdate();
             stm.close();
             
@@ -101,22 +104,23 @@ public abstract class StudyDB {
     public static Boolean updateStudy(Study study) {
         Connection conn = null;
         Boolean result = Constants.OK;
-        String query = "UPDATE study SET owner_id = ?, dept_id = ?, "
+        String query = "UPDATE study SET title=?, owner_id = ?, dept_id = ?, "
                      + "description = ?, background = ?, grant_info = ?, "
                      + "start_date = ?, end_date = ?, closed = ? WHERE study_id = ?";
         
         try {
             conn = DBHelper.getDSConn();
             PreparedStatement stm = conn.prepareStatement(query);
-            stm.setString(1, study.getOwner_id());
-            stm.setString(2, study.getDept_id());
-            stm.setString(3, study.getDescription());
-            stm.setString(4, study.getBackground());
-            stm.setString(5, study.getGrant_info());
-            stm.setDate(6, study.getStart_date());
-            stm.setDate(7, study.getEnd_date());
-            stm.setBoolean(8, study.getClosed());
-            stm.setString(9, study.getStudy_id());
+            stm.setString(1, study.getTitle());
+            stm.setString(2, study.getOwner_id());
+            stm.setString(3, study.getDept_id());
+            stm.setString(4, study.getDescription());
+            stm.setString(5, study.getBackground());
+            stm.setString(6, study.getGrant_info());
+            stm.setDate(7, study.getStart_date());
+            stm.setDate(8, study.getEnd_date());
+            stm.setBoolean(9, study.getClosed());
+            stm.setString(10, study.getStudy_id());
             stm.executeUpdate();
             stm.close();
             
@@ -350,6 +354,7 @@ public abstract class StudyDB {
             while (rs.next()) {
                 Study tmp = new Study(
                             rs.getString("study_id"),
+                            rs.getString("title"),
                             rs.getString("owner_id"),
                             rs.getString("dept_id"),
                             rs.getString("annot_ver"),
@@ -404,6 +409,7 @@ public abstract class StudyDB {
             while (rs.next()) {
                 Study tmp = new Study(
                             rs.getString("study_id"),
+                            rs.getString("title"),
                             rs.getString("owner_id"),
                             rs.getString("dept_id"),
                             rs.getString("annot_ver"),
@@ -450,6 +456,7 @@ public abstract class StudyDB {
             while (rs.next()) {
                 Study tmp = new Study(
                             rs.getString("study_id"),
+                            rs.getString("title"),
                             rs.getString("owner_id"),
                             rs.getString("dept_id"),
                             rs.getString("annot_ver"),

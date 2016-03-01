@@ -25,6 +25,16 @@
                 <p:column headerText="Study ID" styleClass="jsmedcol">
                     <h:outputText value="#{study.study_id}"/>
                 </p:column>
+                <p:column headerText="Study Titile" styleClass="col300">
+                    <p:cellEditor>
+                        <f:facet name="output">
+                            <h:outputText value="#{study.title}"/>
+                        </f:facet>
+                        <f:facet name="input">
+                            <h:inputText value="#{study.title}" style="width: 100%"/>
+                        </f:facet>
+                    </p:cellEditor>
+                </p:column>
                 <p:column headerText="Principal Investigator" 
                           style="width: 130px; text-align: left">
                     <p:cellEditor>
@@ -130,6 +140,11 @@
                 <h:message id="annot-status" for="annot" styleClass="errors"/>
                 <h:panelGroup/>
                 
+                <p:inputText id="title" size="150" autocomplete="off" required="true" 
+                             value="#{studyMgntBean.title}"/>
+                <h:message id="title-status" for="title" styleClass="errors"/>
+                <p:watermark for="title" value="Study Title"/>
+                             
                 <p:inputTextarea id="descript" cols="150" rows="5" value="#{studyMgntBean.description}"/>
                 <p:watermark for="descript" value="Enter description of this study here."/>
                 <h:panelGroup/>

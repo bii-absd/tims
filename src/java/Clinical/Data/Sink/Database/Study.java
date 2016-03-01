@@ -26,21 +26,24 @@ import java.sql.Date;
  * 23-Feb-2016 - Implementation for database 3.0 (Part 1).
  * 24-Feb-2016 - Added one new method, getReviewTitle() to return the title
  * for each study in the studies review page.
+ * 01-Mar-2016 - Added one attribute, title.
  */
 
 public class Study {
     // study table attributes
-    private String study_id, owner_id, dept_id, annot_ver, description, 
+    private String study_id, title, owner_id, dept_id, annot_ver, description, 
                    background, grant_info, finalized_output, summary;
     private Date start_date, end_date;
     private Boolean finalized, closed;
 
     // This constructor is used when retrieving the study table for database.
-    public Study(String study_id, String owner_id, String dept_id, String annot_ver, 
-                 String description, String background, String grant_info, 
-                 String finalized_output, String summary, Date start_date, 
-                 Date end_date, Boolean finalized, Boolean closed) {
+    public Study(String study_id, String title, String owner_id, String dept_id, 
+                 String annot_ver, String description, String background, 
+                 String grant_info, String finalized_output, String summary, 
+                 Date start_date, Date end_date, Boolean finalized, Boolean closed) 
+    {
         this.study_id = study_id;
+        this.title = title;
         this.owner_id = owner_id;
         this.dept_id = dept_id;
         this.annot_ver = annot_ver;
@@ -57,10 +60,12 @@ public class Study {
     // This constructor is used for constructing new Study.
     // For every new Study created, the finalized_output and summary will be
     // empty, and closed status will be false (i.e. not closed).
-    public Study(String study_id, String owner_id, String dept_id, String annot_ver, 
-                 String description, String background, String grant_info, 
-                 Date start_date, Date end_date, Boolean finalized) {
+    public Study(String study_id, String title, String owner_id, String dept_id, 
+                 String annot_ver, String description, String background, 
+                 String grant_info, Date start_date, Date end_date, Boolean finalized) 
+    {
         this.study_id = study_id;
+        this.title = title;
         this.owner_id = owner_id;
         this.dept_id = dept_id;
         this.owner_id = owner_id;
@@ -133,6 +138,12 @@ public class Study {
     }
     public void setStudy_id(String study_id) {
         this.study_id = study_id;
+    }
+    public String getTitle() {
+        return title;
+    }
+    public void setTitle(String title) {
+        this.title = title;
     }
     public String getOwner_id() {
         return owner_id;

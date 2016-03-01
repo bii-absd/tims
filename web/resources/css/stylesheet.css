@@ -226,3 +226,10 @@
     width: 120px;
     text-align: left !important;
 }
+
+/* Style defined for p:column with width equal to 300px, and text align left.
+*/
+.col300 {
+    width: 300px;
+    text-align: left !important;
+}

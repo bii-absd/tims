@@ -14,6 +14,9 @@
             <p:tab title="#{studies.reviewTitle}" titleStyleClass="study-title">
                 <p:panelGrid columns="2" columnClasses="study-col1,study-col2" style="width: 90%"
                              styleClass="study-pg">
+                    <h:outputLabel value="Study Title" style="font-weight: bold"/>
+                    <h:outputText value="#{studies.title}"/>
+                    
                     <h:outputLabel value="Principal Investigator" style="font-weight: bold"/>
                     <h:outputText value="#{studies.ownerFullName}"/>
                     

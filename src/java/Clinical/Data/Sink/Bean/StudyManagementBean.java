@@ -56,6 +56,8 @@ import org.apache.logging.log4j.LogManager;
  * 18-Feb-2016 - During creation of study ID, automatically append the 
  * institution ID and department ID to the study ID.
  * 23-Feb-2016 - Implementation for database 3.0 (Part 1).
+ * 01-Mar-2016 - Changes due to one addition attribute (i.e. title) in Study
+ * class.
  */
 
 @ManagedBean (name="studyMgntBean")
@@ -65,7 +67,8 @@ public class StudyManagementBean implements Serializable {
     private final static Logger logger = LogManager.
             getLogger(StudyManagementBean.class.getName());
     // Attributes for Study object
-    private String study_id, owner_id, dept_id, annot_ver, description, background, grant_info;
+    private String study_id, title, owner_id, dept_id, annot_ver, description, 
+                   background, grant_info;
     private Date start_date, end_date;
     private java.util.Date util_start_date, util_end_date;
     private Boolean finalized;
@@ -161,8 +164,9 @@ public class StudyManagementBean implements Serializable {
         
         // New Study will always be created with empty finalized_output and 
         // summary fields.
-        Study study = new Study(study_id, owner_id, dept_id, annot_ver, description, 
-                                background, grant_info, start_date, end_date, finalized);
+        Study study = new Study(study_id, title, owner_id, dept_id, annot_ver, 
+                                description, background, grant_info, start_date, 
+                                end_date, finalized);
         
         if (StudyDB.insertStudy(study)) {
             // Create a separate input directory for the newly created Study ID.
@@ -220,6 +224,12 @@ public class StudyManagementBean implements Serializable {
     }
     public void setStudy_id(String study_id) {
         this.study_id = study_id;
+    }
+    public String getTitle() {
+        return title;
+    }
+    public void setTitle(String title) {
+        this.title = title;
     }
     public String getOwner_id() {
         return owner_id;
