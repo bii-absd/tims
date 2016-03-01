@@ -8,6 +8,7 @@ import Clinical.Data.Sink.Database.UserAccount;
 import Clinical.Data.Sink.Database.UserAccountDB;
 
 import java.util.Properties;
+// Libraries for Java Extension
 import javax.faces.context.FacesContext;
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -30,10 +31,12 @@ import org.apache.logging.log4j.LogManager;
  * Revision History
  * 18-Jan-2016 - Initial creation with 3 methods, setupMailServer(), 
  * sendJobStatusEmail and sendExceptionEmail().
+ * 01-Mar-2016 - Change in from: email address, due to change in application
+ * name.
  */
 
 public abstract class Postman {
-    private static final String from = "datasink@bii.a-star.edu.sg";
+    private static final String from = "TIMS@bii.a-star.edu.sg";
     // Sending email from localhost
     private static final String host = "localhost";
     // Get system properties

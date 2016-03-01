@@ -93,6 +93,10 @@ import org.apache.logging.log4j.LogManager;
  * from the directory.
  * 29-Feb-2016 - Implementation of Data Source pooling. To use DataSource to 
  * get the database connection instead of using DriverManager.
+ * 01-Mar-2016 - System and user working directories will only be created during
+ * system parameters setup and user account creation (instead of during user 
+ * login).
+ * 
  */
 
 @ManagedBean (name="authBean")
@@ -145,7 +149,7 @@ public class AuthenticationBean implements Serializable {
             getFacesContext().addMessage("global", new FacesMessage(
                     FacesMessage.SEVERITY_ERROR, 
                     "System failure. Please contact the administrator.", ""));
-            logger.error("FAIL to load system constants!");
+            logger.error("FAIL to load/create system parameters!");
             // Return to login page.
             return Constants.LOGIN_PAGE;
         }
@@ -186,37 +190,20 @@ public class AuthenticationBean implements Serializable {
                           Constants.getUSERS_PATH() + loginName;
                 // Update the last login of this user            
                 UserAccountDB.updateLastLogin(loginName, Constants.getDateTime());
-            
-                // THE CREATION OF USER DIRECTORIES SHOULD BE MOVED TO ACCOUNT
-                // CREATION i.e. ONCE ACCOUNT HAS BEEN CREATED, THE DIRECTORIES
-                // SHOULD BE CREATED.
-                
-                // Create system directories, follow by .../users/loginName directories
-                if ( FileUploadBean.createSystemDirectories(Constants.getSYSTEM_PATH()) &&
-                    (FileUploadBean.createUsersDirectories(homeDir))) {
-                    // Save the user ID in the session map.
-                    getFacesContext().getExternalContext().getSessionMap().
-                                put("User", loginName);
-                    // Save the institution name where this user belongs to.
-                    instName = InstitutionDB.getInstName(userAcct.getInst_id());
-                    // Everything is fine, proceed from login to /restricted folder
-                    if ( (userAcct.getRoleName().compareTo("Director") == 0) || 
-                         (userAcct.getRoleName().compareTo("HOD") == 0) ) {
-                        // For director and HOD, direct them to the studies review page.
-                        result = Constants.PAGES_DIR + Constants.STUDIES_REVIEW;
-                    }
-                    else {
-                        // For other users, direct them to the main page.
-                        result =  Constants.PAGES_DIR + Constants.MAIN_PAGE;
-                    }
+                // Save the user ID in the session map.
+                getFacesContext().getExternalContext().getSessionMap().
+                                    put("User", loginName);
+                // Save the institution name where this user belongs to.
+                instName = InstitutionDB.getInstName(userAcct.getInst_id());
+                // Everything is fine, proceed from login to /restricted folder
+                if ( (userAcct.getRoleName().compareTo("Director") == 0) || 
+                     (userAcct.getRoleName().compareTo("HOD") == 0) ) {
+                    // For director and HOD, direct them to the studies review page.
+                    result = Constants.PAGES_DIR + Constants.STUDIES_REVIEW;
                 }
                 else {
-                    // Failed to create system directories, shouldn't let the user proceed.
-                    getFacesContext().addMessage("global", new FacesMessage(
-                    FacesMessage.SEVERITY_ERROR, 
-                    "System failure. Please contact the administrator.", ""));
-                    logger.error("FAIL to create system directories after login!");
-                    // Return to login page.
+                    // For other users, direct them to the main page.
+                    result =  Constants.PAGES_DIR + Constants.MAIN_PAGE;
                 }
             }
             else {
@@ -333,9 +320,7 @@ public class AuthenticationBean implements Serializable {
             // exists in the system.
             Path photopath = FileSystems.getDefault().getPath(
                             Constants.getSYSTEM_PATH() +
-                            Constants.getUSERS_PATH() +
-                            Constants.getPIC_PATH() + File.separator +
-                            userAcct.getPhoto());
+                            Constants.getPIC_PATH() + userAcct.getPhoto());
             
             if (Files.exists(photopath)) {
                 return true;

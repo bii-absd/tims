@@ -3,6 +3,7 @@
  */
 package Clinical.Data.Sink.General;
 
+import Clinical.Data.Sink.Bean.FileUploadBean;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -84,6 +85,8 @@ import org.apache.logging.log4j.LogManager;
  * 23-Feb-2016 - Changed constant name from ITEM_LIST_MANAGEMENT to 
  * GROUP_MANAGEMENT.
  * 24-Feb-2016 - Added one new constant, STUDIES_REVIEW for studies review page.
+ * 01-Mar-2016 - All the system directories will be created during system
+ * parameters setup (instead of during user login).
  */
 
 @ManagedBean (name = "constants")
@@ -191,7 +194,8 @@ public class Constants {
             SYSTEM_PATH = root + File.separator + setup.get("APP_NAME");
             USERS_PATH = 
                     File.separator + setup.get("USERS_PATH") + File.separator;
-            PIC_PATH = setup.get("PIC_PATH");
+            PIC_PATH = 
+                    File.separator + setup.get("PIC_PATH") + File.separator;
             OUTPUT_PATH = 
                     File.separator + setup.get("OUTPUT_PATH") + File.separator;
             INPUT_PATH = 
@@ -219,6 +223,12 @@ public class Constants {
             CONTROL_PROBE_FILE_EXT = setup.get("CONTROL_PROBE_FILE_EXT");
             DATABASE_NAME = setup.get("DATABASE_NAME");
             DATABASE_DRIVER = setup.get("DATABASE_DRIVER");
+            
+            // Create system directories.
+            if (!FileUploadBean.createSystemDirectories(SYSTEM_PATH)) {
+                logger.error("FAIL to create system directories!");
+                return NOT_OK;
+            }
         }
         
         return OK;

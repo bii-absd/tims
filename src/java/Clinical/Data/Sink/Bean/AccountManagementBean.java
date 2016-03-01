@@ -10,7 +10,6 @@ import Clinical.Data.Sink.Database.UserAccount;
 import Clinical.Data.Sink.Database.UserAccountDB;
 import Clinical.Data.Sink.Database.UserRoleDB;
 import Clinical.Data.Sink.General.Constants;
-import java.io.File;
 import java.io.Serializable;
 import java.sql.SQLException;
 import java.util.LinkedHashMap;
@@ -60,6 +59,9 @@ import org.primefaces.event.FileUploadEvent;
  * 23-Feb-2016 - To allow user to update their picture ID.
  * 29-Feb-2016 - Implementation of Data Source pooling. To use DataSource to 
  * get the database connection instead of using DriverManager.
+ * 01-Mar-2016 - User working directories will be created once the user account
+ * has been successfully inserted into the database (instead of during user 
+ * login).
  */
 
 @ManagedBean (name="acctMgntBean")
@@ -135,10 +137,9 @@ public class AccountManagementBean implements Serializable {
     // Create the FileUploadBean object to store the photo of the user.
     public void preparePhotoUpload() {
         if (photo == null) {
-            // All the user photo will be store in TIMS/users/photo/ directory.
+            // All the user photo will be store in TIMS/images/ directory.
             photo = new FileUploadBean(Constants.getSYSTEM_PATH() + 
-                                       Constants.getUSERS_PATH() +
-                                       Constants.getPIC_PATH() + File.separator);            
+                                       Constants.getPIC_PATH());            
         }
     }
     
@@ -169,9 +170,23 @@ public class AccountManagementBean implements Serializable {
             // Record account creation activity into database.
             ActivityLogDB.recordUserActivity(userName, Constants.CRE_ID, detail);
             logger.info(userName + ": create " + detail);
-            facesContext.addMessage("newacctstatus", new FacesMessage(
-                    FacesMessage.SEVERITY_INFO, "User Account: " 
-                    + user_id + " successfully created.", ""));
+            // Create user working directories after the user account has been
+            // successfully inserted into database.
+            if (FileUploadBean.createUsersDirectories(Constants.getSYSTEM_PATH() +
+                                                      Constants.getUSERS_PATH() +
+                                                      user_id)) {
+                logger.debug("Working directories for " + user_id + " created.");
+                facesContext.addMessage("newacctstatus", new FacesMessage(
+                        FacesMessage.SEVERITY_INFO, "User Account: " 
+                        + user_id + " successfully created.", ""));
+            }
+            else {
+                logger.error("FAIL to create working directories for " + user_id);
+                facesContext.addMessage("newacctstatus", new FacesMessage(
+                        FacesMessage.SEVERITY_ERROR, 
+                        "Failed to create working directories for user, "
+                        + "please contact the administrator!", ""));
+            }
         }
         catch (SQLException|NamingException e) {
             // Try to get the detail error message from the exception

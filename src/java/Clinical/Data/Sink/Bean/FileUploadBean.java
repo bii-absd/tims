@@ -70,6 +70,8 @@ import org.apache.logging.log4j.LogManager;
  * Combined the methods, renameAnnotFile() and renameCtrlProbeFile(), into a 
  * generic method, renameFilename.
  * 23-Feb-2016 - Enhanced the method renameFilename.
+ * 01-Mar-2016 - The images directory has been moved from TIMS/user/images to
+ * TIMS/images.
  */
 
 public class FileUploadBean implements Serializable {
@@ -159,13 +161,12 @@ public class FileUploadBean implements Serializable {
         return uFile.getFileName();
     }
     
-    // Create TIMS system directories i.e. .../TIMS/users .../TIMS/users/photo
+    // Create TIMS system directories i.e. .../TIMS/users .../TIMS/images
     // .../TIMS/input .../TIMS/finalize_output
     public static Boolean createSystemDirectories(String systemDir) {
         Boolean result = 
                 createSystemDirectory(systemDir + Constants.getUSERS_PATH()) &&
-                createSystemDirectory(systemDir + Constants.getUSERS_PATH() 
-                                      + Constants.getPIC_PATH()) &&
+                createSystemDirectory(systemDir + Constants.getPIC_PATH()) &&
                 createSystemDirectory(systemDir + Constants.getINPUT_PATH()) &&
                 createSystemDirectory(systemDir + Constants.getFINALIZE_PATH());
         
