@@ -20,7 +20,7 @@ import org.apache.logging.log4j.LogManager;
 
 /**
  * InstitutionDB is an abstract class and not mean to be instantiate, its main 
- * job is to perform SQL operations on the institution table in the database.
+ * job is to perform SQL operations on the inst table in the database.
  * 
  * Author: Tay Wei Hong
  * Date: 13-Nov-2015
@@ -65,7 +65,7 @@ public abstract class InstitutionDB implements Serializable {
         }
         catch (SQLException|NamingException e) {
             result = Constants.NOT_OK;
-            logger.error("FAIL to insert new institution!");
+            logger.error("FAIL to insert new institution ID " + inst.getInst_id());
             logger.error(e.getMessage());
         }
         finally {
@@ -93,7 +93,7 @@ public abstract class InstitutionDB implements Serializable {
         }
         catch (SQLException|NamingException e) {
             result = Constants.NOT_OK;
-            logger.error("FAIL to update institution!");
+            logger.error("FAIL to update institution " + inst.getInst_id());
             logger.error(e.getMessage());
         }
         finally {
@@ -122,10 +122,10 @@ public abstract class InstitutionDB implements Serializable {
             }
             
             stm.close();
-            logger.debug("Institution list built.");
+            logger.debug("Full institution list built.");
         }
         catch (SQLException|NamingException e) {
-            logger.error("FAIL to build institution list!");
+            logger.error("FAIL to build full institution list!");
             logger.error(e.getMessage());
         }
         finally {
@@ -152,10 +152,10 @@ public abstract class InstitutionDB implements Serializable {
             }
 
             stm.close();
-            logger.debug("Institution name hash built.");
+            logger.debug("Full institution name hash built.");
         }
         catch (SQLException|NamingException e) {
-            logger.error("FAIL to build institution name hash!");
+            logger.error("FAIL to build full institution name hash!");
             logger.error(e.getMessage());
         }
         finally {
@@ -166,15 +166,18 @@ public abstract class InstitutionDB implements Serializable {
     }
     
     // Return the name for this institution.
-    public static String getInstName(String instID) {
+    public static String getInstName(String unitID) {
         Connection conn = null;
         String instName = Constants.DATABASE_INVALID_STR;
-        String query = "SELECT inst_name FROM inst WHERE inst_id = ?";
+        String query = "SELECT inst_name FROM inst_dept_grp WHERE inst_id = ? "
+                     + "OR dept_id = ? OR grp_id = ?";
 
         try {
             conn = DBHelper.getDSConn();
             PreparedStatement stm = conn.prepareStatement(query);
-            stm.setString(1, instID);
+            stm.setString(1, unitID);
+            stm.setString(2, unitID);
+            stm.setString(3, unitID);
             ResultSet rs = stm.executeQuery();
             
             if (rs.next()) {
@@ -182,10 +185,9 @@ public abstract class InstitutionDB implements Serializable {
             }
             
             stm.close();
-            logger.debug("Institution name for " + instID + " is " + instName);
         }
         catch (SQLException|NamingException e) {
-            logger.error("FAIL to retrieve institution name!");
+            logger.error("FAIL to retrieve institution name for " + unitID);
             logger.error(e.getMessage());
         }
         finally {

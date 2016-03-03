@@ -6,8 +6,11 @@ package Clinical.Data.Sink.Bean;
 import Clinical.Data.Sink.Database.ActivityLogDB;
 import Clinical.Data.Sink.Database.Department;
 import Clinical.Data.Sink.Database.DepartmentDB;
+import Clinical.Data.Sink.Database.Group;
+import Clinical.Data.Sink.Database.GroupDB;
 import Clinical.Data.Sink.Database.Institution;
 import Clinical.Data.Sink.Database.InstitutionDB;
+import Clinical.Data.Sink.Database.UserAccountDB;
 import Clinical.Data.Sink.General.Constants;
 import java.io.Serializable;
 import java.util.LinkedHashMap;
@@ -54,9 +57,12 @@ public class GroupManagementBean implements Serializable {
     private String inst_id, inst_name;
     // Attributes for Department object
     private String dept_id, dept_name;
+    // Attributes for Group object
+    private String grp_id, grp_name, pi;
     private List<Institution> instList;
     private List<Department> deptList;
-    private LinkedHashMap<String,String> instNameHash;
+    private List<Group> grpList;
+    private LinkedHashMap<String,String> instNameHash, deptNameHash, piIDHash;
     // Store the user ID of the current user.
     private final String userName;
     
@@ -71,7 +77,10 @@ public class GroupManagementBean implements Serializable {
     public void init() {
         instList = InstitutionDB.getInstList();
         deptList = DepartmentDB.getDeptList();
+        grpList = GroupDB.getFullGrpList();
         instNameHash = InstitutionDB.getInstNameHash();
+        deptNameHash = DepartmentDB.getAllDeptHash();
+        piIDHash = UserAccountDB.getPiIDHash();
     }
 
     // Create the new institution ID
@@ -113,19 +122,38 @@ public class GroupManagementBean implements Serializable {
         return Constants.GROUP_MANAGEMENT;
     }
     
-    // Update the institution table in the database.
-    public void onInstRowEdit(RowEditEvent event) {
-        if (InstitutionDB.updateInstitution((Institution) event.getObject())) {
-            // Record this institution update activity into database.
-            String detail = "Institution " + 
-                            ((Institution) event.getObject()).getInst_id();
-            ActivityLogDB.recordUserActivity(userName, Constants.CHG_ID, detail);
-            logger.info(userName + ": updated " + detail);
-            addFacesInfoMsg("Institution updated.");
+    // Create the new group ID
+    public String createNewGrpID() {
+        Group newGrp = new Group(grp_id, pi, dept_id, grp_name);
+        
+        if (GroupDB.insertGroup(newGrp)) {
+            // Record this group creation activity into database.
+            String detail = "Group " + grp_id + " for department " + dept_id;
+            ActivityLogDB.recordUserActivity(userName, Constants.CRE_ID, detail);
+            logger.info(userName + ": created " + detail);
+            addFacesInfoMsg("New group ID created.");
         }
         else {
-            logger.error("FAIL to update institution!");
-            addFacesErrorMsg("Failed to update institution!");
+            logger.error("FAIL to create new group ID: " + grp_id);
+            addFacesErrorMsg("Failed to create new group ID!");
+        }
+        
+        return Constants.GROUP_MANAGEMENT;
+    }
+    
+    // Update the inst table in the database.
+    public void onInstRowEdit(RowEditEvent event) {
+        String detail = "Institution " + ((Institution) event.getObject()).getInst_id();
+        
+        if (InstitutionDB.updateInstitution((Institution) event.getObject())) {
+            // Record this institution update activity into database.
+            ActivityLogDB.recordUserActivity(userName, Constants.CHG_ID, detail);
+            logger.info(userName + ": updated " + detail);
+            addFacesInfoMsg(detail + " updated.");
+        }
+        else {
+            logger.error("FAIL to update " + detail);
+            addFacesErrorMsg("Failed to update " + detail);
         }
     }
     
@@ -133,20 +161,48 @@ public class GroupManagementBean implements Serializable {
     public LinkedHashMap<String, String> getInstNameHash() {
         return instNameHash;
     }
+    // Return the HashMap of dept_id-dept_id for user selection.
+    public LinkedHashMap<String, String> getDeptNameHash() {
+        return deptNameHash;
+    }
+    // Return the HashMap of user ID that can be PI.
+    public LinkedHashMap<String, String> getPiIDHash() {
+        return piIDHash;
+    }
     
-    // Update the department table in the database.
+    // Update the dept table in the database.
     public void onDeptRowEdit(RowEditEvent event) {
+        String detail = "Department " + ((Department) event.getObject()).getDept_id();
+        
         if (DepartmentDB.updateDepartment((Department) event.getObject())) {
             // Record this department update activity into database.
-            String detail = "Department " + 
-                            ((Department) event.getObject()).getDept_id();
             ActivityLogDB.recordUserActivity(userName, Constants.CHG_ID, detail);
             logger.info(userName + ": updated " + detail);
-            addFacesInfoMsg("Department updated.");
+            // Update the department data table.
+            deptList = DepartmentDB.getDeptList();
+            addFacesInfoMsg(detail + " updated.");
         }
         else {
-            logger.error("FAIL to update department!");
-            addFacesErrorMsg("Failed to update department!");
+            logger.error("FAIL to update " + detail);
+            addFacesErrorMsg("Failed to update " + detail);
+        }
+    }
+    
+    // Update the grp table in the database.
+    public void onGrpRowEdit(RowEditEvent event) {
+        String detail = "Group " + ((Group) event.getObject()).getGrp_id();
+        
+        if (GroupDB.updateGroup((Group) event.getObject())) {
+            // Record this group update activity into database.
+            ActivityLogDB.recordUserActivity(userName, Constants.CHG_ID, detail);
+            logger.info(userName + ": updated " + detail);
+            // Update the group data table.
+            grpList = GroupDB.getFullGrpList();
+            addFacesInfoMsg(detail + " updated.");
+        }
+        else {
+            logger.error("FAIL to update " + detail);
+            addFacesErrorMsg("Failed to update " + detail);
         }
     }
     
@@ -179,6 +235,12 @@ public class GroupManagementBean implements Serializable {
     public void setDeptList(List<Department> deptList) {
         this.deptList = deptList;
     }
+    public List<Group> getGrpList() {
+        return grpList;
+    }
+    public void setGrpList(List<Group> grpList) {
+        this.grpList = grpList;
+    }
     public String getInst_id() {
         return inst_id;
     }
@@ -202,5 +264,23 @@ public class GroupManagementBean implements Serializable {
     }
     public void setDept_name(String dept_name) {
         this.dept_name = dept_name;
-    }   
+    }
+    public String getGrp_id() {
+        return grp_id;
+    }
+    public void setGrp_id(String grp_id) {
+        this.grp_id = grp_id;
+    }
+    public String getGrp_name() {
+        return grp_name;
+    }
+    public void setGrp_name(String grp_name) {
+        this.grp_name = grp_name;
+    }
+    public String getPi() {
+        return pi;
+    }
+    public void setPi(String pi) {
+        this.pi = pi;
+    }
 }

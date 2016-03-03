@@ -20,7 +20,7 @@ import org.apache.logging.log4j.LogManager;
 
 /**
  * DepartmentDB is an abstract class and not mean to be instantiate, its main 
- * job is to perform SQL operations on the department table in the database.
+ * job is to perform SQL operations on the dept table in the database.
  * 
  * Author: Tay Wei Hong
  * Date: 13-Nov-2015
@@ -51,11 +51,10 @@ public abstract class DepartmentDB implements Serializable {
     private final static Logger logger = LogManager.
             getLogger(DepartmentDB.class.getName());
 
-    // Return the full list of Department setup in the system, and setup the 
-    // deptHash.
+    // Return the full list of Department setup in the system.
     public static List<Department> getDeptList() {
         Connection conn = null;
-        String query = "SELECT * FROM dept ORDER BY dept_id";
+        String query = "SELECT * FROM dept ORDER BY inst_id, dept_id";
         List<Department> deptList = new ArrayList<>();
 
         try {
@@ -73,7 +72,7 @@ public abstract class DepartmentDB implements Serializable {
             stm.close();
         }
         catch (SQLException|NamingException e) {
-            logger.error("FAIL to build department list!");
+            logger.error("FAIL to build full department list!");
             logger.error(e.getMessage());
         }
         finally {
@@ -102,7 +101,7 @@ public abstract class DepartmentDB implements Serializable {
         }
         catch (SQLException|NamingException e) {
             result = Constants.NOT_OK;
-            logger.error("FAIL to insert new department!");
+            logger.error("FAIL to insert new department " + dept.getDept_id());
             logger.error(e.getMessage());
         }
         finally {
@@ -131,7 +130,7 @@ public abstract class DepartmentDB implements Serializable {
         }
         catch (SQLException|NamingException e) {
             result = Constants.NOT_OK;
-            logger.error("FAIL to update department!");
+            logger.error("FAIL to update department " + dept.getDept_id());
             logger.error(e.getMessage());
         }
         finally {
@@ -180,7 +179,7 @@ public abstract class DepartmentDB implements Serializable {
     // Return the HashMap of all the department IDs setup in the system.
     public static LinkedHashMap<String, String> getAllDeptHash() {
         Connection conn = null;
-        String query = "SELECT dept_id FROM dept ORDER BY dept_id";
+        String query = "SELECT dept_id, dept_name FROM dept ORDER BY dept_id";
         LinkedHashMap<String, String> allDeptHash = new LinkedHashMap<>();
         
         try {
@@ -189,7 +188,7 @@ public abstract class DepartmentDB implements Serializable {
             ResultSet rs = stm.executeQuery();
             
             while (rs.next()) {
-                allDeptHash.put(rs.getString("dept_id"), 
+                allDeptHash.put(rs.getString("dept_name"), 
                                 rs.getString("dept_id"));
             }
             stm.close();
@@ -203,6 +202,34 @@ public abstract class DepartmentDB implements Serializable {
         }
         
         return allDeptHash;
+    }
+    
+    // Return the name for this department.
+    public static String getDeptName(String deptID) {
+        Connection conn = null;
+        String deptName = Constants.DATABASE_INVALID_STR;
+        String query = "SELECT dept_name FROM dept WHERE dept_id = ?";
+        
+        try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            stm.setString(1, deptID);
+            ResultSet rs = stm.executeQuery();
+            
+            if (rs.next()) {
+                deptName = rs.getString("dept_name");
+            }            
+            stm.close();
+        }
+        catch (SQLException|NamingException e) {
+            logger.error("FAIL to retrieve department name for " + deptID);
+            logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
+        }
+        
+        return deptName;
     }
     
     // Retrieve the institution ID that this department belongs to.
@@ -223,7 +250,7 @@ public abstract class DepartmentDB implements Serializable {
             stm.close();
         }
         catch (SQLException|NamingException e) {
-            logger.error("FAIL to retrieve institution ID for department!");
+            logger.error("FAIL to retrieve institution ID for department " + dept_id);
             logger.error(e.getMessage());
         }
         finally {

@@ -194,7 +194,7 @@ public class AuthenticationBean implements Serializable {
                 getFacesContext().getExternalContext().getSessionMap().
                                     put("User", loginName);
                 // Save the institution name where this user belongs to.
-                instName = InstitutionDB.getInstName(userAcct.getInst_id());
+                instName = InstitutionDB.getInstName(userAcct.getUnit_id());
                 // Everything is fine, proceed from login to /restricted folder
                 if ( (userAcct.getRoleName().compareTo("Director") == 0) || 
                      (userAcct.getRoleName().compareTo("HOD") == 0) ) {
@@ -288,7 +288,7 @@ public class AuthenticationBean implements Serializable {
             return loginName;
         }
         else {
-            return instName + " - " + userAcct.getDept_id();            
+            return instName + " - " + userAcct.getUnit_id();            
         }
     }
     

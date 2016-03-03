@@ -4,7 +4,7 @@
 package Clinical.Data.Sink.Database;
 
 /**
- * Department is used to represent the department table in the database.
+ * Department is used to represent the dept table in the database.
  * 
  * Author: Tay Wei Hong
  * Date: 13-Nov-2015
@@ -18,9 +18,9 @@ package Clinical.Data.Sink.Database;
  */
 
 public class Department {
-    // department table fields
+    // dept table fields
     private String inst_id, dept_id, dept_name;
-    // Addition attribute to store the institution name
+    // Additional attribute to store the institution name
     private String inst_name;
 
     public Department(String inst_id, String dept_id, 

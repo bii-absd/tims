@@ -92,11 +92,15 @@ public abstract class UserAccountDB {
     
     // Temporay method retrieve all the user ID of PI.
     // In future, this method will be moved to grp Class.
+    // Return the list of user ID that has been registered as the PI of the group.
+    // DIFFERENT FROM THIS!
+    
+    // Return the list of user ID that can be PI (i.e. Director, HOD and PI).
     public static LinkedHashMap<String, String> getPiIDHash() {
         Connection conn = null;
         LinkedHashMap<String,String> piIDHash = new LinkedHashMap<>();
-        String query = "SELECT user_id FROM user_account "
-                     + "WHERE role_id = 4 ORDER BY user_id";
+        String query = "SELECT first_name, user_id FROM user_account "
+                     + "WHERE role_id IN (2,3,4) ORDER BY user_id";
 
         try {
             conn = DBHelper.getDSConn();
@@ -104,8 +108,7 @@ public abstract class UserAccountDB {
             ResultSet rs = stm.executeQuery();
             
             while (rs.next()) {
-                String user_id = rs.getString("user_id");
-                piIDHash.put(user_id, user_id);
+                piIDHash.put(rs.getString("first_name"), rs.getString("user_id"));
             }            
             stm.close();
         }
@@ -152,8 +155,9 @@ public abstract class UserAccountDB {
     public static List<UserAccount> getAllUserAcct() {
         Connection conn = null;
         List<UserAccount> userAcctList = new ArrayList<>();
-        String query = "SELECT * FROM user_account u NATURAL JOIN dept d "
-                     + "WHERE u.dept_id = d.dept_id ORDER BY u.user_id";
+//        String query = "SELECT * FROM user_account u NATURAL JOIN dept d "
+//                     + "WHERE u.dept_id = d.dept_id ORDER BY u.user_id";
+        String query = "SELECT * FROM user_account ORDER BY user_id";
         
         try {
             conn = DBHelper.getDSConn();
@@ -170,8 +174,7 @@ public abstract class UserAccountDB {
                                         rs.getString("email"),
                                         rs.getBoolean("active"),
                                         "password",
-                                        rs.getString("dept_id"),
-                                        rs.getString("inst_id"),
+                                        rs.getString("unit_id"),
                                         rs.getString("last_login"));
                 
                 userAcctList.add(user);
@@ -194,10 +197,13 @@ public abstract class UserAccountDB {
     public static UserAccount getJobRequestor(int jobID) {
         Connection conn = null;
         UserAccount user = null;
-        String query = "SELECT * FROM user_account u NATURAL JOIN dept d "
-                + "WHERE u.dept_id = d.dept_id AND u.user_id = (SELECT "
-                + "user_id FROM submitted_job WHERE job_id = "
-                + jobID + ")";
+//        String query = "SELECT * FROM user_account u NATURAL JOIN dept d "
+//                + "WHERE u.dept_id = d.dept_id AND u.user_id = (SELECT "
+//                + "user_id FROM submitted_job WHERE job_id = "
+//                + jobID + ")";
+        String query = "SELECT * FROM user_account WHERE user_id = "
+                     + "(SELECT user_id FROM submitted_job WHERE job_id = "
+                     + jobID + ")";
         
         try {
             conn = DBHelper.getDSConn();
@@ -213,8 +219,7 @@ public abstract class UserAccountDB {
                                        rs.getString("email"),
                                        rs.getBoolean("active"),
                                        "password",
-                                       rs.getString("dept_id"),
-                                       rs.getString("inst_id"),
+                                       rs.getString("unit_id"),
                                        rs.getString("last_login"));
                 
             }
@@ -302,8 +307,9 @@ public abstract class UserAccountDB {
     // a UserAccount object will be return.
     public static UserAccount checkPwd(String user_id, String pwd) {
         Connection conn = null;
-        String query = "SELECT * FROM user_account u NATURAL JOIN dept d "
-                        + "WHERE u.dept_id = d.dept_id AND u.user_id = ?";
+//        String query = "SELECT * FROM user_account u NATURAL JOIN dept d "
+//                        + "WHERE u.dept_id = d.dept_id AND u.user_id = ?";
+        String query = "SELECT * FROM user_account WHERE user_id = ?";
         String pwd_hash = null;
         UserAccount acct = null;
 
@@ -331,8 +337,7 @@ public abstract class UserAccountDB {
                                            rs.getString("email"),
                                            rs.getBoolean("active"),
                                            "password",
-                                           rs.getString("dept_id"),
-                                           rs.getString("inst_id"),
+                                           rs.getString("unit_id"),
                                            "last-login");
                 }
             }
@@ -365,7 +370,7 @@ public abstract class UserAccountDB {
         String pwd_hash = BCrypt.hashpw(newAcct.getPwd(), BCrypt.gensalt());
         String query = "INSERT INTO user_account"
                 + "(user_id, role_id, first_name, last_name, photo, email, pwd, "
-                + "active, dept_id) VALUES (?,?,?,?,?,?,?,?,?)";
+                + "active, unit_id) VALUES (?,?,?,?,?,?,?,?,?)";
         conn = DBHelper.getDSConn();
         PreparedStatement stm = conn.prepareStatement(query);
         
@@ -379,7 +384,7 @@ public abstract class UserAccountDB {
         stm.setString(6, newAcct.getEmail());
         stm.setString(7, pwd_hash);
         stm.setBoolean(8, newAcct.getActive());
-        stm.setString(9, newAcct.getDept_id());
+        stm.setString(9, newAcct.getUnit_id());
         // Execute the INSERT statement
         stm.executeUpdate();
         stm.close();
@@ -439,14 +444,14 @@ public abstract class UserAccountDB {
             throws SQLException, NamingException 
     {
         Connection conn = null;
-        String query = "UPDATE user_account SET dept_id = ?, "
+        String query = "UPDATE user_account SET unit_id = ?, "
                      + "first_name = ?, last_name = ?, photo = ?, "
                      + "email = ?, active = ?, role_id = ? WHERE "
                      + "user_id = ?";
         conn = DBHelper.getDSConn();
         
         PreparedStatement stm = conn.prepareStatement(query);
-        stm.setString(1, user.getDept_id());
+        stm.setString(1, user.getUnit_id());
         stm.setString(2, user.getFirst_name());
         stm.setString(3, user.getLast_name());
         stm.setString(4, user.getPhoto());
@@ -465,8 +470,7 @@ public abstract class UserAccountDB {
     public static UserAccount getUserAct(String userID) {
         Connection conn = null;
         UserAccount userAct = null;
-        String query = "SELECT * FROM user_account u NATURAL JOIN dept d "
-                     + "WHERE user_id = ? AND u.dept_id = d.dept_id";
+        String query = "SELECT * FROM user_account WHERE user_id = ?";
         
         try {
             conn = DBHelper.getDSConn();
@@ -483,8 +487,7 @@ public abstract class UserAccountDB {
                                           rs.getString("email"),
                                           rs.getBoolean("active"),
                                           "password",
-                                          rs.getString("dept_id"),
-                                          rs.getString("inst_id"),
+                                          rs.getString("unit_id"),
                                           rs.getString("last_login"));
             }
             stm.close();
@@ -500,12 +503,12 @@ public abstract class UserAccountDB {
         return userAct;
     }
     
-    // Return the department ID for this user.
-    public static String getDeptID(String userID) {
+    // Return the unit ID for this user.
+    public static String getUnitID(String userID) {
         UserAccount tmp = getUserAct(userID);
         
         if (tmp != null) {
-            return tmp.getDept_id();
+            return tmp.getUnit_id();
         }
 
         return Constants.DATABASE_INVALID_STR;
@@ -534,7 +537,7 @@ public abstract class UserAccountDB {
     }
     
     // Check whether this user ID belongs to a adminstrator/supervisor/clinical
-    public static Boolean isAdministrator(String userID) {
+    public static boolean isAdministrator(String userID) {
         if (userID.compareTo("super") == 0) {
             return Constants.OK;
         }
@@ -542,21 +545,47 @@ public abstract class UserAccountDB {
             return getRoleID(userID) == 1;
         }
     }
-    public static Boolean isSuperVisor(String userID) {
-        return getRoleID(userID) <= 2;
+    public static boolean isDirector(String userID) {
+        return getRoleID(userID) == 2;
     }
-    public static Boolean isClinical(String userID) {
-        return getRoleID(userID) <= 3;
+    public static boolean isHOD(String userID) {
+        return getRoleID(userID) == 3;
+    }
+    public static boolean isPI(String userID) {
+        return getRoleID(userID) == 4;
     }
     
-    // Return the institution name and department ID for this user.
-    public static String getInstNameDeptID(String userID) {
+    // Return the institution name and unit ID for this user.
+    // If user is a director, return the institution name.
+    // For other users, return institution name - unit ID.
+    public static String getInstNameUnitID(String userID) {
         Connection conn = null;
-        String instDept = Constants.DATABASE_INVALID_STR;
-        String query = "SELECT d.inst_name, u.dept_id FROM user_account u "
-                     + "NATURAL JOIN (SELECT inst_name, dept_id FROM dept "
-                     + "NATURAL JOIN inst) d WHERE u.user_id = ? "
-                     + "AND u.dept_id = d.dept_id";
+        int role_id = getRoleID(userID);
+        String instUnit = Constants.DATABASE_INVALID_STR;
+        String query;
+        
+        // Director
+        if (role_id == 2) {
+            query = "SELECT DISTINCT inst_name FROM inst_dept_grp WHERE "
+                  + "inst_id = (SELECT unit_id FROM user_account WHERE user_id = ?)";
+        }
+        // HOD
+        else if (role_id == 3) {
+            query = "SELECT DISTINCT x.inst_name, y.unit_id FROM inst_dept_grp x "
+                  + "WHERE x.dept_id = "
+                  + "(SELECT unit_id FROM user_account WHERE user_id = ?) y";
+        }
+        // Admin, PI & User
+        else {
+            query = "SELECT DISTINCT x.inst_name, y.unit_id FROM inst_dept_grp x "
+                  + "WHERE x.grp_id = "
+                  + "(SELECT unit_id FROM user_account WHERE user_id = ?) y";
+        }
+        
+//        query = "SELECT d.inst_name, u.unit_id FROM user_account u "
+//              + "NATURAL JOIN (SELECT inst_name, dept_id FROM dept "
+//              + "NATURAL JOIN inst) d WHERE u.user_id = ? "
+//              + "AND u.dept_id = d.dept_id";
         
         try {
             conn = DBHelper.getDSConn();
@@ -565,19 +594,24 @@ public abstract class UserAccountDB {
             ResultSet rs = stm.executeQuery();
             
             if (rs.next()) {
-                instDept = rs.getString("inst_name") + " - " 
-                            + rs.getString("dept_id");
+                if (role_id == 2) {
+                    instUnit = rs.getString("inst_name");
+                }
+                else {
+                    instUnit = rs.getString("inst_name") + " - " 
+                             + rs.getString("unit_id");
+                }
             }
             stm.close();
         }
         catch (SQLException|NamingException e) {
-            logger.error("FAIL to retrieve institution name and department ID!");
+            logger.error("FAIL to retrieve institution name and unit ID!");
             logger.error(e.getMessage());
         }
         finally {
             DBHelper.closeDSConn(conn);
         }
         
-        return instDept;
+        return instUnit;
     }
 }

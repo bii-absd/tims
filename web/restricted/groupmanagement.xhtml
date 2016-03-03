@@ -11,7 +11,91 @@
     <ui:param name="link" value="#{msg['grp-mgnt']}"/>
     <ui:define name="content">
         <p:growl id="itemListMsg"/>
-        <p:accordionPanel>
+        <p:accordionPanel id="acPanel">
+            <p:tab id="editGrp" title="Edit Group" titleStyleClass="tab-title">
+                <h:form id="editGrpForm">
+                    <p:dataTable var="grp" rows="15" id="grpTable" 
+                                 value="#{grpMgntBean.grpList}" paginator="true"
+                                 paginatorTemplate="{FirstPageLink} {PreviousPageLink}
+                                 {CurrentPageReport} {NextPageLink} {LastPageLink}"
+                                 styleClass="table-odd-row table-even-row" 
+                                 editable="true">
+                        <p:ajax event="rowEdit" listener="#{grpMgntBean.onGrpRowEdit}" 
+                                update="acPanel:editGrpForm:grpTable itemListMsg"/>
+                        <p:column headerText="Group ID" styleClass="jsmedcol">
+                            <h:outputText value="#{grp.grp_id}"/>
+                        </p:column>
+                        <p:column headerText="Department Name" styleClass="col300">
+                            <p:cellEditor>
+                                <f:facet name="output">
+                                    <h:outputText value="#{grp.dept_name}"/>
+                                </f:facet>
+                                <f:facet name="input">
+                                    <p:selectOneMenu style="width: 100%" 
+                                                     value="#{grp.dept_id}">
+                                        <f:selectItems value="#{grpMgntBean.deptNameHash}"/>
+                                    </p:selectOneMenu>
+                                </f:facet>
+                            </p:cellEditor>
+                        </p:column>
+                        <p:column headerText="PI Incharge" styleClass="jsmedcol">
+                            <h:outputText value="#{grp.pi_name}"/>
+                        </p:column>
+                        <p:column headerText="Group Name" style="text-align: left">
+                            <p:cellEditor>
+                                <f:facet name="output">
+                                    <h:outputText value="#{grp.grp_name}"/>
+                                </f:facet>
+                                <f:facet name="input">
+                                    <h:inputText value="#{grp.grp_name}" 
+                                                 style="width: 100%"/>
+                                </f:facet>
+                            </p:cellEditor>
+                        </p:column>
+                        <p:column style="width: 32px">
+                            <p:rowEditor/>
+                        </p:column>
+                    </p:dataTable>
+                </h:form>
+            </p:tab>
+            
+            <p:tab id="addGrp" title="Add New Group" titleStyleClass="tab-title">
+                <h:form id="addGrpForm">
+                    <h:panelGrid columns="3" border="0" cellpadding="4" cellspacing="2">
+                        <p:selectOneMenu id="dept" required="true" 
+                                         value="#{grpMgntBean.dept_id}">
+                            <f:selectItem itemLabel="Select Department" itemValue=""/>
+                            <f:selectItems value="#{grpMgntBean.deptNameHash}"/>
+                        </p:selectOneMenu>
+                        <h:message id="dept-status" for="dept" styleClass="errors"/>
+                        <h:panelGroup/>
+                        
+                        <p:inputText id="grpID" size="32" maxlength="10" 
+                                     autocomplete="off" required="true" 
+                                     value="#{grpMgntBean.grp_id}"/>
+                        <h:message id="grpID-status" for="grpID" styleClass="errors"/>
+                        <p:watermark for="grpID" value="New Group ID"/>
+                        
+                        <p:inputText id="grpname" size="32" maxlength="100" 
+                                     autocomplete="off" required="true" 
+                                     value="#{grpMgntBean.grp_name}"/>
+                        <h:message id="grpname-status" for="grpname" styleClass="errors"/>
+                        <p:watermark for="grpname" value="New Group Name"/>
+                        
+                        <p:selectOneMenu id="pi" value="#{grpMgntBean.pi}">
+                            <f:selectItem itemLabel="Select PI Incharge" itemValue=""/>
+                            <f:selectItems value="#{grpMgntBean.piIDHash}"/>
+                        </p:selectOneMenu>
+                        <h:message id="pi-status" for="pi" styleClass="errors"/>
+                        <h:panelGroup/>
+                        
+                        <h:commandButton action="#{grpMgntBean.createNewGrpID}" 
+                                         value="Create Group ID" 
+                                         styleClass="panel-button" style="font-size: 12px"/>
+                    </h:panelGrid>
+                </h:form>
+            </p:tab>
+            
             <p:tab id="editDept" title="Edit Department" titleStyleClass="tab-title">
             <h:form id="editDeptForm">
                 <p:dataTable var="dept" rows="10" id="deptTable" 
@@ -21,7 +105,7 @@
                              styleClass="table-odd-row table-even-row" 
                              editable="true">
                     <p:ajax event="rowEdit" listener="#{grpMgntBean.onDeptRowEdit}" 
-                            update="itemListMsg"/>
+                            update="acPanel:editDeptForm:deptTable itemListMsg"/>
                     <p:column headerText="Department ID" style="width: 250px; text-align: left">
                         <h:outputText value="#{dept.dept_id}"/>
                     </p:column>
