@@ -5,6 +5,7 @@ package Clinical.Data.Sink.Bean;
 
 import Clinical.Data.Sink.Database.ActivityLogDB;
 import Clinical.Data.Sink.Database.DepartmentDB;
+import Clinical.Data.Sink.Database.GroupDB;
 import Clinical.Data.Sink.Database.InstitutionDB;
 import Clinical.Data.Sink.Database.UserAccount;
 import Clinical.Data.Sink.Database.UserAccountDB;
@@ -74,11 +75,11 @@ public class AccountManagementBean implements Serializable {
     private String user_id, first_name, last_name, email, pwd;
     private Boolean active;
     private int role_id;
-    private String dept_id, inst_id, new_pwd, cfm_pwd;
+    private String unit_id, inst_id, new_pwd, cfm_pwd;
     // Store the user ID of the current user.
     private final String userName;
     private List<UserAccount> userAcctList;
-    private LinkedHashMap<String,String> instNameHash, deptIDHash, userIDHash;
+    private LinkedHashMap<String,String> instNameHash, unitIDHash, userIDHash;
     private LinkedHashMap<String,Integer> roleNameHash;
     // For uploading of user photo.
     private FileUploadBean photo = null;
@@ -86,7 +87,7 @@ public class AccountManagementBean implements Serializable {
     public AccountManagementBean() {
         userName = (String) getFacesContext().getExternalContext().
                 getSessionMap().get("User");
-        deptIDHash = new LinkedHashMap<>();
+        unitIDHash = new LinkedHashMap<>();
         logger.debug("AccountManagementBean created.");
     }
     
@@ -154,13 +155,13 @@ public class AccountManagementBean implements Serializable {
             int ext = filename.indexOf(".");
             // Rename the photo filename to be the same as the deptID-userID, 
             // but keep the file extentsion.
-            filename = dept_id + "-" + user_id + filename.substring(ext);
+            filename = unit_id + "-" + user_id + filename.substring(ext);
             // Rename the stored photo filename.
             photo.renameFilename(filename);
         }
         // By default, all new account will be active upon creation.
         UserAccount newAcct = new UserAccount(user_id, role_id, first_name, 
-                    last_name, filename, email, true, pwd, dept_id, inst_id, " ");
+                    last_name, filename, email, true, pwd, unit_id, " ");
         
         try {
             // Insert the new account into database.
@@ -214,7 +215,7 @@ public class AccountManagementBean implements Serializable {
         int ext = filename.indexOf(".");
         // Rename the photo filename to be the same as the deptID-userID, 
         // but keep the file extentsion.
-        filename = user.getDept_id() + "-" + userName + filename.substring(ext);
+        filename = user.getUnit_id() + "-" + userName + filename.substring(ext);
         // Rename the stored photo filename.
         photo.renameFilename(filename);
         // Update user account in database.
@@ -286,22 +287,40 @@ public class AccountManagementBean implements Serializable {
     }
     
     // Return the list of Dept ID belonging to the selected Institution
-    public LinkedHashMap<String, String> getDeptIDHash() {
-        return deptIDHash;
+    public LinkedHashMap<String, String> getUnitIDHash() {
+        return unitIDHash;
     }
     
     // The enabled/disabled status of "Select Department" will depend on
     // whether the institution has been selected or not.
-    public Boolean isDeptIDHashReady() {
-        return deptIDHash.isEmpty();
+    public Boolean isUnitIDHashReady() {
+        return unitIDHash.isEmpty();
     }
     
     // Listener for institution selection change, it's job is to update 
     // the deptIDHash.
     public void instChange() {
-        deptIDHash = DepartmentDB.getDeptHash(inst_id);
+        unitIDHash = DepartmentDB.getDeptHash(inst_id);
     }
     
+    // Listener for role selection change, it's job is to update the unit ID
+    // selection list according to the type of role.
+    public void roleChange() {
+        configUnitIDHash(role_id);
+    }
+
+    // Helper method to setup the unitIDHash based on the user's role.
+    private void configUnitIDHash(int roleID) {
+        if (roleID == UserRoleDB.director()) {
+            unitIDHash = InstitutionDB.getInstNameHash();
+        }
+        else if (roleID == UserRoleDB.hod()) {
+            unitIDHash = DepartmentDB.getAllDeptHash();
+        }
+        else {
+            unitIDHash = GroupDB.getAllGrpHash();
+        }        
+    }
     // Listener for institution selection change in the 'Edit User Account' 
     // panel.
     public void instEditChange() {
@@ -309,7 +328,14 @@ public class AccountManagementBean implements Serializable {
                 evaluateExpressionGet(getFacesContext(), "#{acct}", 
                 UserAccount.class);
         
-        deptIDHash = DepartmentDB.getDeptHash(user.getInst_id());        
+        unitIDHash = DepartmentDB.getDeptHash(user.getUnit_id());        
+    }
+    // Listener for role selection change in the "Edit User Account" panel.
+    public void roleEditChange() {
+        UserAccount user = getFacesContext().getApplication().
+                evaluateExpressionGet(getFacesContext(), "#{acct}", 
+                UserAccount.class);
+        configUnitIDHash(user.getRole_id());
     }
     
     // Retrieve the faces context
@@ -326,7 +352,7 @@ public class AccountManagementBean implements Serializable {
     public void setActive(Boolean active) { this.active = active; }
     public void setPwd(String pwd) { this.pwd = pwd; }
     public void setRole_id(int role_id) { this.role_id = role_id; }
-    public void setDept_id(String dept_id) { this.dept_id = dept_id; }
+    public void setUnit_id(String unit_id) { this.unit_id = unit_id; }
     public void setInst_id(String inst_id) { this.inst_id = inst_id; }
     public void setNew_pwd(String new_pwd) { this.new_pwd = new_pwd; }
     public void setCfm_pwd(String cfm_pwd) { this.cfm_pwd = cfm_pwd; }
@@ -340,7 +366,7 @@ public class AccountManagementBean implements Serializable {
     public Boolean getActive() { return active; }
     public String getPwd() { return pwd; }
     public int getRole_id() { return role_id; }
-    public String getDept_id() { return dept_id; }
+    public String getUnit_id() { return unit_id; }
     public String getInst_id() { return inst_id; }
     public String getNew_pwd() { return new_pwd; }
     public String getCfm_pwd() { return cfm_pwd; }

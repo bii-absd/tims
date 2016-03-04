@@ -45,13 +45,13 @@ public class UnfinalizeStudyBean implements Serializable {
     private Study selectedStudy;
     // Store the list of finalized study.
     private List<Study> finalizedStudies = new ArrayList<>();
-    // Store the user ID and dept ID of the current user.
-    private final String userName, dept_id;
+    // Store the user ID and grp ID of the current user.
+    private final String userName, grp_id;
 
     public UnfinalizeStudyBean() {
         userName = (String) FacesContext.getCurrentInstance().
                 getExternalContext().getSessionMap().get("User");
-        dept_id = UserAccountDB.getDeptID(userName);
+        grp_id = UserAccountDB.getUnitID(userName);
         logger.debug("FinalizeStudyBean created.");
         logger.info(userName + ": access Finalize Study page.");
     }
@@ -59,7 +59,7 @@ public class UnfinalizeStudyBean implements Serializable {
     @PostConstruct
     public void init() {
         // Get the list of finalized study from the user's department.
-        finalizedStudies = StudyDB.queryFinalizedStudies(dept_id);
+        finalizedStudies = StudyDB.queryFinalizedStudies(grp_id);
     }
     
     // User has selected the study and decided to proceed with the 

@@ -161,6 +161,7 @@ public abstract class DepartmentDB implements Serializable {
                 deptHash.put(rs.getString("dept_id"), 
                              rs.getString("dept_id"));
             }
+            
             stm.close();
             logger.debug("Department list for " + inst_id + ": " +
                     deptHash.toString());
@@ -194,7 +195,7 @@ public abstract class DepartmentDB implements Serializable {
             stm.close();
         }
         catch (SQLException|NamingException e) {
-            logger.error("FAIL to retrieve department ID for all!");
+            logger.error("FAIL to retrieve full list of department ID!");
             logger.error(e.getMessage());
         }
         finally {

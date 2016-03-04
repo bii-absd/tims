@@ -11,7 +11,8 @@
     <ui:param name="link" value="#{msg['finalize-study']}"/>
     <ui:define name="content">
     <h:form id="studyForm">
-        <p:panel header="Select Study to finalize (Subject meta data need to be setup before finalization.)">
+        <p:panel header="Select Study to finalize (Subject meta data need to be setup before finalization.)" 
+                 rendered="#{authBean.PILead}">
             <p:selectOneMenu id="studyID" required="true" value="#{finalizedBean.study_id}">
                 <f:selectItem itemLabel="Select Study" itemValue=""/>
                 <f:selectItems value="#{finalizedBean.studyHash}"/>

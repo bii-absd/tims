@@ -10,6 +10,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 // Libraries for Java Extension
 import javax.naming.NamingException;
@@ -33,6 +34,58 @@ public abstract class GroupDB implements Serializable {
     private final static Logger logger = LogManager.
             getLogger(GroupDB.class.getName());
 
+    // Return true if this PI lead any group else return false.
+    public static boolean isPILead(String piID) {
+        Connection conn = null;
+        String query = "SELECT grp_id FROM grp WHERE pi = ?";
+        boolean result = Constants.NOT_OK;
+
+        try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            stm.setString(1, piID);
+            ResultSet rs = stm.executeQuery();            
+            result = rs.isBeforeFirst()?Constants.OK:Constants.NOT_OK;
+            stm.close();
+        }
+        catch (SQLException|NamingException e) {
+            logger.error("FAIL to retrieve grp_id for " + piID);
+            logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
+        }
+
+        return result;
+    }
+    
+    // Return the HashMap of all the group IDs setup in the system.
+    public static LinkedHashMap<String, String> getAllGrpHash() {
+        Connection conn = null;
+        String query = "SELECT grp_id, grp_name FROM grp ORDER BY grp_id";
+        LinkedHashMap<String, String> allGrpHash = new LinkedHashMap<>();
+        
+        try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            ResultSet rs = stm.executeQuery();
+            
+            while (rs.next()) {
+                allGrpHash.put(rs.getString("grp_name"), rs.getString("grp_id"));
+            }
+            stm.close();
+        }
+        catch (SQLException|NamingException e) {
+            logger.error("FAIL to retrieve full list of group ID!");
+            logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
+        }
+        
+        return allGrpHash;
+    }
+    
     // Return the list of Group setup in the system.
     public static List<Group> getFullGrpList() {
         Connection conn = null;
@@ -62,6 +115,40 @@ public abstract class GroupDB implements Serializable {
         }
         
         return grpList;
+    }
+    
+    // Return the list of group ID setup under this department.
+    public static List<String> getGrpIDListByDept(String dept_id) {
+        return new ArrayList<>(getGrpHashByDept(dept_id).values());
+    }    
+    // Return the HashMap of group ID setup under this department.
+    public static LinkedHashMap<String, String> getGrpHashByDept(String dept_id) {
+        Connection conn = null;
+        LinkedHashMap<String, String> grpHash = new LinkedHashMap<>();
+        String query = "SELECT grp_id FROM grp WHERE dept_id = ?";
+        
+        try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            stm.setString(1, dept_id);
+            ResultSet rs = stm.executeQuery();
+            
+            while (rs.next()) {
+                grpHash.put(rs.getString("grp_id"), rs.getString("grp_id"));
+            }
+            
+            stm.close();
+            logger.debug("Group list for " + dept_id + ": " + grpHash.toString());
+        }
+        catch (SQLException|NamingException e) {
+            logger.error("FAIL to query group for " + dept_id);
+            logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
+        }
+        
+        return grpHash;
     }
     
     // Return the list of Group setup in the system under this department.
@@ -140,11 +227,87 @@ public abstract class GroupDB implements Serializable {
         return result;
     }
     
+    // Retrieve the PI user ID for this group.
+    public static String getPIID(String grp_id) {
+        Connection conn = null;
+        String pi = Constants.DATABASE_INVALID_STR;
+        String query = "SELECT pi FROM grp WHERE grp_id = ?";
+        
+        try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            stm.setString(1, grp_id);
+            ResultSet rs = stm.executeQuery();
+            
+            if (rs.next()) {
+                pi = rs.getString("pi");
+            }
+            stm.close();
+        }
+        catch (SQLException|NamingException e) {
+            logger.error("FAIL to retrieve PI ID for group " + grp_id);
+            logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
+        }
+
+        return pi;
+    }
+    
     // Retrieve the department ID that this group belongs to.
     public static String getDeptID(String grp_id) {
         Connection conn = null;
         String dept_id = Constants.DATABASE_INVALID_STR;
-        
+        String query = "SELECT dept_id FROM grp WHERE grp_id = ?";
+
+        try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            stm.setString(1, grp_id);
+            ResultSet rs = stm.executeQuery();
+            
+            if (rs.next()) {
+                dept_id = rs.getString("dept_id");
+            }
+            stm.close();
+        }
+        catch (SQLException|NamingException e) {
+            logger.error("FAIL to retrieve department ID for group " + grp_id);
+            logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
+        }
+
         return dept_id;
+    }
+    
+    // Retrieve the institution ID that this group belongs to.
+    public static String getInstID(String grp_id) {
+        Connection conn = null;
+        String inst_id = Constants.DATABASE_INVALID_STR;
+        String query = "SELECT inst_id FROM inst_dept_grp WHERE grp_id = ?";
+        
+        try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            stm.setString(1, grp_id);
+            ResultSet rs = stm.executeQuery();
+            
+            if (rs.next()) {
+                inst_id = rs.getString("inst_id");
+            }
+            stm.close();
+        }
+        catch (SQLException|NamingException e) {
+            logger.error("FAIL to retrieve institution ID for group " + grp_id);
+            logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
+        }
+
+        return inst_id;
     }
 }

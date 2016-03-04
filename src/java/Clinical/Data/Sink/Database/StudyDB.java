@@ -63,7 +63,7 @@ public abstract class StudyDB {
     public static Boolean insertStudy(Study study) {
         Connection conn = null;
         Boolean result = Constants.OK;
-        String query = "INSERT INTO study(study_id,title,owner_id,dept_id,"
+        String query = "INSERT INTO study(study_id,title,owner_id,grp_id,"
                      + "annot_ver,description,background,grant_info,start_date,"
                      + "end_date,finalized,closed) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)";
         
@@ -73,7 +73,7 @@ public abstract class StudyDB {
             stm.setString(1, study.getStudy_id());
             stm.setString(2, study.getTitle());
             stm.setString(3, study.getOwner_id());
-            stm.setString(4, study.getDept_id());
+            stm.setString(4, study.getGrp_id());
             stm.setString(5, study.getAnnot_ver());
             stm.setString(6, study.getDescription());
             stm.setString(7, study.getBackground());
@@ -104,7 +104,7 @@ public abstract class StudyDB {
     public static Boolean updateStudy(Study study) {
         Connection conn = null;
         Boolean result = Constants.OK;
-        String query = "UPDATE study SET title=?, owner_id = ?, dept_id = ?, "
+        String query = "UPDATE study SET title=?, owner_id = ?, grp_id = ?, "
                      + "description = ?, background = ?, grant_info = ?, "
                      + "start_date = ?, end_date = ?, closed = ? WHERE study_id = ?";
         
@@ -113,7 +113,7 @@ public abstract class StudyDB {
             PreparedStatement stm = conn.prepareStatement(query);
             stm.setString(1, study.getTitle());
             stm.setString(2, study.getOwner_id());
-            stm.setString(3, study.getDept_id());
+            stm.setString(3, study.getGrp_id());
             stm.setString(4, study.getDescription());
             stm.setString(5, study.getBackground());
             stm.setString(6, study.getGrant_info());
@@ -263,14 +263,48 @@ public abstract class StudyDB {
         return annotHash;
     }
     
-    // Return the list of unclosed Study ID setup under the department that this 
-    // user ID belongs to. This list of Study ID will be available for users to
-    // select for pipeline execution.
-    public static LinkedHashMap<String, String> getStudyHash(String userID) {
+    // Return the list of unclosed Study ID under the group that this lead is
+    // heading. The list of Study ID will be available for the lead to select
+    // for pipeline execution.
+    public static LinkedHashMap<String, String> getPIStudyHash(String piID) {
         Connection conn = null;
         LinkedHashMap<String, String> studyHash = new LinkedHashMap<>();
         String query = "SELECT study_id FROM study WHERE closed = false AND "
-                     + "dept_id = (SELECT dept_id FROM user_account WHERE user_id = ?) "
+                     + "grp_id IN (SELECT grp_id FROM grp WHERE pi = ?) "
+                     + "ORDER BY study_id";
+        
+        try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            stm.setString(1, piID);
+            ResultSet rs = stm.executeQuery();
+            
+            while (rs.next()) {
+                studyHash.put(rs.getString("study_id"), rs.getString("study_id"));
+            }
+            
+            stm.close();
+            logger.debug("Study list for " + piID + " retrieved.");
+        }
+        catch (SQLException|NamingException e) {
+            logger.error("FAIL to query study for group lead " + piID);
+            logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
+        }
+        
+        return studyHash;
+    }
+    
+    // Return the list of unclosed Study ID setup under the group that this 
+    // user ID belongs to. This list of Study ID will be available for user to
+    // select for pipeline execution.
+    public static LinkedHashMap<String, String> getUserStudyHash(String userID) {
+        Connection conn = null;
+        LinkedHashMap<String, String> studyHash = new LinkedHashMap<>();
+        String query = "SELECT study_id FROM study WHERE closed = false AND "
+                     + "grp_id = (SELECT unit_id FROM user_account WHERE user_id = ?) "
                      + "ORDER BY study_id";
         
         try {
@@ -284,10 +318,10 @@ public abstract class StudyDB {
             }
             
             stm.close();
-            logger.debug("Study list for " + userID + "'s department retrieved.");
+            logger.debug("Study list for " + userID + "'s group retrieved.");
         }
         catch (SQLException|NamingException e) {
-            logger.error("FAIL to query study!");
+            logger.error("FAIL to query study for user " + userID);
             logger.error(e.getMessage());
         }
         finally {
@@ -297,21 +331,22 @@ public abstract class StudyDB {
         return studyHash;
     }
     
+    // Only PI that lead a group can perform finalization.
     // Return the list of unfinalized Study ID that has completed job(s), and 
-    // belongs to the department that this user ID come from. This list of 
-    // Study ID will be available for users to select for finalization.
-    public static LinkedHashMap<String, String> getFinalizableStudyHash(String userID) {
+    // belongs to the group this PI is leading. This list of Study ID will be 
+    // available for PI to select for finalization.
+    public static LinkedHashMap<String, String> getFinalizableStudyHash(String piID) {
         Connection conn = null;
         LinkedHashMap<String, String> finStudyHash = new LinkedHashMap<>();
         String query = "SELECT DISTINCT study_id FROM study st "
                      + "NATURAL JOIN submitted_job sj WHERE sj.status_id = 3 "
-                     + "AND st.dept_id = (SELECT dept_id FROM user_account "
-                     + "WHERE user_id =?) AND st.finalized = false ORDER BY study_id";
+                     + "AND st.grp_id IN (SELECT grp_id FROM grp WHERE pi =?) "
+                     + "AND st.finalized = false ORDER BY study_id";
         
         try {
             conn = DBHelper.getDSConn();
             PreparedStatement stm = conn.prepareStatement(query);
-            stm.setString(1, userID);
+            stm.setString(1, piID);
             ResultSet rs = stm.executeQuery();
             
             while (rs.next()) {
@@ -339,12 +374,12 @@ public abstract class StudyDB {
         return instStudies;
     }
     
-    // Return the list of studies (all status) that belong to this department.
-    public static List<Study> queryDeptStudies(String dept_id) {
+    // Return the list of studies (all status) that this user is allowed to view.
+    public static List<Study> queryStudies(String groupQuery) {
         Connection conn = null;
         List<Study> deptStudies = new ArrayList<>();
-        String query = "SELECT * FROM study WHERE dept_id = \'" + dept_id 
-                     + "\' ORDER BY study_id";
+        String query = "SELECT * FROM study WHERE grp_id IN (" + groupQuery 
+                     + ") ORDER BY study_id";
         
         try {
             conn = DBHelper.getDSConn();
@@ -356,7 +391,7 @@ public abstract class StudyDB {
                             rs.getString("study_id"),
                             rs.getString("title"),
                             rs.getString("owner_id"),
-                            rs.getString("dept_id"),
+                            rs.getString("grp_id"),
                             rs.getString("annot_ver"),
                             rs.getString("description"),
                             rs.getString("background"),
@@ -372,9 +407,10 @@ public abstract class StudyDB {
             }
             
             stm.close();
+            logger.debug("Studies review list retrieved.");
         }
         catch (SQLException|NamingException e) {
-            logger.error("FAIL to retrieve studies for " + dept_id);
+            logger.error("FAIL to retrieve studies for " + groupQuery);
             logger.error(e.getMessage());
         }
         finally {
@@ -391,19 +427,19 @@ public abstract class StudyDB {
         return grpStudies;
     }
     
-    // Return the list of finalized studies that belong to the department. This
+    // Return the list of finalized studies that belong to the group. This
     // list of study objects will be shown in the datatable in summary of study
     // view.
-    public static List<Study> queryFinalizedStudies(String dept_id) {
+    public static List<Study> queryFinalizedStudies(String grp_id) {
         Connection conn = null;
         List<Study> finalizedStudies = new ArrayList<>();
-        String query = "SELECT * FROM study WHERE dept_id = ? "
+        String query = "SELECT * FROM study WHERE grp_id = ? "
                      + "AND finalized = true ORDER BY study_id";
         
         try {
             conn = DBHelper.getDSConn();
             PreparedStatement stm = conn.prepareStatement(query);
-            stm.setString(1, dept_id);
+            stm.setString(1, grp_id);
             ResultSet rs = stm.executeQuery();
             
             while (rs.next()) {
@@ -411,7 +447,7 @@ public abstract class StudyDB {
                             rs.getString("study_id"),
                             rs.getString("title"),
                             rs.getString("owner_id"),
-                            rs.getString("dept_id"),
+                            rs.getString("grp_id"),
                             rs.getString("annot_ver"),
                             rs.getString("description"),
                             rs.getString("background"),
@@ -427,7 +463,7 @@ public abstract class StudyDB {
             }
             
             stm.close();
-            logger.debug("Query finalized studies for " + dept_id + " completed.");
+            logger.debug("Finalized studies for " + grp_id + " retrieved.");
         }
         catch (SQLException|NamingException e) {
             logger.error("FAIL to retrieve finalized studies!");
@@ -458,7 +494,7 @@ public abstract class StudyDB {
                             rs.getString("study_id"),
                             rs.getString("title"),
                             rs.getString("owner_id"),
-                            rs.getString("dept_id"),
+                            rs.getString("grp_id"),
                             rs.getString("annot_ver"),
                             rs.getString("description"),
                             rs.getString("background"),

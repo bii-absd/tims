@@ -18,7 +18,7 @@ package Clinical.Data.Sink.Database;
 
 public class Subject {
     // subject table attributes
-    private String subject_id, dept_id, country_code, race;
+    private String subject_id, grp_id, country_code, race;
     private char gender;
     private int age_at_diagnosis;
     private float height, weight;
@@ -26,7 +26,7 @@ public class Subject {
     // Machine generated constructor
     public Subject(String subject_id, int age_at_diagnosis, char gender, 
             String country_code, String race, float height, float weight, 
-            String dept_id) {
+            String grp_id) {
         this.subject_id = subject_id;
         this.age_at_diagnosis = age_at_diagnosis;
         this.gender = gender;
@@ -34,16 +34,16 @@ public class Subject {
         this.race = race;
         this.height = height;
         this.weight = weight;
-        this.dept_id = dept_id;
+        this.grp_id = grp_id;
     }
     
     // Return the string representation of this subject in the format of:
-    // Subject_ID|Age_at_diagnosis|Gender|Nationality|Race|Height|Weight|Department_ID
+    // Subject_ID|Age_at_diagnosis|Gender|Nationality|Race|Height|Weight|GroupID
     @Override
     public String toString() {
         return subject_id + "|" + age_at_diagnosis + "|" + gender + "|" +
                country_code + "|" + race + "|" + height + "|" + weight + 
-               "|" + dept_id;
+               "|" + grp_id;
     }
     
     // Return the country name for this user nationality.
@@ -58,11 +58,11 @@ public class Subject {
     public void setSubject_id(String subject_id) {
         this.subject_id = subject_id;
     }
-    public String getDept_id() {
-        return dept_id;
+    public String getGrp_id() {
+        return grp_id;
     }
-    public void setDept_id(String dept_id) {
-        this.dept_id = dept_id;
+    public void setGrp_id(String grp_id) {
+        this.grp_id = grp_id;
     }
     public String getCountry_code() {
         return country_code;

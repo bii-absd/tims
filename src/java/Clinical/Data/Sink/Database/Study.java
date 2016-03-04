@@ -31,13 +31,13 @@ import java.sql.Date;
 
 public class Study {
     // study table attributes
-    private String study_id, title, owner_id, dept_id, annot_ver, description, 
+    private String study_id, title, owner_id, grp_id, annot_ver, description, 
                    background, grant_info, finalized_output, summary;
     private Date start_date, end_date;
     private Boolean finalized, closed;
 
     // This constructor is used when retrieving the study table for database.
-    public Study(String study_id, String title, String owner_id, String dept_id, 
+    public Study(String study_id, String title, String owner_id, String grp_id, 
                  String annot_ver, String description, String background, 
                  String grant_info, String finalized_output, String summary, 
                  Date start_date, Date end_date, Boolean finalized, Boolean closed) 
@@ -45,7 +45,7 @@ public class Study {
         this.study_id = study_id;
         this.title = title;
         this.owner_id = owner_id;
-        this.dept_id = dept_id;
+        this.grp_id = grp_id;
         this.annot_ver = annot_ver;
         this.description = description;
         this.background = background;
@@ -60,14 +60,14 @@ public class Study {
     // This constructor is used for constructing new Study.
     // For every new Study created, the finalized_output and summary will be
     // empty, and closed status will be false (i.e. not closed).
-    public Study(String study_id, String title, String owner_id, String dept_id, 
+    public Study(String study_id, String title, String owner_id, String grp_id, 
                  String annot_ver, String description, String background, 
                  String grant_info, Date start_date, Date end_date, Boolean finalized) 
     {
         this.study_id = study_id;
         this.title = title;
         this.owner_id = owner_id;
-        this.dept_id = dept_id;
+        this.grp_id = grp_id;
         this.owner_id = owner_id;
         this.annot_ver = annot_ver;
         this.description = description;
@@ -151,11 +151,11 @@ public class Study {
     public void setOwner_id(String owner_id) {
         this.owner_id = owner_id;
     }
-    public String getDept_id() {
-        return dept_id;
+    public String getGrp_id() {
+        return grp_id;
     }
-    public void setDept_id(String dept_id) {
-        this.dept_id = dept_id;
+    public void setGrp_id(String grp_id) {
+        this.grp_id = grp_id;
     }
     public String getAnnot_ver() {
         return annot_ver;

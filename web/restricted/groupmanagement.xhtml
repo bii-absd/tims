@@ -22,7 +22,7 @@
                                  editable="true">
                         <p:ajax event="rowEdit" listener="#{grpMgntBean.onGrpRowEdit}" 
                                 update="acPanel:editGrpForm:grpTable itemListMsg"/>
-                        <p:column headerText="Group ID" styleClass="jsmedcol">
+                        <p:column headerText="Group ID" styleClass="jssmallcol">
                             <h:outputText value="#{grp.grp_id}"/>
                         </p:column>
                         <p:column headerText="Department Name" styleClass="col300">
@@ -39,7 +39,17 @@
                             </p:cellEditor>
                         </p:column>
                         <p:column headerText="PI Incharge" styleClass="jsmedcol">
-                            <h:outputText value="#{grp.pi_name}"/>
+                            <p:cellEditor>
+                                <f:facet name="output">
+                                    <h:outputText value="#{grp.pi_name}"/>
+                                </f:facet>
+                                <f:facet name="input">
+                                    <p:selectOneMenu style="width: 100%" 
+                                                     value="#{grp.pi}">
+                                        <f:selectItems value="#{grpMgntBean.piIDHash}"/>
+                                    </p:selectOneMenu>
+                                </f:facet>
+                            </p:cellEditor>
                         </p:column>
                         <p:column headerText="Group Name" style="text-align: left">
                             <p:cellEditor>

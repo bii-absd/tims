@@ -45,7 +45,7 @@ public abstract class SubjectDB {
     public static Boolean insertSubject(Subject subject) {
         Connection conn = null;
         Boolean result = Constants.OK;
-        String query = "INSERT INTO subject(subject_id,dept_id,"
+        String query = "INSERT INTO subject(subject_id,grp_id,"
                 + "age_at_diagnosis,gender,country_code,race,height,weight) "
                 + "VALUES(?,?,?,?,?,?,?,?)";
         
@@ -53,7 +53,7 @@ public abstract class SubjectDB {
             conn = DBHelper.getDSConn();
             PreparedStatement stm = conn.prepareStatement(query);
             stm.setString(1, subject.getSubject_id());
-            stm.setString(2, subject.getDept_id());
+            stm.setString(2, subject.getGrp_id());
             stm.setInt(3, subject.getAge_at_diagnosis());
             stm.setString(4, String.valueOf(subject.getGender()));
             stm.setString(5, subject.getCountry_code());
@@ -63,12 +63,12 @@ public abstract class SubjectDB {
             stm.executeUpdate();
             stm.close();
             
-            logger.debug("New Subject ID inserted into database: " +
-                    subject.getSubject_id());
+            logger.debug("New Subject ID " + subject.getSubject_id() + 
+                         " created under group " + subject.getGrp_id());
         }
         catch (SQLException|NamingException e) {
             result = Constants.NOT_OK;
-            logger.error("FAIL to insert subject!");
+            logger.error("FAIL to insert subject " + subject.getSubject_id());
             logger.error(e.getMessage());
         }
         finally {
@@ -101,11 +101,13 @@ public abstract class SubjectDB {
             stm.executeUpdate();
             stm.close();
             
-            logger.debug("Updated subject meta data: " + subject.getSubject_id());
+            logger.debug("Updated subject " + subject.getSubject_id() + 
+                         "\'s meta data.");
         }
         catch (SQLException|NamingException e) {
             result = Constants.NOT_OK;
-            logger.error("FAIL to update subject meta data!");
+            logger.error("FAIL to update subject " + subject.getSubject_id() + 
+                         "\'s meta data!");
             logger.error(e.getMessage());
         }
         finally {
@@ -115,18 +117,18 @@ public abstract class SubjectDB {
         return result;
     }
     
-    // Return the list of subjects belonging to this department.
+    // Return the list of subjects belonging to this group.
     // Exception thrown here need to be handle by the caller.
-    public static List<Subject> getSubjectList(String deptID) 
+    public static List<Subject> getSubjectList(String grpID) 
             throws SQLException, NamingException 
     {
         Connection conn = null;
         List<Subject> subjectList = new ArrayList<>();
-        String query = "SELECT * from subject WHERE dept_id = ? ORDER BY subject_id";
+        String query = "SELECT * from subject WHERE grp_id = ? ORDER BY subject_id";
         
         conn = DBHelper.getDSConn();
         PreparedStatement stm = conn.prepareStatement(query);
-        stm.setString(1, deptID);
+        stm.setString(1, grpID);
         ResultSet rs = stm.executeQuery();
 
         while (rs.next()) {
@@ -138,7 +140,7 @@ public abstract class SubjectDB {
                             rs.getString("race"),
                             rs.getFloat("height"),
                             rs.getFloat("weight"),
-                            rs.getString("dept_id"));
+                            rs.getString("grp_id"));
 
             subjectList.add(tmp);
         }
@@ -152,17 +154,17 @@ public abstract class SubjectDB {
     
     // Check whether the subject meta data exists in the database.
     // Exception thrown here need to be handle by the caller.
-    public static boolean isSubjectExistInDept
-        (String subject_id, String dept_id) throws SQLException, NamingException 
+    public static boolean isSubjectExistInGrp
+        (String subject_id, String grp_id) throws SQLException, NamingException 
     {
         Connection conn = null;
         String query = "SELECT * FROM subject WHERE subject_id = ? AND "
-                     + "dept_id = ?";
+                     + "grp_id = ?";
         
         conn = DBHelper.getDSConn();
         PreparedStatement stm = conn.prepareStatement(query);
         stm.setString(1, subject_id);
-        stm.setString(2, dept_id);
+        stm.setString(2, grp_id);
         ResultSet rs = stm.executeQuery();
         boolean isSubjectExist = rs.isBeforeFirst()?Constants.OK:Constants.NOT_OK;
         

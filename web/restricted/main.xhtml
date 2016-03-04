@@ -69,7 +69,7 @@
                titleStyleClass="tab-title">
             <h:outputLink title="Upload or edit clinical data" 
                           value="clinicaldatamanagement.xhtml" 
-                          styleClass="mainmenuitem">
+                          styleClass="mainmenuitem" rendered="#{authBean.isUser()}">
                 Clinical Data Management
             </h:outputLink>
         </p:tab>
@@ -81,7 +81,7 @@
                                action="#{authBean.singleUserJobStatus}" 
                                styleClass="mainmenuitem"/>
                 <h:outputLink title="#{msg['finalize-study']}" value="finalizestudy.xhtml" 
-                              styleClass="mainmenuitem" rendered="#{authBean.isPI()}">
+                              styleClass="mainmenuitem" rendered="#{authBean.isPILead()}">
                     Finalize Study
                 </h:outputLink>
                 <h:outputLink title="#{msg['unfinalize-study']}" value="unfinalizestudy.xhtml" 

@@ -5,6 +5,7 @@ package Clinical.Data.Sink.Bean;
 
 import Clinical.Data.Sink.Database.ActivityLogDB;
 import Clinical.Data.Sink.Database.DepartmentDB;
+import Clinical.Data.Sink.Database.GroupDB;
 import Clinical.Data.Sink.Database.Institution;
 import Clinical.Data.Sink.Database.InstitutionDB;
 import Clinical.Data.Sink.Database.Study;
@@ -67,7 +68,7 @@ public class StudyManagementBean implements Serializable {
     private final static Logger logger = LogManager.
             getLogger(StudyManagementBean.class.getName());
     // Attributes for Study object
-    private String study_id, title, owner_id, dept_id, annot_ver, description, 
+    private String study_id, title, owner_id, grp_id, annot_ver, description, 
                    background, grant_info;
     private Date start_date, end_date;
     private java.util.Date util_start_date, util_end_date;
@@ -123,35 +124,46 @@ public class StudyManagementBean implements Serializable {
         }
     }
 
-    // Setup the MultiSelectListbox options i.e. Insitution -> Departments.
+    // Setup the MultiSelectListbox options i.e. Insitution -> Departments -> Groups.
     private void setupGrouping() {
         List<Institution> instList = InstitutionDB.getInstList();
-        
+
         // Loop through the list of institutions setup in the system.
         for (Institution inst : instList) {
-            SelectItemGroup grp = new SelectItemGroup(inst.getInst_id());
+            SelectItemGroup instGrp = new SelectItemGroup(inst.getInst_id());
+            // Retrieve the list of departments under this institution.
             List<String> deptIDList = DepartmentDB.getDeptIDList(inst.getInst_id());
-            SelectItem[] options = new SelectItem[deptIDList.size()];
+            SelectItemGroup[] deptGrp = new SelectItemGroup[deptIDList.size()];
             int i = 0;
-            
-            for (String dept_id : deptIDList) {
-                // Every department under this institution will be an option
-                // for selection.
-                options[i++] = new SelectItem(dept_id, dept_id);
-            }
 
+            for (String dept_id : deptIDList) {
+                // Retrieve the list of groups under this department.
+                List<String> grpIDList = GroupDB.getGrpIDListByDept(dept_id);
+                SelectItem[] grpOpts = new SelectItem[grpIDList.size()];
+                int j = 0;
+
+                for (String grp_id : grpIDList) {
+                    // Every group under this department will be an option
+                    // for selection.
+                    grpOpts[j++] = new SelectItem(grp_id, grp_id);
+                }
+                // Setup the options for this department.
+                deptGrp[i] = new SelectItemGroup(dept_id);
+                deptGrp[i++].setSelectItems(grpOpts);
+            }
+            
             // Setup the options for this institution.
-            grp.setSelectItems(options);
+            instGrp.setSelectItems(deptGrp);
             // Add this institution to the list.
-            grouping.add(grp);
-        }   
+            grouping.add(instGrp);
+        }
     }
     
     // Create new Study
     public String createNewStudy() {
         FacesContext fc = getFacesContext();
-        // Append the institution ID and department ID to the study ID.
-        study_id = DepartmentDB.getInstID(dept_id) + "-" + dept_id + "-" + 
+        // Append the institution ID and group ID to the study ID.
+        study_id = GroupDB.getInstID(grp_id) + "-" + grp_id + "-" + 
                    study_id.toUpperCase();
         // Because the system is receiving the date as java.util.Date hence
         // we need to perform a conversion here before storing it into database.
@@ -161,10 +173,11 @@ public class StudyManagementBean implements Serializable {
         if (util_end_date != null) {
             end_date = new Date(util_end_date.getTime());
         }
-        
+        // Set the PI that is heading the group as the owner of this study.
+        owner_id = GroupDB.getPIID(grp_id);
         // New Study will always be created with empty finalized_output and 
         // summary fields.
-        Study study = new Study(study_id, title, owner_id, dept_id, annot_ver, 
+        Study study = new Study(study_id, title, owner_id, grp_id, annot_ver, 
                                 description, background, grant_info, start_date, 
                                 end_date, finalized);
         
@@ -237,11 +250,11 @@ public class StudyManagementBean implements Serializable {
     public void setOwner_id(String owner_id) {
         this.owner_id = owner_id;
     }
-    public String getDept_id() {
-        return dept_id;
+    public String getGrp_id() {
+        return grp_id;
     }
-    public void setDept_id(String dept_id) {
-        this.dept_id = dept_id;
+    public void setGrp_id(String grp_id) {
+        this.grp_id = grp_id;
     }
     public String getAnnot_ver() {
         return annot_ver;

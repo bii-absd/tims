@@ -115,20 +115,12 @@
                 <h:message id="studyid-status" for="studyid" styleClass="errors"/>
                 <p:watermark for="studyid" value="New Study ID"/>
                 
-                <p:multiSelectListbox value="#{studyMgntBean.dept_id}" 
+                <p:multiSelectListbox value="#{studyMgntBean.grp_id}" required="true"
                                       effect="slide" header="For Institution - Department - Group" 
                                       showHeaders="true">
                     <f:selectItems value="#{studyMgntBean.grouping}"/>
                 </p:multiSelectListbox>
                 <h:panelGroup/>
-                <h:panelGroup/>
-                
-                <p:selectOneMenu id="owner" required="true" 
-                                 value="#{studyMgntBean.owner_id}" style="width: 180px">
-                    <f:selectItem itemLabel="Select PI Incharge" itemValue=""/>
-                    <f:selectItems value="#{studyMgntBean.piIDHash}"/>                
-                </p:selectOneMenu>
-                <h:message id="owner-status" for="owner" styleClass="errors"/>
                 <h:panelGroup/>
                 
                 <p:selectOneMenu id="annot" required="true" 

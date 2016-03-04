@@ -97,5 +97,22 @@ public abstract class UserRoleDB implements Serializable {
             return Constants.DATABASE_INVALID_STR;
         }
         return roleIDHash.get(roleID);
-    }    
+    }
+    
+    // Return the role ID for each role defined in the system.
+    public static int admin() {
+        return getRoleIDFromHash("Admin");
+    }
+    public static int director() {
+        return getRoleIDFromHash("Director");
+    }
+    public static int hod() {
+        return getRoleIDFromHash("HOD");
+    }
+    public static int pi() {
+        return getRoleIDFromHash("PI");
+    }
+    public static int user() {
+        return getRoleIDFromHash("User");
+    }
 }

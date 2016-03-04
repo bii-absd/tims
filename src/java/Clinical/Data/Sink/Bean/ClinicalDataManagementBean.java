@@ -60,7 +60,7 @@ public class ClinicalDataManagementBean implements Serializable {
     // Get the logger for Log4j
     private final static Logger logger = LogManager.
             getLogger(ClinicalDataManagementBean.class.getName());
-    private String subject_id, dept_id, country_code, race;
+    private String subject_id, grp_id, country_code, race;
     private char gender;
     private int age_at_diagnosis;
     private float height, weight;
@@ -78,7 +78,8 @@ public class ClinicalDataManagementBean implements Serializable {
 
     @PostConstruct
     public void init() {
-        dept_id = UserAccountDB.getDeptID(userName);
+        // The subject(s) uploaded or created will be park under the user's group.
+        grp_id = UserAccountDB.getUnitID(userName);
         // Retrieve the list of nationality code setup in the system.
         nationalityCodeHash = NationalityDB.getNationalityCodeHash();
         buildSubjectList();
@@ -87,7 +88,7 @@ public class ClinicalDataManagementBean implements Serializable {
     // Retrieve the subjects detail from database, and build the subject list.
     private void buildSubjectList() {
         try {
-            subjectList = SubjectDB.getSubjectList(dept_id);
+            subjectList = SubjectDB.getSubjectList(grp_id);
         }
         catch (SQLException|NamingException e) {
             logger.error("FAIL to build subject list!");
@@ -102,7 +103,7 @@ public class ClinicalDataManagementBean implements Serializable {
     public String insertMetaData() {
         FacesContext fc = getFacesContext();
         Subject subject = new Subject(subject_id, age_at_diagnosis, gender,
-                                      country_code, race, height, weight, dept_id);
+                                      country_code, race, height, weight, grp_id);
         
         if (SubjectDB.insertSubject(subject)) {
             // Record this subject meta data creation into database.
@@ -156,7 +157,7 @@ public class ClinicalDataManagementBean implements Serializable {
                                                   country_code, data[4], 
                                                   Float.parseFloat(data[5]), 
                                                   Float.parseFloat(data[6]), 
-                                                  dept_id);
+                                                  grp_id);
                         
                         if (!SubjectDB.insertSubject(tmp)) {
                             uploadStatus.append(lineNum).append(" ");

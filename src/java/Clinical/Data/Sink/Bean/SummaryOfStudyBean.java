@@ -59,20 +59,34 @@ public class SummaryOfStudyBean implements Serializable {
     
     @PostConstruct
     public void init() {
+        String groupQuery = null;
         // Retrieve the list of finalized studies that belong to the user's
         // department.
-        finalizedStudies = StudyDB.queryFinalizedStudies(user.getDept_id());
+        finalizedStudies = StudyDB.queryFinalizedStudies(user.getUnit_id());
         // Retrieve the list of studies that this user is allowed to review
         // based on his role.
         switch (user.getRoleName()) {
-            case "Admin":
             case "Director":
+                groupQuery = "SELECT DISTINCT grp_id FROM inst_dept_grp "
+                           + "WHERE inst_id = \'" + user.getUnit_id() + "\'";
+                break;
             case "HOD":
+                groupQuery = "SELECT DISTINCT grp_id FROM inst_dept_grp "
+                           + "WHERE dept_id = \'" + user.getUnit_id() + "\'";
+                break;
             case "PI":
+                groupQuery = "SELECT grp_id FROM grp WHERE pi = \'" + userName + "\'";
+                break;
+            case "Admin":
             case "User":
             default:
-                studiesReview = StudyDB.queryDeptStudies(user.getDept_id());
+                studiesReview = StudyDB.queryStudies("\'" + user.getUnit_id() + "\'");
                 break;
+        }
+        
+        if (groupQuery != null) {
+            // User is a Director/HOD/PI
+            studiesReview = StudyDB.queryStudies(groupQuery);
         }
     }
     

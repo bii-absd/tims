@@ -78,7 +78,7 @@ public class FinalizeStudyBean implements Serializable {
     // Get the logger for Log4j
     private final static Logger logger = LogManager.
             getLogger(FinalizeStudyBean.class.getName());
-    private String study_id, dept_id;
+    private String study_id, grp_id;
     private LinkedHashMap<String, String> studyHash;
     // Store the status of the availability of subject meta data in the database.
     private String subMDAvailableStatus = null;
@@ -96,15 +96,15 @@ public class FinalizeStudyBean implements Serializable {
     public FinalizeStudyBean() {
         userName = (String) FacesContext.getCurrentInstance().
                 getExternalContext().getSessionMap().get("User");
-        dept_id = UserAccountDB.getDeptID(userName);
+        grp_id = UserAccountDB.getUnitID(userName);
         logger.debug("FinalizeStudyBean created.");
         logger.info(userName + ": access Finalize Study page.");
     }
     
     @PostConstruct
     public void init() {
-        // Get the list of study from the user's department that has 
-        // completed job(s).
+        // Get the list of study (with completed jobs) from the group(s) that 
+        // the user is heading .
         studyHash = StudyDB.getFinalizableStudyHash(userName);
     }
     
@@ -248,7 +248,7 @@ public class FinalizeStudyBean implements Serializable {
             // Ignore the first 2 strings (i.e. geneID and EntrezID); start at ndex 2.
             for (int i = 2; i < subjectID.length; i++) {
                 // Check is subject meta data found in the database.
-                if (!SubjectDB.isSubjectExistInDept(subjectID[i], dept_id)) {
+                if (!SubjectDB.isSubjectExistInGrp(subjectID[i], grp_id)) {
                     // Only want to store the unqiue subject ID that doesn't
                     // have meta data in the database.
                     if (!metaDataNotFound.toString().contains(subjectID[i])) {

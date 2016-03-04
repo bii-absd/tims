@@ -4,6 +4,8 @@
 package Clinical.Data.Sink.Bean;
 
 import Clinical.Data.Sink.Database.StudyDB;
+import Clinical.Data.Sink.Database.UserAccountDB;
+import Clinical.Data.Sink.Database.UserRoleDB;
 import Clinical.Data.Sink.General.Constants;
 import java.io.Serializable;
 import java.util.LinkedHashMap;
@@ -63,10 +65,12 @@ public class MenuSelectionBean implements Serializable{
     private LinkedHashMap<String, String> studyList;
     // Store the user ID of the current user.
     private final String userName;
+    private final int roleID;
     
     public MenuSelectionBean() {
         userName = (String) FacesContext.getCurrentInstance().
                 getExternalContext().getSessionMap().get("User");
+        roleID = UserAccountDB.getRoleID(userName);
         // Set the single user mode to false when the user enter the main page.
         FacesContext.getCurrentInstance().getExternalContext().
                 getSessionMap().put("singleUser", false);
@@ -75,7 +79,15 @@ public class MenuSelectionBean implements Serializable{
     
     @PostConstruct
     public void init() {
-        studyList = StudyDB.getStudyHash(userName);
+        if ((roleID == UserRoleDB.director()) ||
+            (roleID == UserRoleDB.hod()) ||
+            (roleID == UserRoleDB.pi()) )
+        {
+            studyList = StudyDB.getPIStudyHash(userName);
+        }
+        else {
+            studyList = StudyDB.getUserStudyHash(userName);
+        }
     }
     
     // All the pipeline link will be using this method to setup the URL for 

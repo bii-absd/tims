@@ -75,7 +75,7 @@ public class DataDepositor extends Thread {
     private final static Logger logger = LogManager.
             getLogger(DataDepositor.class.getName());
     private Connection conn = null;
-    private final String study_id, dept_id, annot_ver;
+    private final String study_id, unit_id, annot_ver;
     private String fileUri, summaryReport;
     private int job_id, totalGene, processedGene;
     // Store the filepath of the Astar and Bii logo.
@@ -97,8 +97,8 @@ public class DataDepositor extends Thread {
         this.userName = userName;
         this.study_id = study_id;
         this.jobList = jobList;
-        // Retrieve the value of dept_id and annot_ver from database.
-        dept_id = UserAccountDB.getDeptID(userName);
+        // Retrieve the value of unit_id and annot_ver from database.
+        unit_id = UserAccountDB.getUnitID(userName);
         annot_ver = StudyDB.getAnnotVer(study_id);
         summaryReport = Constants.getSYSTEM_PATH() + 
                         Constants.getFINALIZE_PATH() + study_id + 
@@ -329,7 +329,7 @@ public class DataDepositor extends Thread {
             
             cs.beginText();
             cs.moveTextPositionByAmount(subheadX, getNextLineYaxis());
-            cs.drawString("Department: " + UserAccountDB.getInstNameDeptID(userName));
+            cs.drawString("Department: " + UserAccountDB.getInstNameUnitID(userName));
             cs.endText();
             
             cs.beginText();
@@ -381,7 +381,7 @@ public class DataDepositor extends Thread {
         summary.append("\n").append("5. No of gene data stored").append("\n");
         summary.append("\t").append(processedGene).append("\n\n");
         summary.append("Author: ").append(UserAccountDB.getFullName(userName)).append("\n");
-        summary.append("Department: ").append(UserAccountDB.getInstNameDeptID(userName)).append("\n");
+        summary.append("Department: ").append(UserAccountDB.getInstNameUnitID(userName)).append("\n");
         summary.append("Date: ").append(Constants.getDateTime());
 
         // Start to produce the summary report.
@@ -413,7 +413,7 @@ public class DataDepositor extends Thread {
         stm.setString(2, record.getAnnot_ver());
         stm.setInt(3, record.getJob_id());
         stm.setString(4, record.getSubject_id());
-        stm.setString(5, record.getDept_id());
+        stm.setString(5, record.getGrp_id());
         stm.executeUpdate();
             
         logger.debug("Output for " + record.getSubject_id() + 
@@ -478,7 +478,7 @@ public class DataDepositor extends Thread {
             processedRecord = unprocessedRecord = 0;
             // INSERT statement to insert a record into finalized_output table.
             String insertStr = "INSERT INTO finalized_output(array_index,"
-                             + "annot_ver,job_id,subject_id,dept_id) "
+                             + "annot_ver,job_id,subject_id,grp_id) "
                              + "VALUES(?,?,?,?,?)";
             
             try (PreparedStatement insertStm = conn.prepareStatement(insertStr)) {
@@ -488,12 +488,12 @@ public class DataDepositor extends Thread {
                     // Only store the pipeline output if the subject metadata is 
                     // available in the database.
                     try {
-                        if (SubjectDB.isSubjectExistInDept(values[i], dept_id)) {
+                        if (SubjectDB.isSubjectExistInGrp(values[i], unit_id)) {
                             subjectFound.append(values[i]).append(" ");
                             processedRecord++;
                             arrayIndex[i] = getNextArrayInd();
                             FinalizedOutput record = new FinalizedOutput
-                                (arrayIndex[i], annot_ver, values[i], dept_id, job_id);
+                                (arrayIndex[i], annot_ver, values[i], unit_id, job_id);
                             // Insert the finalized output record.
                             insertToFinalizedOutput(insertStm, record);                            
                             // At every 5th subject ID, place a marker '$'

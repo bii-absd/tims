@@ -5,6 +5,7 @@ package Clinical.Data.Sink.Bean;
 
 import Clinical.Data.Sink.Database.ActivityLogDB;
 import Clinical.Data.Sink.Database.DBHelper;
+import Clinical.Data.Sink.Database.GroupDB;
 import Clinical.Data.Sink.Database.InstitutionDB;
 import Clinical.Data.Sink.Database.JobStatusDB;
 import Clinical.Data.Sink.Database.UserAccount;
@@ -258,18 +259,26 @@ public class AuthenticationBean implements Serializable {
         else {
             // For now, use a very basic way to control the access to user account
             // access. Role ID 1 is Admin; only Admin is allowed access.        
-            return userAcct.getRole_id() == 1;            
+            return userAcct.getRole_id() == UserRoleDB.admin();            
         }
     }
     
-    // Return true if the role ID of the user is 1 or 2 (i.e. Admin / Director).
+    // Return true if the user is an Admin or Director.
     public boolean isDirector() {
-        return isAdministrator() || (userAcct.getRole_id() == 2);
+        return isAdministrator() || (userAcct.getRole_id() == UserRoleDB.director());
     }
-
-    // Return true if the role ID of the user is 1 or 4 (i.e. Admin / PI).
+    // Return true if the user is an Admin or PI.
     public boolean isPI() {
-        return isAdministrator() || (userAcct.getRole_id() == 4);
+        return isAdministrator() || (userAcct.getRole_id() == UserRoleDB.pi());
+    }
+    // Return true if the user is an Admin or User.
+    public boolean isUser() {
+        return isAdministrator() || (userAcct.getRole_id() == UserRoleDB.user());
+    }
+    // Return true if the user is heading any group; to decide whether to render
+    // the Finalize Study link.
+    public boolean isPILead() {
+        return GroupDB.isPILead(userAcct.getUser_id());
     }
     
     // Retrieve the faces context

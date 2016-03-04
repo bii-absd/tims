@@ -50,35 +50,6 @@
                             </f:facet>
                         </p:cellEditor>
                     </p:column>
-                    <p:column headerText="Institution ID" styleClass="jssmallcol"
-                              sortBy="#{acct.inst_id}">
-                        <p:cellEditor>
-                            <f:facet name="output">
-                                <h:outputText value="#{acct.inst_id}"/>                                
-                            </f:facet>
-                            <f:facet name="input">
-                                <p:selectOneMenu value="#{acct.inst_id}" style="width: 100%">
-                                    <f:selectItems value="#{acctMgntBean.instNameHash}"/>
-                                    <p:ajax listener="#{acctMgntBean.instEditChange()}" 
-                                            update="deptID"/>
-                                </p:selectOneMenu>
-                            </f:facet>
-                        </p:cellEditor>
-                    </p:column>
-                    <p:column headerText="Department ID" styleClass="jssmallcol">
-                        <p:cellEditor>
-                            <f:facet name="output">
-                                <h:outputText value="#{acct.dept_id}"/>                                
-                            </f:facet>
-                            <f:facet name="input">
-                                <p:selectOneMenu id="deptID" 
-                                                 disabled="#{acctMgntBean.isDeptIDHashReady()}" 
-                                                 value="#{acct.dept_id}" style="width: 100%">
-                                    <f:selectItems value="#{acctMgntBean.deptIDHash}"/>
-                                </p:selectOneMenu>
-                            </f:facet>
-                        </p:cellEditor>
-                    </p:column>
                     <p:column headerText="Role" styleClass="jssmallcol" 
                               sortBy="#{acct.role_id}">
                         <p:cellEditor>
@@ -88,6 +59,22 @@
                             <f:facet name="input">
                                 <p:selectOneMenu value="#{acct.role_id}" style="width: 100%">
                                     <f:selectItems value="#{acctMgntBean.roleNameHash}"/>
+                                    <p:ajax listener="#{acctMgntBean.roleEditChange()}" 
+                                            update="unitID"/>
+                                </p:selectOneMenu>
+                            </f:facet>
+                        </p:cellEditor>
+                    </p:column>
+                    <p:column headerText="Unit ID" styleClass="jssmallcol">
+                        <p:cellEditor>
+                            <f:facet name="output">
+                                <h:outputText value="#{acct.unit_id}"/>                                
+                            </f:facet>
+                            <f:facet name="input">
+                                <p:selectOneMenu id="unitID" style="width: 100%" 
+                                                 disabled="#{acctMgntBean.isUnitIDHashReady()}" 
+                                                 value="#{acct.unit_id}">
+                                    <f:selectItems value="#{acctMgntBean.unitIDHash}"/>
                                 </p:selectOneMenu>
                             </f:facet>
                         </p:cellEditor>
@@ -162,37 +149,26 @@
                         <h:panelGroup/>
                         <h:panelGroup/>
                     
-                        <p:selectOneMenu id="institution" 
-                                         style="width:180px" required="true"
-                                         value="#{acctMgntBean.inst_id}">
-                            <f:selectItem itemLabel="Select Institution" itemValue=""/>
-                            <f:selectItems value="#{acctMgntBean.instNameHash}"/>
-                            <p:ajax listener="#{acctMgntBean.instChange()}" 
-                                    update="department"/>
-                        </p:selectOneMenu>
-                        <h:message id="institution-status" for="institution" 
-                                   styleClass="errors"/>
-                        <h:panelGroup/>
-
-                        <p:selectOneMenu id="department" 
-                                         style="width:180px" required="true" 
-                                         disabled="#{acctMgntBean.isDeptIDHashReady()}"
-                                         value="#{acctMgntBean.dept_id}">
-                            <f:selectItem itemLabel="Select Department" itemValue=""/>
-                            <f:selectItems value="#{acctMgntBean.deptIDHash}"/>
-                        </p:selectOneMenu>
-                        <h:message for="department" styleClass="errors"/>
-                        <h:panelGroup/>
-                
                         <p:selectOneMenu id="role" 
                                          style="width:180px" required="true"
                                          value="#{acctMgntBean.role_id}">
                             <f:selectItem itemLabel="Select Role" itemValue=""/>
                             <f:selectItems value="#{acctMgntBean.roleNameHash}"/>
+                            <p:ajax listener="#{acctMgntBean.roleChange()}" update="unit"/>
                         </p:selectOneMenu>
                         <h:message for="role" styleClass="errors"/>
                         <h:panelGroup/>
-                
+
+                        <p:selectOneMenu id="unit" style="width: 180px" 
+                                         required="true"
+                                         disabled="#{acctMgntBean.isUnitIDHashReady()}" 
+                                         value="#{acctMgntBean.unit_id}">
+                            <f:selectItem itemLabel="Select User Unit" itemValue=""/>
+                            <f:selectItems value="#{acctMgntBean.unitIDHash}"/>
+                        </p:selectOneMenu>
+                        <h:message for="unit" styleClass="errors"/>
+                        <h:panelGroup/>
+                        
                         <p:inputText id="email" size="32" maxlength="50" autocomplete="off"
                                      required="true" value="#{acctMgntBean.email}">
                             <f:validateLength minimum="5" maximum="50"/>
