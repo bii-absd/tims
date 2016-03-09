@@ -10,12 +10,15 @@
     <ui:define name="title">Studies Review</ui:define>
     <ui:param name="link" value="#{msg['studies-rev']}"/>
     <ui:define name="content">
-        <p:accordionPanel value="#{SOSBean.studiesReview}" var="studies" multiple="true">
+        <p:accordionPanel value="#{StudiesBean.studiesReview}" var="studies" multiple="true">
             <p:tab title="#{studies.reviewTitle}" titleStyleClass="study-title">
                 <p:panelGrid columns="2" columnClasses="study-col1,study-col2" style="width: 90%"
                              styleClass="study-pg">
                     <h:outputLabel value="Study Title" style="font-weight: bold"/>
                     <h:outputText value="#{studies.title}"/>
+                    
+                    <h:outputLabel value="Group" style="font-weight: bold"/>
+                    <h:outputText value="#{studies.groupName}"/>
                     
                     <h:outputLabel value="Principal Investigator" style="font-weight: bold"/>
                     <h:outputText value="#{studies.ownerFullName}"/>

@@ -22,8 +22,8 @@ import javax.naming.NamingException;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-import org.apache.pdfbox.exceptions.COSVisitorException;
 // Libraries for Apache PDFBox
+import org.apache.pdfbox.exceptions.COSVisitorException;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
@@ -68,6 +68,9 @@ import org.apache.pdfbox.pdmodel.graphics.xobject.PDJpeg;
  * 26-Feb-2016 - Implementation for database 3.0 (Part 3).
  * 29-Feb-2016 - Implementation of Data Source pooling. To use DataSource to 
  * get the database connection instead of using DriverManager.
+ * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
+ * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
+ * (Institution - Department - Group).
  */
 
 public class DataDepositor extends Thread {
@@ -75,7 +78,7 @@ public class DataDepositor extends Thread {
     private final static Logger logger = LogManager.
             getLogger(DataDepositor.class.getName());
     private Connection conn = null;
-    private final String study_id, unit_id, annot_ver;
+    private final String study_id, grp_id, annot_ver;
     private String fileUri, summaryReport;
     private int job_id, totalGene, processedGene;
     // Store the filepath of the Astar and Bii logo.
@@ -97,9 +100,9 @@ public class DataDepositor extends Thread {
         this.userName = userName;
         this.study_id = study_id;
         this.jobList = jobList;
-        // Retrieve the value of unit_id and annot_ver from database.
-        unit_id = UserAccountDB.getUnitID(userName);
-        annot_ver = StudyDB.getAnnotVer(study_id);
+        // Retrieve the value of grp_id and annot_ver from database.
+        grp_id = StudyDB.getStudyGrpID(study_id);
+        annot_ver = StudyDB.getStudyAnnotVer(study_id);
         summaryReport = Constants.getSYSTEM_PATH() + 
                         Constants.getFINALIZE_PATH() + study_id + 
                         Constants.getSUMMARY_FILE_NAME() + 
@@ -488,12 +491,12 @@ public class DataDepositor extends Thread {
                     // Only store the pipeline output if the subject metadata is 
                     // available in the database.
                     try {
-                        if (SubjectDB.isSubjectExistInGrp(values[i], unit_id)) {
+                        if (SubjectDB.isSubjectExistInGrp(values[i], grp_id)) {
                             subjectFound.append(values[i]).append(" ");
                             processedRecord++;
                             arrayIndex[i] = getNextArrayInd();
                             FinalizedOutput record = new FinalizedOutput
-                                (arrayIndex[i], annot_ver, values[i], unit_id, job_id);
+                                (arrayIndex[i], annot_ver, values[i], grp_id, job_id);
                             // Insert the finalized output record.
                             insertToFinalizedOutput(insertStm, record);                            
                             // At every 5th subject ID, place a marker '$'

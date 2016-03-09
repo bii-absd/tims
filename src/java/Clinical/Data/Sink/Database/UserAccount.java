@@ -24,6 +24,9 @@ package Clinical.Data.Sink.Database;
  * 13-Nov-2015 - Removed the Log4j2 and SQL libraries from this class.
  * 01-Dec-2015 - Implementation for database 2.0
  * 19-Feb-2016 - Added one variable "photo" to this class.
+ * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
+ * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
+ * (Institution - Department - Group).
  */
 
 public class UserAccount {
@@ -49,6 +52,11 @@ public class UserAccount {
         this.last_login = last_login;
     }
 
+    // Return the Active status.
+    public String getActiveStatus() { return active?"Enabled":"Disabled"; }
+    // Return the Role Name.
+    public String getRoleName() { return UserRoleDB.getRoleNameFromHash(role_id); }
+    
     //Machine generated setters
     public void setUser_id(String user_id) { this.user_id = user_id; }
     public void setFirst_name(String first_name) { this.first_name = first_name; }
@@ -60,12 +68,6 @@ public class UserAccount {
     public void setRole_id(int role_id) { this.role_id = role_id; }
     public void setUnit_id(String unit_id) { this.unit_id = unit_id; }
     public void setLast_login(String last_login) { this.last_login = last_login; }
-    
-    // Return the Active status.
-    public String getActiveStatus() { return active?"Enabled":"Disabled"; }
-    // Return the Role Name.
-    public String getRoleName() { return UserRoleDB.getRoleNameFromHash(role_id); }
-    
     // Machine generated getters
     public String getUser_id() { return user_id; }
     public String getFirst_name() { return first_name; }

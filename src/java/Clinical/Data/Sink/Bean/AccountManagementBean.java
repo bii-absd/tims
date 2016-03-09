@@ -63,6 +63,9 @@ import org.primefaces.event.FileUploadEvent;
  * 01-Mar-2016 - User working directories will be created once the user account
  * has been successfully inserted into the database (instead of during user 
  * login).
+ * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
+ * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
+ * (Institution - Department - Group).
  */
 
 @ManagedBean (name="acctMgntBean")
@@ -150,10 +153,11 @@ public class AccountManagementBean implements Serializable {
         FacesContext facesContext = getFacesContext();
         // Filepath of the photo uploaded (if uploaded).
         String filename = "NA";
+        
         if (!photo.isFilelistEmpty()) {
             filename = photo.getInputFilename();
             int ext = filename.indexOf(".");
-            // Rename the photo filename to be the same as the deptID-userID, 
+            // Rename the photo filename to be the same as the unitID-userID, 
             // but keep the file extentsion.
             filename = unit_id + "-" + user_id + filename.substring(ext);
             // Rename the stored photo filename.
@@ -213,13 +217,14 @@ public class AccountManagementBean implements Serializable {
         UserAccount user = UserAccountDB.getUserAct(userName);
         String filename = photo.getInputFilename();
         int ext = filename.indexOf(".");
-        // Rename the photo filename to be the same as the deptID-userID, 
+        // Rename the photo filename to be the same as the unitID-userID, 
         // but keep the file extentsion.
         filename = user.getUnit_id() + "-" + userName + filename.substring(ext);
         // Rename the stored photo filename.
         photo.renameFilename(filename);
         // Update user account in database.
         user.setPhoto(photo.getInputFilename());
+        
         try {
             UserAccountDB.updateAccount(user);            
             logger.debug(userName + " updated picture ID.");
@@ -280,27 +285,20 @@ public class AccountManagementBean implements Serializable {
     public LinkedHashMap<String, Integer> getRoleNameHash() {
         return roleNameHash;
     }
-    
     // Return the list of Institution setup in the database
     public LinkedHashMap<String, String> getInstNameHash() {
         return instNameHash;
     }
-    
-    // Return the list of Dept ID belonging to the selected Institution
+    // Return the list of Unit ID (InstID|DeptID|GrpID) depending on the role
+    // selected.
     public LinkedHashMap<String, String> getUnitIDHash() {
         return unitIDHash;
     }
     
-    // The enabled/disabled status of "Select Department" will depend on
-    // whether the institution has been selected or not.
+    // The enabled/disabled status of "Select User Unit" will depend on
+    // whether the role has been selected or not.
     public Boolean isUnitIDHashReady() {
         return unitIDHash.isEmpty();
-    }
-    
-    // Listener for institution selection change, it's job is to update 
-    // the deptIDHash.
-    public void instChange() {
-        unitIDHash = DepartmentDB.getDeptHash(inst_id);
     }
     
     // Listener for role selection change, it's job is to update the unit ID
@@ -308,7 +306,14 @@ public class AccountManagementBean implements Serializable {
     public void roleChange() {
         configUnitIDHash(role_id);
     }
-
+    // Listener for role selection change in the "Edit User Account" panel.
+    public void roleEditChange() {
+        UserAccount user = getFacesContext().getApplication().
+                evaluateExpressionGet(getFacesContext(), "#{acct}", 
+                UserAccount.class);
+        
+        configUnitIDHash(user.getRole_id());
+    }
     // Helper method to setup the unitIDHash based on the user's role.
     private void configUnitIDHash(int roleID) {
         if (roleID == UserRoleDB.director()) {
@@ -320,22 +325,6 @@ public class AccountManagementBean implements Serializable {
         else {
             unitIDHash = GroupDB.getAllGrpHash();
         }        
-    }
-    // Listener for institution selection change in the 'Edit User Account' 
-    // panel.
-    public void instEditChange() {
-        UserAccount user = getFacesContext().getApplication().
-                evaluateExpressionGet(getFacesContext(), "#{acct}", 
-                UserAccount.class);
-        
-        unitIDHash = DepartmentDB.getDeptHash(user.getUnit_id());        
-    }
-    // Listener for role selection change in the "Edit User Account" panel.
-    public void roleEditChange() {
-        UserAccount user = getFacesContext().getApplication().
-                evaluateExpressionGet(getFacesContext(), "#{acct}", 
-                UserAccount.class);
-        configUnitIDHash(user.getRole_id());
     }
     
     // Retrieve the faces context
@@ -356,7 +345,6 @@ public class AccountManagementBean implements Serializable {
     public void setInst_id(String inst_id) { this.inst_id = inst_id; }
     public void setNew_pwd(String new_pwd) { this.new_pwd = new_pwd; }
     public void setCfm_pwd(String cfm_pwd) { this.cfm_pwd = cfm_pwd; }
-
     // Machine generated getters
     public String getUser_id() { return user_id; }
     public String getFirst_name() { return first_name; }

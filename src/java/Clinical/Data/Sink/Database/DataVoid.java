@@ -28,6 +28,9 @@ import org.apache.logging.log4j.LogManager;
  * 15-Feb-2016 - Implemented the module to unfinalize study..
  * 29-Feb-2016 - Implementation of Data Source pooling. To use DataSource to 
  * get the database connection instead of using DriverManager.
+ * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
+ * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
+ * (Institution - Department - Group).
  */
 
 public class DataVoid extends Thread {
@@ -45,7 +48,7 @@ public class DataVoid extends Thread {
         conn = DBHelper.getDSConn();
         this.userName = userName;
         this.study_id = study_id;
-        annot_ver = StudyDB.getAnnotVer(study_id);
+        annot_ver = StudyDB.getStudyAnnotVer(study_id);
         // Retrieve the list of job IDs that have been finalized for this study.
         jobIDList = SubmittedJobDB.getFinalizedJobIDs(study_id);
     }

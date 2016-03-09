@@ -27,6 +27,9 @@ import org.apache.logging.log4j.LogManager;
  * 
  * Revision History
  * 04-Mar-2016 - Created with all the standard getters and setters.
+ * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
+ * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
+ * (Institution - Department - Group).
  */
 
 public abstract class GroupDB implements Serializable {
@@ -59,10 +62,24 @@ public abstract class GroupDB implements Serializable {
         return result;
     }
     
+    // Return the HashMap of all the group IDs (with pi setup) in the system.
+    public static LinkedHashMap<String, String> getGrpWithPIHash() {
+        String query = "SELECT grp_id, grp_name FROM grp "
+                     + "WHERE pi IS NOT NULL ORDER BY grp_id";
+
+        return getGrpHash(query);
+    }
     // Return the HashMap of all the group IDs setup in the system.
     public static LinkedHashMap<String, String> getAllGrpHash() {
-        Connection conn = null;
         String query = "SELECT grp_id, grp_name FROM grp ORDER BY grp_id";
+        
+        return getGrpHash(query);
+    }
+    
+    // Helper function to return the HashMap of group IDs setup in the system
+    // using the query passed in.
+    public static LinkedHashMap<String, String> getGrpHash(String query) {
+        Connection conn = null;
         LinkedHashMap<String, String> allGrpHash = new LinkedHashMap<>();
         
         try {
@@ -86,10 +103,33 @@ public abstract class GroupDB implements Serializable {
         return allGrpHash;
     }
     
-    // Return the list of Group setup in the system.
+    // Return the list of Group setup in the system under this institution.
+    public static List<Group> getGrpListByInst(String inst_id) {
+        String query = "SELECT * FROM grp WHERE dept_id IN "
+                     + "(SELECT dept_id FROM dept WHERE inst_id = \'" 
+                     + inst_id + "\') ORDER BY dept_id, grp_id";
+                
+        return getGrpList(query);
+    }
+    // Return the list of Group setup in the system under this department.
+    public static List<Group> getGrpListByDept(String dept_id) {
+        String query = "SELECT * FROM grp WHERE dept_id = \'" 
+                     + dept_id + "\' ORDER BY grp_id";
+        
+        return getGrpList(query);
+    }    
+    // Return the list of Group setup in the system. The list will be used in
+    // the Group Management view.
     public static List<Group> getFullGrpList() {
-        Connection conn = null;
         String query = "SELECT * FROM grp ORDER BY grp_id";
+        
+        return getGrpList(query);
+    }
+    
+    // Helper function to retrieve the group list from the database using the 
+    // query passed in.
+    public static List<Group> getGrpList(String query) {
+        Connection conn = null;
         List<Group> grpList = new ArrayList<>();
         
         try {
@@ -107,7 +147,7 @@ public abstract class GroupDB implements Serializable {
             stm.close();
         }
         catch (SQLException|NamingException e) {
-            logger.error("FAIL to build full group list!");
+            logger.error("FAIL to build group list!");
             logger.error(e.getMessage());
         }
         finally {
@@ -141,7 +181,7 @@ public abstract class GroupDB implements Serializable {
             logger.debug("Group list for " + dept_id + ": " + grpHash.toString());
         }
         catch (SQLException|NamingException e) {
-            logger.error("FAIL to query group for " + dept_id);
+            logger.error("FAIL to query group list for " + dept_id);
             logger.error(e.getMessage());
         }
         finally {
@@ -149,23 +189,6 @@ public abstract class GroupDB implements Serializable {
         }
         
         return grpHash;
-    }
-    
-    // Return the list of Group setup in the system under this department.
-    public static List<Group> getGrpListByDept(String dept_id) {
-        Connection conn = null;
-        List<Group> grpList = new ArrayList<>();
-        
-        
-        return grpList;
-    }
-    
-    // Return the list of Group setup in the system under this institution.
-    public static List<Group> getGrpListByInst(String inst_id) {
-        Connection conn = null;
-        List<Group> grpList = new ArrayList<>();
-        
-        return grpList;
     }
     
     // Insert the new group ID into database.
@@ -228,10 +251,23 @@ public abstract class GroupDB implements Serializable {
     }
     
     // Retrieve the PI user ID for this group.
-    public static String getPIID(String grp_id) {
+    public static String getGrpPIID(String grp_id) {
+        return getGrpPropValue(grp_id, "pi");
+    }
+    // Retrieve the department ID that this group belongs to.
+    public static String getGrpDeptID(String grp_id) {
+        return getGrpPropValue(grp_id, "dept_id");
+    }
+    // Retrieve the group name for this group.
+    public static String getGrpName(String grp_id) {
+        return getGrpPropValue(grp_id, "grp_name");
+    }
+    
+    // Helper function to retrieve one of the group's property value.
+    public static String getGrpPropValue(String grp_id, String property) {
         Connection conn = null;
-        String pi = Constants.DATABASE_INVALID_STR;
-        String query = "SELECT pi FROM grp WHERE grp_id = ?";
+        String propValue = Constants.DATABASE_INVALID_STR;
+        String query = "SELECT * FROM grp WHERE grp_id = ?";
         
         try {
             conn = DBHelper.getDSConn();
@@ -240,51 +276,24 @@ public abstract class GroupDB implements Serializable {
             ResultSet rs = stm.executeQuery();
             
             if (rs.next()) {
-                pi = rs.getString("pi");
+                // Retrieve the requested property value.
+                propValue = rs.getString(property);
             }
             stm.close();
         }
         catch (SQLException|NamingException e) {
-            logger.error("FAIL to retrieve PI ID for group " + grp_id);
+            logger.error("FAIL to retrieve " + property + " for group " + grp_id);
             logger.error(e.getMessage());
         }
         finally {
             DBHelper.closeDSConn(conn);
         }
 
-        return pi;
-    }
-    
-    // Retrieve the department ID that this group belongs to.
-    public static String getDeptID(String grp_id) {
-        Connection conn = null;
-        String dept_id = Constants.DATABASE_INVALID_STR;
-        String query = "SELECT dept_id FROM grp WHERE grp_id = ?";
-
-        try {
-            conn = DBHelper.getDSConn();
-            PreparedStatement stm = conn.prepareStatement(query);
-            stm.setString(1, grp_id);
-            ResultSet rs = stm.executeQuery();
-            
-            if (rs.next()) {
-                dept_id = rs.getString("dept_id");
-            }
-            stm.close();
-        }
-        catch (SQLException|NamingException e) {
-            logger.error("FAIL to retrieve department ID for group " + grp_id);
-            logger.error(e.getMessage());
-        }
-        finally {
-            DBHelper.closeDSConn(conn);
-        }
-
-        return dept_id;
+        return propValue;
     }
     
     // Retrieve the institution ID that this group belongs to.
-    public static String getInstID(String grp_id) {
+    public static String getGrpInstID(String grp_id) {
         Connection conn = null;
         String inst_id = Constants.DATABASE_INVALID_STR;
         String query = "SELECT inst_id FROM inst_dept_grp WHERE grp_id = ?";

@@ -54,7 +54,7 @@
                 <p:column headerText="Output File" styleClass="jssmallcol">
                     <p:commandLink ajax="false" value="Download" 
                                    action="#{jsBean.downloadOutput(job)}"
-                                   disabled="#{job.available}">
+                                   disabled="#{job.outputReady}">
                     </p:commandLink>
                 </p:column>
                 <p:column headerText="Report" styleClass="jssmallcol">

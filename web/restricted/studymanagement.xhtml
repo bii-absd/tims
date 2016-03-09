@@ -11,7 +11,7 @@
     <ui:param name="link" value="#{msg['study-mgnt']}"/>
     <ui:define name="content">
     <p:growl id="studyMsg"/>
-    <p:accordionPanel>
+    <p:accordionPanel id="acPanel">
         <p:tab id="editStudy" title="Edit Study" titleStyleClass="tab-title">
         <h:form id="editStudyForm">
             <p:dataTable var="study" rows="10" id="studyTable" 
@@ -21,7 +21,7 @@
                          styleClass="table-odd-row table-even-row" 
                          editable="true">
                 <p:ajax event="rowEdit" listener="#{studyMgntBean.onRowEdit}" 
-                        update="studyMsg"/>
+                        update="acPanel:editStudyForm:studyTable studyMsg"/>
                 <p:column headerText="Study ID" styleClass="jsmedcol">
                     <h:outputText value="#{study.study_id}"/>
                 </p:column>
@@ -31,24 +31,31 @@
                             <h:outputText value="#{study.title}"/>
                         </f:facet>
                         <f:facet name="input">
-                            <h:inputText value="#{study.title}" style="width: 100%"/>
+                            <p:inputTextarea value="#{study.title}" rows="3" 
+                                             style="width: 100%"/>
+                        </f:facet>
+                    </p:cellEditor>
+                </p:column>
+                <p:column headerText="Group ID" styleClass="jssmallcol">
+                    <p:cellEditor>
+                        <f:facet name="output">
+                            <h:outputText value="#{study.grp_id}"/>
+                        </f:facet>
+                        <f:facet name="input">
+                            <p:selectOneMenu value="#{study.grp_id}" 
+                                             rendered="#{!study.finalized}" 
+                                             style="width: 100%">
+                                <f:selectItems value="#{studyMgntBean.grpHash}"/>
+                            </p:selectOneMenu>
                         </f:facet>
                     </p:cellEditor>
                 </p:column>
                 <p:column headerText="Principal Investigator" 
                           style="width: 130px; text-align: left">
-                    <p:cellEditor>
-                        <f:facet name="output">
-                            <h:outputText value="#{study.ownerFullName}"/>
-                        </f:facet>
-                        <f:facet name="input">
-                            <p:selectOneMenu value="#{study.owner_id}" style="width: 100%">
-                                <f:selectItems value="#{studyMgntBean.piIDHash}"/>
-                            </p:selectOneMenu>
-                        </f:facet>
-                    </p:cellEditor>
+                    <h:outputText value="#{study.ownerFullName}"/>
                 </p:column>
-                <p:column headerText="Annotation Version" style="width: 110px; text-align: left">
+                <p:column headerText="Annotation Version" 
+                          style="width: 110px; text-align: left">
                     <h:outputText value="#{study.annot_ver}"/>
                 </p:column>
                 <p:column headerText="Description" style="text-align: left">

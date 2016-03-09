@@ -9,7 +9,6 @@ import Clinical.Data.Sink.Database.FinalizingJobEntry;
 import Clinical.Data.Sink.Database.StudyDB;
 import Clinical.Data.Sink.Database.SubjectDB;
 import Clinical.Data.Sink.Database.SubmittedJobDB;
-import Clinical.Data.Sink.Database.UserAccountDB;
 import Clinical.Data.Sink.General.Constants;
 import Clinical.Data.Sink.General.ResourceRetriever;
 import java.io.BufferedReader;
@@ -70,6 +69,9 @@ import org.apache.logging.log4j.LogManager;
  * job3 is selected too.
  * 29-Feb-2016 - Implementation of Data Source pooling. To use DataSource to 
  * get the database connection instead of using DriverManager.
+ * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
+ * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
+ * (Institution - Department - Group).
  */
 
 @ManagedBean (name="finalizedBean")
@@ -90,13 +92,12 @@ public class FinalizeStudyBean implements Serializable {
     private List<List<FinalizingJobEntry>> jobEntryLists = 
             new ArrayList<List<FinalizingJobEntry>>();
     private Boolean allowToProceed;
-    // Store the user ID of the current user.
+    // Store the user ID of the current PI.
     private final String userName;
         
     public FinalizeStudyBean() {
         userName = (String) FacesContext.getCurrentInstance().
                 getExternalContext().getSessionMap().get("User");
-        grp_id = UserAccountDB.getUnitID(userName);
         logger.debug("FinalizeStudyBean created.");
         logger.info(userName + ": access Finalize Study page.");
     }
@@ -104,11 +105,11 @@ public class FinalizeStudyBean implements Serializable {
     @PostConstruct
     public void init() {
         // Get the list of study (with completed jobs) from the group(s) that 
-        // the user is heading .
+        // this PI is heading .
         studyHash = StudyDB.getFinalizableStudyHash(userName);
     }
     
-    // A new study has been selected by user, need to build the job entries
+    // A new study has been selected by the PI, need to build the job entries
     // lists.
     public void studyChange() {
         // Clear the lists before building them.
@@ -116,11 +117,13 @@ public class FinalizeStudyBean implements Serializable {
         buildLists();
     }
 
-    // User has clicked on the Finalize button, need to prepare for the dialog
-    // to display to user; to seek for final confirmation to proceed.
+    // PI has clicked on the Finalize button, need to prepare for the dialog
+    // to display to PI; to seek for final confirmation to proceed.
     public String prepareForFinalization() {
         FacesContext fc = FacesContext.getCurrentInstance();
         allowToProceed = true;
+        // Setup the group ID based on the Study's grp_id.
+        grp_id = StudyDB.getStudyGrpID(study_id);
         logger.debug("Preparing for Study finalization.");
         // Check whether the user select any of the job.
         if ((selectedJob0==null) && (selectedJob1==null) && 
@@ -193,7 +196,7 @@ public class FinalizeStudyBean implements Serializable {
         return null;
     }
     
-    // User has clicked on the Proceed button in the dialog; proceed with the 
+    // PI has clicked on the Proceed button in the dialog; proceed with the 
     // finalization of the Study.
     public String proceedForFinalization() {
         String nextpage = Constants.MAIN_PAGE;
@@ -267,11 +270,11 @@ public class FinalizeStudyBean implements Serializable {
         }
     }
 
-    // User has clicked on the Cancel button in the dialog; do not proceed with
+    // PI has clicked on the Cancel button in the dialog; do not proceed with
     // the finalization of the Study.
     public void cancelFinalization() {
         // Clear the selected jobs list so that it will be build again when 
-        // the user click on the Finalize button.
+        // the PI click on the Finalize button.
         selectedJobs.clear();
         logger.info(userName + ": decided not to proceed with the finalization.");
     }
@@ -294,7 +297,7 @@ public class FinalizeStudyBean implements Serializable {
         }
     }
     
-    // Return the study ID hash map for this user's department.
+    // Return the study ID hash map for this PI's group(s).
     public LinkedHashMap<String, String> getStudyHash() {
        return studyHash; 
     }
@@ -304,7 +307,7 @@ public class FinalizeStudyBean implements Serializable {
         return study_id != null;
     }
     
-    // If the user is able to select any Study ID, there is minimum one pipeline
+    // If the PI is able to select any Study ID, there is minimum one pipeline
     // technology available.
     public List<FinalizingJobEntry> getJobList0() {
         return jobEntryLists.get(0);

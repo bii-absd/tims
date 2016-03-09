@@ -10,7 +10,7 @@
     <ui:define name="title">Group Management</ui:define>
     <ui:param name="link" value="#{msg['grp-mgnt']}"/>
     <ui:define name="content">
-        <p:growl id="itemListMsg"/>
+        <p:growl id="grpMgntMsg" sticky="true"/>
         <p:accordionPanel id="acPanel">
             <p:tab id="editGrp" title="Edit Group" titleStyleClass="tab-title">
                 <h:form id="editGrpForm">
@@ -21,7 +21,7 @@
                                  styleClass="table-odd-row table-even-row" 
                                  editable="true">
                         <p:ajax event="rowEdit" listener="#{grpMgntBean.onGrpRowEdit}" 
-                                update="acPanel:editGrpForm:grpTable itemListMsg"/>
+                                update="acPanel:editGrpForm:grpTable grpMgntMsg"/>
                         <p:column headerText="Group ID" styleClass="jssmallcol">
                             <h:outputText value="#{grp.grp_id}"/>
                         </p:column>
@@ -115,7 +115,7 @@
                              styleClass="table-odd-row table-even-row" 
                              editable="true">
                     <p:ajax event="rowEdit" listener="#{grpMgntBean.onDeptRowEdit}" 
-                            update="acPanel:editDeptForm:deptTable itemListMsg"/>
+                            update="acPanel:editDeptForm:deptTable grpMgntMsg"/>
                     <p:column headerText="Department ID" style="width: 250px; text-align: left">
                         <h:outputText value="#{dept.dept_id}"/>
                     </p:column>
@@ -186,7 +186,7 @@
                          styleClass="table-odd-row table-even-row" 
                          editable="true">
                 <p:ajax event="rowEdit" listener="#{grpMgntBean.onInstRowEdit}"
-                        update="itemListMsg"/>
+                        update="grpMgntMsg"/>
                 <p:column headerText="Institution ID" style="text-align: left">
                     <h:outputText value="#{inst.inst_id}"/>                            
                 </p:column>

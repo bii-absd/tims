@@ -97,7 +97,9 @@ import org.apache.logging.log4j.LogManager;
  * 01-Mar-2016 - System and user working directories will only be created during
  * system parameters setup and user account creation (instead of during user 
  * login).
- * 
+ * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
+ * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
+ * (Institution - Department - Group).
  */
 
 @ManagedBean (name="authBean")
@@ -106,9 +108,8 @@ public class AuthenticationBean implements Serializable {
     // Get the logger for Log4j
     private final static Logger logger = LogManager.
             getLogger(AuthenticationBean.class.getName());
-    private String loginName, password;
+    private String loginName, password, instName;
     private UserAccount userAcct;
-    private String instName;
     
     public AuthenticationBean() {
         logger.debug("AuthenticationBean created.");
@@ -131,7 +132,7 @@ public class AuthenticationBean implements Serializable {
         }
 
         logger.debug("Application is hosted on: " + OS);
-        // Setup the constants using the parameters defined in setup
+        // Setup the constants using the parameters defined in setup file.
         return Constants.setup(context.getRealPath(setupFile), root);
     }
     
@@ -141,9 +142,9 @@ public class AuthenticationBean implements Serializable {
     {
         // Next page to proceed to
         String result = Constants.LOGIN_PAGE;
-        // Setting up the database configuration, input, config file path, etc
         ServletContext context = getServletContext();
-
+        
+        // Setting up the database configuration, input, config file path, etc
         if (!setupConstants(context))
         {
             // Constant variables cannot be loaded, shouldn't let the user proceed.
@@ -186,9 +187,9 @@ public class AuthenticationBean implements Serializable {
                 ActivityLogDB.recordUserActivity(loginName, Constants.LOG_IN, 
                                                  "Success");
                 logger.info(loginName + ": login as " + userAcct.getRoleName());
-                // Create user home directory once successfully login
+                // User home directory where all it's pipeline output will be stored.
                 String homeDir = Constants.getSYSTEM_PATH() + 
-                          Constants.getUSERS_PATH() + loginName;
+                                 Constants.getUSERS_PATH() + loginName;
                 // Update the last login of this user            
                 UserAccountDB.updateLastLogin(loginName, Constants.getDateTime());
                 // Save the user ID in the session map.
@@ -196,7 +197,7 @@ public class AuthenticationBean implements Serializable {
                                     put("User", loginName);
                 // Save the institution name where this user belongs to.
                 instName = InstitutionDB.getInstName(userAcct.getUnit_id());
-                // Everything is fine, proceed from login to /restricted folder
+                // Proceed from login to the next view depending on user role.
                 if ( (userAcct.getRoleName().compareTo("Director") == 0) || 
                      (userAcct.getRoleName().compareTo("HOD") == 0) ) {
                     // For director and HOD, direct them to the studies review page.
@@ -249,16 +250,13 @@ public class AuthenticationBean implements Serializable {
         return Constants.LOGIN_PAGE + "?faces-redirect=true";
     }
     
-    // Return true if the role ID of the user is 1 (i.e. Admin), else it will 
-    // return false. The return value will be used to control the access to 
-    // some control/link.
+    // Return true if the user is an Admin else return false. The return value 
+    // will be used to control the access to some link.
     public Boolean isAdministrator() {
         if (loginName.compareTo("super") == 0) {
             return Constants.OK;
         }
         else {
-            // For now, use a very basic way to control the access to user account
-            // access. Role ID 1 is Admin; only Admin is allowed access.        
             return userAcct.getRole_id() == UserRoleDB.admin();            
         }
     }
@@ -291,7 +289,7 @@ public class AuthenticationBean implements Serializable {
                 getExternalContext().getContext();
     }
     
-    // Supply the Institution-Department string to all the views.
+    // Supply the Institution-Unit string to all the views.
     public String getHeaderInstDept() { 
         if (loginName.compareTo("super") == 0) {
             return loginName;
@@ -307,7 +305,7 @@ public class AuthenticationBean implements Serializable {
             return loginName;
         }
         else {
-            // Most likey this method need to be customised for different 
+            // This method might need to be customised for different 
             // type of users.
             return "Welcome " +  userAcct.getFirst_name();
         }
@@ -346,6 +344,7 @@ public class AuthenticationBean implements Serializable {
         // job status bean.
         FacesContext.getCurrentInstance().getExternalContext().
                 getSessionMap().put("singleUser", false);
+        
         return Constants.JOB_STATUS;
     }
     
@@ -355,6 +354,7 @@ public class AuthenticationBean implements Serializable {
         // job status bean.
         FacesContext.getCurrentInstance().getExternalContext().
                 getSessionMap().put("singleUser", true);
+        
         return Constants.JOB_STATUS;
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright @2015
+ * Copyright @2015-2016
  */
 package Clinical.Data.Sink.Database;
 
@@ -14,6 +14,9 @@ package Clinical.Data.Sink.Database;
  * 14-Dec-2015 - Override the method toString() to return the string
  * representation of the subject meta data.
  * 25-Feb-2016 - Implementation for database 3.0 (Part 2).
+ * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
+ * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
+ * (Institution - Department - Group).
  */
 
 public class Subject {

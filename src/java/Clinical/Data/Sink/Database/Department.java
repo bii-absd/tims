@@ -15,6 +15,9 @@ package Clinical.Data.Sink.Database;
  * 09-Dec-2015 - Added new attribute, inst_name.
  * 13-Dec-2016 - Removed all the static variables in Study and ItemList
  * management modules.
+ * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
+ * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
+ * (Institution - Department - Group).
  */
 
 public class Department {

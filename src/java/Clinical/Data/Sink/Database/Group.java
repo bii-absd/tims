@@ -11,6 +11,9 @@ package Clinical.Data.Sink.Database;
  * 
  * Revision History
  * 04-Mar-2016 - Created with all the standard getters and setters.
+ * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
+ * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
+ * (Institution - Department - Group).
  */
 
 public class Group {
@@ -25,7 +28,12 @@ public class Group {
         this.dept_id = dept_id;
         this.grp_name = grp_name;
         dept_name = DepartmentDB.getDeptName(dept_id);
-        pi_name = UserAccountDB.getFullName(pi);
+        if (pi != null) {
+            pi_name = UserAccountDB.getFullName(pi);
+        }
+        else {
+            pi_name = "NA";
+        }
     }
     
     // Return the department name for this dept_id.

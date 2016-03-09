@@ -29,7 +29,7 @@ import org.apache.logging.log4j.LogManager;
  * getAnnotHashMap.
  * 11-Dec-2015 - Changed to abstract class. Added 4 methods, updateStudy, 
  * getStudyList, queryStudy and clearStudyList().
- * 17-Dec-2015 - Added new method getAnnotVer, to return the Annotation Version
+ * 17-Dec-2015 - Added new method getStudyAnnotVer, to return the Annotation Version
  * used in the study.
  * 23-Dec-2015 - To close the ResultSet after use. Added 3 new methods, 
  * updateStudyToCompleted, updateStudyFinalizedFile and getFinalizableStudyHash.
@@ -51,6 +51,9 @@ import org.apache.logging.log4j.LogManager;
  * get the database connection instead of using DriverManager.
  * 01-Mar-2016 - Changes due to one addition attribute (i.e. title) in Study
  * class.
+ * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
+ * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
+ * (Institution - Department - Group).
  */
 
 public abstract class StudyDB {
@@ -63,25 +66,24 @@ public abstract class StudyDB {
     public static Boolean insertStudy(Study study) {
         Connection conn = null;
         Boolean result = Constants.OK;
-        String query = "INSERT INTO study(study_id,title,owner_id,grp_id,"
+        String query = "INSERT INTO study(study_id,title,grp_id,"
                      + "annot_ver,description,background,grant_info,start_date,"
-                     + "end_date,finalized,closed) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)";
+                     + "end_date,finalized,closed) VALUES(?,?,?,?,?,?,?,?,?,?,?)";
         
         try {
             conn = DBHelper.getDSConn();
             PreparedStatement stm = conn.prepareStatement(query);
             stm.setString(1, study.getStudy_id());
             stm.setString(2, study.getTitle());
-            stm.setString(3, study.getOwner_id());
-            stm.setString(4, study.getGrp_id());
-            stm.setString(5, study.getAnnot_ver());
-            stm.setString(6, study.getDescription());
-            stm.setString(7, study.getBackground());
-            stm.setString(8, study.getGrant_info());
-            stm.setDate(9, study.getStart_date());
-            stm.setDate(10, study.getEnd_date());
-            stm.setBoolean(11, study.getFinalized());
-            stm.setBoolean(12, study.getClosed());
+            stm.setString(3, study.getGrp_id());
+            stm.setString(4, study.getAnnot_ver());
+            stm.setString(5, study.getDescription());
+            stm.setString(6, study.getBackground());
+            stm.setString(7, study.getGrant_info());
+            stm.setDate(8, study.getStart_date());
+            stm.setDate(9, study.getEnd_date());
+            stm.setBoolean(10, study.getFinalized());
+            stm.setBoolean(11, study.getClosed());
             stm.executeUpdate();
             stm.close();
             
@@ -104,7 +106,7 @@ public abstract class StudyDB {
     public static Boolean updateStudy(Study study) {
         Connection conn = null;
         Boolean result = Constants.OK;
-        String query = "UPDATE study SET title=?, owner_id = ?, grp_id = ?, "
+        String query = "UPDATE study SET title=?, grp_id = ?, "
                      + "description = ?, background = ?, grant_info = ?, "
                      + "start_date = ?, end_date = ?, closed = ? WHERE study_id = ?";
         
@@ -112,15 +114,14 @@ public abstract class StudyDB {
             conn = DBHelper.getDSConn();
             PreparedStatement stm = conn.prepareStatement(query);
             stm.setString(1, study.getTitle());
-            stm.setString(2, study.getOwner_id());
-            stm.setString(3, study.getGrp_id());
-            stm.setString(4, study.getDescription());
-            stm.setString(5, study.getBackground());
-            stm.setString(6, study.getGrant_info());
-            stm.setDate(7, study.getStart_date());
-            stm.setDate(8, study.getEnd_date());
-            stm.setBoolean(9, study.getClosed());
-            stm.setString(10, study.getStudy_id());
+            stm.setString(2, study.getGrp_id());
+            stm.setString(3, study.getDescription());
+            stm.setString(4, study.getBackground());
+            stm.setString(5, study.getGrant_info());
+            stm.setDate(6, study.getStart_date());
+            stm.setDate(7, study.getEnd_date());
+            stm.setBoolean(8, study.getClosed());
+            stm.setString(9, study.getStudy_id());
             stm.executeUpdate();
             stm.close();
             
@@ -234,35 +235,6 @@ public abstract class StudyDB {
         }
     }
     
-    // Return the list of annotation version setup in the system
-    public static LinkedHashMap<String, String> getAnnotHash() {
-        Connection conn = null;
-        LinkedHashMap<String, String> annotHash = new LinkedHashMap<>();
-        String query = "SELECT annot_ver FROM annotation";
-        
-        try {
-            conn = DBHelper.getDSConn();
-            PreparedStatement stm = conn.prepareStatement(query);
-            ResultSet rs = stm.executeQuery();
-        
-            while (rs.next()) {
-                annotHash.put(rs.getString("annot_ver"), rs.getString("annot_ver"));
-            }
-
-            stm.close();
-            logger.debug("Annotation Version: " + annotHash.toString());
-        }
-        catch (SQLException|NamingException e) {
-            logger.error("FAIL to retrieve annotation version!");
-            logger.error(e.getMessage());
-        }
-        finally {
-            DBHelper.closeDSConn(conn);
-        }
-        
-        return annotHash;
-    }
-    
     // Return the list of unclosed Study ID under the group that this lead is
     // heading. The list of Study ID will be available for the lead to select
     // for pipeline execution.
@@ -341,7 +313,8 @@ public abstract class StudyDB {
         String query = "SELECT DISTINCT study_id FROM study st "
                      + "NATURAL JOIN submitted_job sj WHERE sj.status_id = 3 "
                      + "AND st.grp_id IN (SELECT grp_id FROM grp WHERE pi =?) "
-                     + "AND st.finalized = false ORDER BY study_id";
+                     + "AND st.finalized = false AND st.closed = false "
+                     + "ORDER BY study_id";
         
         try {
             conn = DBHelper.getDSConn();
@@ -368,10 +341,19 @@ public abstract class StudyDB {
     }
     
     // Return the list of studies (all status) that belong to this institution.
+    // NOT IMPLEMENTED YET UNTIL THERE IS A USE!
     public static List<Study> queryInstStudies(String inst_id) {
         List<Study> instStudies = new ArrayList<>();
         
         return instStudies;
+    }
+    
+    // Return the list of studies (all status) that belong to this group.
+    // NOT IMPLEMENTED YET UNTIL THERE IS A USE!
+    public static List<Study> queryGrpStudies(String grp_id) {
+        List<Study> grpStudies = new ArrayList<>();
+        
+        return grpStudies;
     }
     
     // Return the list of studies (all status) that this user is allowed to view.
@@ -390,7 +372,6 @@ public abstract class StudyDB {
                 Study tmp = new Study(
                             rs.getString("study_id"),
                             rs.getString("title"),
-                            rs.getString("owner_id"),
                             rs.getString("grp_id"),
                             rs.getString("annot_ver"),
                             rs.getString("description"),
@@ -420,33 +401,46 @@ public abstract class StudyDB {
         return deptStudies;
     }
     
-    // Return the list of studies (all status) that belong to this group.
-    public static List<Study> queryGrpStudies(String grp_id) {
-        List<Study> grpStudies = new ArrayList<>();
+    // Return the full list of finalized studies in the system. The list will
+    // shown in the Unfinalize Study view (only accessible by Admin).
+    public static List<Study> queryAllFinalizedStudies() {
+        String query = "SELECT * FROM study WHERE finalized = true ORDER BY study_id";
         
-        return grpStudies;
+        return queryFinalizedStudies(query);
+    }
+    // Return the list of finalized studies that belong to the group. The list
+    // will be shown in the Completed Study Output view.
+    public static List<Study> queryFinalizedStudiesByGrp(String grp_id) {
+        String query = "SELECT * FROM study WHERE grp_id = \'" + grp_id 
+                     + "\' AND finalized = true ORDER BY study_id";
+
+        return queryFinalizedStudies(query);
+    }
+    // Return the list of finalized studies that belong to the group(s) that
+    // this PI (i.e. Director|HOD|PI) is in charge of.
+    public static List<Study> queryFinalizedStudiesByGrps(String pi_id) {
+        String query = "SELECT * FROM study WHERE finalized = true AND "
+                     + "grp_id IN (SELECT grp_id FROM grp WHERE pi = \'"
+                     + pi_id + "\') ORDER BY study_id";
+        
+        return queryFinalizedStudies(query);
     }
     
-    // Return the list of finalized studies that belong to the group. This
-    // list of study objects will be shown in the datatable in summary of study
-    // view.
-    public static List<Study> queryFinalizedStudies(String grp_id) {
+    // Helper function to retrieve the list of finalized studies from the 
+    // database using the query passed in.
+    public static List<Study> queryFinalizedStudies(String query) {
         Connection conn = null;
         List<Study> finalizedStudies = new ArrayList<>();
-        String query = "SELECT * FROM study WHERE grp_id = ? "
-                     + "AND finalized = true ORDER BY study_id";
         
         try {
             conn = DBHelper.getDSConn();
             PreparedStatement stm = conn.prepareStatement(query);
-            stm.setString(1, grp_id);
             ResultSet rs = stm.executeQuery();
             
             while (rs.next()) {
                 Study tmp = new Study(
                             rs.getString("study_id"),
                             rs.getString("title"),
-                            rs.getString("owner_id"),
                             rs.getString("grp_id"),
                             rs.getString("annot_ver"),
                             rs.getString("description"),
@@ -463,7 +457,7 @@ public abstract class StudyDB {
             }
             
             stm.close();
-            logger.debug("Finalized studies for " + grp_id + " retrieved.");
+            logger.debug("Finalized studies retrieved.");
         }
         catch (SQLException|NamingException e) {
             logger.error("FAIL to retrieve finalized studies!");
@@ -493,7 +487,6 @@ public abstract class StudyDB {
                 Study tmp = new Study(
                             rs.getString("study_id"),
                             rs.getString("title"),
-                            rs.getString("owner_id"),
                             rs.getString("grp_id"),
                             rs.getString("annot_ver"),
                             rs.getString("description"),
@@ -523,34 +516,70 @@ public abstract class StudyDB {
         return studyList;
     }
     
-    // Return the annotation version used in this study.
-    public static String getAnnotVer(String studyID) {
+    // Retrieve the annotation version used in this study.
+    public static String getStudyAnnotVer(String study_id) {
+        return getStudyPropValue(study_id, "annot_ver");
+    }
+    // Retrieve the group ID for this study.
+    public static String getStudyGrpID(String study_id) {
+        return getStudyPropValue(study_id, "grp_id");
+    }
+    
+    // Helper function to retrieve one of the study's property value.
+    public static String getStudyPropValue(String study_id, String property) {
         Connection conn = null;
-        String annot_ver = Constants.DATABASE_INVALID_STR;
-        String query = "SELECT annot_ver FROM study WHERE study_id = ?";
+        String propValue = Constants.DATABASE_INVALID_STR;
+        String query = "SELECT * FROM study WHERE study_id = ?";
         
         try {
             conn = DBHelper.getDSConn();
             PreparedStatement stm = conn.prepareStatement(query);
-            stm.setString(1, studyID);
+            stm.setString(1, study_id);
             ResultSet rs = stm.executeQuery();
             
             if (rs.next()) {
-                annot_ver = rs.getString("annot_ver");
-                logger.debug("Annotation version used in study: " + studyID + 
-                             " is " + annot_ver);
+                // Retrieve the requested property value.
+                propValue = rs.getString(property);
             }
-            
             stm.close();
         }
         catch (SQLException|NamingException e) {
-            logger.error("FAIL to retrieve annotation version from study!");
+            logger.error("FAIL to retrieve " + property + " for study " + study_id);
+            logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
+        }
+
+        return propValue;
+    }
+    
+    // Return the list of annotation version setup in the system
+    public static LinkedHashMap<String, String> getAnnotHash() {
+        Connection conn = null;
+        LinkedHashMap<String, String> annotHash = new LinkedHashMap<>();
+        String query = "SELECT annot_ver FROM annotation";
+        
+        try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            ResultSet rs = stm.executeQuery();
+        
+            while (rs.next()) {
+                annotHash.put(rs.getString("annot_ver"), rs.getString("annot_ver"));
+            }
+
+            stm.close();
+            logger.debug("Annotation Version: " + annotHash.toString());
+        }
+        catch (SQLException|NamingException e) {
+            logger.error("FAIL to retrieve annotation version!");
             logger.error(e.getMessage());
         }
         finally {
             DBHelper.closeDSConn(conn);
         }
         
-        return annot_ver;
-    }
+        return annotHash;
+    }    
 }

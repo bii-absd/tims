@@ -39,6 +39,9 @@ import org.apache.logging.log4j.LogManager;
  * management modules.
  * 29-Feb-2016 - Implementation of Data Source pooling. To use DataSource to 
  * get the database connection instead of using DriverManager.
+ * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
+ * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
+ * (Institution - Department - Group).
  */
 
 public abstract class InstitutionDB implements Serializable {
@@ -165,7 +168,7 @@ public abstract class InstitutionDB implements Serializable {
         return instNameHash;
     }
     
-    // Return the name for this institution.
+    // Return the name of the institution where this unit ID belongs to.
     public static String getInstName(String unitID) {
         Connection conn = null;
         String instName = Constants.DATABASE_INVALID_STR;
@@ -187,7 +190,7 @@ public abstract class InstitutionDB implements Serializable {
             stm.close();
         }
         catch (SQLException|NamingException e) {
-            logger.error("FAIL to retrieve institution name for " + unitID);
+            logger.error("FAIL to retrieve institution name for unit " + unitID);
             logger.error(e.getMessage());
         }
         finally {

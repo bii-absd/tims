@@ -27,6 +27,9 @@ import java.sql.Date;
  * 24-Feb-2016 - Added one new method, getReviewTitle() to return the title
  * for each study in the studies review page.
  * 01-Mar-2016 - Added one attribute, title.
+ * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
+ * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
+ * (Institution - Department - Group).
  */
 
 public class Study {
@@ -37,14 +40,13 @@ public class Study {
     private Boolean finalized, closed;
 
     // This constructor is used when retrieving the study table for database.
-    public Study(String study_id, String title, String owner_id, String grp_id, 
+    public Study(String study_id, String title, String grp_id, 
                  String annot_ver, String description, String background, 
                  String grant_info, String finalized_output, String summary, 
                  Date start_date, Date end_date, Boolean finalized, Boolean closed) 
     {
         this.study_id = study_id;
         this.title = title;
-        this.owner_id = owner_id;
         this.grp_id = grp_id;
         this.annot_ver = annot_ver;
         this.description = description;
@@ -56,19 +58,18 @@ public class Study {
         this.end_date = end_date;
         this.finalized = finalized;
         this.closed = closed;
+        this.owner_id = GroupDB.getGrpPIID(grp_id);
     }
     // This constructor is used for constructing new Study.
     // For every new Study created, the finalized_output and summary will be
     // empty, and closed status will be false (i.e. not closed).
-    public Study(String study_id, String title, String owner_id, String grp_id, 
+    public Study(String study_id, String title, String grp_id, 
                  String annot_ver, String description, String background, 
                  String grant_info, Date start_date, Date end_date, Boolean finalized) 
     {
         this.study_id = study_id;
         this.title = title;
-        this.owner_id = owner_id;
         this.grp_id = grp_id;
-        this.owner_id = owner_id;
         this.annot_ver = annot_ver;
         this.description = description;
         this.background = background;
@@ -117,6 +118,11 @@ public class Study {
         return UserAccountDB.getFullName(owner_id);
     }
     
+    // Return the Group name for this study.
+    public String getGroupName() {
+        return GroupDB.getGrpName(grp_id);
+    }
+    
     // Return the review title for each study.
     public String getReviewTitle() {
         String status;
@@ -144,12 +150,6 @@ public class Study {
     }
     public void setTitle(String title) {
         this.title = title;
-    }
-    public String getOwner_id() {
-        return owner_id;
-    }
-    public void setOwner_id(String owner_id) {
-        this.owner_id = owner_id;
     }
     public String getGrp_id() {
         return grp_id;

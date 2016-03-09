@@ -71,6 +71,9 @@ import org.apache.logging.log4j.LogManager;
  * finalized job ID for the respective study ID.
  * 29-Feb-2016 - Implementation of Data Source pooling. To use DataSource to 
  * get the database connection instead of using DriverManager.
+ * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
+ * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
+ * (Institution - Department - Group).
  */
 
 public abstract class SubmittedJobDB {
@@ -168,7 +171,7 @@ public abstract class SubmittedJobDB {
             stm.executeUpdate();
             stm.close();
             logger.debug("Job ID " + job_id + ": status updated to " + 
-                    JobStatusDB.getStatusName(status_id));
+                    JobStatusDB.getJobStatusName(status_id));
         }
         catch (SQLException|NamingException e) {
             logger.error("FAIL to update job status!");

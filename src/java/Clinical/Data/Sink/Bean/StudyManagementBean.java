@@ -59,6 +59,9 @@ import org.apache.logging.log4j.LogManager;
  * 23-Feb-2016 - Implementation for database 3.0 (Part 1).
  * 01-Mar-2016 - Changes due to one addition attribute (i.e. title) in Study
  * class.
+ * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
+ * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
+ * (Institution - Department - Group).
  */
 
 @ManagedBean (name="studyMgntBean")
@@ -73,7 +76,7 @@ public class StudyManagementBean implements Serializable {
     private Date start_date, end_date;
     private java.util.Date util_start_date, util_end_date;
     private Boolean finalized;
-    private LinkedHashMap<String,String> annotHash, deptHash, piIDHash;
+    private LinkedHashMap<String,String> annotHash, deptHash, grpHash, piIDHash;
     private List<SelectItem> grouping;
     private List<Study> studyList;
     // Store the user ID of the current user.
@@ -90,7 +93,7 @@ public class StudyManagementBean implements Serializable {
     public void init() {
         start_date = end_date = null;
         annotHash = StudyDB.getAnnotHash();
-        deptHash = DepartmentDB.getAllDeptHash();
+        grpHash = GroupDB.getGrpWithPIHash();
         piIDHash = UserAccountDB.getPiIDHash();
         studyList = StudyDB.queryStudy();
         grouping = new ArrayList<>();
@@ -114,6 +117,8 @@ public class StudyManagementBean implements Serializable {
             String detail = "Study " + ((Study) event.getObject()).getStudy_id();
             ActivityLogDB.recordUserActivity(userName, Constants.CHG_ID, detail);
             logger.info(userName + ": updated " + detail);
+            // Refresh the study list.
+            studyList = StudyDB.queryStudy();
             fc.addMessage(null, new FacesMessage(
                     FacesMessage.SEVERITY_INFO, "Study updated.", ""));
         }
@@ -162,39 +167,52 @@ public class StudyManagementBean implements Serializable {
     // Create new Study
     public String createNewStudy() {
         FacesContext fc = getFacesContext();
-        // Append the institution ID and group ID to the study ID.
-        study_id = GroupDB.getInstID(grp_id) + "-" + grp_id + "-" + 
-                   study_id.toUpperCase();
-        // Because the system is receiving the date as java.util.Date hence
-        // we need to perform a conversion here before storing it into database.
-        if (util_start_date != null) {
-            start_date = new Date(util_start_date.getTime());
-        }
-        if (util_end_date != null) {
-            end_date = new Date(util_end_date.getTime());
-        }
         // Set the PI that is heading the group as the owner of this study.
-        owner_id = GroupDB.getPIID(grp_id);
-        // New Study will always be created with empty finalized_output and 
-        // summary fields.
-        Study study = new Study(study_id, title, owner_id, grp_id, annot_ver, 
+        owner_id = GroupDB.getGrpPIID(grp_id);
+        // Only proceed to create the new study ID if the group has a PI 
+        // in-charge setup, else display error message.
+        if (owner_id == null) {
+            logger.debug("PI in-charge for group " + grp_id + " not setup!");
+            fc.addMessage(null, new FacesMessage(
+                    FacesMessage.SEVERITY_ERROR, 
+                    "The PI in-charge of group " + grp_id + 
+                    " is not setup; failed to create new Study ID!", ""));
+        } 
+        else {
+            // Append the institution ID and group ID to the study ID.
+            study_id = GroupDB.getGrpInstID(grp_id) + "-" + grp_id + "-" + 
+                       study_id.toUpperCase();
+            // Because the system is receiving the date as java.util.Date hence
+            // we need to perform a conversion here before storing it into database.
+            if (util_start_date != null) {
+                start_date = new Date(util_start_date.getTime());
+            }
+            if (util_end_date != null) {
+                end_date = new Date(util_end_date.getTime());
+            }
+            // New Study will always be created with empty finalized_output and 
+            // summary fields.
+            Study study = new Study(study_id, title, grp_id, annot_ver, 
                                 description, background, grant_info, start_date, 
                                 end_date, finalized);
         
-        if (StudyDB.insertStudy(study)) {
-            // Create a separate input directory for the newly created Study ID.
-            FileUploadBean.createStudyDirectory(study_id);
-            // Record this study creation activity into database.
-            String detail = "Study " + study_id;
-            ActivityLogDB.recordUserActivity(userName, Constants.CRE_ID, detail);
-            logger.info(userName + ": created " + detail);
-            fc.addMessage(null, new FacesMessage(
-                    FacesMessage.SEVERITY_INFO, "New Study ID created.", ""));
-        }
-        else {
-            logger.debug("FAIL to create new Study ID: " + study_id);
-            fc.addMessage(null, new FacesMessage(
-                    FacesMessage.SEVERITY_ERROR, "Failed to create new Study ID!", ""));
+            if (StudyDB.insertStudy(study)) {
+                // Create a separate input directory for the newly created Study ID.
+                    FileUploadBean.createStudyDirectory(study_id);
+                // Record this study creation activity into database.
+                String detail = "Study " + study_id;
+                ActivityLogDB.recordUserActivity(userName, Constants.CRE_ID, detail);
+                logger.info(userName + ": created " + detail);
+                fc.addMessage(null, new FacesMessage(
+                        FacesMessage.SEVERITY_INFO, 
+                        "New Study ID created.", ""));
+            }
+            else {
+                logger.debug("FAIL to create new Study ID: " + study_id);
+                fc.addMessage(null, new FacesMessage(
+                        FacesMessage.SEVERITY_ERROR, 
+                        "Failed to create new Study ID!", ""));
+            }
         }
 
         return Constants.STUDY_MANAGEMENT;
@@ -215,9 +233,9 @@ public class StudyManagementBean implements Serializable {
 	return FacesContext.getCurrentInstance();
     }
     
-    // Return the full list of departments setup in the system.
-    public LinkedHashMap<String, String> getDeptHash() {
-        return deptHash;
+    // Return the full list of groups setup in the system.
+    public LinkedHashMap<String, String> getGrpHash() {
+        return grpHash;
     }
 
     // Return the list of user ID that belongs that to PIs.
@@ -243,12 +261,6 @@ public class StudyManagementBean implements Serializable {
     }
     public void setTitle(String title) {
         this.title = title;
-    }
-    public String getOwner_id() {
-        return owner_id;
-    }
-    public void setOwner_id(String owner_id) {
-        this.owner_id = owner_id;
     }
     public String getGrp_id() {
         return grp_id;

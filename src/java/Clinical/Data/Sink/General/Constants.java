@@ -70,7 +70,7 @@ import org.apache.logging.log4j.LogManager;
  * CONTROL_PROBE_FILE_EXT.
  * 24-Dec-2015 - Added 3 new constants, FINALIZE_PATH, FINALIZE_FILE_NAME and
  * FINALIZE_FILE_EXT.
- * 28-Dec-2015 - Added 2 new constants, FINALIZE_STUDY and SUMMARY_OF_STUDY.
+ * 28-Dec-2015 - Added 2 new constants, FINALIZE_STUDY and COMPLETED_STUDY_OUTPUT.
  * 06-Jan-2016 - Added one new constant, SUMMARY_FILE_EXT. Renamed 
  * FINALIZE_FILE_NAME to SUMMARY_FILE_NAME. Standardize the setup for all 
  * system paths.
@@ -87,6 +87,9 @@ import org.apache.logging.log4j.LogManager;
  * 24-Feb-2016 - Added one new constant, STUDIES_REVIEW for studies review page.
  * 01-Mar-2016 - All the system directories will be created during system
  * parameters setup (instead of during user login).
+ * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
+ * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
+ * (Institution - Department - Group).
  */
 
 @ManagedBean (name = "constants")
@@ -128,7 +131,7 @@ public class Constants {
     public final static String CLINICAL_DATA_MANAGEMENT = "clinicaldatamanagement";
     public final static String JOB_STATUS = "jobstatus?faces-redirect=true";
     public final static String FINALIZE_STUDY = "finalizestudy";
-    public final static String SUMMARY_OF_STUDY = "summaryofstudy";
+    public final static String COMPLETED_STUDY_OUTPUT = "completedstudyoutput";
     public final static String STUDIES_REVIEW = "studiesreview?faces-redirect=true";
     public final static String NGS_PAGE = "ngs?faces-redirect=true";
     public final static String ERROR = "error?faces-redirect=true";

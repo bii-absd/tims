@@ -40,10 +40,13 @@ import org.apache.logging.log4j.LogManager;
  * use.
  * 13-Dec-2016 - Removed all the static variables in Study and ItemList
  * management modules.
- * 18-Feb-2016 - Added new method getInstID, to retrieve the institution ID 
+ * 18-Feb-2016 - Added new method getDeptInstID, to retrieve the institution ID 
  * from the dept table.
  * 29-Feb-2016 - Implementation of Data Source pooling. To use DataSource to 
  * get the database connection instead of using DriverManager.
+ * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
+ * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
+ * (Institution - Department - Group).
  */
 
 public abstract class DepartmentDB implements Serializable {
@@ -206,58 +209,41 @@ public abstract class DepartmentDB implements Serializable {
     }
     
     // Return the name for this department.
-    public static String getDeptName(String deptID) {
-        Connection conn = null;
-        String deptName = Constants.DATABASE_INVALID_STR;
-        String query = "SELECT dept_name FROM dept WHERE dept_id = ?";
-        
-        try {
-            conn = DBHelper.getDSConn();
-            PreparedStatement stm = conn.prepareStatement(query);
-            stm.setString(1, deptID);
-            ResultSet rs = stm.executeQuery();
-            
-            if (rs.next()) {
-                deptName = rs.getString("dept_name");
-            }            
-            stm.close();
-        }
-        catch (SQLException|NamingException e) {
-            logger.error("FAIL to retrieve department name for " + deptID);
-            logger.error(e.getMessage());
-        }
-        finally {
-            DBHelper.closeDSConn(conn);
-        }
-        
-        return deptName;
+    public static String getDeptName(String dept_id) {
+        return getDeptPropValue(dept_id, "dept_name");
+    }    
+    // Retrieve the institution ID that this department belongs to.
+    public static String getDeptInstID(String dept_id) {
+        return getDeptPropValue(dept_id, "inst_id");
     }
     
-    // Retrieve the institution ID that this department belongs to.
-    public static String getInstID(String dept_id) {
+    // Helper function to retrieve one of the department's property value.
+    public static String getDeptPropValue(String dept_id, String property) {
         Connection conn = null;
-        String inst_id = Constants.DATABASE_INVALID_STR;
-        String query = "SELECT inst_id FROM dept WHERE dept_id = \'" 
-                     + dept_id + "\'";
+        String propValue = Constants.DATABASE_INVALID_STR;
+        String query = "SELECT * FROM dept WHERE dept_id = ?";
+
         
         try {
             conn = DBHelper.getDSConn();
             PreparedStatement stm = conn.prepareStatement(query);
+            stm.setString(1, dept_id);
             ResultSet rs = stm.executeQuery();
             
             if (rs.next()) {
-                inst_id = rs.getString("inst_id");
+                // Retrieve the requested property value.
+                propValue = rs.getString(property);
             }
             stm.close();
         }
         catch (SQLException|NamingException e) {
-            logger.error("FAIL to retrieve institution ID for department " + dept_id);
+            logger.error("FAIL to retrieve " + property + "for department " + dept_id);
             logger.error(e.getMessage());
         }
         finally {
             DBHelper.closeDSConn(conn);
         }
         
-        return inst_id;
+        return propValue;
     }
 }

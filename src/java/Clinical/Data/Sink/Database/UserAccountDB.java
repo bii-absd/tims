@@ -54,6 +54,9 @@ import org.mindrot.jbcrypt.BCrypt;
  * the PIs in the system.
  * 29-Feb-2016 - Implementation of Data Source pooling. To use DataSource to 
  * get the database connection instead of using DriverManager.
+ * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
+ * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
+ * (Institution - Department - Group).
  */
 
 public abstract class UserAccountDB {
@@ -89,11 +92,6 @@ public abstract class UserAccountDB {
         
         return isUserAcctSetup;
     }
-    
-    // Temporay method retrieve all the user ID of PI.
-    // In future, this method will be moved to grp Class.
-    // Return the list of user ID that has been registered as the PI of the group.
-    // DIFFERENT FROM THIS!
     
     // Return the list of user ID that can be PI (i.e. Director, HOD and PI).
     public static LinkedHashMap<String, String> getPiIDHash() {
@@ -155,8 +153,6 @@ public abstract class UserAccountDB {
     public static List<UserAccount> getAllUserAcct() {
         Connection conn = null;
         List<UserAccount> userAcctList = new ArrayList<>();
-//        String query = "SELECT * FROM user_account u NATURAL JOIN dept d "
-//                     + "WHERE u.dept_id = d.dept_id ORDER BY u.user_id";
         String query = "SELECT * FROM user_account ORDER BY user_id";
         
         try {
@@ -197,10 +193,6 @@ public abstract class UserAccountDB {
     public static UserAccount getJobRequestor(int jobID) {
         Connection conn = null;
         UserAccount user = null;
-//        String query = "SELECT * FROM user_account u NATURAL JOIN dept d "
-//                + "WHERE u.dept_id = d.dept_id AND u.user_id = (SELECT "
-//                + "user_id FROM submitted_job WHERE job_id = "
-//                + jobID + ")";
         String query = "SELECT * FROM user_account WHERE user_id = "
                      + "(SELECT user_id FROM submitted_job WHERE job_id = "
                      + jobID + ")";
@@ -228,7 +220,7 @@ public abstract class UserAccountDB {
             stm.close();
         }
         catch (SQLException|NamingException e) {
-            logger.error("FAIL to retrieve user account!");
+            logger.error("FAIL to retrieve job requestor account!");
             logger.error(e.getMessage());
         }
         finally {
@@ -307,8 +299,6 @@ public abstract class UserAccountDB {
     // a UserAccount object will be return.
     public static UserAccount checkPwd(String user_id, String pwd) {
         Connection conn = null;
-//        String query = "SELECT * FROM user_account u NATURAL JOIN dept d "
-//                        + "WHERE u.dept_id = d.dept_id AND u.user_id = ?";
         String query = "SELECT * FROM user_account WHERE user_id = ?";
         String pwd_hash = null;
         UserAccount acct = null;
@@ -536,23 +526,23 @@ public abstract class UserAccountDB {
         return Constants.DATABASE_INVALID_STR;
     }
     
-    // Check whether this user ID belongs to a adminstrator/supervisor/clinical
+    // Check whether this user ID belongs to a Admin|Director|HOD|PI.
     public static boolean isAdministrator(String userID) {
         if (userID.compareTo("super") == 0) {
             return Constants.OK;
         }
         else {
-            return getRoleID(userID) == 1;
+            return getRoleID(userID) == UserRoleDB.admin();
         }
     }
     public static boolean isDirector(String userID) {
-        return getRoleID(userID) == 2;
+        return getRoleID(userID) == UserRoleDB.director();
     }
     public static boolean isHOD(String userID) {
-        return getRoleID(userID) == 3;
+        return getRoleID(userID) == UserRoleDB.hod();
     }
     public static boolean isPI(String userID) {
-        return getRoleID(userID) == 4;
+        return getRoleID(userID) == UserRoleDB.pi();
     }
     
     // Return the institution name and unit ID for this user.
@@ -565,27 +555,22 @@ public abstract class UserAccountDB {
         String query;
         
         // Director
-        if (role_id == 2) {
+        if (role_id == UserRoleDB.director()) {
             query = "SELECT DISTINCT inst_name FROM inst_dept_grp WHERE "
                   + "inst_id = (SELECT unit_id FROM user_account WHERE user_id = ?)";
         }
         // HOD
-        else if (role_id == 3) {
-            query = "SELECT DISTINCT x.inst_name, y.unit_id FROM inst_dept_grp x "
-                  + "WHERE x.dept_id = "
-                  + "(SELECT unit_id FROM user_account WHERE user_id = ?) y";
+        else if (role_id == UserRoleDB.hod()) {
+            query = "SELECT DISTINCT inst_name, dept_id FROM inst_dept_grp "
+                  + "WHERE dept_id = "
+                  + "(SELECT unit_id FROM user_account WHERE user_id = ?)";
         }
         // Admin, PI & User
         else {
-            query = "SELECT DISTINCT x.inst_name, y.unit_id FROM inst_dept_grp x "
-                  + "WHERE x.grp_id = "
-                  + "(SELECT unit_id FROM user_account WHERE user_id = ?) y";
+            query = "SELECT inst_name, grp_id FROM inst_dept_grp "
+                  + "WHERE grp_id = "
+                  + "(SELECT unit_id FROM user_account WHERE user_id = ?)";
         }
-        
-//        query = "SELECT d.inst_name, u.unit_id FROM user_account u "
-//              + "NATURAL JOIN (SELECT inst_name, dept_id FROM dept "
-//              + "NATURAL JOIN inst) d WHERE u.user_id = ? "
-//              + "AND u.dept_id = d.dept_id";
         
         try {
             conn = DBHelper.getDSConn();
@@ -594,12 +579,16 @@ public abstract class UserAccountDB {
             ResultSet rs = stm.executeQuery();
             
             if (rs.next()) {
-                if (role_id == 2) {
+                if (role_id == UserRoleDB.director()) {
                     instUnit = rs.getString("inst_name");
+                }
+                else if (role_id == UserRoleDB.hod()) {
+                    instUnit = rs.getString("inst_name") + " - " 
+                             + rs.getString("dept_id");
                 }
                 else {
                     instUnit = rs.getString("inst_name") + " - " 
-                             + rs.getString("unit_id");
+                             + rs.getString("grp_id");
                 }
             }
             stm.close();

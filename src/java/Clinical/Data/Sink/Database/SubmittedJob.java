@@ -34,6 +34,9 @@ import java.io.Serializable;
  * 21-Jan-2016 - Added one new method, getPlDescription() to return the text 
  * description for this pipeline.
  * 03-Feb-2016 - Download link for report will also be enabled for failed job.
+ * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
+ * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
+ * (Institution - Department - Group).
  */
 
 public class SubmittedJob implements Serializable {
@@ -102,14 +105,14 @@ public class SubmittedJob implements Serializable {
     
     // Return the job status name of this submitted job.
     public String getStatus_name() {
-        return JobStatusDB.getStatusName(status_id);
+        return JobStatusDB.getJobStatusName(status_id);
     }
     
     // Based on the job status, the download link for output at jobstatus.xhtml 
     // will be enabled or disabled accordingly.
-    public String getAvailable() {
-        if ( (JobStatusDB.getStatusName(status_id).compareTo("Completed") == 0) || 
-             (JobStatusDB.getStatusName(status_id).compareTo("Finalized") == 0) )
+    public String getOutputReady() {
+        if ( (status_id == JobStatusDB.completed()) ||
+             (status_id == JobStatusDB.finalized()) )
         {
             return Constants.FALSE;
         }
@@ -119,9 +122,9 @@ public class SubmittedJob implements Serializable {
     }
     // Download link for report will also be enabled for failed job.
     public String getReportReady() {
-        if ( (JobStatusDB.getStatusName(status_id).compareTo("Completed") == 0) || 
-             (JobStatusDB.getStatusName(status_id).compareTo("Finalized") == 0) ||
-             (JobStatusDB.getStatusName(status_id).compareTo("Failed") == 0) )
+        if ( (status_id == JobStatusDB.completed()) || 
+             (status_id == JobStatusDB.finalized()) ||
+             (status_id == JobStatusDB.failed()) )
         {
             return Constants.FALSE;
         }

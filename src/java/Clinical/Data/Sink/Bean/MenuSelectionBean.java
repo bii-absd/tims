@@ -52,9 +52,12 @@ import org.apache.logging.log4j.LogManager;
  * available i.e. to retrieve for single user or all users (enable for 
  * administrator only).
  * 18-Feb-2016 - Moved method userJobStatus() to AuthenticationBean.
+ * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
+ * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
+ * (Institution - Department - Group).
  */
 
-@ManagedBean (name="menuSelectionBean")
+@ManagedBean (name="menuSelBean")
 @ViewScoped
 public class MenuSelectionBean implements Serializable{
     // Get the logger for Log4j

@@ -45,6 +45,9 @@ import org.apache.logging.log4j.LogManager;
  * 26-Jan-2016 - Implemented audit data capture module.
  * 23-Feb-2016 - Rename class name from ItemListManagementBean to 
  * GroupManagementBean.
+ * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
+ * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
+ * (Institution - Department - Group).
  */
 
 @ManagedBean (name="grpMgntBean")

@@ -34,6 +34,9 @@ import org.apache.logging.log4j.LogManager;
  * the module to unfinalize study.
  * 29-Feb-2016 - Implementation of Data Source pooling. To use DataSource to 
  * get the database connection instead of using DriverManager.
+ * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
+ * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
+ * (Institution - Department - Group).
  */
 
 @ManagedBean (name="unfinBean")
@@ -43,9 +46,9 @@ public class UnfinalizeStudyBean implements Serializable {
     private final static Logger logger = LogManager.
             getLogger(UnfinalizeStudyBean.class.getName());
     private Study selectedStudy;
-    // Store the list of finalized study.
+    // Store the full list of finalized study.
     private List<Study> finalizedStudies = new ArrayList<>();
-    // Store the user ID and grp ID of the current user.
+    // Store the user ID and grp ID of the Admin.
     private final String userName, grp_id;
 
     public UnfinalizeStudyBean() {
@@ -58,11 +61,11 @@ public class UnfinalizeStudyBean implements Serializable {
     
     @PostConstruct
     public void init() {
-        // Get the list of finalized study from the user's department.
-        finalizedStudies = StudyDB.queryFinalizedStudies(grp_id);
+        // Get the full list of finalized study.
+        finalizedStudies = StudyDB.queryAllFinalizedStudies();
     }
     
-    // User has selected the study and decided to proceed with the 
+    // Admin has selected the study and decided to proceed with the 
     // unfinalization.
     public String proceedWithUnfinalization() {
         // Record this unfinalization of study into database.
@@ -84,7 +87,7 @@ public class UnfinalizeStudyBean implements Serializable {
         return Constants.MAIN_PAGE;
     }
     
-    // Return the confirmation message for user to decide.
+    // Return the confirmation message for Admin to decide.
     public String getMessage() {
         if (selectedStudy != null) {
             return "Proceed to unfinalize " + 

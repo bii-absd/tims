@@ -1,5 +1,5 @@
 /*
- * Copyright @2015
+ * Copyright @2015-2016
  */
 package Clinical.Data.Sink.Database;
 
@@ -38,6 +38,9 @@ import org.apache.logging.log4j.LogManager;
  * 22-Dec-2015 - To close the ResultSet after use.
  * 29-Feb-2016 - Implementation of Data Source pooling. To use DataSource to 
  * get the database connection instead of using DriverManager.
+ * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
+ * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
+ * (Institution - Department - Group).
  */
 
 public abstract class UserRoleDB implements Serializable {
@@ -72,7 +75,7 @@ public abstract class UserRoleDB implements Serializable {
                 logger.debug("Role List: " + roleNameHash.toString());
             } 
             catch (SQLException|NamingException e) {
-                logger.error("SQLException when query user role!");
+                logger.error("FAIL to query user role!");
                 logger.error(e.getMessage());
             }
             finally {

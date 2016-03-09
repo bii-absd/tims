@@ -47,10 +47,11 @@ public abstract class DBHelper {
     // Get the logger for Log4j
     private final static Logger logger = LogManager.
             getLogger(DBHelper.class.getName());
-    private static PGPoolingDataSource ds = null;
+    private static PGPoolingDataSource ds;
     
     // Initialise the data source for TIMS.
     public static void initDataSource() {
+        // Only load this once when the application first started.
         if (ds == null) {
             logger.debug("Init data source for TIMS.");
             ds = new PGPoolingDataSource();

@@ -37,6 +37,9 @@ import org.apache.logging.log4j.LogManager;
  * performed for each pipeline instead of each technology.
  * 29-Feb-2016 - Implementation of Data Source pooling. To use DataSource to 
  * get the database connection instead of using DriverManager.
+ * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
+ * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
+ * (Institution - Department - Group).
  */
 
 public class DataRetriever extends Thread {
@@ -57,7 +60,7 @@ public class DataRetriever extends Thread {
         finalize_file = Constants.getSYSTEM_PATH() + 
                         Constants.getFINALIZE_PATH() + 
                         study_id + Constants.getFINALIZE_FILE_EXT();
-        annot_ver = StudyDB.getAnnotVer(study_id);
+        annot_ver = StudyDB.getStudyAnnotVer(study_id);
         // Get a data source connection for this thread.
         conn = DBHelper.getDSConn();
         
