@@ -102,6 +102,7 @@ import org.apache.logging.log4j.LogManager;
  * (Institution - Department - Group).
  * 14-Mar-2016 - Added one new method, isLead() to check whether the user is a
  * Director|HOD|PI.
+ * 14-Mar-2016 - Fix the null pointer exception when the system is first setup.
  */
 
 @ManagedBean (name="authBean")
@@ -273,7 +274,12 @@ public class AuthenticationBean implements Serializable {
     }
     // Return true if the user is an Admin or User.
     public boolean isUser() {
-        return isAdministrator() || (userAcct.getRole_id() == UserRoleDB.user());
+        if (loginName.compareTo("super") == 0) {
+            return Constants.OK;
+        }
+        else {
+            return isAdministrator() || (userAcct.getRole_id() == UserRoleDB.user());
+        }
     }
     // Return true if the user can be a lead (i.e. Director|HOD|PI).
     public boolean isLead() {
@@ -284,7 +290,12 @@ public class AuthenticationBean implements Serializable {
     // Return true if the user is an PI AND is heading a group; to decide 
     // whether to render the Finalize Study link.
     public boolean isPILead() {
-        return isLead() && GroupDB.isPILead(userAcct.getUser_id());
+        if (loginName.compareTo("super") == 0) {
+            return Constants.OK;
+        }
+        else {
+            return isLead() && GroupDB.isPILead(userAcct.getUser_id());
+        }
     }
     
     // Retrieve the faces context
