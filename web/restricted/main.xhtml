@@ -88,6 +88,10 @@
                               styleClass="mainmenuitem" rendered="#{authBean.isAdministrator()}">
                     Unfinalize Study
                 </h:outputLink>
+                <h:outputLink title="#{msg['close-study']}" value="closestudy.xhtml" 
+                              styleClass="mainmenuitem" rendered="#{authBean.isAdministrator()}">
+                    Close Study
+                </h:outputLink>
                 <h:outputLink title="Download consolidated output and summary report" 
                               value="completedstudyoutput.xhtml" 
                               styleClass="mainmenuitem">

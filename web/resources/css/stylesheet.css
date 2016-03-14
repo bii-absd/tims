@@ -227,6 +227,13 @@
     text-align: left !important;
 }
 
+/* Style defined for p:column with width equal to 140px, and text align left.
+*/
+.col140 {
+    width: 140px;
+    text-align: left !important;
+}
+
 /* Style defined for p:column with width equal to 300px, and text align left.
 */
 .col300 {

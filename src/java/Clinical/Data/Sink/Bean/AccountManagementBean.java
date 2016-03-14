@@ -66,6 +66,8 @@ import org.primefaces.event.FileUploadEvent;
  * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
  * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
  * (Institution - Department - Group).
+ * 14-Mar-2016 - Added one new method onRowEditCancel, to display a message 
+ * when the user cancel the account update.
  */
 
 @ManagedBean (name="acctMgntBean")
@@ -138,6 +140,12 @@ public class AccountManagementBean implements Serializable {
         }
     }
 
+    // Display a message if the user cancel the account update.
+    public void onRowEditCancel(RowEditEvent event) {
+            getFacesContext().addMessage(null, new FacesMessage(
+                    FacesMessage.SEVERITY_INFO, "Cancel Account Update.", ""));        
+    }
+    
     // Create the FileUploadBean object to store the photo of the user.
     public void preparePhotoUpload() {
         if (photo == null) {

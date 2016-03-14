@@ -90,6 +90,8 @@ import org.apache.logging.log4j.LogManager;
  * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
  * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
  * (Institution - Department - Group).
+ * 14-Mar-2016 - Added one new constant, EXE_CLSTUDY; activity code for closing
+ * study.
  */
 
 @ManagedBean (name = "constants")
@@ -114,6 +116,7 @@ public class Constants {
     public final static String EXE_PL = "Run Pipeline";
     public final static String EXE_FIN = "Finalize Study";
     public final static String EXE_UNFIN = "Unfinalize Study";
+    public final static String EXE_CLSTUDY = "Close Study";
     public final static String CRE_ID = "Create ID";
     public final static String CHG_PWD = "Change Password";
     public final static String CHG_ID = "Update ID";

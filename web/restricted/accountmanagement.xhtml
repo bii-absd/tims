@@ -10,12 +10,12 @@
     <ui:define name="title">Account Management</ui:define>
     <ui:param name="link" value="#{msg['acct-mgnt']}"/>
     <ui:define name="content">
-    <p:growl id="acctMsg"/>
-        <p:accordionPanel>
+        <p:growl id="acctMsg"/>
+        <p:accordionPanel id="acPanel">
             <p:tab id="editaccount" title="Edit User Account" 
                    rendered="#{authBean.isAdministrator()}" 
                    titleStyleClass="tab-title">
-            <h:form id="editAcctForm">
+                <h:form id="editAcctForm">
                 <p:dataTable var="acct" rows="5" id="editTable" 
                              value="#{acctMgntBean.userAcctList}" 
                              paginator="true"
@@ -23,6 +23,9 @@
                              {CurrentPageReport} {NextPageLink} {LastPageLink}"
                              styleClass="table-odd-row table-even-row" editable="true">
                     <p:ajax event="rowEdit" listener="#{acctMgntBean.onRowEdit}"
+                            update="acctMsg"/>
+                    <p:ajax event="rowEditCancel" 
+                            listener="#{acctMgntBean.onRowEditCancel}" 
                             update="acctMsg"/>
                     <p:column headerText="User ID" styleClass="jssmallcol" 
                               sortBy="#{acct.user_id}">
@@ -50,7 +53,7 @@
                             </f:facet>
                         </p:cellEditor>
                     </p:column>
-                    <p:column headerText="Role" styleClass="jssmallcol" 
+                    <p:column headerText="Role" id="roleCol" styleClass="jssmallcol" 
                               sortBy="#{acct.role_id}">
                         <p:cellEditor>
                             <f:facet name="output">
@@ -109,7 +112,7 @@
                         <p:rowEditor/>
                     </p:column>
                 </p:dataTable>
-            </h:form>
+                </h:form>
             </p:tab>
 
             <p:tab id="newaccount" title="Create New User Account" 

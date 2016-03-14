@@ -4,6 +4,7 @@
 package Clinical.Data.Sink.Database;
 
 import Clinical.Data.Sink.General.Constants;
+import Clinical.Data.Sink.General.Postman;
 import Clinical.Data.Sink.General.ResourceRetriever;
 import java.io.BufferedReader;
 import java.io.File;
@@ -71,6 +72,7 @@ import org.apache.pdfbox.pdmodel.graphics.xobject.PDJpeg;
  * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
  * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
  * (Institution - Department - Group).
+ * 14-Mar-2016 - Minor changes to the summary report.
  */
 
 public class DataDepositor extends Thread {
@@ -78,8 +80,8 @@ public class DataDepositor extends Thread {
     private final static Logger logger = LogManager.
             getLogger(DataDepositor.class.getName());
     private Connection conn = null;
-    private final String study_id, grp_id, annot_ver;
-    private String fileUri, summaryReport;
+    private final String study_id, grp_id, annot_ver, summaryReport;
+    private String fileUri;
     private int job_id, totalGene, processedGene;
     // Store the filepath of the Astar and Bii logo.
     private static String astarLogo, biiLogo;
@@ -149,6 +151,9 @@ public class DataDepositor extends Thread {
             
             conn.setAutoCommit(true);
             logger.debug("DataDepositor completed - Set auto-commit to ON.");
+            // Send finalization status email to the user.
+            Postman.sendFinalizationStatusEmail(study_id, userName, finalizeStatus);
+            
             if (finalizeStatus) {
                 // Update job status to finalized
                 for (FinalizingJobEntry job : jobList) {
@@ -332,7 +337,7 @@ public class DataDepositor extends Thread {
             
             cs.beginText();
             cs.moveTextPositionByAmount(subheadX, getNextLineYaxis());
-            cs.drawString("Department: " + UserAccountDB.getInstNameUnitID(userName));
+            cs.drawString("From: " + UserAccountDB.getInstNameUnitID(userName));
             cs.endText();
             
             cs.beginText();
@@ -384,7 +389,7 @@ public class DataDepositor extends Thread {
         summary.append("\n").append("5. No of gene data stored").append("\n");
         summary.append("\t").append(processedGene).append("\n\n");
         summary.append("Author: ").append(UserAccountDB.getFullName(userName)).append("\n");
-        summary.append("Department: ").append(UserAccountDB.getInstNameUnitID(userName)).append("\n");
+        summary.append("From: ").append(UserAccountDB.getInstNameUnitID(userName)).append("\n");
         summary.append("Date: ").append(Constants.getDateTime());
 
         // Start to produce the summary report.

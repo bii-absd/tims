@@ -19,18 +19,11 @@
                 <p:column headerText="Study Title" styleClass="col300">
                     <h:outputText value="#{finStudy.title}"/>
                 </p:column>
-                <p:column headerText="Principal Investigator" 
-                          style="width: 130px; text-align: left">
+                <p:column headerText="Group" styleClass="col140">
+                    <h:outputText value="#{finStudy.groupName}"/>
+                </p:column>
+                <p:column headerText="Principal Investigator" styleClass="col140">
                     <h:outputText value="#{finStudy.ownerFullName}"/>
-                </p:column>
-                <p:column headerText="Start Date" styleClass="jssmallcol">
-                    <h:outputText value="#{finStudy.start_date}"/>
-                </p:column>
-                <p:column headerText="End Date" styleClass="jssmallcol">
-                    <h:outputText value="#{finStudy.end_date}"/>
-                </p:column>
-                <p:column headerText="Description" style="text-align: left">
-                    <h:outputText value="#{finStudy.description}"/>
                 </p:column>
                 <p:column headerText="Annotation Version" styleClass="col120">
                     <h:outputText value="#{finStudy.annot_ver}"/>

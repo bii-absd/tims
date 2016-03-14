@@ -33,6 +33,8 @@ import org.apache.logging.log4j.LogManager;
  * sendJobStatusEmail and sendExceptionEmail().
  * 01-Mar-2016 - Change in from: email address, due to change in application
  * name.
+ * 14-Mar-2016 - Added 3 new methods sendStudyClosureStatusEmail(), 
+ * sendFinalizationStatusEmail() and sendTaskStatusEmail().
  */
 
 public abstract class Postman {
@@ -129,6 +131,54 @@ public abstract class Postman {
             }
             // Send the message
             Transport.send(message);
+            
+            logger.debug("Email sent to: " + user.getEmail());
+        }
+        catch (MessagingException me) {
+            logger.error("FAIL to send email to: " + user.getEmail());
+            logger.error(me.getMessage());
+        }
+    }
+
+    // Send a finalization status email to notify the user of the status.
+    public static void sendFinalizationStatusEmail(String study_id,
+            String userName, Boolean status)
+    {
+        sendTaskStatusEmail(study_id, userName, status, "finalization");
+    }    
+    // Send a closure status email to notify the user of the status.
+    public static void sendStudyClosureStatusEmail(String study_id, 
+            String userName, Boolean status) 
+    {
+        sendTaskStatusEmail(study_id, userName, status, "closure");
+    }
+    // Helper function to send out the status email for each task.
+    public static void sendTaskStatusEmail(String study_id, String userName, 
+            boolean status, String task) {
+        setupMailServer();
+        UserAccount user = UserAccountDB.getUserAct(userName);
+        
+        try {
+            MimeMessage msg = new MimeMessage(session);
+            msg.setFrom(new InternetAddress(from));
+            msg.addRecipient(Message.RecipientType.TO, 
+                    new InternetAddress(user.getEmail()));
+            if (status) {
+                msg.setSubject("Study " + study_id + " " + task + " completed successfully.");
+                msg.setText(
+                    "Dear " + user.getFirst_name() + ",\n\n" +
+                    "Study " + study_id + " " + task + " has completed successfully.\n\n\n" +
+                    "Please do not reply to this message.");                
+            }
+            else {
+                msg.setSubject("Study " + study_id + " " + task + " failed to complete.");
+                msg.setText(
+                    "Dear " + user.getFirst_name() + ",\n\n" +
+                    "Study " + study_id + " " + task + " failed to complete.\n\n\n" +
+                    "Please do not reply to this message.");                
+            }
+            // Send the message.
+            Transport.send(msg);
             
             logger.debug("Email sent to: " + user.getEmail());
         }

@@ -100,6 +100,8 @@ import org.apache.logging.log4j.LogManager;
  * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
  * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
  * (Institution - Department - Group).
+ * 14-Mar-2016 - Added one new method, isLead() to check whether the user is a
+ * Director|HOD|PI.
  */
 
 @ManagedBean (name="authBean")
@@ -273,10 +275,16 @@ public class AuthenticationBean implements Serializable {
     public boolean isUser() {
         return isAdministrator() || (userAcct.getRole_id() == UserRoleDB.user());
     }
-    // Return true if the user is heading any group; to decide whether to render
-    // the Finalize Study link.
+    // Return true if the user can be a lead (i.e. Director|HOD|PI).
+    public boolean isLead() {
+        return (userAcct.getRole_id() == UserRoleDB.director()) ||
+               (userAcct.getRole_id() == UserRoleDB.hod()) ||
+               (userAcct.getRole_id() == UserRoleDB.pi());
+    }
+    // Return true if the user is an PI AND is heading a group; to decide 
+    // whether to render the Finalize Study link.
     public boolean isPILead() {
-        return GroupDB.isPILead(userAcct.getUser_id());
+        return isLead() && GroupDB.isPILead(userAcct.getUser_id());
     }
     
     // Retrieve the faces context

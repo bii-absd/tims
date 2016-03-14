@@ -54,6 +54,9 @@ import org.apache.logging.log4j.LogManager;
  * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
  * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
  * (Institution - Department - Group).
+ * 14-Mar-2016 - Do not allow user to change the study's closed status directly.
+ * Changed method queryAllFinalizedStudies(), to return only those studies that  
+ * are finalized and not closed.
  */
 
 public abstract class StudyDB {
@@ -108,7 +111,7 @@ public abstract class StudyDB {
         Boolean result = Constants.OK;
         String query = "UPDATE study SET title=?, grp_id = ?, "
                      + "description = ?, background = ?, grant_info = ?, "
-                     + "start_date = ?, end_date = ?, closed = ? WHERE study_id = ?";
+                     + "start_date = ?, end_date = ? WHERE study_id = ?";
         
         try {
             conn = DBHelper.getDSConn();
@@ -120,16 +123,15 @@ public abstract class StudyDB {
             stm.setString(5, study.getGrant_info());
             stm.setDate(6, study.getStart_date());
             stm.setDate(7, study.getEnd_date());
-            stm.setBoolean(8, study.getClosed());
-            stm.setString(9, study.getStudy_id());
+            stm.setString(8, study.getStudy_id());
             stm.executeUpdate();
             stm.close();
             
-            logger.debug("Updated study: " + study.getStudy_id());
+            logger.debug("Updated study " + study.getStudy_id());
         }
         catch (SQLException|NamingException e) {
             result = Constants.NOT_OK;
-            logger.error("FAIL to update study!");
+            logger.error("FAIL to update study " + study.getStudy_id());
             logger.error(e.getMessage());
         }
         finally {
@@ -179,7 +181,7 @@ public abstract class StudyDB {
             logger.debug(studyID + " closed status updated to " + status);
         }
         catch (SQLException|NamingException e) {
-            logger.error("FAIL to update study to closed!");
+            logger.error("FAIL to update study's closed status!");
             logger.error(e.getMessage());
         }
         finally {
@@ -402,9 +404,11 @@ public abstract class StudyDB {
     }
     
     // Return the full list of finalized studies in the system. The list will
-    // shown in the Unfinalize Study view (only accessible by Admin).
+    // shown in the Unfinalize Study view (only accessible by Admin). Once the
+    // study is closed, no unfinalize is allowed.
     public static List<Study> queryAllFinalizedStudies() {
-        String query = "SELECT * FROM study WHERE finalized = true ORDER BY study_id";
+        String query = "SELECT * FROM study WHERE finalized = true "
+                     + "AND closed = false ORDER BY study_id";
         
         return queryFinalizedStudies(query);
     }

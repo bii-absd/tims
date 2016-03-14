@@ -74,6 +74,8 @@ import org.apache.logging.log4j.LogManager;
  * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
  * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
  * (Institution - Department - Group).
+ * 14-Mar-2016 - To fetch the condition for the query in method 
+ * getFinalizedJobIDs from JobStatusDB class, instead of hard-coding it.
  */
 
 public abstract class SubmittedJobDB {
@@ -448,8 +450,8 @@ public abstract class SubmittedJobDB {
     public static List<Integer> getFinalizedJobIDs(String study_id) {
         Connection conn = null;
         List<Integer> jobIDList = new ArrayList<>();
-        String query = "SELECT job_id FROM submitted_job WHERE status_id = 5"
-                     + " AND study_id = ?";
+        String query = "SELECT job_id FROM submitted_job WHERE status_id = "
+                     + JobStatusDB.finalized() + " AND study_id = ?";
         
         try {
             conn = DBHelper.getDSConn();
@@ -462,7 +464,7 @@ public abstract class SubmittedJobDB {
             }
             
             stm.close();
-            logger.debug("All finalized job IDs retrieved for " + study_id);
+            logger.debug("Finalized job IDs retrieved for " + study_id);
         }
         catch (SQLException|NamingException e) {
             logger.error("FAIL to retrieve finalized job IDs!");
