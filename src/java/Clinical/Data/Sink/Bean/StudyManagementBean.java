@@ -62,6 +62,8 @@ import org.apache.logging.log4j.LogManager;
  * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
  * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
  * (Institution - Department - Group).
+ * 15-Mar-2016 - During creation or updating of Study ID, only those groups
+ * which are active, and have pi setup will be available for selection.
  */
 
 @ManagedBean (name="studyMgntBean")
@@ -93,7 +95,7 @@ public class StudyManagementBean implements Serializable {
     public void init() {
         start_date = end_date = null;
         annotHash = StudyDB.getAnnotHash();
-        grpHash = GroupDB.getGrpWithPIHash();
+        grpHash = GroupDB.getActiveGrpWithPIHash();
         piIDHash = UserAccountDB.getPiIDHash();
         studyList = StudyDB.queryStudy();
         grouping = new ArrayList<>();
@@ -143,7 +145,8 @@ public class StudyManagementBean implements Serializable {
 
             for (String dept_id : deptIDList) {
                 // Retrieve the list of groups under this department.
-                List<String> grpIDList = GroupDB.getGrpIDListByDept(dept_id);
+                // Only retrieve those groups which are active, and have pi setup.
+                List<String> grpIDList = GroupDB.getActiveGrpIDListByDept(dept_id);
                 SelectItem[] grpOpts = new SelectItem[grpIDList.size()];
                 int j = 0;
 
@@ -171,6 +174,9 @@ public class StudyManagementBean implements Serializable {
         owner_id = GroupDB.getGrpPIID(grp_id);
         // Only proceed to create the new study ID if the group has a PI 
         // in-charge setup, else display error message.
+        // After the changes to the query statement to retrieve the group ID,
+        // only group with pi setup will be retrieve i.e. owner_id will never 
+        // be null.
         if (owner_id == null) {
             logger.debug("PI in-charge for group " + grp_id + " not setup!");
             fc.addMessage(null, new FacesMessage(

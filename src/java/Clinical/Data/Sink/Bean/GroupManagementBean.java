@@ -48,6 +48,7 @@ import org.apache.logging.log4j.LogManager;
  * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
  * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
  * (Institution - Department - Group).
+ * 15-Mar-2016 - Changes due to a new field (i.e. active) added in the grp table.
  */
 
 @ManagedBean (name="grpMgntBean")
@@ -127,7 +128,8 @@ public class GroupManagementBean implements Serializable {
     
     // Create the new group ID
     public String createNewGrpID() {
-        Group newGrp = new Group(grp_id, pi, dept_id, grp_name);
+        // By default, all the newly created group will be active.
+        Group newGrp = new Group(grp_id, pi, dept_id, grp_name, true);
         
         if (GroupDB.insertGroup(newGrp)) {
             // Record this group creation activity into database.

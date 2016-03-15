@@ -5,6 +5,7 @@ package Clinical.Data.Sink.Bean;
 
 import Clinical.Data.Sink.Database.ActivityLogDB;
 import Clinical.Data.Sink.Database.DepartmentDB;
+import Clinical.Data.Sink.Database.Group;
 import Clinical.Data.Sink.Database.GroupDB;
 import Clinical.Data.Sink.Database.InstitutionDB;
 import Clinical.Data.Sink.Database.UserAccount;
@@ -68,6 +69,9 @@ import org.primefaces.event.FileUploadEvent;
  * (Institution - Department - Group).
  * 14-Mar-2016 - Added one new method onRowEditCancel, to display a message 
  * when the user cancel the account update.
+ * 15-Mar-2016 - During account creation, if the new account is a PI, then
+ * automatically update the group's pi field with the new user_id if the field
+ * is not setup yet.
  */
 
 @ManagedBean (name="acctMgntBean")
@@ -199,6 +203,19 @@ public class AccountManagementBean implements Serializable {
                         FacesMessage.SEVERITY_ERROR, 
                         "Failed to create working directories for user, "
                         + "please contact the administrator!", ""));
+            }
+            
+            // If this new user account is a PI, check on the pi field of the
+            // group he is assigned to.
+            if (role_id == UserRoleDB.pi()) {
+                // If the PI field is not setup (i.e. null), then set it with 
+                // this new user ID.
+                if (GroupDB.getGrpPIID(unit_id) == null) {
+                    Group tmp = GroupDB.getGrpByGrpID(unit_id);
+                    // Update the pi field.
+                    tmp.setPi(user_id);
+                    GroupDB.updateGroup(tmp);
+                }
             }
         }
         catch (SQLException|NamingException e) {

@@ -62,6 +62,19 @@
                                 </f:facet>
                             </p:cellEditor>
                         </p:column>
+                        <p:column headerText="Status" styleClass="jssmallcol">
+                            <p:cellEditor>
+                                <f:facet name="output">
+                                    <h:outputText value="#{grp.activeStatus}"/>
+                                </f:facet>
+                                <f:facet name="input">
+                                    <p:selectOneMenu value="#{grp.active}" style="width: 100%">
+                                        <f:selectItem itemLabel="Active" itemValue="true"/>
+                                        <f:selectItem itemLabel="Inactive" itemValue="false"/>
+                                    </p:selectOneMenu>
+                                </f:facet>
+                            </p:cellEditor>
+                        </p:column>
                         <p:column style="width: 32px">
                             <p:rowEditor/>
                         </p:column>

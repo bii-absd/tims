@@ -14,19 +14,24 @@ package Clinical.Data.Sink.Database;
  * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
  * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
  * (Institution - Department - Group).
+ * 15-Mar-2016 - Added one new boolean attribute, active.
  */
 
 public class Group {
     // grp table fields
     private String grp_id, pi, dept_id, grp_name;
-    // Additional attribute to store the department name.
+    private boolean active;
+    // Additional attribute to store the department and PI name.
     private String dept_name, pi_name;
 
-    public Group(String grp_id, String pi, String dept_id, String grp_name) {
+    public Group(String grp_id, String pi, String dept_id, String grp_name, 
+                 boolean active) 
+    {
         this.grp_id = grp_id;
         this.pi = pi;
         this.dept_id = dept_id;
         this.grp_name = grp_name;
+        this.active = active;
         dept_name = DepartmentDB.getDeptName(dept_id);
         if (pi != null) {
             pi_name = UserAccountDB.getFullName(pi);
@@ -43,6 +48,10 @@ public class Group {
     // Return the name of the PI incharge of this group.
     public String getPi_name() {
         return pi_name;
+    }
+    // Return the active status.
+    public String getActiveStatus() {
+        return active?"Active":"Inactive";
     }
     
     // Machine generated getters and setters.
@@ -69,5 +78,11 @@ public class Group {
     }
     public void setGrp_name(String grp_name) {
         this.grp_name = grp_name;
+    }
+    public boolean isActive() {
+        return active;
+    }
+    public void setActive(boolean active) {
+        this.active = active;
     }
 }

@@ -30,6 +30,9 @@ import org.apache.logging.log4j.LogManager;
  * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
  * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
  * (Institution - Department - Group).
+ * 15-Mar-2016 - Changes due to a new field (i.e. active) added in the grp 
+ * table. For Study management queries, only return those groups which are 
+ * active and have pi setup.
  */
 
 public abstract class GroupDB implements Serializable {
@@ -62,10 +65,11 @@ public abstract class GroupDB implements Serializable {
         return result;
     }
     
-    // Return the HashMap of all the group IDs (with pi setup) in the system.
-    public static LinkedHashMap<String, String> getGrpWithPIHash() {
+    // Return the HashMap of all the group IDs (which are active and with pi 
+    // setup) in the system. Used in Study Management Edit function.
+    public static LinkedHashMap<String, String> getActiveGrpWithPIHash() {
         String query = "SELECT grp_id, grp_name FROM grp "
-                     + "WHERE pi IS NOT NULL ORDER BY grp_id";
+                     + "WHERE pi IS NOT NULL AND active = true ORDER BY grp_id";
 
         return getGrpHash(query);
     }
@@ -125,6 +129,12 @@ public abstract class GroupDB implements Serializable {
         
         return getGrpList(query);
     }
+    // Return the Group for this group ID.
+    public static Group getGrpByGrpID(String grp_id) {
+        String query = "SELECT * FROM grp WHERE grp_id = \'" + grp_id + "\'";
+        // There should only be one item in the list returned.
+        return getGrpList(query).get(0);
+    }
     
     // Helper function to retrieve the group list from the database using the 
     // query passed in.
@@ -141,7 +151,8 @@ public abstract class GroupDB implements Serializable {
                 Group grp = new Group(rs.getString("grp_id"),
                                       rs.getString("pi"),
                                       rs.getString("dept_id"),
-                                      rs.getString("grp_name"));
+                                      rs.getString("grp_name"),
+                                      rs.getBoolean("active"));
                 grpList.add(grp);
             }
             stm.close();
@@ -157,15 +168,17 @@ public abstract class GroupDB implements Serializable {
         return grpList;
     }
     
-    // Return the list of group ID setup under this department.
-    public static List<String> getGrpIDListByDept(String dept_id) {
-        return new ArrayList<>(getGrpHashByDept(dept_id).values());
+    // Return the list of active group ID (with pi setup) under this department.
+    public static List<String> getActiveGrpIDListByDept(String dept_id) {
+        return new ArrayList<>(getActiveGrpHashByDept(dept_id).values());
     }    
-    // Return the HashMap of group ID setup under this department.
-    public static LinkedHashMap<String, String> getGrpHashByDept(String dept_id) {
+    // Return the HashMap of active group ID (with pi setup) under this department.
+    public static LinkedHashMap<String, String> getActiveGrpHashByDept(String dept_id) 
+    {
         Connection conn = null;
         LinkedHashMap<String, String> grpHash = new LinkedHashMap<>();
-        String query = "SELECT grp_id FROM grp WHERE dept_id = ?";
+        String query = "SELECT grp_id FROM grp WHERE pi IS NOT NULL "
+                     + "AND active = true AND dept_id = ?";
         
         try {
             conn = DBHelper.getDSConn();
@@ -224,8 +237,8 @@ public abstract class GroupDB implements Serializable {
     public static boolean updateGroup(Group grp) {
         Connection conn = null;
         boolean result = Constants.OK;
-        String query = "UPDATE grp SET pi = ?, dept_id = ?, grp_name = ? "
-                     + "WHERE grp_id = ?";
+        String query = "UPDATE grp SET pi = ?, dept_id = ?, grp_name = ?, "
+                     + "active = ? WHERE grp_id = ?";
         
         try {
             conn = DBHelper.getDSConn();
@@ -233,7 +246,8 @@ public abstract class GroupDB implements Serializable {
             stm.setString(1, grp.getPi());
             stm.setString(2, grp.getDept_id());
             stm.setString(3, grp.getGrp_name());
-            stm.setString(4, grp.getGrp_id());
+            stm.setBoolean(4, grp.isActive());
+            stm.setString(5, grp.getGrp_id());
             stm.executeUpdate();
             stm.close();
             logger.debug("Group " + grp.getGrp_id() + " updated.");
