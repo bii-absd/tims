@@ -57,6 +57,8 @@ import org.apache.logging.log4j.LogManager;
  * 14-Mar-2016 - Do not allow user to change the study's closed status directly.
  * Changed method queryAllFinalizedStudies(), to return only those studies that  
  * are finalized and not closed.
+ * 22-Mar-2016 - Changes due to the addition field (i.e. icd_code) in the study
+ * table.
  */
 
 public abstract class StudyDB {
@@ -64,14 +66,55 @@ public abstract class StudyDB {
     private final static Logger logger = LogManager.
             getLogger(StudyDB.class.getName());
 
+    // Return the study object that has this study id.
+    public static Study getStudyObject(String studyID) {
+        Study study = null;
+        Connection conn = null;
+        String query = "SELECT * FROM study WHERE study_id = ?";
+        
+        try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            stm.setString(1, studyID);
+            ResultSet rs = stm.executeQuery();
+            
+            if (rs.next()) {
+                study = new Study(
+                            rs.getString("study_id"),
+                            rs.getString("title"),
+                            rs.getString("grp_id"),
+                            rs.getString("annot_ver"),
+                            rs.getString("icd_code"),
+                            rs.getString("description"),
+                            rs.getString("background"),
+                            rs.getString("grant_info"),
+                            rs.getString("finalized_output"),
+                            rs.getString("summary"),
+                            rs.getDate("start_date"),
+                            rs.getDate("end_date"),
+                            rs.getBoolean("finalized"),
+                            rs.getBoolean("closed"));
+            }
+        }
+        catch (SQLException|NamingException e) {
+            logger.error("FAIL to retrieve study " + studyID);
+            logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
+        }
+        
+        return study;
+    }
+    
     // Insert the new study into database. For every new study created, 
     // the finalized_output and summary fields will be empty.
     public static Boolean insertStudy(Study study) {
         Connection conn = null;
         Boolean result = Constants.OK;
-        String query = "INSERT INTO study(study_id,title,grp_id,"
-                     + "annot_ver,description,background,grant_info,start_date,"
-                     + "end_date,finalized,closed) VALUES(?,?,?,?,?,?,?,?,?,?,?)";
+        String query = "INSERT INTO study(study_id,title,grp_id,annot_ver,"
+                     + "icd_code,description,background,grant_info,start_date,"
+                     + "end_date,finalized,closed) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)";
         
         try {
             conn = DBHelper.getDSConn();
@@ -80,13 +123,14 @@ public abstract class StudyDB {
             stm.setString(2, study.getTitle());
             stm.setString(3, study.getGrp_id());
             stm.setString(4, study.getAnnot_ver());
-            stm.setString(5, study.getDescription());
-            stm.setString(6, study.getBackground());
-            stm.setString(7, study.getGrant_info());
-            stm.setDate(8, study.getStart_date());
-            stm.setDate(9, study.getEnd_date());
-            stm.setBoolean(10, study.getFinalized());
-            stm.setBoolean(11, study.getClosed());
+            stm.setString(5, study.getIcd_code());
+            stm.setString(6, study.getDescription());
+            stm.setString(7, study.getBackground());
+            stm.setString(8, study.getGrant_info());
+            stm.setDate(9, study.getStart_date());
+            stm.setDate(10, study.getEnd_date());
+            stm.setBoolean(11, study.getFinalized());
+            stm.setBoolean(12, study.getClosed());
             stm.executeUpdate();
             stm.close();
             
@@ -109,7 +153,7 @@ public abstract class StudyDB {
     public static Boolean updateStudy(Study study) {
         Connection conn = null;
         Boolean result = Constants.OK;
-        String query = "UPDATE study SET title=?, grp_id = ?, "
+        String query = "UPDATE study SET title=?, grp_id = ?, icd_code = ?, "
                      + "description = ?, background = ?, grant_info = ?, "
                      + "start_date = ?, end_date = ? WHERE study_id = ?";
         
@@ -118,12 +162,13 @@ public abstract class StudyDB {
             PreparedStatement stm = conn.prepareStatement(query);
             stm.setString(1, study.getTitle());
             stm.setString(2, study.getGrp_id());
-            stm.setString(3, study.getDescription());
-            stm.setString(4, study.getBackground());
-            stm.setString(5, study.getGrant_info());
-            stm.setDate(6, study.getStart_date());
-            stm.setDate(7, study.getEnd_date());
-            stm.setString(8, study.getStudy_id());
+            stm.setString(3, study.getIcd_code());
+            stm.setString(4, study.getDescription());
+            stm.setString(5, study.getBackground());
+            stm.setString(6, study.getGrant_info());
+            stm.setDate(7, study.getStart_date());
+            stm.setDate(8, study.getEnd_date());
+            stm.setString(9, study.getStudy_id());
             stm.executeUpdate();
             stm.close();
             
@@ -376,6 +421,7 @@ public abstract class StudyDB {
                             rs.getString("title"),
                             rs.getString("grp_id"),
                             rs.getString("annot_ver"),
+                            rs.getString("icd_code"),
                             rs.getString("description"),
                             rs.getString("background"),
                             rs.getString("grant_info"),
@@ -447,6 +493,7 @@ public abstract class StudyDB {
                             rs.getString("title"),
                             rs.getString("grp_id"),
                             rs.getString("annot_ver"),
+                            rs.getString("icd_code"),
                             rs.getString("description"),
                             rs.getString("background"),
                             rs.getString("grant_info"),
@@ -493,6 +540,7 @@ public abstract class StudyDB {
                             rs.getString("title"),
                             rs.getString("grp_id"),
                             rs.getString("annot_ver"),
+                            rs.getString("icd_code"),
                             rs.getString("description"),
                             rs.getString("background"),
                             rs.getString("grant_info"),
@@ -527,6 +575,10 @@ public abstract class StudyDB {
     // Retrieve the group ID for this study.
     public static String getStudyGrpID(String study_id) {
         return getStudyPropValue(study_id, "grp_id");
+    }
+    // Retrieve the ICD code for this study.
+    public static String getICDCode(String study_id) {
+        return getStudyPropValue(study_id, "icd_code");
     }
     
     // Helper function to retrieve one of the study's property value.

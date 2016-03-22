@@ -73,6 +73,8 @@ import org.apache.pdfbox.pdmodel.graphics.xobject.PDJpeg;
  * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
  * (Institution - Department - Group).
  * 14-Mar-2016 - Minor changes to the summary report.
+ * 22-Mar-2016 - Changes due to the addition field (i.e. icd_code) in the 
+ * finalized_output table.
  */
 
 public class DataDepositor extends Thread {
@@ -80,7 +82,7 @@ public class DataDepositor extends Thread {
     private final static Logger logger = LogManager.
             getLogger(DataDepositor.class.getName());
     private Connection conn = null;
-    private final String study_id, grp_id, annot_ver, summaryReport;
+    private final String study_id, grp_id, annot_ver, icd_code, summaryReport;
     private String fileUri;
     private int job_id, totalGene, processedGene;
     // Store the filepath of the Astar and Bii logo.
@@ -102,9 +104,16 @@ public class DataDepositor extends Thread {
         this.userName = userName;
         this.study_id = study_id;
         this.jobList = jobList;
-        // Retrieve the value of grp_id and annot_ver from database.
-        grp_id = StudyDB.getStudyGrpID(study_id);
-        annot_ver = StudyDB.getStudyAnnotVer(study_id);
+        // Retrieve the value of grp_id, annot_ver and icd_code from database.
+        // Might want to consider retrieving the study object and get its 
+        // attributes (instead of making 3 database call).
+        Study study = StudyDB.getStudyObject(study_id);
+        grp_id = study.getGrp_id();
+        annot_ver = study.getAnnot_ver();
+        icd_code = study.getIcd_code();
+//        grp_id = StudyDB.getStudyGrpID(study_id);
+//        annot_ver = StudyDB.getStudyAnnotVer(study_id);
+//        icd_code = StudyDB.getICDCode(study_id);
         summaryReport = Constants.getSYSTEM_PATH() + 
                         Constants.getFINALIZE_PATH() + study_id + 
                         Constants.getSUMMARY_FILE_NAME() + 
@@ -422,6 +431,7 @@ public class DataDepositor extends Thread {
         stm.setInt(3, record.getJob_id());
         stm.setString(4, record.getSubject_id());
         stm.setString(5, record.getGrp_id());
+        stm.setString(6, record.getIcd_code());
         stm.executeUpdate();
             
         logger.debug("Output for " + record.getSubject_id() + 
@@ -486,8 +496,8 @@ public class DataDepositor extends Thread {
             processedRecord = unprocessedRecord = 0;
             // INSERT statement to insert a record into finalized_output table.
             String insertStr = "INSERT INTO finalized_output(array_index,"
-                             + "annot_ver,job_id,subject_id,grp_id) "
-                             + "VALUES(?,?,?,?,?)";
+                             + "annot_ver,job_id,subject_id,grp_id,icd_code) "
+                             + "VALUES(?,?,?,?,?,?)";
             
             try (PreparedStatement insertStm = conn.prepareStatement(insertStr)) {
                 // Ignore the first two strings (i.e. geneID and EntrezID); 
@@ -501,7 +511,8 @@ public class DataDepositor extends Thread {
                             processedRecord++;
                             arrayIndex[i] = getNextArrayInd();
                             FinalizedOutput record = new FinalizedOutput
-                                (arrayIndex[i], annot_ver, values[i], grp_id, job_id);
+                                (arrayIndex[i], annot_ver, values[i], grp_id, 
+                                 job_id, icd_code);
                             // Insert the finalized output record.
                             insertToFinalizedOutput(insertStm, record);                            
                             // At every 5th subject ID, place a marker '$'

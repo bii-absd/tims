@@ -191,7 +191,7 @@ public abstract class GroupDB implements Serializable {
             }
             
             stm.close();
-            logger.debug("Group list for " + dept_id + ": " + grpHash.toString());
+            logger.debug("Active group list for " + dept_id + ": " + grpHash.toString());
         }
         catch (SQLException|NamingException e) {
             logger.error("FAIL to query group list for " + dept_id);

@@ -6,6 +6,7 @@ package Clinical.Data.Sink.Bean;
 import Clinical.Data.Sink.Database.ActivityLogDB;
 import Clinical.Data.Sink.Database.DepartmentDB;
 import Clinical.Data.Sink.Database.GroupDB;
+import Clinical.Data.Sink.Database.ICD10DB;
 import Clinical.Data.Sink.Database.Institution;
 import Clinical.Data.Sink.Database.InstitutionDB;
 import Clinical.Data.Sink.Database.Study;
@@ -64,6 +65,8 @@ import org.apache.logging.log4j.LogManager;
  * (Institution - Department - Group).
  * 15-Mar-2016 - During creation or updating of Study ID, only those groups
  * which are active, and have pi setup will be available for selection.
+ * 22-Mar-2016 - Changes due to the addition field (i.e. icd_code) in the study
+ * table.
  */
 
 @ManagedBean (name="studyMgntBean")
@@ -74,11 +77,12 @@ public class StudyManagementBean implements Serializable {
             getLogger(StudyManagementBean.class.getName());
     // Attributes for Study object
     private String study_id, title, owner_id, grp_id, annot_ver, description, 
-                   background, grant_info;
+                   background, grant_info, icd_code;
     private Date start_date, end_date;
     private java.util.Date util_start_date, util_end_date;
     private Boolean finalized;
-    private LinkedHashMap<String,String> annotHash, deptHash, grpHash, piIDHash;
+    private LinkedHashMap<String,String> annotHash, deptHash, grpHash, 
+                                         piIDHash, icdHash;
     private List<SelectItem> grouping;
     private List<Study> studyList;
     // Store the user ID of the current user.
@@ -97,6 +101,7 @@ public class StudyManagementBean implements Serializable {
         annotHash = StudyDB.getAnnotHash();
         grpHash = GroupDB.getActiveGrpWithPIHash();
         piIDHash = UserAccountDB.getPiIDHash();
+        icdHash = ICD10DB.getICDCodeHash();
         studyList = StudyDB.queryStudy();
         grouping = new ArrayList<>();
         setupGrouping();
@@ -199,8 +204,8 @@ public class StudyManagementBean implements Serializable {
             // New Study will always be created with empty finalized_output and 
             // summary fields.
             Study study = new Study(study_id, title, grp_id, annot_ver, 
-                                description, background, grant_info, start_date, 
-                                end_date, finalized);
+                                    icd_code, description, background, 
+                                    grant_info, start_date, end_date, finalized);
         
             if (StudyDB.insertStudy(study)) {
                 // Create a separate input directory for the newly created Study ID.
@@ -249,6 +254,11 @@ public class StudyManagementBean implements Serializable {
         return piIDHash;
     }
     
+    // Return the list of ICD Code setup in the system.
+    public LinkedHashMap<String, String> getIcdHash() {
+        return icdHash;
+    }
+    
     // Machine generated getters and setters
     public List<Study> getStudyList() {
         return studyList;
@@ -279,6 +289,12 @@ public class StudyManagementBean implements Serializable {
     }
     public void setAnnot_ver(String annot_ver) {
         this.annot_ver = annot_ver;
+    }
+    public String getIcd_code() {
+        return icd_code;
+    }
+    public void setIcd_code(String icd_code) {
+        this.icd_code = icd_code;
     }
     public String getDescription() {
         return description;

@@ -25,7 +25,7 @@
                 <p:column headerText="Study ID" styleClass="jsmedcol">
                     <h:outputText value="#{study.study_id}"/>
                 </p:column>
-                <p:column headerText="Study Titile" styleClass="col300">
+                <p:column headerText="Study Titile" styleClass="studytitlecol">
                     <p:cellEditor>
                         <f:facet name="output">
                             <h:outputText value="#{study.title}"/>
@@ -57,6 +57,22 @@
                 <p:column headerText="Annotation Version" 
                           style="width: 110px; text-align: left">
                     <h:outputText value="#{study.annot_ver}"/>
+                </p:column>
+                <p:column headerText="Disease" styleClass="jsmedcol">
+                    <p:cellEditor>
+                        <f:facet name="output">
+                            <h:outputText value="#{study.ICDName}"/>
+                        </f:facet>
+                        <f:facet name="input">
+                            <p:selectOneMenu value="#{study.icd_code}" 
+                                             rendered="#{!study.finalized}" 
+                                             filter="true" 
+                                             filterMatchMode="startsWith"
+                                             style="width: 100%">
+                                <f:selectItems value="#{studyMgntBean.icdHash}"/>
+                            </p:selectOneMenu>
+                        </f:facet>
+                    </p:cellEditor>
                 </p:column>
                 <p:column headerText="Description" style="text-align: left">
                     <p:cellEditor>
@@ -127,6 +143,15 @@
                     <f:selectItems value="#{studyMgntBean.annotHash}"/>
                 </p:selectOneMenu>
                 <h:message id="annot-status" for="annot" styleClass="errors"/>
+                <h:panelGroup/>
+                
+                <p:selectOneMenu id="icd" required="true" 
+                                 value="#{studyMgntBean.icd_code}" filter="true" 
+                                 filterMatchMode="startsWith" style="width: 180px">
+                    <f:selectItem itemLabel="Select Disease under Study" itemValue=""/>
+                    <f:selectItems value="#{studyMgntBean.icdHash}"/>
+                </p:selectOneMenu>
+                <h:message id="icd-status" for="icd" styleClass="errors"/>
                 <h:panelGroup/>
                 
                 <p:inputText id="title" size="150" autocomplete="off" required="true" 

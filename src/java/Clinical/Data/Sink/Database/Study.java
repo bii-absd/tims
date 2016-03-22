@@ -30,25 +30,29 @@ import java.sql.Date;
  * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
  * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
  * (Institution - Department - Group).
+ * 22-Mar-2016 - Added one attribute icd_code, to identify the disease under
+ * study.
  */
 
 public class Study {
     // study table attributes
     private String study_id, title, owner_id, grp_id, annot_ver, description, 
-                   background, grant_info, finalized_output, summary;
+                   background, grant_info, finalized_output, summary, icd_code;
     private Date start_date, end_date;
     private Boolean finalized, closed;
 
     // This constructor is used when retrieving the study table for database.
     public Study(String study_id, String title, String grp_id, 
-                 String annot_ver, String description, String background, 
-                 String grant_info, String finalized_output, String summary, 
-                 Date start_date, Date end_date, Boolean finalized, Boolean closed) 
+                 String annot_ver, String icd_code, String description, 
+                 String background, String grant_info, String finalized_output, 
+                 String summary, Date start_date, Date end_date, 
+                 Boolean finalized, Boolean closed) 
     {
         this.study_id = study_id;
         this.title = title;
         this.grp_id = grp_id;
         this.annot_ver = annot_ver;
+        this.icd_code = icd_code;
         this.description = description;
         this.background = background;
         this.grant_info = grant_info;
@@ -63,14 +67,15 @@ public class Study {
     // This constructor is used for constructing new Study.
     // For every new Study created, the finalized_output and summary will be
     // empty, and closed status will be false (i.e. not closed).
-    public Study(String study_id, String title, String grp_id, 
-                 String annot_ver, String description, String background, 
+    public Study(String study_id, String title, String grp_id, String annot_ver,
+                 String icd_code, String description, String background, 
                  String grant_info, Date start_date, Date end_date, Boolean finalized) 
     {
         this.study_id = study_id;
         this.title = title;
         this.grp_id = grp_id;
         this.annot_ver = annot_ver;
+        this.icd_code = icd_code;
         this.description = description;
         this.background = background;
         this.grant_info = grant_info;
@@ -123,6 +128,11 @@ public class Study {
         return GroupDB.getGrpName(grp_id);
     }
     
+    // Return the ICD name for this study.
+    public String getICDName() {
+        return ICD10DB.getICDDescription(icd_code);
+    }
+    
     // Return the review title for each study.
     public String getReviewTitle() {
         String status;
@@ -162,6 +172,12 @@ public class Study {
     }
     public void setAnnot_ver(String annot_ver) {
         this.annot_ver = annot_ver;
+    }
+    public String getIcd_code() {
+        return icd_code;
+    }
+    public void setIcd_code(String icd_code) {
+        this.icd_code = icd_code;
     }
     public String getDescription() {
         return description;

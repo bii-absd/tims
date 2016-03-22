@@ -240,3 +240,10 @@
     width: 300px;
     text-align: left !important;
 }
+
+/* Style defined for study title column.
+*/
+.studytitlecol {
+    width: 250px;
+    text-align: left !important;
+}

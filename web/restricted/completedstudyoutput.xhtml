@@ -28,6 +28,9 @@
                 <p:column headerText="Annotation Version" styleClass="col120">
                     <h:outputText value="#{finStudy.annot_ver}"/>
                 </p:column>
+                <p:column headerText="Disease" styleClass="col140">
+                    <h:outputText value="#{finStudy.ICDName}"/>
+                </p:column>
                 <p:column headerText="Consolidated Ouput" styleClass="col120">
                     <p:commandLink ajax="false" value="Download" 
                                    disabled="#{finStudy.outputReadyStatus}"

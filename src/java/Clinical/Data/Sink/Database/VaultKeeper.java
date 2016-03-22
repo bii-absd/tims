@@ -30,6 +30,8 @@ import org.apache.logging.log4j.LogManager;
  * Revision History
  * 14-Mar-2016 - Created with the necessary methods implemented. Implemented 
  * the module to close study.
+ * 22-Mar-2016 - Changes due to the addition field (i.e. icd_code) in the 
+ * vault_record table.
  */
 
 public class VaultKeeper extends Thread {
@@ -39,7 +41,7 @@ public class VaultKeeper extends Thread {
     private Connection conn = null;
     private List<Integer> jobList = new ArrayList<>();
     private String fileUri;
-    private final String study_id, grp_id, annot_ver, userName;
+    private final String study_id, grp_id, annot_ver, icd_code, userName;
     
     public VaultKeeper(String userName, String study_id) 
             throws SQLException, NamingException 
@@ -48,9 +50,14 @@ public class VaultKeeper extends Thread {
         this.userName = userName;
         this.study_id = study_id;
         jobList = SubmittedJobDB.getFinalizedJobIDs(study_id);
-        // Retrieve the value of grp_id and annot_ver from database.
-        grp_id = StudyDB.getStudyGrpID(study_id);
-        annot_ver = StudyDB.getStudyAnnotVer(study_id);
+        // Retrieve the value of grp_id, annot_ver and icd_code from database.
+        Study study = StudyDB.getStudyObject(study_id);
+        grp_id = study.getGrp_id();
+        annot_ver = study.getAnnot_ver();
+        icd_code = study.getIcd_code();
+//        grp_id = StudyDB.getStudyGrpID(study_id);
+//        annot_ver = StudyDB.getStudyAnnotVer(study_id);
+//        icd_code = StudyDB.getICDCode(study_id);
         
         logger.debug("VaultKeeper created for study " + study_id);
     }
@@ -129,8 +136,8 @@ public class VaultKeeper extends Thread {
             processedRecord = unprocessedRecord = 0;
             // INSERT statement to insert a record into vault_record table.
             String insertStr = "INSERT INTO vault_record(array_index,"
-                             + "annot_ver,job_id,subject_id,grp_id) "
-                             + "VALUES(?,?,?,?,?)";
+                             + "annot_ver,job_id,subject_id,grp_id,icd_code) "
+                             + "VALUES(?,?,?,?,?,?)";
             
             try (PreparedStatement insertStm = conn.prepareStatement(insertStr)) {
                 // Ignore the first two strings (i.e. geneID and EntrezID); 
@@ -143,7 +150,8 @@ public class VaultKeeper extends Thread {
                             processedRecord++;
                             vaultIndex[i] = getNextVaultInd();
                             FinalizedOutput record = new FinalizedOutput
-                                (vaultIndex[i], annot_ver, values[i], grp_id, job_id);
+                                (vaultIndex[i], annot_ver, values[i], grp_id, 
+                                 job_id, icd_code);
                             // Create an vault record.
                             createVaultRecord(insertStm, record);                            
                         }
@@ -276,6 +284,7 @@ public class VaultKeeper extends Thread {
         stm.setInt(3, record.getJob_id());
         stm.setString(4, record.getSubject_id());
         stm.setString(5, record.getGrp_id());
+        stm.setString(6, record.getIcd_code());
         stm.executeUpdate();
 
         logger.debug("Vault record for " + record.getSubject_id() + 
