@@ -59,6 +59,8 @@ import org.apache.logging.log4j.LogManager;
  * are finalized and not closed.
  * 22-Mar-2016 - Changes due to the addition field (i.e. icd_code) in the study
  * table.
+ * 23-Mar-2016 - Separated the update function for study record; one for the
+ * main info and one for the description|background|grant information.
  */
 
 public abstract class StudyDB {
@@ -149,34 +151,29 @@ public abstract class StudyDB {
         return result;
     }
     
-    // Update the study information in the database.
-    public static Boolean updateStudy(Study study) {
+    // Update study description, background or grant information (aka DBGI) in
+    // database.
+    public static Boolean updateStudyDBGI(Study study) {
         Connection conn = null;
         Boolean result = Constants.OK;
-        String query = "UPDATE study SET title=?, grp_id = ?, icd_code = ?, "
-                     + "description = ?, background = ?, grant_info = ?, "
-                     + "start_date = ?, end_date = ? WHERE study_id = ?";
+        String query = "UPDATE study SET description = ?, background = ?, "
+                     + "grant_info = ? WHERE study_id = ?";
         
         try {
             conn = DBHelper.getDSConn();
             PreparedStatement stm = conn.prepareStatement(query);
-            stm.setString(1, study.getTitle());
-            stm.setString(2, study.getGrp_id());
-            stm.setString(3, study.getIcd_code());
-            stm.setString(4, study.getDescription());
-            stm.setString(5, study.getBackground());
-            stm.setString(6, study.getGrant_info());
-            stm.setDate(7, study.getStart_date());
-            stm.setDate(8, study.getEnd_date());
-            stm.setString(9, study.getStudy_id());
+            stm.setString(1, study.getDescription());
+            stm.setString(2, study.getBackground());
+            stm.setString(3, study.getGrant_info());
+            stm.setString(4, study.getStudy_id());
             stm.executeUpdate();
             stm.close();
             
-            logger.debug("Updated study " + study.getStudy_id());
+            logger.debug("Updated study " + study.getStudy_id() + " DBGI.");
         }
         catch (SQLException|NamingException e) {
             result = Constants.NOT_OK;
-            logger.error("FAIL to update study " + study.getStudy_id());
+            logger.error("FAIL to update study " + study.getStudy_id() + " DBGI!");
             logger.error(e.getMessage());
         }
         finally {
@@ -186,7 +183,40 @@ public abstract class StudyDB {
         return result;
     }
     
-    // Update the study finalized status.
+    // Update study main info in database.
+    public static Boolean updateStudyMI(Study study) {
+        Connection conn = null;
+        Boolean result = Constants.OK;
+        String query = "UPDATE study SET title=?, grp_id = ?, icd_code = ?, "
+                     + "start_date = ?, end_date = ? WHERE study_id = ?";
+        
+        try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            stm.setString(1, study.getTitle());
+            stm.setString(2, study.getGrp_id());
+            stm.setString(3, study.getIcd_code());
+            stm.setDate(4, study.getStart_date());
+            stm.setDate(5, study.getEnd_date());
+            stm.setString(6, study.getStudy_id());
+            stm.executeUpdate();
+            stm.close();
+            
+            logger.debug("Updated study " + study.getStudy_id() + " main info.");
+        }
+        catch (SQLException|NamingException e) {
+            result = Constants.NOT_OK;
+            logger.error("FAIL to update study " + study.getStudy_id() + " main info!");
+            logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
+        }
+        
+        return result;
+    }
+    
+    // Update study's finalized status.
     public static void updateStudyFinalizedStatus(String studyID, Boolean status) {
         Connection conn = null;
         String query = "UPDATE study SET finalized = " + status 
@@ -210,7 +240,7 @@ public abstract class StudyDB {
         }
     }
     
-    // Update the study closed status.
+    // Update study's closed status.
     public static void updateStudyClosedStatus(String studyID, Boolean status) {
         Connection conn = null;
         String query = "UPDATE study SET closed = " + status 

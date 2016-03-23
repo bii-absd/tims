@@ -67,6 +67,8 @@ import org.apache.logging.log4j.LogManager;
  * which are active, and have pi setup will be available for selection.
  * 22-Mar-2016 - Changes due to the addition field (i.e. icd_code) in the study
  * table.
+ * 23-Mar-2016 - To allow user to update the study description, background and
+ * grant information.
  */
 
 @ManagedBean (name="studyMgntBean")
@@ -107,8 +109,32 @@ public class StudyManagementBean implements Serializable {
         setupGrouping();
     }
     
-    // Update the study table in database.
-    public void onRowEdit(RowEditEvent event) {
+    // Update study description, background or grant information (aka DBGI) in
+    // database.
+    public void onStudyDBGIEdit(RowEditEvent event) {
+        FacesContext fc = getFacesContext();
+        
+        if (StudyDB.updateStudyDBGI((Study) event.getObject())) {
+            // Record this study update activity into database.
+            String detail = "Study " + ((Study) event.getObject()).getStudy_id() + 
+                            " DBGI";
+            ActivityLogDB.recordUserActivity(userName, Constants.CHG_ID, detail);
+            logger.info(userName + ": updated " + detail);
+            // Refresh the study list.
+            studyList = StudyDB.queryStudy();
+            fc.addMessage(null, new FacesMessage(
+                    FacesMessage.SEVERITY_INFO, 
+                    "Study DBGI updated.", ""));
+        }
+        else {
+            logger.error("FAIL to update study DBGI!");
+            fc.addMessage(null, new FacesMessage(
+                    FacesMessage.SEVERITY_ERROR, "Failed to update study!", ""));
+        }
+    }
+    
+    // Update study main info in database.
+    public void onStudyMIEdit(RowEditEvent event) {
         FacesContext fc = getFacesContext();
         // Because the system is receiving the date as java.util.Date hence
         // we need to perform a conversion here before storing it into database.
@@ -119,18 +145,19 @@ public class StudyManagementBean implements Serializable {
             ((Study) event.getObject()).setEnd_date(new Date(util_end_date.getTime()));
         }
         
-        if (StudyDB.updateStudy((Study) event.getObject())) {
+        if (StudyDB.updateStudyMI((Study) event.getObject())) {
             // Record this study update activity into database.
-            String detail = "Study " + ((Study) event.getObject()).getStudy_id();
+            String detail = "Study " + ((Study) event.getObject()).getStudy_id()
+                          + " main info";
             ActivityLogDB.recordUserActivity(userName, Constants.CHG_ID, detail);
             logger.info(userName + ": updated " + detail);
             // Refresh the study list.
             studyList = StudyDB.queryStudy();
             fc.addMessage(null, new FacesMessage(
-                    FacesMessage.SEVERITY_INFO, "Study updated.", ""));
+                    FacesMessage.SEVERITY_INFO, "Study main info updated.", ""));
         }
         else {
-            logger.error("FAIL to update study!");
+            logger.error("FAIL to update study main info!");
             fc.addMessage(null, new FacesMessage(
                     FacesMessage.SEVERITY_ERROR, "Failed to update study!", ""));
         }

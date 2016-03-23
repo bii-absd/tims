@@ -11,21 +11,21 @@
     <ui:param name="link" value="#{msg['study-mgnt']}"/>
     <ui:define name="content">
     <p:growl id="studyMsg"/>
-    <p:accordionPanel id="acPanel">
-        <p:tab id="editStudy" title="Edit Study" titleStyleClass="tab-title">
-        <h:form id="editStudyForm">
+    <p:accordionPanel id="acPanel" multiple="true">
+        <p:tab id="editStudyMI" title="Edit Study Main Info" titleStyleClass="tab-title">
+        <h:form id="editStudyMIForm">
             <p:dataTable var="study" rows="10" id="studyTable" 
                          value="#{studyMgntBean.studyList}" paginator="true"
                          paginatorTemplate="{FirstPageLink} {PreviousPageLink}
                          {CurrentPageReport} {NextPageLink} {LastPageLink}"
                          styleClass="table-odd-row table-even-row" 
                          editable="true">
-                <p:ajax event="rowEdit" listener="#{studyMgntBean.onRowEdit}" 
-                        update="acPanel:editStudyForm:studyTable studyMsg"/>
+                <p:ajax event="rowEdit" listener="#{studyMgntBean.onStudyMIEdit}" 
+                        update="acPanel:editStudyMIForm:studyTable studyMsg"/>
                 <p:column headerText="Study ID" styleClass="jsmedcol">
                     <h:outputText value="#{study.study_id}"/>
                 </p:column>
-                <p:column headerText="Study Titile" styleClass="studytitlecol">
+                <p:column headerText="Study Titile" style="text-align: left">
                     <p:cellEditor>
                         <f:facet name="output">
                             <h:outputText value="#{study.title}"/>
@@ -58,7 +58,7 @@
                           style="width: 110px; text-align: left">
                     <h:outputText value="#{study.annot_ver}"/>
                 </p:column>
-                <p:column headerText="Disease" styleClass="jsmedcol">
+                <p:column headerText="Disease" styleClass="col300">
                     <p:cellEditor>
                         <f:facet name="output">
                             <h:outputText value="#{study.ICDName}"/>
@@ -71,17 +71,6 @@
                                              style="width: 100%">
                                 <f:selectItems value="#{studyMgntBean.icdHash}"/>
                             </p:selectOneMenu>
-                        </f:facet>
-                    </p:cellEditor>
-                </p:column>
-                <p:column headerText="Description" style="text-align: left">
-                    <p:cellEditor>
-                        <f:facet name="output">
-                            <h:outputText value="#{study.description}"/>
-                        </f:facet>
-                        <f:facet name="input">
-                            <p:inputTextarea value="#{study.description}" 
-                                             rows="5" style="width: 100%"/>
                         </f:facet>
                     </p:cellEditor>
                 </p:column>
@@ -120,6 +109,61 @@
         </h:form>
         </p:tab>
 
+        <p:tab id="editStudyDBGI" 
+               title="Edit Study Description|Background|Grant Information (aka DBGI)" 
+               titleStyleClass="tab-title">
+            <h:form id="editStudyDBGIForm">
+                <p:dataTable var="study" rows="10" id="studyDBGITable" 
+                             value="#{studyMgntBean.studyList}" paginator="true"
+                             paginatorTemplate="{FirstPageLink} {PreviousPageLink}
+                             {CurrentPageReport} {NextPageLink} {LastPageLink}"
+                             styleClass="table-odd-row table-even-row" 
+                             editable="true">
+                    <p:ajax event="rowEdit" listener="#{studyMgntBean.onStudyDBGIEdit}" 
+                            update="acPanel:editStudyDBGIForm:studyDBGITable studyMsg"/>
+                    <p:column headerText="Study ID" styleClass="jsmedcol">
+                        <h:outputText value="#{study.study_id}"/>
+                    </p:column>
+                    <p:column headerText="Description" style="text-align: left">
+                        <p:cellEditor>
+                            <f:facet name="output">
+                                <h:outputText value="#{study.description}"/>
+                            </f:facet>
+                            <f:facet name="input">
+                                <p:inputTextarea value="#{study.description}" 
+                                                 rows="5" style="width: 100%"/>
+                            </f:facet>
+                        </p:cellEditor>
+                    </p:column>
+                    <p:column headerText="Background" style="text-align: left">
+                        <p:cellEditor>
+                            <f:facet name="output">
+                                <h:outputText value="#{study.background}"/>
+                            </f:facet>
+                            <f:facet name="input">
+                                <p:inputTextarea value="#{study.background}" 
+                                                 rows="5" style="width: 100%"/>
+                            </f:facet>
+                        </p:cellEditor>
+                    </p:column>
+                    <p:column headerText="Grant Information" style="text-align: left">
+                        <p:cellEditor>
+                            <f:facet name="output">
+                                <h:outputText value="#{study.grant_info}"/>
+                            </f:facet>
+                            <f:facet name="input">
+                                <p:inputTextarea value="#{study.grant_info}" 
+                                                 rows="5" style="width: 100%"/>
+                            </f:facet>
+                        </p:cellEditor>
+                    </p:column>
+                    <p:column style="width: 32px">
+                        <p:rowEditor/>
+                    </p:column>
+                </p:dataTable>
+            </h:form>
+        </p:tab>
+        
         <p:tab id="addStudy" title="Create New Study" titleStyleClass="tab-title">
         <h:form id="addStudyForm">
             <h:panelGrid columns="3" border="0" cellpadding="4" cellspacing="2">
