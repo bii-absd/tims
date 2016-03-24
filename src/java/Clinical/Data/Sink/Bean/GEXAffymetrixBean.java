@@ -55,6 +55,8 @@ import javax.naming.NamingException;
  * during pipeline configuration review.
  * 29-Feb-2016 - Implementation of Data Source pooling. To use DataSource to 
  * get the database connection instead of using DriverManager.
+ * 24-Mar-2016 - Changes due to the new attribute (i.e. complete_time) added in
+ * submitted_job table.
  */
 
 @ManagedBean (name="gexAffyBean")
@@ -112,14 +114,16 @@ public class GEXAffymetrixBean extends ConfigBean {
         // do e.g. 0
         // Insert the new job request into datbase; job status is 1 i.e. Waiting
         // DB 2.0 - For attributes summarization and region, set them to "NA".
+        // For complete_time, set to "waiting" for the start.
+        // 
         // SubmittedJob(job_id, study_id, user_id, pipeline_name, status_id, 
-        // submit_time, chip_type, input_path, normalization, probe_filtering, 
-        // probe_select, phenotype_column, summarization, output_file, 
-        // sample_average, standardization, region, report) 
+        // submit_time, complete_time, chip_type, input_path, normalization, 
+        // probe_filtering, probe_select, phenotype_column, summarization, 
+        // output_file, sample_average, standardization, region, report) 
         SubmittedJob newJob = 
                 new SubmittedJob(0, getStudyID(), userName, pipelineName, 1,
-                                 submitTimeInDB, getType(), getInputPath(), 
-                                 getNormalization(), probeFilter, 
+                                 submitTimeInDB, "waiting", getType(), 
+                                 getInputPath(), getNormalization(), probeFilter, 
                                  isProbeSelect(), getPhenotype(), "NA", 
                                  outputFilePath, isSampleAverage(), 
                                  getStdLog2Ratio(), "NA", reportFilePath);

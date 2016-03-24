@@ -37,6 +37,8 @@ import java.io.Serializable;
  * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
  * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
  * (Institution - Department - Group).
+ * 24-Mar-2016 - Added one new attribute complete_time, to record the time when
+ * the pipeline completed it's execution.
  */
 
 public class SubmittedJob implements Serializable {
@@ -44,25 +46,19 @@ public class SubmittedJob implements Serializable {
     // ctrl_file, normalization, probe_filtering, probe_select, 
     // phenotype_column, summarization, sample_average, standardization & 
     // region) added for DB 2.0
-    private int job_id;
-    private String study_id;
-    private String user_id;
-    private String pipeline_name;
-    private int status_id;
-    private String submit_time;
+    private int job_id, status_id;
+    private String study_id, user_id, pipeline_name, submit_time, complete_time;
     private String chip_type, input_path, normalization, probe_filtering;
     private Boolean probe_select, sample_average;
-    private String phenotype_column, summarization;
-    private String output_file;
-    private String standardization, region;
-    private String report;
+    private String phenotype_column, summarization, output_file;
+    private String standardization, region, report;
     // status_name will be used by the job status page
     private String status_name;
 
     // Full constructor
     public SubmittedJob(int job_id, String study_id, String user_id,
             String pipeline_name, int status_id, String submit_time, 
-            String chip_type, String input_path, 
+            String complete_time, String chip_type, String input_path, 
             String normalization, String probe_filtering, Boolean probe_select, 
             String phenotype_column, String summarization, String output_file, 
             Boolean sample_average, String standardization, String region, 
@@ -74,6 +70,7 @@ public class SubmittedJob implements Serializable {
         this.pipeline_name = pipeline_name;
         this.status_id = status_id;
         this.submit_time = submit_time;
+        this.complete_time = complete_time;
         this.chip_type = chip_type;
         this.input_path = input_path;
         this.normalization = normalization;
@@ -91,7 +88,7 @@ public class SubmittedJob implements Serializable {
     // Simplify constructor for data table.
     public SubmittedJob(int job_id, String study_id, String user_id,
             String pipeline_name, int status_id, String submit_time, 
-            String output_file, String report) 
+            String complete_time, String output_file, String report) 
     {
         this.job_id = job_id;
         this.study_id = study_id;
@@ -99,6 +96,7 @@ public class SubmittedJob implements Serializable {
         this.pipeline_name = pipeline_name;
         this.status_id = status_id;
         this.submit_time = submit_time;
+        this.complete_time = complete_time;
         this.output_file = output_file;
         this.report = report;
     }
@@ -175,6 +173,12 @@ public class SubmittedJob implements Serializable {
     }
     public void setSubmit_time(String submit_time) {
         this.submit_time = submit_time;
+    }
+    public String getComplete_time() {
+        return complete_time;
+    }
+    public void setComplete_time(String complete_time) {
+        this.complete_time = complete_time;
     }
     public String getChip_type() {
         return chip_type;

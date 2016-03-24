@@ -44,8 +44,12 @@
                     <h:outputText value="#{job.user_id}"/>
                 </p:column>
                 <p:column headerText="Submission Time" sortBy="#{job.submit_time}" 
-                          style="width: 140px">
+                          styleClass="col140">
                     <h:outputText value="#{job.submit_time}"/>
+                </p:column>
+                <p:column headerText="Completion Time" sortBy="#{job.complete_time}" 
+                          styleClass="col140">
+                    <h:outputText value="#{job.complete_time}"/>
                 </p:column>
                 <p:column headerText="Job Status" sortBy="#{job.status_name}" 
                           styleClass="jssmallcol">

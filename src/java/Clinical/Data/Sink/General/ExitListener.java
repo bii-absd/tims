@@ -4,6 +4,9 @@
 package Clinical.Data.Sink.General;
 
 import Clinical.Data.Sink.Database.SubmittedJobDB;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.EventListener;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
@@ -28,6 +31,7 @@ import org.apache.logging.log4j.LogManager;
  * 11-Jan-2015 - To include the pipeline name in the subject title of the email.
  * 13-Jan-2016 - Removed all the static variables in Account Management module.
  * 18-Jan-2016 - Moved the sendMail method to Postman class.
+ * 24-Mar-2016 - To record into database, the pipeline execution completion time.
  */
 
 public class ExitListener implements EventListener {
@@ -50,5 +54,9 @@ public class ExitListener implements EventListener {
             logger.debug("Job status updated to failed. ID: " + job_id);
             Postman.sendJobStatusEmail(job_id, study_id, Constants.NOT_OK);
         }
+        // Record into database, the completion time of this job.
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        String complete_time = df.format(new Date());
+        SubmittedJobDB.updateJobCompleteTime(job_id, complete_time);
     }
 }

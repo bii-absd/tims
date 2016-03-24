@@ -76,6 +76,8 @@ import org.apache.logging.log4j.LogManager;
  * (Institution - Department - Group).
  * 14-Mar-2016 - To fetch the condition for the query in method 
  * getFinalizedJobIDs from JobStatusDB class, instead of hard-coding it.
+ * 24-Mar-2016 - Changes due to the new attribute (i.e. complete_time) added in
+ * submitted_job table.
  */
 
 public abstract class SubmittedJobDB {
@@ -177,6 +179,30 @@ public abstract class SubmittedJobDB {
         }
         catch (SQLException|NamingException e) {
             logger.error("FAIL to update job status!");
+            logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
+        }
+    }
+    
+    // Pipeline has completed execution, update the complete time for this job.
+    public static void updateJobCompleteTime(int job_id, String complete_time) {
+        Connection conn = null;
+        String query = "UPDATE submitted_job SET complete_time = ? "
+                     + "WHERE job_id = " + job_id;
+        
+        try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            stm.setString(1, complete_time);
+            stm.executeUpdate();
+            stm.close();
+            logger.debug("Job ID " + job_id + " completion time updated to " 
+                    + complete_time);
+        }
+        catch (SQLException|NamingException e) {
+            logger.error("FAIL to update job completion time!");
             logger.error(e.getMessage());
         }
         finally {
@@ -372,6 +398,7 @@ public abstract class SubmittedJobDB {
                                 rs.getString("pipeline_name"),
                                 rs.getInt("status_id"),
                                 rs.getString("submit_time"),
+                                rs.getString("complete_time"),
                                 rs.getString("chip_type"),
                                 rs.getString("input_path"),
                                 rs.getString("normalization"),
@@ -403,14 +430,15 @@ public abstract class SubmittedJobDB {
     }
 
     // Return the list of jobs that have been submitted by this user.
+    // NOT IN USE ANYMORE!
     public static List<SubmittedJob> getSubmittedJobs(String user_id) {
         Connection conn = null;
         List<SubmittedJob> jobList = new ArrayList<>();
         // Don't retrieve those jobs which are in finalizing stage.
         String query = "SELECT job_id, study_id, pipeline_name, "
-                + "status_id, submit_time, output_file, report FROM "
-                + "submitted_job WHERE user_id = ? AND status_id NOT IN (4) "
-                + "ORDER BY job_id DESC"; 
+                + "status_id, submit_time, complete_time, output_file, report "
+                + "FROM submitted_job WHERE user_id = ? AND "
+                + "status_id NOT IN (4) ORDER BY job_id DESC"; 
 
         try {
             conn = DBHelper.getDSConn();
@@ -426,6 +454,7 @@ public abstract class SubmittedJobDB {
                                 rs.getString("pipeline_name"),
                                 rs.getInt("status_id"),
                                 rs.getString("submit_time"),
+                                rs.getString("complete_time"),
                                 rs.getString("output_file"),
                                 rs.getString("report"));
                 
