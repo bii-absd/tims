@@ -78,6 +78,8 @@ import org.apache.pdfbox.pdmodel.graphics.xobject.PDJpeg;
  * 24-Mar-2016 - To improve on the generation of summary report i.e. the ability
  * to generate multiple pages, have a set of gene available versus stored 
  * information for each pipeline, etc.
+ * 28-Mar-2016 - Added in a checkpoint debug message before starting the gene
+ * data processing; to make sure the thread is still alive.
  */
 
 public class DataDepositor extends Thread {
@@ -571,7 +573,7 @@ public class DataDepositor extends Thread {
                                 (arrayIndex[i], annot_ver, values[i], grp_id, 
                                  job_id, icd_code);
                             // Insert the finalized output record.
-                            insertToFinalizedOutput(insertStm, record);                            
+                            insertToFinalizedOutput(insertStm, record);
                             // At the end of each subject line, place a marker '$'
                             if (numSubjectFound%SUBJECTS_PER_LINE == 0) {
                                 subjectFound.append("$");
@@ -629,7 +631,9 @@ public class DataDepositor extends Thread {
             String queryGene = "SELECT 1 FROM data_depository "
                         + "WHERE genename = ? AND annot_ver = \'" 
                         + annot_ver + "\'";
-
+            
+            // This debug message serve as a check point.
+            logger.debug("Start gene data processing for job " + job_id);
             try (PreparedStatement updateStm = conn.prepareStatement(updateStr);
                  PreparedStatement queryGeneStm = conn.prepareStatement(queryGene)) 
             {

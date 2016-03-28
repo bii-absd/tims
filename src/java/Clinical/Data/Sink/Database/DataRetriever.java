@@ -40,6 +40,8 @@ import org.apache.logging.log4j.LogManager;
  * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
  * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
  * (Institution - Department - Group).
+ * 28-Mar-2016 - To retrieve and include the subject's age, gender, race, height 
+ * and weight in the consolidated output.
  */
 
 public class DataRetriever extends Thread {
@@ -64,7 +66,7 @@ public class DataRetriever extends Thread {
         // Get a data source connection for this thread.
         conn = DBHelper.getDSConn();
         
-        opHeader.append("Subject|Pipeline");
+        opHeader.append("Subject|Age|Gender|Race|Height|Weight|Pipeline");
         geneList = getGeneList();
         // Retrieve the list of OutputItems (i.e. Subject|Technology|Index)
         opItemsList = getOpItemsList();
@@ -87,7 +89,9 @@ public class DataRetriever extends Thread {
         long elapsedTime;
         long startTime = System.nanoTime();
         StringBuilder data = new StringBuilder();
-        data.append(item.getSubject_id()).append("|").append(item.getPipeline());
+        data.append(SubjectDB.buildStudySubjectMD
+                (item.getSubject_id(), item.getGrp_id(), study_id))
+                .append(item.getPipeline());
         String query = "SELECT data[?] FROM data_depository " 
                      + "WHERE annot_ver = ? ORDER BY genename";
         
@@ -112,14 +116,15 @@ public class DataRetriever extends Thread {
         return data.toString();
     }
     
-    // Write the finalized data to a text file.
-    private void writeToFile(String filename) {
+    // Retrieve the finalized data from the database, consolidate and output
+    // them to a text file.
+    private void consolidateFinalizedData() {
         // For time logging purpose.
         long elapsedTime;
         long startTime = System.nanoTime();
         
         try {
-            PrintStream ps = new PrintStream(new File(filename));
+            PrintStream ps = new PrintStream(new File(finalize_file));
             // Write the header/subject line first
             ps.println(opHeader);
             // Loop through the output items and write the subject output one
@@ -146,7 +151,7 @@ public class DataRetriever extends Thread {
         long startTime = System.nanoTime();
         String query = "SELECT genename FROM data_depository " 
                      + "WHERE annot_ver = ? ORDER BY genename";
-        
+        // Retrieve all the gene that appeared in this HG19 annotation version.
         try (PreparedStatement stm = conn.prepareStatement(query)) {
             stm.setString(1, annot_ver);
             ResultSet rs = stm.executeQuery();
@@ -168,15 +173,14 @@ public class DataRetriever extends Thread {
         return gene;
     }
     
-    // Retrieve the output row information (i.e. subject_id|pipeline|array_index 
-    // where gene's values are stored) from the database.
+    // Retrieve the output row information (i.e. subject_id|grp_id|pipeline|
+    // array_index where gene's values are stored) from the database.
     private List<OutputItems> getOpItemsList() {
         List<OutputItems> opList = new ArrayList<>();
         String query = 
-                "SELECT y.subject_id, x.pipeline_name, y.array_index FROM " +
-                "(SELECT job_id, pipeline_name FROM submitted_job " +
-                "WHERE study_id = ? AND status_id = 5) x " +
-                "NATURAL JOIN " +
+                "SELECT y.subject_id, y.grp_id, x.pipeline_name, y.array_index "
+                + "FROM (SELECT job_id, pipeline_name FROM submitted_job WHERE "
+                + "study_id = ? AND status_id = 5) x NATURAL JOIN " +
                 "(SELECT * FROM finalized_output) y WHERE job_id = x.job_id " +
                 "ORDER BY y.subject_id, y.array_index";
         
@@ -187,6 +191,7 @@ public class DataRetriever extends Thread {
             while (rs.next()) {
                 OutputItems item = new OutputItems(
                                     rs.getString("subject_id"),
+                                    rs.getString("grp_id"),
                                     rs.getString("pipeline_name"),
                                     rs.getInt("array_index"));
                 opList.add(item);                
@@ -202,6 +207,7 @@ public class DataRetriever extends Thread {
         return opList;
     }
     
+    /* NOT IN USE ANYMORE!
     // Retrieve the output row information (i.e. subject_id|tid|array_index 
     // where gene's values are stored) from the database.
     private List<OutputItems> getOpItemsListByTID() {
@@ -240,20 +246,15 @@ public class DataRetriever extends Thread {
         
         return opList;
     }
-    
-    // Retrieve the finalized data from the database, consolidate and output
-    // them to a text file.
-    private void consolidateFinalizedData() {
-        writeToFile(finalize_file);
+    */
 
-        /*
-        // NOTE: When using System.out.println the last character CANNOT be a "|"
-        // else weird message will be printed.
-        // e.g. [#|2015-12-04T11:42:02.340+0800|INFO|glassfish 4.1||_ThreadID=933;
-        System.out.println("Subject|Technology|Array_index");
-        for (OutputItems item : opList) {
-            System.out.println(item.toString());
-        }
-        */
+    /*
+    // NOTE: When using System.out.println the last character CANNOT be a "|"
+    // else weird message will be printed.
+    // e.g. [#|2015-12-04T11:42:02.340+0800|INFO|glassfish 4.1||_ThreadID=933;
+    System.out.println("Subject|Technology|Array_index");
+    for (OutputItems item : opList) {
+        System.out.println(item.toString());
     }
+    */
 }

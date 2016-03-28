@@ -37,6 +37,8 @@ import org.apache.logging.log4j.LogManager;
  * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
  * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
  * (Institution - Department - Group).
+ * 28-Mar-2016 - Added new method, buildStudySubjectMD() to retrieve and build
+ * the study subject Meta data.
  */
 
 public abstract class SubjectDB {
@@ -175,5 +177,45 @@ public abstract class SubjectDB {
         DBHelper.closeDSConn(conn);
 
         return isSubjectExist;
+    }
+        
+    // To retrieve and build the study subject Meta data (i.e. subject_id|age|
+    // gender|race|height|weight|) for this subject under this study.
+    public static String buildStudySubjectMD(String subject_id, String grp_id, 
+            String study_id) 
+    {
+        Connection conn = null;
+        StringBuilder metadata = new StringBuilder();
+        // PS** The final query need to be build on subject and study_subject tables.
+        String query = "SELECT  * FROM subject WHERE subject_id = ? AND "
+                     + "grp_id = ?";
+        
+        try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            stm.setString(1, subject_id);
+            stm.setString(2, grp_id);
+            ResultSet rs = stm.executeQuery();
+
+            if (rs.next()) {
+                metadata.append(subject_id).append("|").
+                        append(rs.getInt("age_at_diagnosis")).append("|").
+                        append(rs.getString("gender").charAt(0)).append("|").
+                        append(rs.getString("race")).append("|").
+                        append(rs.getFloat("height")).append("|").
+                        append(rs.getFloat("weight")).append("|");
+            }
+            stm.close();
+        }
+        catch (SQLException|NamingException e) {
+            metadata.append(Constants.DATABASE_INVALID_STR);
+            logger.error("FAIL to build study subject meta data for  " + subject_id);
+            logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
+        }
+
+        return metadata.toString();
     }
 }
