@@ -57,6 +57,8 @@ import org.mindrot.jbcrypt.BCrypt;
  * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
  * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
  * (Institution - Department - Group).
+ * 28-Mar-2016 - Added new method getInstUserIDHash, to return the list of
+ * users that belong to this institution
  */
 
 public abstract class UserAccountDB {
@@ -119,6 +121,43 @@ public abstract class UserAccountDB {
         }
 
         return piIDHash;
+    }
+    
+    // Return the list of users that belong to this institution.
+    // To be called when director access the activities of users under his/her
+    // institution.
+    public static LinkedHashMap<String, String> getInstUserIDHash(String instID) 
+    {
+        Connection conn = null;
+        LinkedHashMap<String,String> instUserIDHash = new LinkedHashMap<>();
+        String query = "SELECT user_id FROM user_account WHERE unit_id IN ("
+                     + "(SELECT inst_id AS unit_id FROM inst_dept_grp WHERE inst_id = ?) UNION "
+                     + "(SELECT dept_id AS unit_id FROM inst_dept_grp WHERE inst_id = ?) UNION "
+                     + "(SELECT grp_id AS unit_id FROM inst_dept_grp WHERE inst_id = ?))";
+        
+        try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            stm.setString(1, instID);
+            stm.setString(2, instID);
+            stm.setString(3, instID);
+            ResultSet rs = stm.executeQuery();
+            
+            while (rs.next()) {
+                String user_id = rs.getString("user_id");
+                instUserIDHash.put(user_id, user_id);
+            }
+            stm.close();
+        }
+        catch (SQLException|NamingException e) {
+            logger.error("FAIL to retrieve institution's user ID!");
+            logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
+        }
+
+        return instUserIDHash;
     }
     
     // Return the list of all the user ID currently in the system.

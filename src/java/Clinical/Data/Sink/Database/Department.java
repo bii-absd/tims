@@ -18,20 +18,22 @@ package Clinical.Data.Sink.Database;
  * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
  * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
  * (Institution - Department - Group).
+ * 28-Mar-2016 - To retrieve the institution name from the DepartmentDB class
+ * instead of InstitutionDB class.
  */
 
 public class Department {
     // dept table fields
     private String inst_id, dept_id, dept_name;
     // Additional attribute to store the institution name
-    private String inst_name;
+    private final String inst_name;
 
     public Department(String inst_id, String dept_id, 
             String dept_name) {
         this.inst_id = inst_id;
         this.dept_id = dept_id;
         this.dept_name = dept_name;
-        inst_name = InstitutionDB.getInstName(inst_id);
+        inst_name = DepartmentDB.getDeptInstID(dept_id);
     }
 
     // Return the institution name for this inst_id.
