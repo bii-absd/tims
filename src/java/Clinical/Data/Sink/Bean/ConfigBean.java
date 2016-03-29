@@ -93,6 +93,8 @@ import org.apache.logging.log4j.LogManager;
  * constructor in FileUploadBean class when creating new object.
  * 29-Feb-2016 - Implementation of Data Source pooling. To use DataSource to 
  * get the database connection instead of using DriverManager.
+ * 29-Mar-2016 - Instead of storing the input path, the system will store the 
+ * input SN.
  */
 
 public abstract class ConfigBean implements Serializable {
@@ -116,8 +118,8 @@ public abstract class ConfigBean implements Serializable {
     protected String inputFileDesc;
     // Record the time this job was created
     protected String submitTimeInDB, submitTimeInFilename;
-    // job_id of the inserted record
-    protected int job_id;
+    // job_id of the inserted record. sn of the input data.
+    protected int job_id, input_sn;
     // jobSubmissionStatus will keep track of whether has all the input files
     // been uploaded, all the required parameters been filled up, etc.
     private Boolean jobSubmissionStatus;
@@ -160,6 +162,7 @@ public abstract class ConfigBean implements Serializable {
         commandLink = ResourceRetriever.getMsg(pipelineName);
         homeDir = Constants.getSYSTEM_PATH() + Constants.getUSERS_PATH() + userName;
         jobSubmissionStatus = false;
+        input_sn = Constants.DATABASE_INVALID_ID;
         // Create the time stamp for the pipeline job.
         createJobTimestamp();
         
@@ -339,10 +342,12 @@ public abstract class ConfigBean implements Serializable {
             if (haveNewData) {
                 // Only perform the following steps if these are new data.
                 // Save the Sample File detail into database
-                saveSampleFileDetail();        
+                saveSampleFileDetail();
                 // Rename sample annotation file (and control probe file) to a
                 // common name for future use.
                 renameAnnotCtrlFiles();
+                // Update the input SN for this job.
+                SubmittedJobDB.updateJobInputSN(job_id, input_sn);
             }
             // 4. Pipeline is ready to be run now
             result = executePipeline(logFilePath);

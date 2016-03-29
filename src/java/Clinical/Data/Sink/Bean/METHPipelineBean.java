@@ -41,6 +41,8 @@ import javax.naming.NamingException;
  * get the database connection instead of using DriverManager.
  * 24-Mar-2016 - Changes due to the new attribute (i.e. complete_time) added in
  * submitted_job table.
+ * 29-Mar-2016 - Instead of storing the input path, the system will store the 
+ * input SN.
  */
 
 @ManagedBean (name="methPBean")
@@ -62,12 +64,12 @@ public class METHPipelineBean extends GEXAffymetrixBean {
         // For complete_time, set to "waiting" for the start.
         // 
         // SubmittedJob(job_id, study_id, user_id, pipeline_name, status_id, 
-        // submit_time, complete_time, chip_type, input_path, normalization, 
+        // submit_time, complete_time, chip_type, input_sn, normalization, 
         // probe_filtering, probe_select, phenotype_column, summarization, 
         // output_file, sample_average, standardization, region, report) 
         SubmittedJob newJob = 
                 new SubmittedJob(0, getStudyID(), userName, pipelineName, 1,
-                                 submitTimeInDB, "waiting", "NA", getInputPath(), 
+                                 submitTimeInDB, "waiting", "NA", input_sn, 
                                  getNormalization(), "NA", isProbeSelect(), 
                                  getPhenotype(), "NA", outputFilePath, 
                                  false, "NA", "NA", reportFilePath);

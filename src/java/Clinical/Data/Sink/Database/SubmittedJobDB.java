@@ -78,6 +78,8 @@ import org.apache.logging.log4j.LogManager;
  * getFinalizedJobIDs from JobStatusDB class, instead of hard-coding it.
  * 24-Mar-2016 - Changes due to the new attribute (i.e. complete_time) added in
  * submitted_job table.
+ * 29-Mar-2016 - Changes due to the removal of input_path and the addition of
+ * input_sn in submitted_job table.
  */
 
 public abstract class SubmittedJobDB {
@@ -96,7 +98,7 @@ public abstract class SubmittedJobDB {
         int job_id = Constants.DATABASE_INVALID_ID;
         String query = "INSERT INTO submitted_job"
                      + "(study_id, user_id, pipeline_name, status_id, "
-                     + "submit_time, chip_type, input_path,"
+                     + "submit_time, chip_type, input_sn,"
                      + "normalization, probe_filtering, probe_select, "
                      + "phenotype_column, summarization, output_file, "
                      + "sample_average, standardization, region, report) "
@@ -114,7 +116,7 @@ public abstract class SubmittedJobDB {
         stm.setInt(4, job.getStatus_id());
         stm.setString(5, job.getSubmit_time());
         stm.setString(6, job.getChip_type());
-        stm.setString(7, job.getInput_path());
+        stm.setInt(7, job.getInput_sn());
         stm.setString(8, job.getNormalization());
         stm.setString(9, job.getProbe_filtering());
         stm.setBoolean(10, job.getProbe_select());
@@ -203,6 +205,29 @@ public abstract class SubmittedJobDB {
         }
         catch (SQLException|NamingException e) {
             logger.error("FAIL to update job completion time!");
+            logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
+        }
+    }
+    
+    // Update the input sn used in this job. Will be called when there is new
+    // raw data uploaded during pipeline configuration.
+    public static void updateJobInputSN(int job_id, int input_sn) {
+        Connection conn = null;
+        String query = "UPDATE submitted_job SET input_sn = " + input_sn 
+                     + " WHERE job_id = " + job_id;
+        
+        try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            stm.executeUpdate();
+            stm.close();
+            logger.debug("Job ID " + job_id + " input SN updated to " + input_sn);
+        }
+        catch (SQLException|NamingException e) {
+            logger.error("FAIL to update job input SN!");
             logger.error(e.getMessage());
         }
         finally {
@@ -400,7 +425,7 @@ public abstract class SubmittedJobDB {
                                 rs.getString("submit_time"),
                                 rs.getString("complete_time"),
                                 rs.getString("chip_type"),
-                                rs.getString("input_path"),
+                                rs.getInt("input_sn"),
                                 rs.getString("normalization"),
                                 rs.getString("probe_filtering"),
                                 rs.getBoolean("probe_select"),

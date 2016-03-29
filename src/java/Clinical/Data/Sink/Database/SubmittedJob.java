@@ -39,6 +39,8 @@ import java.io.Serializable;
  * (Institution - Department - Group).
  * 24-Mar-2016 - Added one new attribute complete_time, to record the time when
  * the pipeline completed it's execution.
+ * 29-Mar-2016 - Instead of storing the input path, the system will store the 
+ * input SN.
  */
 
 public class SubmittedJob implements Serializable {
@@ -46,9 +48,10 @@ public class SubmittedJob implements Serializable {
     // ctrl_file, normalization, probe_filtering, probe_select, 
     // phenotype_column, summarization, sample_average, standardization & 
     // region) added for DB 2.0
-    private int job_id, status_id;
+    // For DB 3.0, removed input_path and added input_sn.
+    private int job_id, status_id, input_sn;
     private String study_id, user_id, pipeline_name, submit_time, complete_time;
-    private String chip_type, input_path, normalization, probe_filtering;
+    private String chip_type, normalization, probe_filtering;
     private Boolean probe_select, sample_average;
     private String phenotype_column, summarization, output_file;
     private String standardization, region, report;
@@ -58,7 +61,7 @@ public class SubmittedJob implements Serializable {
     // Full constructor
     public SubmittedJob(int job_id, String study_id, String user_id,
             String pipeline_name, int status_id, String submit_time, 
-            String complete_time, String chip_type, String input_path, 
+            String complete_time, String chip_type, int input_sn, 
             String normalization, String probe_filtering, Boolean probe_select, 
             String phenotype_column, String summarization, String output_file, 
             Boolean sample_average, String standardization, String region, 
@@ -72,7 +75,7 @@ public class SubmittedJob implements Serializable {
         this.submit_time = submit_time;
         this.complete_time = complete_time;
         this.chip_type = chip_type;
-        this.input_path = input_path;
+        this.input_sn = input_sn;
         this.normalization = normalization;
         this.probe_filtering = probe_filtering;
         this.probe_select = probe_select;
@@ -137,6 +140,11 @@ public class SubmittedJob implements Serializable {
         return ResourceRetriever.getMsg(pipeline_name);
     }
     
+    // Return the description of the input data used in this job.
+    public String getInputDescrition() {
+        return InputDataDB.getInputDescription(study_id, input_sn);
+    }
+    
     // Machine generated getters and setters
     public int getJob_id() {
         return job_id;
@@ -186,11 +194,11 @@ public class SubmittedJob implements Serializable {
     public void setChip_type(String chip_type) {
         this.chip_type = chip_type;
     }
-    public String getInput_path() {
-        return input_path;
+    public int getInput_sn() {
+        return input_sn;
     }
-    public void setInput_path(String input_path) {
-        this.input_path = input_path;
+    public void setInput_sn(int input_sn) {
+        this.input_sn = input_sn;
     }
     public String getNormalization() {
         return normalization;

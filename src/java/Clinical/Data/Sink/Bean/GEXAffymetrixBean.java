@@ -57,6 +57,8 @@ import javax.naming.NamingException;
  * get the database connection instead of using DriverManager.
  * 24-Mar-2016 - Changes due to the new attribute (i.e. complete_time) added in
  * submitted_job table.
+ * 29-Mar-2016 - Instead of storing the input path, the system will store the 
+ * input SN.
  */
 
 @ManagedBean (name="gexAffyBean")
@@ -80,6 +82,7 @@ public class GEXAffymetrixBean extends ConfigBean {
             // for reuse.
             if (selectedInput != null) {
                 setJobSubmissionStatus(true);
+                input_sn = selectedInput.getSn();
                 logger.debug("Data uploaded on " + selectedInput.getDate() + 
                              " has been selected for reuse.");
             }
@@ -117,13 +120,13 @@ public class GEXAffymetrixBean extends ConfigBean {
         // For complete_time, set to "waiting" for the start.
         // 
         // SubmittedJob(job_id, study_id, user_id, pipeline_name, status_id, 
-        // submit_time, complete_time, chip_type, input_path, normalization, 
+        // submit_time, complete_time, chip_type, input_sn, normalization, 
         // probe_filtering, probe_select, phenotype_column, summarization, 
         // output_file, sample_average, standardization, region, report) 
         SubmittedJob newJob = 
                 new SubmittedJob(0, getStudyID(), userName, pipelineName, 1,
                                  submitTimeInDB, "waiting", getType(), 
-                                 getInputPath(), getNormalization(), probeFilter, 
+                                 input_sn, getNormalization(), probeFilter, 
                                  isProbeSelect(), getPhenotype(), "NA", 
                                  outputFilePath, isSampleAverage(), 
                                  getStdLog2Ratio(), "NA", reportFilePath);
@@ -144,15 +147,13 @@ public class GEXAffymetrixBean extends ConfigBean {
     
     @Override
     public void saveSampleFileDetail() {
-        int sn;
-        
         try {
-            sn = InputDataDB.getNextSn(studyID);
+            input_sn = InputDataDB.getNextSn(studyID);
             // For Affymetrix, we will only store the filepath i.e. for 
             // filename, it is empty.
             InputData newdata = new InputData(studyID, userName, pipelineName,
                     "", inputFile.getLocalDirectoryPath(), inputFileDesc, 
-                    sn, submitTimeInDB);
+                    input_sn, submitTimeInDB);
             InputDataDB.insertInputData(newdata);
         }
         catch (SQLException|NamingException e) {

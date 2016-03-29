@@ -74,6 +74,8 @@
                       resizable="false">
                 <p:outputPanel id="jobDetail">
                     <p:panelGrid columns="2">
+                        <h:outputText value="Input Data: "/>
+                        <h:outputText value="#{jsBean.selectedJob.inputDescrition}"/>
                         <h:outputText value="Chip Type: "/>
                         <h:outputText value="#{jsBean.selectedJob.chip_type}"/>
                         <h:outputText value="Probe Filtering: "/>

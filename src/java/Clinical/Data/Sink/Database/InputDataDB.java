@@ -37,6 +37,8 @@ import org.apache.logging.log4j.LogManager;
  * associate this input_data with the respective pipeline.
  * 29-Feb-2016 - Implementation of Data Source pooling. To use DataSource to 
  * get the database connection instead of using DriverManager.
+ * 29-Mar-2016 - Added one new method, getInputDescription() to return the
+ * input data description.
  */
 
 public abstract class InputDataDB {
@@ -142,5 +144,33 @@ public abstract class InputDataDB {
         DBHelper.closeDSConn(conn);
         
         return nextSn;
+    }
+    
+    // Return the description for this input data.
+    public static String getInputDescription(String study_id, int sn) {
+        Connection conn = null;
+        String inputDesc = Constants.DATABASE_INVALID_STR;
+        String query = "SELECT description FROM input_data WHERE study_id = ? "
+                     + "AND sn = " + sn;
+        
+        try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            stm.setString(1, study_id);
+            ResultSet rs = stm.executeQuery();
+            
+            if (rs.next()) {
+                inputDesc = rs.getString("description");
+            }
+        }
+        catch (SQLException|NamingException e) {
+            logger.debug("FAIL to query input data description!");
+            logger.debug(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
+        }
+        
+        return inputDesc;
     }
 }
