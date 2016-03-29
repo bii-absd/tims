@@ -27,6 +27,8 @@
                     <p:ajax event="rowEditCancel" 
                             listener="#{acctMgntBean.onRowEditCancel}" 
                             update="acctMsg"/>
+                    <p:ajax event="rowEditInit" 
+                            listener="#{acctMgntBean.onRowEditInit}"/>
                     <p:column headerText="User ID" styleClass="jssmallcol" 
                               sortBy="#{acct.user_id}">
                         <h:outputText value="#{acct.user_id}"/>
@@ -75,7 +77,6 @@
                             </f:facet>
                             <f:facet name="input">
                                 <p:selectOneMenu id="unitID" style="width: 100%" 
-                                                 disabled="#{acctMgntBean.isUnitIDHashReady()}" 
                                                  value="#{acct.unit_id}">
                                     <f:selectItems value="#{acctMgntBean.unitIDHash}"/>
                                 </p:selectOneMenu>

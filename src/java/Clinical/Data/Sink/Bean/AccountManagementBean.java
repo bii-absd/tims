@@ -29,6 +29,8 @@ import org.apache.logging.log4j.LogManager;
 // Libraries for PrimeFaces
 import org.primefaces.event.RowEditEvent;
 import org.primefaces.event.FileUploadEvent;
+import org.primefaces.util.ComponentUtils;
+import org.primefaces.context.RequestContext;
 
 /**
  * AccountManagementBean is the backing bean for the accountmanagement view.
@@ -72,6 +74,9 @@ import org.primefaces.event.FileUploadEvent;
  * 15-Mar-2016 - During account creation, if the new account is a PI, then
  * automatically update the group's pi field with the new user_id if the field
  * is not setup yet.
+ * 29-Mar-2016 - Added one new method onRowEditInit() to handle the rowEditInit 
+ * event; to build the unit ID Hash according to the user role at the selected 
+ * row.
  */
 
 @ManagedBean (name="acctMgntBean")
@@ -120,6 +125,22 @@ public class AccountManagementBean implements Serializable {
     // Return the list of user accounts currenlty in the system.
     public List<UserAccount> getUserAcctList() {
         return userAcctList;
+    }
+    
+    // Build the unit ID Hash according to the user role at the selected row.
+    public void onRowEditInit(RowEditEvent event) {
+        UserAccount user = (UserAccount) event.getObject();
+        // Build the unit ID Hash based on the user role.
+        configUnitIDHash(user.getRole_id());
+        // Update the selectOneMenu (with ID unitID) for the selected row.
+        String updateClientId = ComponentUtils.findComponentClientId("unitID");
+        RequestContext.getCurrentInstance().update(updateClientId);
+        
+        /* Old version.
+        UIData table = (UIData) event.getComponent();
+        String updateClientId = table.getClientId() + ":" + table.getRowIndex() + ":unitID";
+        FacesContext.getCurrentInstance().getPartialViewContext().getRenderIds().add(updateClientId);
+        */
     }
     
     // Update the user account detail in the database.
