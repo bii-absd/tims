@@ -21,7 +21,7 @@
                          styleClass="table-odd-row table-even-row" 
                          editable="true">
                 <p:ajax event="rowEdit" listener="#{studyMgntBean.onStudyMIEdit}" 
-                        update="acPanel:editStudyMIForm:studyTable studyMsg"/>
+                        update="studyMsg"/>
                 <p:column headerText="Study ID" styleClass="jsmedcol">
                     <h:outputText value="#{study.study_id}"/>
                 </p:column>
@@ -120,7 +120,7 @@
                              styleClass="table-odd-row table-even-row" 
                              editable="true">
                     <p:ajax event="rowEdit" listener="#{studyMgntBean.onStudyDBGIEdit}" 
-                            update="acPanel:editStudyDBGIForm:studyDBGITable studyMsg"/>
+                            update="studyMsg"/>
                     <p:column headerText="Study ID" styleClass="jsmedcol">
                         <h:outputText value="#{study.study_id}"/>
                     </p:column>

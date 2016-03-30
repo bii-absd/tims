@@ -3,6 +3,8 @@
  */
 package Clinical.Data.Sink.Database;
 
+import java.sql.Date;
+
 /**
  * Subject is used to represent the subject table in the database.
  * 
@@ -17,19 +19,21 @@ package Clinical.Data.Sink.Database;
  * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
  * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
  * (Institution - Department - Group).
+ * 30-Mar-2016 - Added 3 new attributes i.e. remarks, event and event_date.
  */
 
 public class Subject {
     // subject table attributes
-    private String subject_id, grp_id, country_code, race;
+    private String subject_id, grp_id, country_code, race, remarks, event;
     private char gender;
     private int age_at_diagnosis;
     private float height, weight;
+    private Date event_date;
 
     // Machine generated constructor
     public Subject(String subject_id, int age_at_diagnosis, char gender, 
             String country_code, String race, float height, float weight, 
-            String grp_id) {
+            String grp_id, String remarks, String event, Date event_date) {
         this.subject_id = subject_id;
         this.age_at_diagnosis = age_at_diagnosis;
         this.gender = gender;
@@ -38,7 +42,11 @@ public class Subject {
         this.height = height;
         this.weight = weight;
         this.grp_id = grp_id;
+        this.remarks = remarks;
+        this.event = event;
+        this.event_date = event_date;
     }
+    
     
     // Return the string representation of this subject in the format of:
     // Subject_ID|Age_at_diagnosis|Gender|Nationality|Race|Height|Weight|GroupID
@@ -102,5 +110,23 @@ public class Subject {
     }
     public void setWeight(float weight) {
         this.weight = weight;
+    }
+    public String getRemarks() {
+        return remarks;
+    }
+    public void setRemarks(String remarks) {
+        this.remarks = remarks;
+    }
+    public String getEvent() {
+        return event;
+    }
+    public void setEvent(String event) {
+        this.event = event;
+    }
+    public Date getEvent_date() {
+        return event_date;
+    }
+    public void setEvent_date(Date event_date) {
+        this.event_date = event_date;
     }
 }

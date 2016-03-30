@@ -55,6 +55,8 @@ import org.apache.logging.log4j.LogManager;
  * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
  * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
  * (Institution - Department - Group).
+ * 30-Mar-2016 - Added a dialog for user to select the Study; to manage it's 
+ * Meta data.
  */
 
 @ManagedBean (name="menuSelBean")
@@ -104,6 +106,20 @@ public class MenuSelectionBean implements Serializable{
     public void backToMainMenu() {
         logger.debug(userName + ": return to main menu.");
         plConfigPageURL = null;
+    }
+    
+    // User selected Study to manage it's Meta data, and has decided to proceed 
+    // with the management.
+    public String proceedToMetaDataMgnt() {
+        // Save the Study ID selection in the session map to be use by 
+        // MetaDataManagementBean.
+        FacesContext.getCurrentInstance().getExternalContext().
+                getSessionMap().put("study_id", study_id);
+
+        logger.debug(userName + ": selected study " + study_id + 
+                     " to manage it's Meta data.");
+        // Proceed to Meta data upload page.
+        return Constants.META_DATA_MANAGEMENT + "?faces-redirect=true";
     }
     
     // User selected Study to work on, and has decided to proceed to pipeline

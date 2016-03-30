@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
+import java.sql.Date;
 import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -33,8 +34,7 @@ import org.primefaces.event.RowEditEvent;
 import org.primefaces.model.UploadedFile;
 
 /**
- * ClinicalDataManagementBean is the backing bean for the 
- * clinicaldatamanagement view.
+ * MetaDataManagementBean is the backing bean for the metadatamanagement view.
  * 
  * Author: Tay Wei Hong
  * Date: 14-Dec-2015
@@ -55,28 +55,38 @@ import org.primefaces.model.UploadedFile;
  * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
  * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
  * (Institution - Department - Group).
+ * 30-Mar-2016 - Changed the class name from ClinicalDataManagementBean to 
+ * MetaDataManagementBean. Added the handling for 3 new attributes in subject
+ * (i.e. remarks, event and event_date).
  */
 
-@ManagedBean (name="clDataMgntBean")
+@ManagedBean (name="MDMgntBean")
 @ViewScoped
-public class ClinicalDataManagementBean implements Serializable {
+public class MetaDataManagementBean implements Serializable {
     // Get the logger for Log4j
     private final static Logger logger = LogManager.
-            getLogger(ClinicalDataManagementBean.class.getName());
-    private String subject_id, grp_id, country_code, race;
+            getLogger(MetaDataManagementBean.class.getName());
+    private String subject_id, grp_id, country_code, race, remarks, event;
     private char gender;
     private int age_at_diagnosis;
     private float height, weight;
+    private Date event_date;
+    private java.util.Date util_event_date;
     private List<Subject> subjectList;
-    // Store the user ID of the current user.
-    private final String userName;
+    // Store the user ID of the current user, and the study's Meta data that 
+    // we are managing.
+    private final String userName, study_id;
     private LinkedHashMap<String, String> nationalityCodeHash;
     
-    public ClinicalDataManagementBean() {
+    public MetaDataManagementBean() {
         userName = (String) getFacesContext().getExternalContext().
                 getSessionMap().get("User");
-        logger.debug("ClinicalDataManagementBean created.");
-        logger.info(userName + ": access Clinical Data Management Page.");
+        study_id = (String) getFacesContext().getExternalContext().
+                getSessionMap().get("study_id");
+        logger.debug("MetaDataManagementBean created.");
+        logger.info(userName + ": access Meta Data Management for study " 
+                    + study_id);
+        
     }
 
     @PostConstruct
@@ -105,8 +115,14 @@ public class ClinicalDataManagementBean implements Serializable {
     // Insert subject meta data into database.
     public String insertMetaData() {
         FacesContext fc = getFacesContext();
+        
+        if (util_event_date != null) {
+            event_date = new Date(util_event_date.getTime());
+        }
+        
         Subject subject = new Subject(subject_id, age_at_diagnosis, gender,
-                                      country_code, race, height, weight, grp_id);
+                                      country_code, race, height, weight, 
+                                      grp_id, remarks, event, event_date);
         
         if (SubjectDB.insertSubject(subject)) {
             // Record this subject meta data creation into database.
@@ -124,7 +140,7 @@ public class ClinicalDataManagementBean implements Serializable {
                     "Failed to insert subject meta data!", ""));
         }
         
-        return Constants.CLINICAL_DATA_MANAGEMENT;
+        return Constants.META_DATA_MANAGEMENT;
     }
     
     // Upload the subject meta data.
@@ -148,19 +164,19 @@ public class ClinicalDataManagementBean implements Serializable {
                 // The system will only insert the complete meta data into database.
                 if (data.length == 7) {
                     // By default, the nationality of all the subjects will be Singapore i.e. SGP.
-                    String country_code = "SGP";
+                    String cc = "SGP";
                     if (!data[3].isEmpty()) {
-                        country_code = data[3];
+                        cc = data[3];
                     }
                     // Need to make sure the strings represent valid integer and
                     // float values.
                     if (isInteger(data[1]) && isFloat(data[5]) && isFloat(data[6])) {
                         Subject tmp = new Subject(data[0], Integer.parseInt(data[1]), 
                                                   data[2].charAt(0), 
-                                                  country_code, data[4], 
+                                                  cc, data[4], 
                                                   Float.parseFloat(data[5]), 
                                                   Float.parseFloat(data[6]), 
-                                                  grp_id);
+                                                  grp_id, "", "", null);
                         
                         if (!SubjectDB.insertSubject(tmp)) {
                             uploadStatus.append(lineNum).append(" ");
@@ -209,12 +225,18 @@ public class ClinicalDataManagementBean implements Serializable {
         // Update the subject list.
         buildSubjectList();
         
-        return Constants.CLINICAL_DATA_MANAGEMENT;
+        return Constants.META_DATA_MANAGEMENT;
     }
     
     // Update the subject meta data in database
     public void onRowEdit(RowEditEvent event) {
         FacesContext fc = getFacesContext();
+        // Because the system is receiving the date as java.util.Date hence
+        // we need to perform a conversion here before storing it into database.
+        if (util_event_date != null) {
+            ((Subject) event.getObject()).setEvent_date
+                        (new Date(util_event_date.getTime()));
+        }
         
         if (SubjectDB.updateSubject((Subject) event.getObject())) {
             // Record this subject meta data update into database.
@@ -257,6 +279,12 @@ public class ClinicalDataManagementBean implements Serializable {
         catch (NumberFormatException nfe) {
             return false;
         }        
+    }
+    
+    // Return the wording to be display at the link under the BreadCrumb in the
+    // Clinical Data Management page.
+    public String getBreadCrumbLink() {
+        return "Meta Data Management for " + study_id;
     }
     
     // Machine generated getters and setters.
@@ -302,6 +330,25 @@ public class ClinicalDataManagementBean implements Serializable {
     public void setWeight(float weight) {
         this.weight = weight;
     }
+    public String getRemarks() {
+        return remarks;
+    }
+    public void setRemarks(String remarks) {
+        this.remarks = remarks;
+    }
+    public String getEvent() {
+        return event;
+    }
+    public void setEvent(String event) {
+        this.event = event;
+    }
+    public java.util.Date getUtil_event_date() {
+        return util_event_date;
+    }
+    public void setUtil_event_date(java.util.Date util_event_date) {
+        this.util_event_date = util_event_date;
+    }
+    
     // Return the list of meta data belonging to the same department ID as
     // the user.
     public List<Subject> getSubjectList() {

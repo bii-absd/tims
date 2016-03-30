@@ -92,6 +92,7 @@ import org.apache.logging.log4j.LogManager;
  * (Institution - Department - Group).
  * 14-Mar-2016 - Added one new constant, EXE_CLSTUDY; activity code for closing
  * study.
+ * 30-Mar-2016 - Renamed CLINICAL_DATA_MANAGEMENT to META_DATA_MANAGEMENT.
  */
 
 @ManagedBean (name = "constants")
@@ -131,7 +132,7 @@ public class Constants {
     public final static String PIPELINE_MANAGEMENT = "pipelinemanagement";
     public final static String GROUP_MANAGEMENT = "groupmanagement";
     public final static String STUDY_MANAGEMENT = "studymanagement";
-    public final static String CLINICAL_DATA_MANAGEMENT = "clinicaldatamanagement";
+    public final static String META_DATA_MANAGEMENT = "metadatamanagement";
     public final static String JOB_STATUS = "jobstatus?faces-redirect=true";
     public final static String FINALIZE_STUDY = "finalizestudy";
     public final static String COMPLETED_STUDY_OUTPUT = "completedstudyoutput";

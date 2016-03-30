@@ -39,6 +39,8 @@ import org.apache.logging.log4j.LogManager;
  * (Institution - Department - Group).
  * 28-Mar-2016 - Added new method, buildStudySubjectMD() to retrieve and build
  * the study subject Meta data.
+ * 30-Mar-2016 - Added the handling for 3 new attributes in subject
+ * (i.e. remarks, event and event_date).
  */
 
 public abstract class SubjectDB {
@@ -51,8 +53,8 @@ public abstract class SubjectDB {
         Connection conn = null;
         Boolean result = Constants.OK;
         String query = "INSERT INTO subject(subject_id,grp_id,"
-                + "age_at_diagnosis,gender,country_code,race,height,weight) "
-                + "VALUES(?,?,?,?,?,?,?,?)";
+                + "age_at_diagnosis,gender,country_code,race,height,weight,"
+                + "remarks,event,event_date) VALUES(?,?,?,?,?,?,?,?,?,?,?)";
         
         try {
             conn = DBHelper.getDSConn();
@@ -65,6 +67,9 @@ public abstract class SubjectDB {
             stm.setString(6, subject.getRace());
             stm.setFloat(7, subject.getHeight());
             stm.setFloat(8, subject.getWeight());
+            stm.setString(9, subject.getRemarks());
+            stm.setString(10, subject.getEvent());
+            stm.setDate(11, subject.getEvent_date());
             stm.executeUpdate();
             stm.close();
             
@@ -91,7 +96,8 @@ public abstract class SubjectDB {
         Boolean result = Constants.OK;
         String query = "UPDATE subject SET age_at_diagnosis = ?, "
                      + "gender = ?, country_code = ?, race = ?, height = ?, "
-                     + "weight = ? WHERE subject_id = ?";
+                     + "weight = ?, remarks = ?, event = ?, event_date = ? "
+                     + "WHERE subject_id = ?";
         
         try {
             conn = DBHelper.getDSConn();
@@ -102,7 +108,10 @@ public abstract class SubjectDB {
             stm.setString(4, subject.getRace());
             stm.setFloat(5, subject.getHeight());
             stm.setFloat(6, subject.getWeight());
-            stm.setString(7, subject.getSubject_id());
+            stm.setString(7, subject.getRemarks());
+            stm.setString(8, subject.getEvent());
+            stm.setDate(9, subject.getEvent_date());
+            stm.setString(10, subject.getSubject_id());
             stm.executeUpdate();
             stm.close();
             
@@ -145,7 +154,10 @@ public abstract class SubjectDB {
                             rs.getString("race"),
                             rs.getFloat("height"),
                             rs.getFloat("weight"),
-                            rs.getString("grp_id"));
+                            rs.getString("grp_id"),
+                            rs.getString("remarks"),
+                            rs.getString("event"),
+                            rs.getDate("event_date"));
 
             subjectList.add(tmp);
         }

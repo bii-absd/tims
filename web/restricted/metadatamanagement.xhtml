@@ -7,57 +7,47 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
     
-    <ui:define name="title">Clinical Data Management</ui:define>
-    <ui:param name="link" value="#{msg['clinic-data']}"/>
+    <ui:define name="title">Meta Data Management</ui:define>
+    <ui:param name="link" value="#{MDMgntBean.breadCrumbLink}"/>
     <ui:define name="content">
-    <p:growl id="clDataMsg"/>
+    <p:growl id="MDMsg"/>
     <p:accordionPanel id="accPanel">
         <p:tab id="editData" title="Edit Meta Data" titleStyleClass="tab-title">
             <h:form id="editDataForm">
-                <p:dataTable var="cldata" rows="10" id="clTable" 
-                             value="#{clDataMgntBean.subjectList}" paginator="true" 
+                <p:dataTable var="mddata" rows="10" id="MDTable" 
+                             value="#{MDMgntBean.subjectList}" paginator="true" 
                              paginatorTemplate="{FirstPageLink} {PreviousPageLink}
                              {CurrentPageReport} {NextPageLink} {LastPageLink}"
                              styleClass="table-odd-row table-even-row" 
                              editable="true">
-                    <p:ajax event="rowEdit" listener="#{clDataMgntBean.onRowEdit}" 
-                            update="clDataMsg"/>
-                    <p:column headerText="Subject ID" styleClass="col120">
-                        <h:outputText value="#{cldata.subject_id}"/>
-                    </p:column>
-                    <p:column headerText="Age at Diagnosis" styleClass="col120">
-                        <p:cellEditor>
-                            <f:facet name="output">
-                                <h:outputText value="#{cldata.age_at_diagnosis}"/>
-                            </f:facet>
-                            <f:facet name="input">
-                                <h:inputText value="#{cldata.age_at_diagnosis}" style="width: 100%"/>
-                            </f:facet>
-                        </p:cellEditor>
+                    <p:ajax event="rowEdit" listener="#{MDMgntBean.onRowEdit}" 
+                            update="MDMsg"/>
+                    <p:column headerText="Subject ID" styleClass="jsmedcol">
+                        <h:outputText value="#{mddata.subject_id}"/>
                     </p:column>
                     <p:column headerText="Gender" styleClass="jssmallcol">
                         <p:cellEditor>
                             <f:facet name="output">
-                                <h:outputText value="#{cldata.gender}"/>
+                                <h:outputText value="#{mddata.gender}"/>
                             </f:facet>
                             <f:facet name="input">
-                                <p:selectOneMenu value="#{cldata.gender}" style="width: 100%">
+                                <p:selectOneMenu value="#{mddata.gender}" style="width: 100%">
                                     <f:selectItem itemLabel="Male" itemValue="M"/>
                                     <f:selectItem itemLabel="Female" itemValue="F"/>
                                 </p:selectOneMenu>
                             </f:facet>
                         </p:cellEditor>
                     </p:column>
-                    <p:column headerText="Nationality" style="text-align: left">
+                    <p:column headerText="Nationality" styleClass="jsmedcol">
                         <p:cellEditor>
                             <f:facet name="output">
-                                <h:outputText value="#{cldata.country_name}"/>
+                                <h:outputText value="#{mddata.country_name}"/>
                             </f:facet>
                             <f:facet name="input">
-                                <p:selectOneMenu value="#{cldata.country_code}" 
+                                <p:selectOneMenu value="#{mddata.country_code}" 
                                                  style="width: 100%" filter="true" 
                                                  filterMatchMode="startsWith">
-                                    <f:selectItems value="#{clDataMgntBean.nationalityCodeHash}"/>
+                                    <f:selectItems value="#{MDMgntBean.nationalityCodeHash}"/>
                                 </p:selectOneMenu>
                             </f:facet>
                         </p:cellEditor>
@@ -65,10 +55,10 @@
                     <p:column headerText="Race" styleClass="jssmallcol">
                         <p:cellEditor>
                             <f:facet name="output">
-                                <h:outputText value="#{cldata.race}"/>
+                                <h:outputText value="#{mddata.race}"/>
                             </f:facet>
                             <f:facet name="input">
-                                <p:selectOneMenu value="#{cldata.race}" style="width: 100%">
+                                <p:selectOneMenu value="#{mddata.race}" style="width: 100%">
                                     <f:selectItem itemLabel="Chinese" itemValue="CHN"/>
                                     <f:selectItem itemLabel="Malay" itemValue="MAL"/>
                                     <f:selectItem itemLabel="Indian" itemValue="IND"/>
@@ -78,25 +68,68 @@
                             </f:facet>
                         </p:cellEditor>
                     </p:column>
+                    <p:column headerText="Age at Diagnosis" styleClass="col120">
+                        <p:cellEditor>
+                            <f:facet name="output">
+                                <h:outputText value="#{mddata.age_at_diagnosis}"/>
+                            </f:facet>
+                            <f:facet name="input">
+                                <h:inputText value="#{mddata.age_at_diagnosis}" style="width: 100%"/>
+                            </f:facet>
+                        </p:cellEditor>
+                    </p:column>
                     <p:column headerText="Height" styleClass="jssmallcol">
                         <p:cellEditor>
                             <f:facet name="output">
-                                <h:outputText value="#{cldata.height}"/>
+                                <h:outputText value="#{mddata.height}"/>
                             </f:facet>
                             <f:facet name="input">
-                                <p:inputText value="#{cldata.height}" 
+                                <h:inputText value="#{mddata.height}" 
                                              style="width: 100%"/>
                             </f:facet>
                         </p:cellEditor>
                     </p:column>
-                    <p:column headerText="weight" styleClass="jssmallcol">
+                    <p:column headerText="Weight" styleClass="jssmallcol">
                         <p:cellEditor>
                             <f:facet name="output">
-                                <h:outputText value="#{cldata.weight}"/>
+                                <h:outputText value="#{mddata.weight}"/>
                             </f:facet>
                             <f:facet name="input">
-                                <p:inputText value="#{cldata.weight}" 
+                                <h:inputText value="#{mddata.weight}" 
                                              style="width: 100%"/>
+                            </f:facet>
+                        </p:cellEditor>
+                    </p:column>
+                    <p:column headerText="Remarks" styleClass="col300">
+                        <p:cellEditor>
+                            <f:facet name="output">
+                                <h:outputText value="#{mddata.remarks}"/>
+                            </f:facet>
+                            <f:facet name="input">
+                                <h:inputText value="#{mddata.remarks}" 
+                                             style="width: 100%"/>
+                            </f:facet>
+                        </p:cellEditor>
+                    </p:column>
+                    <p:column headerText="Event" styleClass="col140">
+                        <p:cellEditor>
+                            <f:facet name="output">
+                                <h:outputText value="#{mddata.event}"/>
+                            </f:facet>
+                            <f:facet name="input">
+                                <h:inputText value="#{mddata.event}" 
+                                             style="width: 100%"/>
+                            </f:facet>
+                        </p:cellEditor>
+                    </p:column>
+                    <p:column headerText="Event Date" styleClass="jssmallcol">
+                        <p:cellEditor>
+                            <f:facet name="output">
+                                <h:outputText value="#{mddata.event_date}"/>
+                            </f:facet>
+                            <f:facet name="input">
+                                <p:calendar value="#{MDMgntBean.util_event_date}" 
+                                            pattern="yyyy-MM-dd"/>
                             </f:facet>
                         </p:cellEditor>
                     </p:column>
@@ -112,10 +145,10 @@
                titleStyleClass="tab-title">
             <h:form id="uploadDataForm" enctype="multipart/form-data">
                 <p:fileUpload id="uploadDataFile" mode="advanced" 
-                              update="clDataMsg :accPanel:editDataForm:clTable" 
+                              update="MDMsg :accPanel:editDataForm:MDTable" 
                               label="Select Meta Data File" 
                               allowTypes="/(\.|\/)(txt)$/"
-                              fileUploadListener="#{clDataMgntBean.metaDataUpload}"/>
+                              fileUploadListener="#{MDMgntBean.metaDataUpload}"/>
             </h:form>
         </p:tab>
         
@@ -123,19 +156,13 @@
             <h:form id="addDataForm">
                 <h:panelGrid columns="3" border="0" cellpadding="4" cellspacing="2">
                     <h:outputText value="Subject ID" styleClass="inputlabel"/>
-                    <p:inputText id="subjectid" size="18" autocomplete="off" 
-                                 required="true" value="#{clDataMgntBean.subject_id}"/>
+                    <p:inputText id="subjectid" size="20" autocomplete="off" 
+                                 required="true" value="#{MDMgntBean.subject_id}"/>
                     <h:message id="subjectid-status" for="subjectid" styleClass="errors"/>
-                
-                    <h:outputText value="Age at Diagnosis" styleClass="inputlabel"/>
-                    <p:inputText id="agediagnosis" size="18" maxlength="3" 
-                                 autocomplete="off" 
-                                 value="#{clDataMgntBean.age_at_diagnosis}"/>                    
-                    <h:message id="agediagnosis-status" for="agediagnosis" styleClass="errors"/>
                 
                     <h:outputText value="Gender" styleClass="inputlabel"/>
                     <p:selectOneRadio id="gender" required="true" 
-                                      value="#{clDataMgntBean.gender}">
+                                      value="#{MDMgntBean.gender}">
                         <f:selectItem itemLabel="Male" itemValue="M"/>
                         <f:selectItem itemLabel="Female" itemValue="F"/>
                     </p:selectOneRadio>
@@ -143,15 +170,17 @@
 
                     <h:outputText value="Nationality" styleClass="inputlabel"/>
                     <p:selectOneMenu id="nationality" required="true" 
-                                     value="#{clDataMgntBean.country_code}" 
+                                     style="width: 95px"
+                                     value="#{MDMgntBean.country_code}" 
                                      filter="true" filterMatchMode="startsWith">
-                        <f:selectItems value="#{clDataMgntBean.nationalityCodeHash}"/>
+                        <f:selectItem itemLabel="Select Nationality" itemValue=""/>
+                        <f:selectItems value="#{MDMgntBean.nationalityCodeHash}"/>
                     </p:selectOneMenu>
                     <h:message for="nationality" styleClass="errors"/>
                     
                     <h:outputText value="Race" styleClass="inputlabel"/>
                     <p:selectOneMenu id="race" required="true" 
-                                     value="#{clDataMgntBean.race}">
+                                     style="width: 95px" value="#{MDMgntBean.race}">
                         <f:selectItem itemLabel="Select Race" itemValue=""/>
                         <f:selectItem itemLabel="Chinese" itemValue="CHN"/>
                         <f:selectItem itemLabel="Malay" itemValue="MAL"/>
@@ -161,27 +190,48 @@
                     </p:selectOneMenu>
                     <h:message for="race" styleClass="errors"/>
                     
+                    <h:outputText value="Age at Diagnosis" styleClass="inputlabel"/>
+                    <p:inputText id="agediagnosis" size="20" maxlength="3" 
+                                 autocomplete="off" 
+                                 value="#{MDMgntBean.age_at_diagnosis}"/>                    
+                    <h:message id="agediagnosis-status" for="agediagnosis" 
+                               styleClass="errors"/>
+                
                     <h:outputText value="Height (Meter)" styleClass="inputlabel"/>
-                    <p:inputText id="height" size="18" autocomplete="off" 
-                                 value="#{clDataMgntBean.height}">
+                    <p:inputText id="height" size="20" autocomplete="off" 
+                                 value="#{MDMgntBean.height}">
                         <f:validateDoubleRange minimum="0.54" maximum="2.72"/>
                     </p:inputText>
                     <h:message for="height" styleClass="errors"/>
                     
                     <h:outputText value="Weight (KG)" styleClass="inputlabel"/>
-                    <p:inputText id="weight" size="18" autocomplete="off" 
-                                 value="#{clDataMgntBean.weight}">
+                    <p:inputText id="weight" size="20" autocomplete="off" 
+                                 value="#{MDMgntBean.weight}">
                         <f:validateDoubleRange minimum="2.2" maximum="635.0"/>
                     </p:inputText>
                     <h:message for="weight" styleClass="errors"/>
+                    
+                    <h:outputText value="Remarks" styleClass="inputlabel"/>
+                    <p:inputText id="remarks" autocomplete="off" 
+                                 value="#{MDMgntBean.remarks}"/>
+                    <h:panelGroup/>
+                    
+                    <h:outputText value="Event" styleClass="inputlabel"/>
+                    <p:inputText id="event" autocomplete="off" 
+                                 value="#{MDMgntBean.event}"/>
+                    <h:panelGroup/>
+                    
+                    <h:outputText value="Event Date" styleClass="inputlabel"/>
+                    <p:calendar value="#{MDMgntBean.util_event_date}" pattern="yyyy-MM-dd"/>
+                    <h:panelGroup/>
                 </h:panelGrid>
 
                 <p:spacer height="40" width="2"/>
-                <h:commandButton action="#{clDataMgntBean.insertMetaData}" 
+                <h:commandButton action="#{MDMgntBean.insertMetaData}" 
                                  value="Insert Meta Data" 
                                  style="font-size: 12px"/>
             </h:form>
-        </p:tab>        
+        </p:tab>
     </p:accordionPanel>
     </ui:define>
 </ui:composition>
