@@ -3,8 +3,6 @@
  */
 package Clinical.Data.Sink.Database;
 
-import java.sql.Date;
-
 /**
  * Subject is used to represent the subject table in the database.
  * 
@@ -20,41 +18,32 @@ import java.sql.Date;
  * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
  * (Institution - Department - Group).
  * 30-Mar-2016 - Added 3 new attributes i.e. remarks, event and event_date.
+ * 31-Mar-2016 - Only keep attributes subject_id, grp_id, country_code, race
+ * and gender in this class. Move the rest to StudySubject Class.
  */
 
 public class Subject {
     // subject table attributes
-    private String subject_id, grp_id, country_code, race, remarks, event;
+    private String subject_id, grp_id, country_code, race;
     private char gender;
-    private int age_at_diagnosis;
-    private float height, weight;
-    private Date event_date;
 
     // Machine generated constructor
-    public Subject(String subject_id, int age_at_diagnosis, char gender, 
-            String country_code, String race, float height, float weight, 
-            String grp_id, String remarks, String event, Date event_date) {
+    public Subject(String subject_id, char gender, String country_code, 
+            String race, String grp_id) {
         this.subject_id = subject_id;
-        this.age_at_diagnosis = age_at_diagnosis;
         this.gender = gender;
         this.country_code = country_code;
         this.race = race;
-        this.height = height;
-        this.weight = weight;
         this.grp_id = grp_id;
-        this.remarks = remarks;
-        this.event = event;
-        this.event_date = event_date;
     }
     
     
     // Return the string representation of this subject in the format of:
-    // Subject_ID|Age_at_diagnosis|Gender|Nationality|Race|Height|Weight|GroupID
+    // Subject_ID|Gender|Nationality|Race|GroupID
     @Override
     public String toString() {
-        return subject_id + "|" + age_at_diagnosis + "|" + gender + "|" +
-               country_code + "|" + race + "|" + height + "|" + weight + 
-               "|" + grp_id;
+        return subject_id + "|" + gender + "|" + country_code + "|" 
+                + race +  "|" + grp_id;
     }
     
     // Return the country name for this user nationality.
@@ -92,41 +81,5 @@ public class Subject {
     }
     public void setGender(char gender) {
         this.gender = gender;
-    }
-    public int getAge_at_diagnosis() {
-        return age_at_diagnosis;
-    }
-    public void setAge_at_diagnosis(int age_at_diagnosis) {
-        this.age_at_diagnosis = age_at_diagnosis;
-    }
-    public float getHeight() {
-        return height;
-    }
-    public void setHeight(float height) {
-        this.height = height;
-    }
-    public float getWeight() {
-        return weight;
-    }
-    public void setWeight(float weight) {
-        this.weight = weight;
-    }
-    public String getRemarks() {
-        return remarks;
-    }
-    public void setRemarks(String remarks) {
-        this.remarks = remarks;
-    }
-    public String getEvent() {
-        return event;
-    }
-    public void setEvent(String event) {
-        this.event = event;
-    }
-    public Date getEvent_date() {
-        return event_date;
-    }
-    public void setEvent_date(Date event_date) {
-        this.event_date = event_date;
     }
 }

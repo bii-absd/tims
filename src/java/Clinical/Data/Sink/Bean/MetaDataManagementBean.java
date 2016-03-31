@@ -5,8 +5,11 @@ package Clinical.Data.Sink.Bean;
 
 import Clinical.Data.Sink.Database.ActivityLogDB;
 import Clinical.Data.Sink.Database.NationalityDB;
+import Clinical.Data.Sink.Database.StudySubject;
+import Clinical.Data.Sink.Database.StudySubjectDB;
 import Clinical.Data.Sink.Database.Subject;
 import Clinical.Data.Sink.Database.SubjectDB;
+import Clinical.Data.Sink.Database.SubjectDetail;
 import Clinical.Data.Sink.Database.UserAccountDB;
 import Clinical.Data.Sink.General.Constants;
 import java.io.BufferedReader;
@@ -58,6 +61,11 @@ import org.primefaces.model.UploadedFile;
  * 30-Mar-2016 - Changed the class name from ClinicalDataManagementBean to 
  * MetaDataManagementBean. Added the handling for 3 new attributes in subject
  * (i.e. remarks, event and event_date).
+ * 31-Mar-2016 - Subject meta data will be split into 2 tables (i.e. Subject 
+ * and StudySubject), to handle the scenario whereby the subjects are involved
+ * in more than one study and their attributes (i.e. height, weight, etc) might
+ * have change across those studies. During data upload/entry, perform database
+ * insert/update according to whether the subject exist in database or not.
  */
 
 @ManagedBean (name="MDMgntBean")
@@ -72,7 +80,7 @@ public class MetaDataManagementBean implements Serializable {
     private float height, weight;
     private Date event_date;
     private java.util.Date util_event_date;
-    private List<Subject> subjectList;
+    private List<SubjectDetail> subtDetailList;
     // Store the user ID of the current user, and the study's Meta data that 
     // we are managing.
     private final String userName, study_id;
@@ -95,13 +103,13 @@ public class MetaDataManagementBean implements Serializable {
         grp_id = UserAccountDB.getUnitID(userName);
         // Retrieve the list of nationality code setup in the system.
         nationalityCodeHash = NationalityDB.getNationalityCodeHash();
-        buildSubjectList();
+        buildSubtDetailList();
     }
 
-    // Retrieve the subjects detail from database, and build the subject list.
-    private void buildSubjectList() {
+    // Build the subjects detail list.
+    private void buildSubtDetailList() {
         try {
-            subjectList = SubjectDB.getSubjectList(grp_id);
+            subtDetailList = SubjectDB.getSubtDetailList(grp_id, study_id);
         }
         catch (SQLException|NamingException e) {
             logger.error("FAIL to build subject list!");
@@ -115,29 +123,69 @@ public class MetaDataManagementBean implements Serializable {
     // Insert subject meta data into database.
     public String insertMetaData() {
         FacesContext fc = getFacesContext();
+        boolean dbUpdateStatus = Constants.NOT_OK;
         
         if (util_event_date != null) {
             event_date = new Date(util_event_date.getTime());
         }
         
-        Subject subject = new Subject(subject_id, age_at_diagnosis, gender,
-                                      country_code, race, height, weight, 
-                                      grp_id, remarks, event, event_date);
+        Subject subt = new Subject(subject_id, gender, country_code, race, grp_id);
+        // Create subject meta data for this study.
+        // For now, set the subtype_code to "SUS" first.
+        StudySubject ss = new StudySubject(subject_id, grp_id, study_id, "SUS",
+                                           remarks, event, age_at_diagnosis, 
+                                           height, weight, event_date);
         
-        if (SubjectDB.insertSubject(subject)) {
+        try {
+            if (SubjectDB.isSubjectExistInGrp(subject_id, grp_id)) {
+                // Subject data exist in database; update.
+                dbUpdateStatus = SubjectDB.updateSubject(subt);
+            }
+            else {
+                // Subject data not found in database; insert.
+                dbUpdateStatus = SubjectDB.insertSubject(subt);
+                
+            }
+        }
+        catch (SQLException|NamingException e) {
+            logger.error("FAIL to insert/update subject meta data!");
+            logger.error(e.getMessage());
+        }
+        // Continue to update/insert the study subject table only
+        // if the update/insert to subject table is ok.
+        if (dbUpdateStatus) {
+            try {
+                if (StudySubjectDB.isSSExist(subject_id, grp_id, study_id)) {
+                    // Study subject data exist in DB; update.
+                    dbUpdateStatus = StudySubjectDB.updateSS(ss);
+                }
+                else {
+                    // Study subject data not found in DB; insert.
+                    dbUpdateStatus = StudySubjectDB.insertSS(ss);
+                }
+            }
+            catch (SQLException|NamingException e) {
+                logger.error("FAIL to insert/update study subject meta data!");
+                logger.error(e.getMessage());
+            }
+        }
+        // Display the status message to the user according to the update/insert
+        // to database status.
+        if (dbUpdateStatus) {
             // Record this subject meta data creation into database.
-            String detail = "Subject " + subject_id;
+            String detail = "Subject " + subject_id + " under Group " 
+                          + grp_id + " in Study " + study_id;
             ActivityLogDB.recordUserActivity(userName, Constants.CRE_ID, detail);
             logger.info(userName + ": created " + detail); 
             fc.addMessage(null, new FacesMessage(
                     FacesMessage.SEVERITY_INFO,
-                    "Subject meta data inserted into database.", ""));
+                    "Subject meta data inserted/updated into database.", ""));
         }
         else {
             logger.error("FAIL to insert subject meta data!");
             fc.addMessage(null, new FacesMessage(
                     FacesMessage.SEVERITY_ERROR,
-                    "Failed to insert subject meta data!", ""));
+                    "Failed to insert/update subject meta data!", ""));
         }
         
         return Constants.META_DATA_MANAGEMENT;
@@ -157,6 +205,7 @@ public class MetaDataManagementBean implements Serializable {
             String[] data;
             int lineNum = 1;
             int incompleteLine = 0;
+            boolean dbUpdateStatus = Constants.NOT_OK;
 
             while ((lineRead = br.readLine()) != null) {
                 // Subject_ID|Age_at_diagnosis|gender|nationality|race|height|weight
@@ -171,30 +220,60 @@ public class MetaDataManagementBean implements Serializable {
                     // Need to make sure the strings represent valid integer and
                     // float values.
                     if (isInteger(data[1]) && isFloat(data[5]) && isFloat(data[6])) {
-                        Subject tmp = new Subject(data[0], Integer.parseInt(data[1]), 
-                                                  data[2].charAt(0), 
-                                                  cc, data[4], 
-                                                  Float.parseFloat(data[5]), 
-                                                  Float.parseFloat(data[6]), 
-                                                  grp_id, "", "", null);
-                        
-                        if (!SubjectDB.insertSubject(tmp)) {
-                            uploadStatus.append(lineNum).append(" ");
-                            incompleteLine++;
+                        Subject subt = new Subject(data[0], data[2].charAt(0), 
+                                                  cc, data[4], grp_id);
+                        // Create subject meta data for this study.
+                        // For now, set the subtype_code to "SUS" first.
+                        StudySubject ss = new StudySubject
+                                            (data[0], grp_id, study_id, "SUS",
+                                            "", "", Integer.parseInt(data[1]), 
+                                            Float.parseFloat(data[5]), 
+                                            Float.parseFloat(data[6]), null);
+
+                        try {
+                            if (SubjectDB.isSubjectExistInGrp(data[0], grp_id)) {
+                                // Subject data exist in DB; update.
+                                dbUpdateStatus = SubjectDB.updateSubject(subt);
+                            }
+                            else {
+                                // Subject data not found in DB; insert.
+                                dbUpdateStatus = SubjectDB.insertSubject(subt);
+                            }
+                        }
+                        catch (SQLException|NamingException e) {
+                            logger.error(e.getMessage());
+                        }
+                        // Continue to update/insert the study subject table only
+                        // if the update/insert to subject table is ok.
+                        if (dbUpdateStatus) {
+                            try {
+                                if (StudySubjectDB.isSSExist(data[0], grp_id, study_id)) {
+                                    // Study subject data exist in DB; update.
+                                    dbUpdateStatus = StudySubjectDB.updateSS(ss);
+                                }
+                                else {
+                                    // Study subject data not found in DB; insert.
+                                    dbUpdateStatus = StudySubjectDB.insertSS(ss);
+                                }
+                            }
+                            catch (SQLException|NamingException e) {
+                                logger.error(e.getMessage());
+                            }
                         }
                     }
-                    else {
-                        // Some of the strings does not represent valid integer
-                        // and/or float.
-                        uploadStatus.append(lineNum).append(" ");
-                        incompleteLine++;                        
-                    }
-                    
+                }
+                
+                if (!dbUpdateStatus) {
+                    // Either the data uploaded is incomplete, have invalid
+                    // value, or having error during insertion into DB.
+                    uploadStatus.append(lineNum).append(" ");
+                    incompleteLine++;                    
                 }
                 else {
-                    uploadStatus.append(lineNum).append(" ");
-                    incompleteLine++;
+                    // Need to reset the status flag.
+                    dbUpdateStatus = Constants.NOT_OK;
                 }
+                
                 lineNum++;
             }
             
@@ -223,7 +302,7 @@ public class MetaDataManagementBean implements Serializable {
         getFacesContext().addMessage(null, new FacesMessage(
                     faceStatus, uploadStatus.toString(), ""));
         // Update the subject list.
-        buildSubjectList();
+        buildSubtDetailList();
         
         return Constants.META_DATA_MANAGEMENT;
     }
@@ -234,14 +313,31 @@ public class MetaDataManagementBean implements Serializable {
         // Because the system is receiving the date as java.util.Date hence
         // we need to perform a conversion here before storing it into database.
         if (util_event_date != null) {
-            ((Subject) event.getObject()).setEvent_date
+            ((SubjectDetail) event.getObject()).setEvent_date
                         (new Date(util_event_date.getTime()));
         }
+        // Build the Subject and StudySubject objects using the selected 
+        // SubjectDetail object.
+        SubjectDetail subtDetail = (SubjectDetail) event.getObject();
+        Subject subt = new Subject(subtDetail.getSubject_id(),
+                                   subtDetail.getGender(),
+                                   subtDetail.getCountry_code(),
+                                   subtDetail.getRace(),
+                                   subtDetail.getGrp_id());
+        StudySubject ss = new StudySubject(subtDetail.getSubject_id(),
+                                           subtDetail.getGrp_id(),
+                                           study_id, "SUS",
+                                           subtDetail.getRemarks(),
+                                           subtDetail.getEvent(),
+                                           subtDetail.getAge_at_diagnosis(),
+                                           subtDetail.getHeight(),
+                                           subtDetail.getWeight(),
+                                           subtDetail.getEvent_date());
         
-        if (SubjectDB.updateSubject((Subject) event.getObject())) {
+        if (SubjectDB.updateSubject(subt) && StudySubjectDB.updateSS(ss)) {
             // Record this subject meta data update into database.
-            String detail = "Subject " + ((Subject) event.getObject()).
-                            getSubject_id();
+            String detail = "Subject " + subt.getSubject_id() + " under Group " 
+                          + subt.getGrp_id() + " in Study " + study_id;
             ActivityLogDB.recordUserActivity(userName, Constants.CHG_ID, detail);
             logger.info(userName + ": updated " + detail);
             fc.addMessage(null, new FacesMessage(
@@ -351,8 +447,8 @@ public class MetaDataManagementBean implements Serializable {
     
     // Return the list of meta data belonging to the same department ID as
     // the user.
-    public List<Subject> getSubjectList() {
-        return subjectList;
+    public List<SubjectDetail> getSubtDetailList() {
+        return subtDetailList;
     }
     // Return the list of nationality code setup in the system.
     public LinkedHashMap<String, String> getNationalityCodeHash() {

@@ -41,6 +41,9 @@ import org.apache.logging.log4j.LogManager;
  * the study subject Meta data.
  * 30-Mar-2016 - Added the handling for 3 new attributes in subject
  * (i.e. remarks, event and event_date).
+ * 31-Mar-2016 - getSubtDetailList() will return a list of SubjectDetail instead
+ * of Subject. buildStudySubjectMD() will query from subject_detail view. 
+ * Changes due to the movement of some attributes from Subject to StudySubject.
  */
 
 public abstract class SubjectDB {
@@ -53,23 +56,16 @@ public abstract class SubjectDB {
         Connection conn = null;
         Boolean result = Constants.OK;
         String query = "INSERT INTO subject(subject_id,grp_id,"
-                + "age_at_diagnosis,gender,country_code,race,height,weight,"
-                + "remarks,event,event_date) VALUES(?,?,?,?,?,?,?,?,?,?,?)";
+                + "gender,country_code,race) VALUES(?,?,?,?,?)";
         
         try {
             conn = DBHelper.getDSConn();
             PreparedStatement stm = conn.prepareStatement(query);
             stm.setString(1, subject.getSubject_id());
             stm.setString(2, subject.getGrp_id());
-            stm.setInt(3, subject.getAge_at_diagnosis());
-            stm.setString(4, String.valueOf(subject.getGender()));
-            stm.setString(5, subject.getCountry_code());
-            stm.setString(6, subject.getRace());
-            stm.setFloat(7, subject.getHeight());
-            stm.setFloat(8, subject.getWeight());
-            stm.setString(9, subject.getRemarks());
-            stm.setString(10, subject.getEvent());
-            stm.setDate(11, subject.getEvent_date());
+            stm.setString(3, String.valueOf(subject.getGender()));
+            stm.setString(4, subject.getCountry_code());
+            stm.setString(5, subject.getRace());
             stm.executeUpdate();
             stm.close();
             
@@ -89,29 +85,20 @@ public abstract class SubjectDB {
     }
     
     // Update subject meta data in database.
-    // Only allow changes to age_at_diagnosis, gender, nationality, race, 
-    // height and weight.
+    // Only allow changes to gender, nationality, race.
     public static Boolean updateSubject(Subject subject) {
         Connection conn = null;
         Boolean result = Constants.OK;
-        String query = "UPDATE subject SET age_at_diagnosis = ?, "
-                     + "gender = ?, country_code = ?, race = ?, height = ?, "
-                     + "weight = ?, remarks = ?, event = ?, event_date = ? "
-                     + "WHERE subject_id = ?";
+        String query = "UPDATE subject SET gender = ?, country_code = ?, "
+                     + "race = ? WHERE subject_id = ?";
         
         try {
             conn = DBHelper.getDSConn();
             PreparedStatement stm = conn.prepareStatement(query);
-            stm.setInt(1, subject.getAge_at_diagnosis());
-            stm.setString(2, String.valueOf(subject.getGender()));
-            stm.setString(3, subject.getCountry_code());
-            stm.setString(4, subject.getRace());
-            stm.setFloat(5, subject.getHeight());
-            stm.setFloat(6, subject.getWeight());
-            stm.setString(7, subject.getRemarks());
-            stm.setString(8, subject.getEvent());
-            stm.setDate(9, subject.getEvent_date());
-            stm.setString(10, subject.getSubject_id());
+            stm.setString(1, String.valueOf(subject.getGender()));
+            stm.setString(2, subject.getCountry_code());
+            stm.setString(3, subject.getRace());
+            stm.setString(4, subject.getSubject_id());
             stm.executeUpdate();
             stm.close();
             
@@ -131,42 +118,46 @@ public abstract class SubjectDB {
         return result;
     }
     
-    // Return the list of subjects belonging to this group.
+    // Return the list of subjects belonging to this group and study.
     // Exception thrown here need to be handle by the caller.
-    public static List<Subject> getSubjectList(String grpID) 
+    public static List<SubjectDetail> getSubtDetailList(String grpID, String studyID) 
             throws SQLException, NamingException 
     {
         Connection conn = null;
-        List<Subject> subjectList = new ArrayList<>();
-        String query = "SELECT * from subject WHERE grp_id = ? ORDER BY subject_id";
+        List<SubjectDetail> subtDetailList = new ArrayList<>();
+        String query = "SELECT * from subject_detail WHERE grp_id = ? "
+                     + "AND study_id = ? ORDER BY subject_id";
         
         conn = DBHelper.getDSConn();
         PreparedStatement stm = conn.prepareStatement(query);
         stm.setString(1, grpID);
+        stm.setString(2, studyID);
         ResultSet rs = stm.executeQuery();
 
         while (rs.next()) {
-            Subject tmp = new Subject(
+            SubjectDetail tmp = new SubjectDetail(
+                            rs.getString("grp_id"),
+                            rs.getString("study_id"),
                             rs.getString("subject_id"),
-                            rs.getInt("age_at_diagnosis"),
-                            rs.getString("gender").charAt(0),
                             rs.getString("country_code"),
                             rs.getString("race"),
-                            rs.getFloat("height"),
-                            rs.getFloat("weight"),
-                            rs.getString("grp_id"),
+                            rs.getString("subtype_code"),
                             rs.getString("remarks"),
                             rs.getString("event"),
-                            rs.getDate("event_date"));
+                            rs.getInt("age_at_diagnosis"),
+                            rs.getFloat("height"),
+                            rs.getFloat("weight"),
+                            rs.getDate("event_date"),
+                            rs.getString("gender").charAt(0));
 
-            subjectList.add(tmp);
+            subtDetailList.add(tmp);
         }
-        logger.debug("Query subject completed.");
+        logger.debug("Query subject detail completed.");
         
         stm.close();
         DBHelper.closeDSConn(conn);
         
-        return subjectList;
+        return subtDetailList;
     }
     
     // Check whether the subject meta data exists in the database.
@@ -198,15 +189,15 @@ public abstract class SubjectDB {
     {
         Connection conn = null;
         StringBuilder metadata = new StringBuilder();
-        // PS** The final query need to be build on subject and study_subject tables.
-        String query = "SELECT  * FROM subject WHERE subject_id = ? AND "
-                     + "grp_id = ?";
+        String query = "SELECT  * FROM subject_detail WHERE subject_id = ? AND "
+                     + "grp_id = ? AND study_id = ?";
         
         try {
             conn = DBHelper.getDSConn();
             PreparedStatement stm = conn.prepareStatement(query);
             stm.setString(1, subject_id);
             stm.setString(2, grp_id);
+            stm.setString(3, study_id);
             ResultSet rs = stm.executeQuery();
 
             if (rs.next()) {
