@@ -42,6 +42,8 @@ import org.apache.logging.log4j.LogManager;
  * (Institution - Department - Group).
  * 28-Mar-2016 - To retrieve and include the subject's age, gender, race, height 
  * and weight in the consolidated output.
+ * 04-Apr-2016 - To retrieve and include the subject class, remarks, event and
+ * event date in the consolidated output.
  */
 
 public class DataRetriever extends Thread {
@@ -66,7 +68,8 @@ public class DataRetriever extends Thread {
         // Get a data source connection for this thread.
         conn = DBHelper.getDSConn();
         
-        opHeader.append("Subject|Age|Gender|Race|Height|Weight|Pipeline");
+        opHeader.append("Subject|Age|Gender|Race|Height|Weight|SubjectClass|"
+                      + "Remarks|Event|EventDate|Pipeline");
         geneList = getGeneList();
         // Retrieve the list of OutputItems (i.e. Subject|Technology|Index)
         opItemsList = getOpItemsList();

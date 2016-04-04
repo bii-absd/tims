@@ -19,21 +19,23 @@ package Clinical.Data.Sink.Database;
  * (Institution - Department - Group).
  * 22-Mar-2016 - Added in one new attribute icd_code, to identify the disease 
  * under study.
+ * 04-Apr-2016 - Instead of storing the icd_code, the finalized_output table
+ * will store the study_id.
  */
 
 public class FinalizedOutput {
-    String annot_ver, subject_id, grp_id, icd_code;
+    String annot_ver, subject_id, grp_id, study_id;
     int array_index, job_id;
 
     // Machine generated code
     public FinalizedOutput(int array_index, String annot_ver, String subject_id, 
-            String grp_id, int job_id, String icd_code) {
+            String grp_id, int job_id, String study_id) {
         this.array_index = array_index;
         this.annot_ver = annot_ver;
         this.subject_id = subject_id;
         this.grp_id = grp_id;
         this.job_id = job_id;
-        this.icd_code = icd_code;
+        this.study_id = study_id;
     }
     public int getArray_index() {
         return array_index;
@@ -65,10 +67,10 @@ public class FinalizedOutput {
     public void setJob_id(int job_id) {
         this.job_id = job_id;
     }
-    public String getIcd_code() {
-        return icd_code;
+    public String getStudy_id() {
+        return study_id;
     }
-    public void setIcd_code(String icd_code) {
-        this.icd_code = icd_code;
+    public void setStudy_id(String study_id) {
+        this.study_id = study_id;
     }
 }

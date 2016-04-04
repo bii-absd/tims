@@ -107,7 +107,10 @@
                             </f:facet>
                             <f:facet name="input">
                                 <h:inputText value="#{mddata.remarks}" 
-                                             style="width: 100%"/>
+                                             validatorMessage="#{msg['error-remarks']}"
+                                             style="width: 100%">
+                                    <f:validateRegex pattern="^[a-zA-Z0-9:;,. ]*$"/>
+                                </h:inputText>
                             </f:facet>
                         </p:cellEditor>
                     </p:column>
@@ -118,7 +121,10 @@
                             </f:facet>
                             <f:facet name="input">
                                 <h:inputText value="#{mddata.event}" 
-                                             style="width: 100%"/>
+                                             validatorMessage="#{msg['error-event']}"
+                                             style="width: 100%">
+                                    <f:validateRegex pattern="^[a-zA-Z0-9:;,. ]*$"/>
+                                </h:inputText>
                             </f:facet>
                         </p:cellEditor>
                     </p:column>
@@ -213,13 +219,19 @@
                     
                     <h:outputText value="Remarks" styleClass="inputlabel"/>
                     <p:inputText id="remarks" autocomplete="off" 
-                                 value="#{MDMgntBean.remarks}"/>
-                    <h:panelGroup/>
+                                 validatorMessage="#{msg['error-remarks']}"
+                                 value="#{MDMgntBean.remarks}">
+                        <f:validateRegex pattern="^[a-zA-Z0-9:;,. ]*$"/>
+                    </p:inputText>
+                    <h:message for="remarks" styleClass="errors"/>
                     
                     <h:outputText value="Event" styleClass="inputlabel"/>
                     <p:inputText id="event" autocomplete="off" 
-                                 value="#{MDMgntBean.event}"/>
-                    <h:panelGroup/>
+                                 validatorMessage="#{msg['error-event']}"
+                                 value="#{MDMgntBean.event}">
+                        <f:validateRegex pattern="^[a-zA-Z0-9:;,. ]*$"/>
+                    </p:inputText>
+                    <h:message for="event" styleClass="errors"/>
                     
                     <h:outputText value="Event Date" styleClass="inputlabel"/>
                     <p:calendar value="#{MDMgntBean.util_event_date}" pattern="yyyy-MM-dd"/>

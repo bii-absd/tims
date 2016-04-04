@@ -32,6 +32,9 @@ import org.apache.logging.log4j.LogManager;
  * the module to close study.
  * 22-Mar-2016 - Changes due to the addition field (i.e. icd_code) in the 
  * vault_record table.
+ * 04-Apr-2016 - When checking for subject Meta data availability, the system
+ * will now check against the new study_subject table. The system will now store
+ * the study ID (instead of icd_code) into the finalized_output record.
  */
 
 public class VaultKeeper extends Thread {
@@ -41,7 +44,7 @@ public class VaultKeeper extends Thread {
     private Connection conn = null;
     private List<Integer> jobList = new ArrayList<>();
     private String fileUri;
-    private final String study_id, grp_id, annot_ver, icd_code, userName;
+    private final String study_id, grp_id, annot_ver, userName;
     
     public VaultKeeper(String userName, String study_id) 
             throws SQLException, NamingException 
@@ -54,10 +57,6 @@ public class VaultKeeper extends Thread {
         Study study = StudyDB.getStudyObject(study_id);
         grp_id = study.getGrp_id();
         annot_ver = study.getAnnot_ver();
-        icd_code = study.getIcd_code();
-//        grp_id = StudyDB.getStudyGrpID(study_id);
-//        annot_ver = StudyDB.getStudyAnnotVer(study_id);
-//        icd_code = StudyDB.getICDCode(study_id);
         
         logger.debug("VaultKeeper created for study " + study_id);
     }
@@ -136,22 +135,22 @@ public class VaultKeeper extends Thread {
             processedRecord = unprocessedRecord = 0;
             // INSERT statement to insert a record into vault_record table.
             String insertStr = "INSERT INTO vault_record(array_index,"
-                             + "annot_ver,job_id,subject_id,grp_id,icd_code) "
+                             + "annot_ver,job_id,subject_id,grp_id,study_id) "
                              + "VALUES(?,?,?,?,?,?)";
             
             try (PreparedStatement insertStm = conn.prepareStatement(insertStr)) {
                 // Ignore the first two strings (i.e. geneID and EntrezID); 
                 // start at index 2. 
                 for (int i = 2; i < values.length; i++) {
-                    // Only store the pipeline data if the subject metadata is 
-                    // available in the database.
+                    // Only store the pipeline data if the study subject meta 
+                    // data is available in the database.
                     try {
-                        if (SubjectDB.isSubjectExistInGrp(values[i], grp_id)) {
+                        if (StudySubjectDB.isSSExist(values[i], grp_id, study_id)) {
                             processedRecord++;
                             vaultIndex[i] = getNextVaultInd();
                             FinalizedOutput record = new FinalizedOutput
                                 (vaultIndex[i], annot_ver, values[i], grp_id, 
-                                 job_id, icd_code);
+                                 job_id, study_id);
                             // Create an vault record.
                             createVaultRecord(insertStm, record);                            
                         }
@@ -284,7 +283,7 @@ public class VaultKeeper extends Thread {
         stm.setInt(3, record.getJob_id());
         stm.setString(4, record.getSubject_id());
         stm.setString(5, record.getGrp_id());
-        stm.setString(6, record.getIcd_code());
+        stm.setString(6, record.getStudy_id());
         stm.executeUpdate();
 
         logger.debug("Vault record for " + record.getSubject_id() + 

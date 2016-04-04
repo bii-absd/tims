@@ -57,6 +57,8 @@ import org.apache.logging.log4j.LogManager;
  * (Institution - Department - Group).
  * 30-Mar-2016 - Added a dialog for user to select the Study; to manage it's 
  * Meta data.
+ * 04-Apr-2016 - Only 'opened' studies (i.e. not finalized) will be available 
+ * for user selection when managing subject Meta data.
  */
 
 @ManagedBean (name="menuSelBean")
@@ -67,7 +69,7 @@ public class MenuSelectionBean implements Serializable{
             getLogger(MenuSelectionBean.class.getName());
     private String study_id, plConfigPageURL, plName;
     private Boolean haveNewData;
-    private LinkedHashMap<String, String> studyList;
+    private LinkedHashMap<String, String> studyList, openStudyList;
     // Store the user ID of the current user.
     private final String userName;
     private final int roleID;
@@ -93,6 +95,8 @@ public class MenuSelectionBean implements Serializable{
         else {
             studyList = StudyDB.getUserStudyHash(userName);
         }
+        
+        openStudyList = StudyDB.getOpenedStudyHash(userName);
     }
     
     // All the pipeline link will be using this method to setup the URL for 
@@ -147,11 +151,17 @@ public class MenuSelectionBean implements Serializable{
         return study_id != null;
     }
     
-    // Return the list of Study ID setup for this user's department.
+    // Return the list of Study ID setup that are available for this user to
+    // execute pipeline.
     public LinkedHashMap<String, String> getStudyList() {
         return studyList;
     }
-
+    // Return the list of 'opened' Study ID setup under the group that this
+    // user belongs to.
+    public LinkedHashMap<String, String> getOpenStudyList() {
+        return openStudyList;
+    }
+    
     // Setup the NGSConfigBean according to the specific pipeline selected.
     public String ngsPipeline() {
         return Constants.NGS_PAGE;

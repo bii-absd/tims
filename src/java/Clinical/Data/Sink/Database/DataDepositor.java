@@ -80,6 +80,9 @@ import org.apache.pdfbox.pdmodel.graphics.xobject.PDJpeg;
  * information for each pipeline, etc.
  * 28-Mar-2016 - Added in a checkpoint debug message before starting the gene
  * data processing; to make sure the thread is still alive.
+ * 04-Apr-2016 - When checking for subject Meta data availability, the system
+ * will now check against the new study_subject table. The system will now store
+ * the study ID (instead of icd_code) into the finalized_output record.
  */
 
 public class DataDepositor extends Thread {
@@ -87,7 +90,7 @@ public class DataDepositor extends Thread {
     private final static Logger logger = LogManager.
             getLogger(DataDepositor.class.getName());
     private Connection conn = null;
-    private final String study_id, grp_id, annot_ver, icd_code, summaryReportPath;
+    private final String study_id, grp_id, annot_ver, summaryReportPath;
     private String fileUri;
     private int job_id, totalGene, processedGene, numSubjectNotFound, numSubjectFound;
     // Store the filepath of the Astar and Bii logo.
@@ -123,7 +126,6 @@ public class DataDepositor extends Thread {
         Study study = StudyDB.getStudyObject(study_id);
         grp_id = study.getGrp_id();
         annot_ver = study.getAnnot_ver();
-        icd_code = study.getIcd_code();
         summaryReportPath = Constants.getSYSTEM_PATH() + 
                             Constants.getFINALIZE_PATH() + study_id + 
                             Constants.getSUMMARY_FILE_NAME() + 
@@ -487,7 +489,7 @@ public class DataDepositor extends Thread {
         stm.setInt(3, record.getJob_id());
         stm.setString(4, record.getSubject_id());
         stm.setString(5, record.getGrp_id());
-        stm.setString(6, record.getIcd_code());
+        stm.setString(6, record.getStudy_id());
         stm.executeUpdate();
             
         logger.debug("Output for " + record.getSubject_id() + 
@@ -550,17 +552,17 @@ public class DataDepositor extends Thread {
             processedRecord = unprocessedRecord = 0;
             // INSERT statement to insert a record into finalized_output table.
             String insertStr = "INSERT INTO finalized_output(array_index,"
-                             + "annot_ver,job_id,subject_id,grp_id,icd_code) "
+                             + "annot_ver,job_id,subject_id,grp_id,study_id) "
                              + "VALUES(?,?,?,?,?,?)";
             
             try (PreparedStatement insertStm = conn.prepareStatement(insertStr)) {
                 // Ignore the first two strings (i.e. geneID and EntrezID); 
                 // start at index 2. 
                 for (int i = 2; i < values.length; i++) {
-                    // Only store the pipeline output if the subject metadata is 
-                    // available in the database.
+                    // Only store the pipeline data if the study subject meta 
+                    // data is available in the database.
                     try {
-                        if (SubjectDB.isSubjectExistInGrp(values[i], grp_id)) {
+                        if (StudySubjectDB.isSSExist(values[i], grp_id, study_id)) {
                             if (!subjectFound.toString().contains(values[i])) {
                                 // Only want to store the unqiue subject ID that
                                 // have meta data in database.
@@ -571,7 +573,7 @@ public class DataDepositor extends Thread {
                             arrayIndex[i] = getNextArrayInd();
                             FinalizedOutput record = new FinalizedOutput
                                 (arrayIndex[i], annot_ver, values[i], grp_id, 
-                                 job_id, icd_code);
+                                 job_id, study_id);
                             // Insert the finalized output record.
                             insertToFinalizedOutput(insertStm, record);
                             // At the end of each subject line, place a marker '$'

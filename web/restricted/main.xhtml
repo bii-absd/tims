@@ -111,7 +111,7 @@
                 <h:panelGroup>
                     <p:selectOneMenu id="mdDlg-studyID" value="#{menuSelBean.study_id}">
                         <f:selectItem itemLabel="Select Study" itemValue=""/>
-                        <f:selectItems value="#{menuSelBean.studyList}"/>
+                        <f:selectItems value="#{menuSelBean.openStudyList}"/>
                         <p:ajax update="mdDlg-selPanel"/>
                     </p:selectOneMenu>
                 </h:panelGroup>

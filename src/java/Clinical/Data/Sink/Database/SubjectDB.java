@@ -44,6 +44,8 @@ import org.apache.logging.log4j.LogManager;
  * 31-Mar-2016 - getSubtDetailList() will return a list of SubjectDetail instead
  * of Subject. buildStudySubjectMD() will query from subject_detail view. 
  * Changes due to the movement of some attributes from Subject to StudySubject.
+ * 04-Apr-2016 - Enhanced buildStudySubjectMD() method; to return the subject 
+ * class, remarks, event and event date.
  */
 
 public abstract class SubjectDB {
@@ -183,7 +185,8 @@ public abstract class SubjectDB {
     }
         
     // To retrieve and build the study subject Meta data (i.e. subject_id|age|
-    // gender|race|height|weight|) for this subject under this study.
+    // gender|race|height|weight|subjectclass|remarks|event|event_date) for 
+    // this subject under this study.
     public static String buildStudySubjectMD(String subject_id, String grp_id, 
             String study_id) 
     {
@@ -206,7 +209,11 @@ public abstract class SubjectDB {
                         append(rs.getString("gender").charAt(0)).append("|").
                         append(rs.getString("race")).append("|").
                         append(rs.getFloat("height")).append("|").
-                        append(rs.getFloat("weight")).append("|");
+                        append(rs.getFloat("weight")).append("|").
+                        append(rs.getString("subtype_code")).append("|").
+                        append(rs.getString("remarks")).append("|").
+                        append(rs.getString("event")).append("|").
+                        append(rs.getDate("event_date")).append("|");
             }
             stm.close();
         }

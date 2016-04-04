@@ -7,7 +7,7 @@ import Clinical.Data.Sink.Database.ActivityLogDB;
 import Clinical.Data.Sink.Database.DataDepositor;
 import Clinical.Data.Sink.Database.FinalizingJobEntry;
 import Clinical.Data.Sink.Database.StudyDB;
-import Clinical.Data.Sink.Database.SubjectDB;
+import Clinical.Data.Sink.Database.StudySubjectDB;
 import Clinical.Data.Sink.Database.SubmittedJobDB;
 import Clinical.Data.Sink.General.Constants;
 import Clinical.Data.Sink.General.ResourceRetriever;
@@ -72,6 +72,8 @@ import org.apache.logging.log4j.LogManager;
  * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
  * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
  * (Institution - Department - Group).
+ * 04-Apr-2016 - When checking for subject Meta data availability, the system
+ * will now check against the new study_subject table.
  */
 
 @ManagedBean (name="finalizedBean")
@@ -171,23 +173,23 @@ public class FinalizeStudyBean implements Serializable {
                 // message and return to the same page.
                 allowToProceed = false;
                 subMDAvailableStatus = 
-                    "None of the subject meta data is available in the database.\n" +
+                    "None of the subject meta data is found in this study.\n" +
                     "\nFinalization will not proceed.\n";
-                logger.debug("None of the subject meta data is available in the database.");
+                logger.debug("None of the subject meta data is found in this study.");
             }
             else {
                 if (subMetaDataNotFound.toString().isEmpty()) {
                     subMDAvailableStatus = 
-                        "All the subject's meta data are found in the database.\n" +
+                        "All the subject's meta data are found in this study.\n" +
                         "\nPlease proceed with the finalization of this Study.\n";
                     logger.debug("All the subject meta data is found.");
                 }
                 else {
                     subMDAvailableStatus = 
-                        "The following subject's meta data are not found in the database: " +
+                        "The following subject's meta data are not found in this study: " +
                         subMetaDataNotFound +
-                        "\n\nPlease upload the subject's meta data before proceeding" + 
-                        "\nwith the finalization of this Study.\n";
+                        "\n\nPlease upload the subject's meta data to this study" + 
+                        "\nbefore proceeding with the finalization of this Study.\n";
                     logger.debug("Subject meta data not found: " + subMetaDataNotFound);
                 }
             }
@@ -251,7 +253,7 @@ public class FinalizeStudyBean implements Serializable {
             // Ignore the first 2 strings (i.e. geneID and EntrezID); start at ndex 2.
             for (int i = 2; i < subjectID.length; i++) {
                 // Check is subject meta data found in the database.
-                if (!SubjectDB.isSubjectExistInGrp(subjectID[i], grp_id)) {
+                if (!StudySubjectDB.isSSExist(subjectID[i], grp_id, study_id)) {
                     // Only want to store the unqiue subject ID that doesn't
                     // have meta data in the database.
                     if (!metaDataNotFound.toString().contains(subjectID[i])) {

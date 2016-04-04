@@ -61,6 +61,8 @@ import org.apache.logging.log4j.LogManager;
  * table.
  * 23-Mar-2016 - Separated the update function for study record; one for the
  * main info and one for the description|background|grant information.
+ * 04-Apr-2016 - Implemented one helper function that build the studies hash map
+ * for pipeline execution and subject meta data management.
  */
 
 public abstract class StudyDB {
@@ -312,54 +314,49 @@ public abstract class StudyDB {
         }
     }
     
-    // Return the list of unclosed Study ID under the group that this lead is
+    // Return the list of 'opened' (i.e. not finalized yet) Study ID setup under
+    // the group that this user ID belongs to. This list of Study ID will be
+    // available for user to select for subject Meta data management.
+    public static LinkedHashMap<String, String> getOpenedStudyHash(String userID) {
+        String query = "SELECT study_id FROM study WHERE finalized = false AND "
+                     + "grp_id = (SELECT unit_id FROM user_account WHERE user_id = \'"
+                     + userID + "\') ORDER BY study_id";
+
+        logger.debug("Retrieving opened study list for user " + userID);
+        return getStudyHash(query);
+    }
+    
+    // Return the list of unclosed Study ID under the group(s) that this lead is
     // heading. The list of Study ID will be available for the lead to select
     // for pipeline execution.
     public static LinkedHashMap<String, String> getPIStudyHash(String piID) {
-        Connection conn = null;
-        LinkedHashMap<String, String> studyHash = new LinkedHashMap<>();
         String query = "SELECT study_id FROM study WHERE closed = false AND "
-                     + "grp_id IN (SELECT grp_id FROM grp WHERE pi = ?) "
-                     + "ORDER BY study_id";
+                     + "grp_id IN (SELECT grp_id FROM grp WHERE pi = \'"
+                     + piID + "\') ORDER BY study_id";
         
-        try {
-            conn = DBHelper.getDSConn();
-            PreparedStatement stm = conn.prepareStatement(query);
-            stm.setString(1, piID);
-            ResultSet rs = stm.executeQuery();
-            
-            while (rs.next()) {
-                studyHash.put(rs.getString("study_id"), rs.getString("study_id"));
-            }
-            
-            stm.close();
-            logger.debug("Study list for " + piID + " retrieved.");
-        }
-        catch (SQLException|NamingException e) {
-            logger.error("FAIL to query study for group lead " + piID);
-            logger.error(e.getMessage());
-        }
-        finally {
-            DBHelper.closeDSConn(conn);
-        }
-        
-        return studyHash;
+        logger.debug("Retrieving study list for PI " + piID);
+        return getStudyHash(query);
     }
-    
     // Return the list of unclosed Study ID setup under the group that this 
     // user ID belongs to. This list of Study ID will be available for user to
     // select for pipeline execution.
     public static LinkedHashMap<String, String> getUserStudyHash(String userID) {
+        String query = "SELECT study_id FROM study WHERE closed = false AND "
+                     + "grp_id = (SELECT unit_id FROM user_account WHERE user_id = \'"
+                     + userID + "\') ORDER BY study_id";
+
+        logger.debug("Retrieving study list for user " + userID);
+        return getStudyHash(query);
+    }
+    
+    // Helper function to build the study list hash map based on the input query.
+    public static LinkedHashMap<String, String> getStudyHash(String query) {
         Connection conn = null;
         LinkedHashMap<String, String> studyHash = new LinkedHashMap<>();
-        String query = "SELECT study_id FROM study WHERE closed = false AND "
-                     + "grp_id = (SELECT unit_id FROM user_account WHERE user_id = ?) "
-                     + "ORDER BY study_id";
         
         try {
             conn = DBHelper.getDSConn();
             PreparedStatement stm = conn.prepareStatement(query);
-            stm.setString(1, userID);
             ResultSet rs = stm.executeQuery();
             
             while (rs.next()) {
@@ -367,10 +364,9 @@ public abstract class StudyDB {
             }
             
             stm.close();
-            logger.debug("Study list for " + userID + "'s group retrieved.");
         }
         catch (SQLException|NamingException e) {
-            logger.error("FAIL to query study for user " + userID);
+            logger.error("FAIL to query study hash!");
             logger.error(e.getMessage());
         }
         finally {
