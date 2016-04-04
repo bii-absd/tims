@@ -11,7 +11,7 @@
     <ui:param name="link" value="#{msg['act-track']}"/>
     <ui:define name="content">
         <h:form id="actForm">
-            <p:panel header="Select User ID and/or activity to retrieve activity log">
+            <p:panel rendered="#{authBean.director}" header="Select User ID and/or activity to retrieve activity log">
                 <h:panelGrid id="activitypanel" columns="6" cellpadding="2" cellspacing="7">
                     <h:outputText value="Select User ID" styleClass="configlabel"/>
                     <h:outputText value="Select Activity" styleClass="configlabel"/>

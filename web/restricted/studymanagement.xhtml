@@ -11,7 +11,7 @@
     <ui:param name="link" value="#{msg['study-mgnt']}"/>
     <ui:define name="content">
     <p:growl id="studyMsg"/>
-    <p:accordionPanel id="acPanel" multiple="true">
+    <p:accordionPanel id="acPanel" multiple="true" rendered="#{authBean.administrator}">
         <p:tab id="editStudyMI" title="Edit Study Main Info" titleStyleClass="tab-title">
         <h:form id="editStudyMIForm">
             <p:dataTable var="study" rows="10" id="studyTable" 

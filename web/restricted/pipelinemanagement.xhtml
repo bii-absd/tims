@@ -11,7 +11,7 @@
     <ui:param name="link" value="Pipeline Management"/>
     <ui:define name="content">
     <p:growl id="cmdMsg"/>
-    <p:accordionPanel>
+    <p:accordionPanel rendered="#{authBean.administrator}">
         <p:tab id="editCmd" title="Edit Pipeline" titleStyleClass="tab-title">
         <h:form id="editCmdForm">
             <p:dataTable var="cmd" rows="10" id="cmdTable" 

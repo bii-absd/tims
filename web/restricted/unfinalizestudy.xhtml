@@ -11,7 +11,7 @@
     <ui:param name="link" value="#{msg['unfinalize-study']}"/>
     <ui:define name="content">
     <h:form id="studyForm">
-        <p:dataTable id="finstudy" rendered="#{authBean.isAdministrator()}" 
+        <p:dataTable id="finstudy" rendered="#{authBean.administrator}" 
                      var="studies" value="#{unfinBean.finalizedStudies}" 
                      selection="#{unfinBean.selectedStudy}" 
                      rowKey="#{studies.study_id}"

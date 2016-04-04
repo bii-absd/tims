@@ -259,7 +259,7 @@ public class AuthenticationBean implements Serializable {
     
     // Return true if the user is an Admin else return false. The return value 
     // will be used to control the access to some link.
-    public Boolean isAdministrator() {
+    public boolean isAdministrator() {
         if (loginName.compareTo("super") == 0) {
             return Constants.OK;
         }

@@ -66,6 +66,8 @@ import org.primefaces.model.UploadedFile;
  * in more than one study and their attributes (i.e. height, weight, etc) might
  * have change across those studies. During data upload/entry, perform database
  * insert/update according to whether the subject exist in database or not.
+ * 04-Apr-2016 - For new subject record entry, only allow new record insertion
+ * i.e. no update allowed.
  */
 
 @ManagedBean (name="MDMgntBean")
@@ -120,10 +122,11 @@ public class MetaDataManagementBean implements Serializable {
         }
     }
 
-    // Insert subject meta data into database.
+    // Insert subject meta data into database. Will only perform new record 
+    // insertion.
     public String insertMetaData() {
         FacesContext fc = getFacesContext();
-        boolean dbUpdateStatus = Constants.NOT_OK;
+        boolean dbInsertStatus = Constants.NOT_OK;
         
         if (util_event_date != null) {
             event_date = new Date(util_event_date.getTime());
@@ -136,42 +139,17 @@ public class MetaDataManagementBean implements Serializable {
                                            remarks, event, age_at_diagnosis, 
                                            height, weight, event_date);
         
-        try {
-            if (SubjectDB.isSubjectExistInGrp(subject_id, grp_id)) {
-                // Subject data exist in database; update.
-                dbUpdateStatus = SubjectDB.updateSubject(subt);
-            }
-            else {
-                // Subject data not found in database; insert.
-                dbUpdateStatus = SubjectDB.insertSubject(subt);
-                
-            }
+        // Insert a new subject record.
+        dbInsertStatus = SubjectDB.insertSubject(subt);
+        // Continue to insert the study subject record only if the insertion to 
+        // subject table is ok.
+        if (dbInsertStatus) {
+            dbInsertStatus = StudySubjectDB.insertSS(ss);
         }
-        catch (SQLException|NamingException e) {
-            logger.error("FAIL to insert/update subject meta data!");
-            logger.error(e.getMessage());
-        }
-        // Continue to update/insert the study subject table only
-        // if the update/insert to subject table is ok.
-        if (dbUpdateStatus) {
-            try {
-                if (StudySubjectDB.isSSExist(subject_id, grp_id, study_id)) {
-                    // Study subject data exist in DB; update.
-                    dbUpdateStatus = StudySubjectDB.updateSS(ss);
-                }
-                else {
-                    // Study subject data not found in DB; insert.
-                    dbUpdateStatus = StudySubjectDB.insertSS(ss);
-                }
-            }
-            catch (SQLException|NamingException e) {
-                logger.error("FAIL to insert/update study subject meta data!");
-                logger.error(e.getMessage());
-            }
-        }
-        // Display the status message to the user according to the update/insert
-        // to database status.
-        if (dbUpdateStatus) {
+        
+        // Display the status message to the user according to the insertion
+        // status.
+        if (dbInsertStatus) {
             // Record this subject meta data creation into database.
             String detail = "Subject " + subject_id + " under Group " 
                           + grp_id + " in Study " + study_id;
@@ -179,13 +157,13 @@ public class MetaDataManagementBean implements Serializable {
             logger.info(userName + ": created " + detail); 
             fc.addMessage(null, new FacesMessage(
                     FacesMessage.SEVERITY_INFO,
-                    "Subject meta data inserted/updated into database.", ""));
+                    "Subject meta data inserted into database.", ""));
         }
         else {
             logger.error("FAIL to insert subject meta data!");
             fc.addMessage(null, new FacesMessage(
                     FacesMessage.SEVERITY_ERROR,
-                    "Failed to insert/update subject meta data!", ""));
+                    "Failed to insert subject meta data!", ""));
         }
         
         return Constants.META_DATA_MANAGEMENT;

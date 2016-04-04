@@ -104,8 +104,8 @@ public class Constants {
     // Database return status
     public final static int DATABASE_INVALID_ID = -1;
     public final static String DATABASE_INVALID_STR = "NOT FOUND!";
-    public final static Boolean OK = true;
-    public final static Boolean NOT_OK = false;
+    public final static boolean OK = true;
+    public final static boolean NOT_OK = false;
     // General return status
     public final static String LOGOFF = "logoff";
     public final static String TRUE = "true";
@@ -171,7 +171,7 @@ public class Constants {
     
     // No setters for the setup parameters will be provided.
     // Function setup will load the parameters value from the file passed in uri.
-    public static Boolean setup(String uri, String root) {
+    public static boolean setup(String uri, String root) {
         // The scope for this class is application, hence we can skip the 
         // loading from the setup file if it has already been done.
         if (DATABASE_DRIVER == null) {

@@ -11,7 +11,7 @@
     <ui:param name="link" value="#{msg['grp-mgnt']}"/>
     <ui:define name="content">
         <p:growl id="grpMgntMsg" sticky="true"/>
-        <p:accordionPanel id="acPanel">
+        <p:accordionPanel id="acPanel" rendered="#{authBean.administrator}">
             <p:tab id="editGrp" title="Edit Group" titleStyleClass="tab-title">
                 <h:form id="editGrpForm">
                     <p:dataTable var="grp" rows="15" id="grpTable" 
