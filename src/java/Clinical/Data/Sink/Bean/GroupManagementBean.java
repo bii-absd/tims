@@ -8,6 +8,7 @@ import Clinical.Data.Sink.Database.Department;
 import Clinical.Data.Sink.Database.DepartmentDB;
 import Clinical.Data.Sink.Database.Group;
 import Clinical.Data.Sink.Database.GroupDB;
+import Clinical.Data.Sink.Database.InstDeptGrp;
 import Clinical.Data.Sink.Database.Institution;
 import Clinical.Data.Sink.Database.InstitutionDB;
 import Clinical.Data.Sink.Database.UserAccountDB;
@@ -26,6 +27,9 @@ import org.primefaces.event.RowEditEvent;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.primefaces.context.RequestContext;
+import org.primefaces.event.TabChangeEvent;
+import org.primefaces.util.ComponentUtils;
 
 /**
  * GroupManagementBean is the backing bean for the groupmanagement view.
@@ -49,6 +53,9 @@ import org.apache.logging.log4j.LogManager;
  * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
  * (Institution - Department - Group).
  * 15-Mar-2016 - Changes due to a new field (i.e. active) added in the grp table.
+ * 05-Apr-2016 - To show the institution, department, group and PI hierarchy 
+ * structure. PI in-charge for each group will be selected from the group of 
+ * eligible PIs under the institution that the department/group belongs to.
  */
 
 @ManagedBean (name="grpMgntBean")
@@ -66,11 +73,14 @@ public class GroupManagementBean implements Serializable {
     private List<Institution> instList;
     private List<Department> deptList;
     private List<Group> grpList;
-    private LinkedHashMap<String,String> instNameHash, deptNameHash, piIDHash;
+    private List<InstDeptGrp> idgList;
+    private LinkedHashMap<String,String> instNameHash, deptNameHash, piIDHash, 
+                                         instPiIDHash;
     // Store the user ID of the current user.
     private final String userName;
     
     public GroupManagementBean() {
+        piIDHash = new LinkedHashMap<>();
         userName = (String) getFacesContext().getExternalContext().
                 getSessionMap().get("User");
         logger.debug("ItemListManagementBean created.");
@@ -80,13 +90,18 @@ public class GroupManagementBean implements Serializable {
     @PostConstruct
     public void init() {
         instList = InstitutionDB.getInstList();
-        deptList = DepartmentDB.getDeptList();
+        deptList = DepartmentDB.getDeptList();                    
         grpList = GroupDB.getFullGrpList();
+        idgList = GroupDB.getInstDeptGrpList();
         instNameHash = InstitutionDB.getInstNameHash();
         deptNameHash = DepartmentDB.getAllDeptHash();
-        piIDHash = UserAccountDB.getPiIDHash();
     }
 
+    // To catch the tab change event.
+    public void onTabChange(TabChangeEvent event) {
+        // Do nothing for now.
+    }
+    
     // Create the new institution ID
     public String createNewInstID() {
         Institution newInst = new Institution(inst_id, inst_name);
@@ -174,6 +189,10 @@ public class GroupManagementBean implements Serializable {
     public LinkedHashMap<String, String> getPiIDHash() {
         return piIDHash;
     }
+    // Return the HashMap of user ID under this institution that can be PI.
+    public LinkedHashMap<String, String> getInstPiIDHash() {
+        return instPiIDHash;
+    }
     
     // Update the dept table in the database.
     public void onDeptRowEdit(RowEditEvent event) {
@@ -211,6 +230,32 @@ public class GroupManagementBean implements Serializable {
         }
     }
     
+    // Build the piID Hash according to the user's institution (i.e. All the 
+    // director/HOD/PIs under this institution.)
+    public void onGrpRowEditInit(RowEditEvent event) {
+        Group grp = (Group) event.getObject();
+        // Build the instPiIDHash based on the user's institution.
+        String instID = GroupDB.getGrpInstID(grp.getGrp_id());
+        instPiIDHash = UserAccountDB.getInstPiIDHash(instID);
+        // Update the selectOneMenu (with ID addGrpPi) for the selected row.
+        String updateClientId = ComponentUtils.findComponentClientId("editGrpPi");
+        RequestContext.getCurrentInstance().update(updateClientId);
+    }
+    
+    // Listener for department selection change, it's job is to update the 
+    // PI incharge list according to the department selected.
+    public void deptChange() {
+        // Build the piIDHash based on the institution the department belongs to.
+        String instID = DepartmentDB.getDeptInstID(dept_id);
+        piIDHash = UserAccountDB.getInstPiIDHash(instID);
+    }
+    
+    // The enabled/disabled status of "Select PI Incharge" will depend on
+    // whether the department has been selected or not.
+    public boolean isPiIDHashReady() {
+        return piIDHash.isEmpty();
+    }
+    
     // Show a Faces Info Message at the current context.
     private void addFacesInfoMsg(String msg) {
         getFacesContext().addMessage(null, 
@@ -245,6 +290,12 @@ public class GroupManagementBean implements Serializable {
     }
     public void setGrpList(List<Group> grpList) {
         this.grpList = grpList;
+    }
+    public List<InstDeptGrp> getIdgList() {
+        return idgList;
+    }
+    public void setIdgList(List<InstDeptGrp> idgList) {
+        this.idgList = idgList;
     }
     public String getInst_id() {
         return inst_id;

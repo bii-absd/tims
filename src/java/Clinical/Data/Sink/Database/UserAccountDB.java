@@ -58,7 +58,9 @@ import org.mindrot.jbcrypt.BCrypt;
  * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
  * (Institution - Department - Group).
  * 28-Mar-2016 - Added new method getInstUserIDHash, to return the list of
- * users that belong to this institution
+ * users that belong to this institution.
+ * 05-Apr-2016 - Added new method getInstPiIDHash, to return the list of 
+ * eligible PIs that belong to this institution.
  */
 
 public abstract class UserAccountDB {
@@ -93,6 +95,42 @@ public abstract class UserAccountDB {
         }
         
         return isUserAcctSetup;
+    }
+    
+    // Return the list of user ID from this institution that can be a PI 
+    // (i.e. Director, HOD and PI).
+    public static LinkedHashMap<String, String> getInstPiIDHash(String instID)
+    {
+        Connection conn = null;
+        LinkedHashMap<String,String> instPiIDHash = new LinkedHashMap<>();
+        String query = "SELECT first_name, user_id FROM user_account WHERE unit_id IN ("
+                     + "(SELECT inst_id AS unit_id FROM inst_dept_grp WHERE inst_id = ?) UNION "
+                     + "(SELECT dept_id AS unit_id FROM inst_dept_grp WHERE inst_id = ?) UNION "
+                     + "(SELECT grp_id AS unit_id FROM inst_dept_grp WHERE inst_id = ?))"
+                     + " AND role_id IN (2,3,4) ORDER BY first_name";
+        
+        try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            stm.setString(1, instID);
+            stm.setString(2, instID);
+            stm.setString(3, instID);
+            ResultSet rs = stm.executeQuery();
+            
+            while (rs.next()) {
+                instPiIDHash.put(rs.getString("first_name"), rs.getString("user_id"));
+            }
+            stm.close();
+        }
+        catch (SQLException|NamingException e) {
+            logger.error("FAIL to retrieve institution's PI ID!");
+            logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
+        }
+
+        return instPiIDHash;
     }
     
     // Return the list of user ID that can be PI (i.e. Director, HOD and PI).

@@ -33,6 +33,8 @@ import org.apache.logging.log4j.LogManager;
  * 15-Mar-2016 - Changes due to a new field (i.e. active) added in the grp 
  * table. For Study management queries, only return those groups which are 
  * active and have pi setup.
+ * 05-Apr-2016 - Added new method getInstDeptGrpList(), that return the list of 
+ * group hierarchy structure (together with its leading PI).
  */
 
 public abstract class GroupDB implements Serializable {
@@ -166,6 +168,44 @@ public abstract class GroupDB implements Serializable {
         }
         
         return grpList;
+    }
+    
+    // Return the list of group hierarchy structure (together with its leading
+    // PI).
+    public static List<InstDeptGrp> getInstDeptGrpList() {
+        List<InstDeptGrp> hierarchyList = new ArrayList<>();
+        Connection conn = null;
+        String query = "SELECT * FROM inst_dept_grp";
+        
+        try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            ResultSet rs = stm.executeQuery();
+            
+            while (rs.next()) {
+                InstDeptGrp tmp = new InstDeptGrp(rs.getString("inst_id"),
+                                                  rs.getString("inst_name"),
+                                                  rs.getString("dept_id"),
+                                                  rs.getString("dept_name"),
+                                                  rs.getString("grp_id"),
+                                                  rs.getString("grp_name"),
+                                                  rs.getString("pi"),
+                                                  rs.getBoolean("active"));
+                
+                hierarchyList.add(tmp);
+            }
+            
+            logger.debug("Retrieved group hierarchy list.");
+        }
+        catch (SQLException|NamingException e) {
+            logger.error("FAIL to retrieve the group hierarchy list!");
+            logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
+        }
+        
+        return hierarchyList;
     }
     
     // Return the list of active group ID (with pi setup) under this department.

@@ -12,6 +12,32 @@
     <ui:define name="content">
         <p:growl id="grpMgntMsg" sticky="true"/>
         <p:accordionPanel id="acPanel" rendered="#{authBean.administrator}">
+            <p:ajax event="tabChange" listener="#{grpMgntBean.onTabChange}"/>
+            <p:tab id="idg" title="Institution-Department-Group-PI Grouping" 
+                   titleStyleClass="tab-title">
+                <p:dataTable var="idg" rows="15" id="idgTable"
+                             value="#{grpMgntBean.idgList}" paginator="true"
+                             paginatorTemplate="{FirstPageLink} {PreviousPageLink}
+                             {CurrentPageReport} {NextPageLink} {LastPageLink}"
+                             styleClass="table-odd-row table-even-row">
+                    <p:column headerText="Institution" style="text-align: left">
+                        <h:outputText value="#{idg.inst_name}"/>
+                    </p:column>
+                    <p:column headerText="Department" style="text-align: left">
+                        <h:outputText value="#{idg.dept_name}"/>
+                    </p:column>
+                    <p:column headerText="Group" style="text-align: left">
+                        <h:outputText value="#{idg.grp_name}"/>
+                    </p:column>
+                    <p:column headerText="PI Incharge" style="text-align: left">
+                        <h:outputText value="#{idg.pi}"/>
+                    </p:column>
+                    <p:column headerText="Status" styleClass="jssmallcol">
+                        <h:outputText value="#{idg.activeStatus}"/>
+                    </p:column>
+                </p:dataTable>
+            </p:tab>
+            
             <p:tab id="editGrp" title="Edit Group" titleStyleClass="tab-title">
                 <h:form id="editGrpForm">
                     <p:dataTable var="grp" rows="15" id="grpTable" 
@@ -21,35 +47,11 @@
                                  styleClass="table-odd-row table-even-row" 
                                  editable="true">
                         <p:ajax event="rowEdit" listener="#{grpMgntBean.onGrpRowEdit}" 
-                                update="acPanel:editGrpForm:grpTable grpMgntMsg"/>
+                                update="grpMgntMsg"/>
+                        <p:ajax event="rowEditInit" 
+                                listener="#{grpMgntBean.onGrpRowEditInit}"/>
                         <p:column headerText="Group ID" styleClass="jssmallcol">
                             <h:outputText value="#{grp.grp_id}"/>
-                        </p:column>
-                        <p:column headerText="Department Name" styleClass="col300">
-                            <p:cellEditor>
-                                <f:facet name="output">
-                                    <h:outputText value="#{grp.dept_name}"/>
-                                </f:facet>
-                                <f:facet name="input">
-                                    <p:selectOneMenu style="width: 100%" 
-                                                     value="#{grp.dept_id}">
-                                        <f:selectItems value="#{grpMgntBean.deptNameHash}"/>
-                                    </p:selectOneMenu>
-                                </f:facet>
-                            </p:cellEditor>
-                        </p:column>
-                        <p:column headerText="PI Incharge" styleClass="jsmedcol">
-                            <p:cellEditor>
-                                <f:facet name="output">
-                                    <h:outputText value="#{grp.pi_name}"/>
-                                </f:facet>
-                                <f:facet name="input">
-                                    <p:selectOneMenu style="width: 100%" 
-                                                     value="#{grp.pi}">
-                                        <f:selectItems value="#{grpMgntBean.piIDHash}"/>
-                                    </p:selectOneMenu>
-                                </f:facet>
-                            </p:cellEditor>
                         </p:column>
                         <p:column headerText="Group Name" style="text-align: left">
                             <p:cellEditor>
@@ -59,6 +61,32 @@
                                 <f:facet name="input">
                                     <h:inputText value="#{grp.grp_name}" 
                                                  style="width: 100%"/>
+                                </f:facet>
+                            </p:cellEditor>
+                        </p:column>
+                        <p:column headerText="PI Incharge" styleClass="jsmedcol">
+                            <p:cellEditor>
+                                <f:facet name="output">
+                                    <h:outputText value="#{grp.pi_name}"/>
+                                </f:facet>
+                                <f:facet name="input">
+                                    <p:selectOneMenu id="editGrpPi" style="width: 100%" 
+                                                     value="#{grp.pi}">
+                                        <f:selectItems value="#{grpMgntBean.instPiIDHash}"/>
+                                    </p:selectOneMenu>
+                                </f:facet>
+                            </p:cellEditor>
+                        </p:column>
+                        <p:column headerText="Department" style="text-align: left">
+                            <p:cellEditor>
+                                <f:facet name="output">
+                                    <h:outputText value="#{grp.dept_name}"/>
+                                </f:facet>
+                                <f:facet name="input">
+                                    <p:selectOneMenu style="width: 100%" 
+                                                     value="#{grp.dept_id}">
+                                        <f:selectItems value="#{grpMgntBean.deptNameHash}"/>
+                                    </p:selectOneMenu>
                                 </f:facet>
                             </p:cellEditor>
                         </p:column>
@@ -89,6 +117,7 @@
                                          value="#{grpMgntBean.dept_id}">
                             <f:selectItem itemLabel="Select Department" itemValue=""/>
                             <f:selectItems value="#{grpMgntBean.deptNameHash}"/>
+                            <p:ajax listener="#{grpMgntBean.deptChange}" update="addGrpPi"/>
                         </p:selectOneMenu>
                         <h:message id="dept-status" for="dept" styleClass="errors"/>
                         <h:panelGroup/>
@@ -105,11 +134,13 @@
                         <h:message id="grpname-status" for="grpname" styleClass="errors"/>
                         <p:watermark for="grpname" value="New Group Name"/>
                         
-                        <p:selectOneMenu id="pi" value="#{grpMgntBean.pi}">
+                        <p:selectOneMenu id="addGrpPi" 
+                                         disabled="#{grpMgntBean.piIDHashReady}" 
+                                         value="#{grpMgntBean.pi}">
                             <f:selectItem itemLabel="Select PI Incharge" itemValue=""/>
                             <f:selectItems value="#{grpMgntBean.piIDHash}"/>
                         </p:selectOneMenu>
-                        <h:message id="pi-status" for="pi" styleClass="errors"/>
+                        <h:message id="pi-status" for="addGrpPi" styleClass="errors"/>
                         <h:panelGroup/>
                         
                         <h:commandButton action="#{grpMgntBean.createNewGrpID}" 
@@ -129,20 +160,8 @@
                              editable="true">
                     <p:ajax event="rowEdit" listener="#{grpMgntBean.onDeptRowEdit}" 
                             update="acPanel:editDeptForm:deptTable grpMgntMsg"/>
-                    <p:column headerText="Department ID" style="width: 250px; text-align: left">
+                    <p:column headerText="Department ID" styleClass="studytitlecol">
                         <h:outputText value="#{dept.dept_id}"/>
-                    </p:column>
-                    <p:column headerText="Institution Name" style="width: 250px; text-align: left">
-                        <p:cellEditor>
-                            <f:facet name="output">
-                                <h:outputText value="#{dept.inst_name}"/>
-                            </f:facet>
-                            <f:facet name="input">
-                                <p:selectOneMenu style="width: 100%" value="#{dept.inst_id}">
-                                    <f:selectItems value="#{grpMgntBean.instNameHash}"/>
-                                </p:selectOneMenu>
-                            </f:facet>
-                        </p:cellEditor>
                     </p:column>
                     <p:column headerText="Department Name" style="text-align: left">
                         <p:cellEditor>
@@ -152,6 +171,18 @@
                             <f:facet name="input">
                                 <h:inputText value="#{dept.dept_name}" 
                                              style="width: 100%"/>
+                            </f:facet>
+                        </p:cellEditor>
+                    </p:column>
+                    <p:column headerText="Institution" styleClass="studytitlecol">
+                        <p:cellEditor>
+                            <f:facet name="output">
+                                <h:outputText value="#{dept.inst_name}"/>
+                            </f:facet>
+                            <f:facet name="input">
+                                <p:selectOneMenu style="width: 100%" value="#{dept.inst_id}">
+                                    <f:selectItems value="#{grpMgntBean.instNameHash}"/>
+                                </p:selectOneMenu>
                             </f:facet>
                         </p:cellEditor>
                     </p:column>
@@ -209,8 +240,7 @@
                             <h:outputText value="#{inst.inst_name}"/>
                         </f:facet>
                         <f:facet name="input">
-                            <h:inputText value="#{inst.inst_name}" 
-                                         style="width: 100%"/>
+                            <h:inputText value="#{inst.inst_name}" style="width: 100%"/>
                         </f:facet>
                     </p:cellEditor>
                 </p:column>
