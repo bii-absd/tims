@@ -15,14 +15,16 @@ package Clinical.Data.Sink.Database;
  * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
  * (Institution - Department - Group).
  * 15-Mar-2016 - Added one new boolean attribute, active.
+ * 07-Apr-2016 - Added one new attribute, inst_name for storing the name of the 
+ * institution that this group belongs to.
  */
 
 public class Group {
     // grp table fields
     private String grp_id, pi, dept_id, grp_name;
     private boolean active;
-    // Additional attribute to store the department and PI name.
-    private String dept_name, pi_name;
+    // Additional attribute to store the institution, department and PI name.
+    private String inst_name, dept_name, pi_name;
 
     public Group(String grp_id, String pi, String dept_id, String grp_name, 
                  boolean active) 
@@ -33,6 +35,7 @@ public class Group {
         this.grp_name = grp_name;
         this.active = active;
         dept_name = DepartmentDB.getDeptName(dept_id);
+        inst_name = InstitutionDB.getInstName(dept_id);
         if (pi != null) {
             pi_name = UserAccountDB.getFullName(pi);
         }
@@ -41,6 +44,10 @@ public class Group {
         }
     }
     
+    // Return the institution name that this group belongs to.
+    public String getInst_name() {
+        return inst_name;
+    }
     // Return the department name for this dept_id.
     public String getDept_name() {
         return dept_name;

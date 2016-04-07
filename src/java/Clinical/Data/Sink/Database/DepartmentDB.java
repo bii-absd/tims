@@ -47,6 +47,8 @@ import org.apache.logging.log4j.LogManager;
  * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
  * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
  * (Institution - Department - Group).
+ * 07-Apr-2016 - Implemented the general function for building the hashmap of 
+ * the department IDs setup in the system.
  */
 
 public abstract class DepartmentDB implements Serializable {
@@ -145,32 +147,42 @@ public abstract class DepartmentDB implements Serializable {
     
     // Return the list of department ID setup under this institution.
     public static List<String> getDeptIDList(String inst_id) {
-        return new ArrayList<>(getDeptHash(inst_id).values());
+        return new ArrayList<>(getInstDeptHash(inst_id).values());
     }
     
     // Return the HashMap of department ID setup under this institution.
-    public static LinkedHashMap<String, String> getDeptHash(String inst_id) {
+    public static LinkedHashMap<String, String> getInstDeptHash(String inst_id) {
+        String query = "SELECT dept_id, dept_name FROM dept "
+                     + "WHERE inst_id = \'" + inst_id + "\' ORDER BY dept_id";
+
+        return getDeptHash(query);
+    }
+    // Return the HashMap of all the department IDs setup in the system.
+    public static LinkedHashMap<String, String> getAllDeptHash() {
+        String query = "SELECT dept_id, dept_name FROM dept ORDER BY dept_id";
+        
+        return getDeptHash(query);
+    }
+    
+    // Helper function to build the hashmap of the department IDs setup in the
+    // system using the query passed in.
+    private static LinkedHashMap<String, String> getDeptHash(String query) {
         Connection conn = null;
         LinkedHashMap<String, String> deptHash = new LinkedHashMap<>();
-        String query = "SELECT dept_id FROM dept WHERE inst_id = ?";
-
+        
         try {
             conn = DBHelper.getDSConn();
             PreparedStatement stm = conn.prepareStatement(query);
-            stm.setString(1, inst_id);
             ResultSet rs = stm.executeQuery();
             
             while (rs.next()) {
-                deptHash.put(rs.getString("dept_id"), 
+                deptHash.put(rs.getString("dept_name"), 
                              rs.getString("dept_id"));
             }
-            
             stm.close();
-            logger.debug("Department list for " + inst_id + ": " +
-                    deptHash.toString());
         }
         catch (SQLException|NamingException e) {
-            logger.error("FAIL to query department for " + inst_id);
+            logger.error("FAIL to build department hashmap!");
             logger.error(e.getMessage());
         }
         finally {
@@ -178,34 +190,6 @@ public abstract class DepartmentDB implements Serializable {
         }
         
         return deptHash;
-    }
-
-    // Return the HashMap of all the department IDs setup in the system.
-    public static LinkedHashMap<String, String> getAllDeptHash() {
-        Connection conn = null;
-        String query = "SELECT dept_id, dept_name FROM dept ORDER BY dept_id";
-        LinkedHashMap<String, String> allDeptHash = new LinkedHashMap<>();
-        
-        try {
-            conn = DBHelper.getDSConn();
-            PreparedStatement stm = conn.prepareStatement(query);
-            ResultSet rs = stm.executeQuery();
-            
-            while (rs.next()) {
-                allDeptHash.put(rs.getString("dept_name"), 
-                                rs.getString("dept_id"));
-            }
-            stm.close();
-        }
-        catch (SQLException|NamingException e) {
-            logger.error("FAIL to retrieve full list of department ID!");
-            logger.error(e.getMessage());
-        }
-        finally {
-            DBHelper.closeDSConn(conn);
-        }
-        
-        return allDeptHash;
     }
     
     // Return the name for this department.

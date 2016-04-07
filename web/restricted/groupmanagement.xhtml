@@ -14,7 +14,7 @@
         <p:accordionPanel id="acPanel" rendered="#{authBean.administrator}">
             <p:ajax event="tabChange" listener="#{grpMgntBean.onTabChange}"/>
             <p:tab id="idg" title="Institution-Department-Group-PI Grouping" 
-                   titleStyleClass="tab-title">
+                   titleStyleClass="tab-title" rendered="off">
                 <p:dataTable var="idg" rows="15" id="idgTable"
                              value="#{grpMgntBean.idgList}" paginator="true"
                              paginatorTemplate="{FirstPageLink} {PreviousPageLink}
@@ -50,6 +50,22 @@
                                 update="grpMgntMsg"/>
                         <p:ajax event="rowEditInit" 
                                 listener="#{grpMgntBean.onGrpRowEditInit}"/>
+                        <p:column headerText="Institution" style="text-align: left">
+                            <h:outputText value="#{grp.inst_name}"/>
+                        </p:column>
+                        <p:column headerText="Department" style="text-align: left">
+                            <p:cellEditor>
+                                <f:facet name="output">
+                                    <h:outputText value="#{grp.dept_name}"/>
+                                </f:facet>
+                                <f:facet name="input">
+                                    <p:selectOneMenu id="editGrpDept" style="width: 100%" 
+                                                     value="#{grp.dept_id}">
+                                        <f:selectItems value="#{grpMgntBean.instDeptHash}"/>
+                                    </p:selectOneMenu>
+                                </f:facet>
+                            </p:cellEditor>
+                        </p:column>
                         <p:column headerText="Group ID" styleClass="jssmallcol">
                             <h:outputText value="#{grp.grp_id}"/>
                         </p:column>
@@ -77,19 +93,6 @@
                                 </f:facet>
                             </p:cellEditor>
                         </p:column>
-                        <p:column headerText="Department" style="text-align: left">
-                            <p:cellEditor>
-                                <f:facet name="output">
-                                    <h:outputText value="#{grp.dept_name}"/>
-                                </f:facet>
-                                <f:facet name="input">
-                                    <p:selectOneMenu style="width: 100%" 
-                                                     value="#{grp.dept_id}">
-                                        <f:selectItems value="#{grpMgntBean.deptNameHash}"/>
-                                    </p:selectOneMenu>
-                                </f:facet>
-                            </p:cellEditor>
-                        </p:column>
                         <p:column headerText="Status" styleClass="jssmallcol">
                             <p:cellEditor>
                                 <f:facet name="output">
@@ -113,13 +116,26 @@
             <p:tab id="addGrp" title="Add New Group" titleStyleClass="tab-title">
                 <h:form id="addGrpForm">
                     <h:panelGrid columns="3" border="0" cellpadding="4" cellspacing="2">
-                        <p:selectOneMenu id="dept" required="true" 
+                        <p:selectOneMenu id="addGrpInst" style="width: 180px" required="true" 
+                                         value="#{grpMgntBean.inst_id}">
+                            <f:selectItem itemLabel="Select Institution" itemValue="None"/>
+                            <f:selectItems value="#{grpMgntBean.instNameHash}"/>
+                            <p:ajax listener="#{grpMgntBean.instChange}" 
+                                    update="addGrpDept addGrpPi"/>
+                        </p:selectOneMenu>
+                        <h:message id="addGrpInst-status" for="addGrpInst" 
+                                   styleClass="errors"/>
+                        <h:panelGroup/>
+                        
+                        <p:selectOneMenu id="addGrpDept" style="width: 180px" 
+                                         required="true" 
+                                         disabled="#{grpMgntBean.instDeptHashReady}"
                                          value="#{grpMgntBean.dept_id}">
                             <f:selectItem itemLabel="Select Department" itemValue=""/>
-                            <f:selectItems value="#{grpMgntBean.deptNameHash}"/>
-                            <p:ajax listener="#{grpMgntBean.deptChange}" update="addGrpPi"/>
+                            <f:selectItems value="#{grpMgntBean.instDeptHash}"/>
                         </p:selectOneMenu>
-                        <h:message id="dept-status" for="dept" styleClass="errors"/>
+                        <h:message id="addGrpDept-status" for="addGrpDept" 
+                                   styleClass="errors"/>
                         <h:panelGroup/>
                         
                         <p:inputText id="grpID" size="32" maxlength="10" 
@@ -134,13 +150,13 @@
                         <h:message id="grpname-status" for="grpname" styleClass="errors"/>
                         <p:watermark for="grpname" value="New Group Name"/>
                         
-                        <p:selectOneMenu id="addGrpPi" 
-                                         disabled="#{grpMgntBean.piIDHashReady}" 
+                        <p:selectOneMenu id="addGrpPi" style="width: 180px"
+                                         disabled="#{grpMgntBean.instDeptHashReady}" 
                                          value="#{grpMgntBean.pi}">
                             <f:selectItem itemLabel="Select PI Incharge" itemValue=""/>
-                            <f:selectItems value="#{grpMgntBean.piIDHash}"/>
+                            <f:selectItems value="#{grpMgntBean.instPiIDHash}"/>
                         </p:selectOneMenu>
-                        <h:message id="pi-status" for="addGrpPi" styleClass="errors"/>
+                        <h:message id="addGrpPi-status" for="addGrpPi" styleClass="errors"/>
                         <h:panelGroup/>
                         
                         <h:commandButton action="#{grpMgntBean.createNewGrpID}" 

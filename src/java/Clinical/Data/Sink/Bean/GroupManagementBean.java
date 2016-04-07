@@ -56,6 +56,8 @@ import org.primefaces.util.ComponentUtils;
  * 05-Apr-2016 - To show the institution, department, group and PI hierarchy 
  * structure. PI in-charge for each group will be selected from the group of 
  * eligible PIs under the institution that the department/group belongs to.
+ * 07-Apr-2016 - During creation/updating of group, the department ID and PI IDs
+ * hashmap will be build using the institution selected as a filtering criteria.
  */
 
 @ManagedBean (name="grpMgntBean")
@@ -74,13 +76,13 @@ public class GroupManagementBean implements Serializable {
     private List<Department> deptList;
     private List<Group> grpList;
     private List<InstDeptGrp> idgList;
-    private LinkedHashMap<String,String> instNameHash, deptNameHash, piIDHash, 
-                                         instPiIDHash;
+    private LinkedHashMap<String,String> instNameHash, instDeptHash, instPiIDHash;
     // Store the user ID of the current user.
     private final String userName;
     
     public GroupManagementBean() {
-        piIDHash = new LinkedHashMap<>();
+        instPiIDHash = new LinkedHashMap<>();
+        instDeptHash = new LinkedHashMap<>();
         userName = (String) getFacesContext().getExternalContext().
                 getSessionMap().get("User");
         logger.debug("ItemListManagementBean created.");
@@ -92,9 +94,8 @@ public class GroupManagementBean implements Serializable {
         instList = InstitutionDB.getInstList();
         deptList = DepartmentDB.getDeptList();                    
         grpList = GroupDB.getFullGrpList();
-        idgList = GroupDB.getInstDeptGrpList();
+//        idgList = GroupDB.getInstDeptGrpList();
         instNameHash = InstitutionDB.getInstNameHash();
-        deptNameHash = DepartmentDB.getAllDeptHash();
     }
 
     // To catch the tab change event.
@@ -181,17 +182,13 @@ public class GroupManagementBean implements Serializable {
     public LinkedHashMap<String, String> getInstNameHash() {
         return instNameHash;
     }
-    // Return the HashMap of dept_id-dept_id for user selection.
-    public LinkedHashMap<String, String> getDeptNameHash() {
-        return deptNameHash;
-    }
-    // Return the HashMap of user ID that can be PI.
-    public LinkedHashMap<String, String> getPiIDHash() {
-        return piIDHash;
-    }
-    // Return the HashMap of user ID under this institution that can be PI.
+    // Return the HashMap of PI IDs under this institution.
     public LinkedHashMap<String, String> getInstPiIDHash() {
         return instPiIDHash;
+    }
+    // Return the HashMap of department IDs under this institution.
+    public LinkedHashMap<String, String> getInstDeptHash() {
+        return instDeptHash;
     }
     
     // Update the dept table in the database.
@@ -230,30 +227,39 @@ public class GroupManagementBean implements Serializable {
         }
     }
     
-    // Build the piID Hash according to the user's institution (i.e. All the 
-    // director/HOD/PIs under this institution.)
+    // Build the instPiIDHash and instDeptHash according to the user's 
+    // institution.
     public void onGrpRowEditInit(RowEditEvent event) {
         Group grp = (Group) event.getObject();
         // Build the instPiIDHash based on the user's institution.
         String instID = GroupDB.getGrpInstID(grp.getGrp_id());
         instPiIDHash = UserAccountDB.getInstPiIDHash(instID);
-        // Update the selectOneMenu (with ID addGrpPi) for the selected row.
-        String updateClientId = ComponentUtils.findComponentClientId("editGrpPi");
-        RequestContext.getCurrentInstance().update(updateClientId);
+        // Build the instDeptHash based on the user's institution.
+        instDeptHash = DepartmentDB.getInstDeptHash(instID);
+        // Update the selectOneMenu (with ID editGrpPi and editGrpDept) for 
+        // the selected row.
+        String editGrpPi = ComponentUtils.findComponentClientId("editGrpPi");
+        String editGrpDept = ComponentUtils.findComponentClientId("editGrpDept");
+        RequestContext.getCurrentInstance().update(editGrpPi);
+        RequestContext.getCurrentInstance().update(editGrpDept);
     }
     
-    // Listener for department selection change, it's job is to update the 
-    // PI incharge list according to the department selected.
-    public void deptChange() {
-        // Build the piIDHash based on the institution the department belongs to.
-        String instID = DepartmentDB.getDeptInstID(dept_id);
-        piIDHash = UserAccountDB.getInstPiIDHash(instID);
+    // Listener for institution selection change, it's job is to update the 
+    // department and PI incharge lists according to the institution selected.
+    public void instChange() {
+        if (inst_id.compareTo("None") == 0) {
+            instDeptHash.clear();
+            instPiIDHash.clear();
+        }
+        else {
+            instDeptHash = DepartmentDB.getInstDeptHash(inst_id);
+            instPiIDHash = UserAccountDB.getInstPiIDHash(inst_id);
+        }
     }
-    
-    // The enabled/disabled status of "Select PI Incharge" will depend on
-    // whether the department has been selected or not.
-    public boolean isPiIDHashReady() {
-        return piIDHash.isEmpty();
+    // The enabled/disabled status of "Select Department" and "Select PI 
+    // Incharge" will depend on whether the institution has been selected or not.
+    public boolean isInstDeptHashReady() {
+        return instDeptHash.isEmpty();
     }
     
     // Show a Faces Info Message at the current context.

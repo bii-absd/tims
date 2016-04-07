@@ -131,7 +131,7 @@
                             </f:facet>
                             <f:facet name="input">
                                 <p:inputTextarea value="#{study.description}" 
-                                                 rows="5" style="width: 100%"/>
+                                                 rows="10" style="width: 100%"/>
                             </f:facet>
                         </p:cellEditor>
                     </p:column>
@@ -142,18 +142,18 @@
                             </f:facet>
                             <f:facet name="input">
                                 <p:inputTextarea value="#{study.background}" 
-                                                 rows="5" style="width: 100%"/>
+                                                 rows="10" style="width: 100%"/>
                             </f:facet>
                         </p:cellEditor>
                     </p:column>
-                    <p:column headerText="Grant Information" style="text-align: left">
+                    <p:column headerText="Grant Information" styleClass="col300">
                         <p:cellEditor>
                             <f:facet name="output">
                                 <h:outputText value="#{study.grant_info}"/>
                             </f:facet>
                             <f:facet name="input">
                                 <p:inputTextarea value="#{study.grant_info}" 
-                                                 rows="5" style="width: 100%"/>
+                                                 rows="10" style="width: 100%"/>
                             </f:facet>
                         </p:cellEditor>
                     </p:column>
