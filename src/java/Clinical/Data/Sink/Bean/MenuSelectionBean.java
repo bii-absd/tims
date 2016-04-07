@@ -59,6 +59,8 @@ import org.apache.logging.log4j.LogManager;
  * Meta data.
  * 04-Apr-2016 - Only 'opened' studies (i.e. not finalized) will be available 
  * for user selection when managing subject Meta data.
+ * 07-Apr-2016 - Only build the study and open study list when the user click
+ * on the pipeline or subject meta data management link.
  */
 
 @ManagedBean (name="menuSelBean")
@@ -86,23 +88,29 @@ public class MenuSelectionBean implements Serializable{
     
     @PostConstruct
     public void init() {
-        if ((roleID == UserRoleDB.director()) ||
-            (roleID == UserRoleDB.hod()) ||
-            (roleID == UserRoleDB.pi()) )
-        {
+        // Do nothing for now.
+    }
+    
+    // Setup the URL for pipeline config page, and the Study ID list for user 
+    // selection.
+    public void setupPlConfigPageURL() {
+        if (UserRoleDB.isLead(roleID)) {
             studyList = StudyDB.getPIStudyHash(userName);
         }
         else {
             studyList = StudyDB.getUserStudyHash(userName);
         }
-        
-        openStudyList = StudyDB.getOpenedStudyHash(userName);
+        plConfigPageURL = plName + "?faces-redirect=true";
     }
     
-    // All the pipeline link will be using this method to setup the URL for 
-    // pipeline configuration page.
-    public void setupPlConfigPageURL() {
-        plConfigPageURL = plName + "?faces-redirect=true";
+    // Setup the Study ID list for user selection to manage subject meta data.
+    public void setupOpenStudyList() {
+        if (UserRoleDB.isLead(roleID)) {
+            openStudyList = StudyDB.getPIOpenStudyHash(userName);
+        }
+        else {
+            openStudyList = StudyDB.getUserOpenStudyHash(userName);
+        }
     }
     
     // User decided not to proceed to pipeline configuration page. Stay at the

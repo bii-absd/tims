@@ -63,6 +63,8 @@ import org.apache.logging.log4j.LogManager;
  * main info and one for the description|background|grant information.
  * 04-Apr-2016 - Implemented one helper function that build the studies hash map
  * for pipeline execution and subject meta data management.
+ * 07-Apr-2016 - For subject meta data management, the method used to build the
+ * studies hash map will be split into 2 (one for users one for PI).
  */
 
 public abstract class StudyDB {
@@ -315,17 +317,16 @@ public abstract class StudyDB {
     }
     
     // Return the list of 'opened' (i.e. not finalized yet) Study ID setup under
-    // the group that this user ID belongs to. This list of Study ID will be
-    // available for user to select for subject Meta data management.
-    public static LinkedHashMap<String, String> getOpenedStudyHash(String userID) {
+    // the group(s) that this lead is heading. The list of Study ID will be
+    // available for the lead to select for subject Meta data management.
+    public static LinkedHashMap<String, String> getPIOpenStudyHash(String piID) {
         String query = "SELECT study_id FROM study WHERE finalized = false AND "
-                     + "grp_id = (SELECT unit_id FROM user_account WHERE user_id = \'"
-                     + userID + "\') ORDER BY study_id";
+                     + "grp_id IN (SELECT grp_id FROM grp WHERE pi = \'"
+                     + piID + "\') ORDER BY study_id";
 
-        logger.debug("Retrieving opened study list for user " + userID);
+        logger.debug("Retrieving open study list for PI " + piID);
         return getStudyHash(query);
-    }
-    
+    }    
     // Return the list of unclosed Study ID under the group(s) that this lead is
     // heading. The list of Study ID will be available for the lead to select
     // for pipeline execution.
@@ -337,8 +338,19 @@ public abstract class StudyDB {
         logger.debug("Retrieving study list for PI " + piID);
         return getStudyHash(query);
     }
+    // Return the list of 'opened' (i.e. not finalized yet) Study ID setup under
+    // the group that this user ID belongs to. The list of Study ID will be
+    // available for user to select for subject Meta data management.
+    public static LinkedHashMap<String, String> getUserOpenStudyHash(String userID) {
+        String query = "SELECT study_id FROM study WHERE finalized = false AND "
+                     + "grp_id = (SELECT unit_id FROM user_account WHERE user_id = \'"
+                     + userID + "\') ORDER BY study_id";
+
+        logger.debug("Retrieving open study list for user " + userID);
+        return getStudyHash(query);
+    }    
     // Return the list of unclosed Study ID setup under the group that this 
-    // user ID belongs to. This list of Study ID will be available for user to
+    // user ID belongs to. The list of Study ID will be available for user to
     // select for pipeline execution.
     public static LinkedHashMap<String, String> getUserStudyHash(String userID) {
         String query = "SELECT study_id FROM study WHERE closed = false AND "

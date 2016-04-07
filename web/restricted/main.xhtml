@@ -15,25 +15,25 @@
         <p:tab id="array" title="Array Data" titleStyleClass="tab-title">
             <h:panelGrid cellpadding="1">
                 <p:commandLink action="#{menuSelBean.setupPlConfigPageURL}"
-                               value="#{msg['gex-illumina']}" 
+                               value="#{msg['gex-illumina']}" update=":dlgForm" 
                                styleClass="mainmenuitem" oncomplete="PF('dlg').show()">
                     <f:setPropertyActionListener target="#{menuSelBean.plName}" 
                                                  value="gex-illumina"/>
                 </p:commandLink>
                 <p:commandLink action="#{menuSelBean.setupPlConfigPageURL}" 
-                               value="#{msg['gex-affymetrix']}" 
+                               value="#{msg['gex-affymetrix']}" update=":dlgForm" 
                                styleClass="mainmenuitem" oncomplete="PF('dlg').show()">
                     <f:setPropertyActionListener target="#{menuSelBean.plName}" 
                                                  value="gex-affymetrix"/>
                 </p:commandLink>
                 <p:commandLink action="#{menuSelBean.setupPlConfigPageURL}" 
-                               value="#{msg['meth-pipeline']}" 
+                               value="#{msg['meth-pipeline']}" update=":dlgForm" 
                                styleClass="mainmenuitem" oncomplete="PF('dlg').show()">
                     <f:setPropertyActionListener target="#{menuSelBean.plName}" 
                                                  value="meth-pipeline"/>
                 </p:commandLink>
                 <p:commandLink action="#{menuSelBean.setupPlConfigPageURL}" 
-                               value="#{msg['cnv-pipeline']}" 
+                               value="#{msg['cnv-pipeline']}" update=":dlgForm" 
                                styleClass="mainmenuitem" oncomplete="PF('dlg').show()">
                     <f:setPropertyActionListener target="#{menuSelBean.plName}" 
                                                  value="cnv-pipeline"/>
@@ -67,11 +67,12 @@
             
         <p:tab id="clData" title="Clinical Subject Data" titleStyleClass="tab-title">
             <p:commandLink value="#{msg['subject-md']}" 
-                           styleClass="mainmenuitem" 
+                           action="#{menuSelBean.setupOpenStudyList}"
+                           styleClass="mainmenuitem" update=":mdDlgForm"
                            title="Upload or edit subject meta data"
                            oncomplete="PF('mdDlg').show()"/>
         </p:tab>
-            
+
         <p:tab id="job" title="My Work Area" titleStyleClass="tab-title">
             <h:panelGrid cellpadding="1">
                 <h:commandLink title="View my job submission status" 

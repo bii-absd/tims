@@ -41,6 +41,8 @@ import org.apache.logging.log4j.LogManager;
  * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
  * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
  * (Institution - Department - Group).
+ * 07-Apr-2016 - Added new method, isLead() to check whether the role ID passed
+ * in belong to a lead or not.
  */
 
 public abstract class UserRoleDB implements Serializable {
@@ -117,5 +119,10 @@ public abstract class UserRoleDB implements Serializable {
     }
     public static int user() {
         return getRoleIDFromHash("User");
+    }
+    
+    // Return true if the role ID passed in is a Director/HOD/PI.
+    public static boolean isLead(int roleID) {
+        return (roleID == director()) || (roleID == hod()) || (roleID == pi());
     }
 }
