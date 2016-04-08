@@ -104,7 +104,8 @@ import org.apache.logging.log4j.LogManager;
  * 14-Mar-2016 - Added one new method, isLead() to check whether the user is a
  * Director|HOD|PI.
  * 14-Mar-2016 - Fix the null pointer exception when the system is first setup.
- * 22-Mar-2016 - To build the ICD code hash map once user login to the system.
+ * 22-Mar-2016 - To build the ICD code HashMap once user login.
+ * 08-Apr-2016 - To build the Institution ID HashMap once user login.
  */
 
 @ManagedBean (name="authBean")
@@ -167,8 +168,10 @@ public class AuthenticationBean implements Serializable {
         JobStatusDB.buildJobStatusDef();
         // Build the role list.
         UserRoleDB.getRoleNameHash();
-        // Build the ICD10 code hash map.
+        // Build the ICD10 Code HashMap.
         ICD10DB.buildICDHashMaps();
+        // Build the Institution ID HashMap.
+        InstitutionDB.buildInstIDHash();
         
         // Temporary hack to allow me to enter to create user when the 
         // application is first deployed.

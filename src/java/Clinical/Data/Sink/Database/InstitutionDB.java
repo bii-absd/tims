@@ -42,14 +42,17 @@ import org.apache.logging.log4j.LogManager;
  * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
  * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
  * (Institution - Department - Group).
- * Enhanced the getInstNameHash method to retrieve the hashmap for all or 
- * specific institution.
+ * 08-Apr-2016 - Enhanced the getInstNameHash method to retrieve the hashmap 
+ * for all or specific institution. Added a static HashMap for storing 
+ * Institution ID -> Institution Name mapping, and the methods to build and
+ * retrieve institution name from it.
  */
 
 public abstract class InstitutionDB implements Serializable {
     // Get the logger for Log4j
     private final static Logger logger = LogManager.
             getLogger(InstitutionDB.class.getName());
+    private static LinkedHashMap<String, String> instIDHash = new LinkedHashMap<>();
     
     // Insert the new institution ID into database.
     public static Boolean insertInstitution(Institution inst) {
@@ -64,6 +67,9 @@ public abstract class InstitutionDB implements Serializable {
             stm.setString(2, inst.getInst_name());
             stm.executeUpdate();
             stm.close();
+            // Rebuild the Institution ID HashMap after every insertion.
+            instIDHash.clear();
+            buildInstIDHash();
             
             logger.debug("New institution ID inserted into database: " +
                     inst.getInst_id());
@@ -93,6 +99,9 @@ public abstract class InstitutionDB implements Serializable {
             stm.setString(2, inst.getInst_id());            
             stm.executeUpdate();
             stm.close();
+            // Rebuild the Institution ID HashMap after every update.
+            instIDHash.clear();
+            buildInstIDHash();
             
             logger.debug("Institution " + inst.getInst_id() + " updated.");
         }
@@ -140,6 +149,39 @@ public abstract class InstitutionDB implements Serializable {
         return instList;
     }
     
+    // Build the HashMap of Institution ID -> Institution Name.
+    public static void buildInstIDHash() {
+        if (instIDHash.isEmpty()) {
+            Connection conn = null;
+            String query = "SELECT * FROM inst ORDER BY inst_name";
+
+            try {
+                conn = DBHelper.getDSConn();
+                PreparedStatement stm = conn.prepareStatement(query);
+                ResultSet rs = stm.executeQuery();
+            
+                while (rs.next()) {
+                    instIDHash.put(rs.getString("inst_id"), 
+                                   rs.getString("inst_name"));
+                }
+
+                stm.close();
+                logger.debug("Institution ID HashMap built.");
+            }
+            catch (SQLException|NamingException e) {
+                logger.error("FAIL to build institution ID HashMap!");
+                logger.error(e.getMessage());
+            }
+            finally {
+                DBHelper.closeDSConn(conn);
+            }
+        }
+    }
+    // Return the name of the institution that has this ID.
+    public static String getInstNameFromHash(String instID) {
+        return instIDHash.get(instID);
+    }
+
     // Return the hashmap of the institution setup with the specific ID.
     public static LinkedHashMap<String, String> getSingleInstNameHash(String instID) 
     {

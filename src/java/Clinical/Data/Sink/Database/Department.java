@@ -20,6 +20,7 @@ package Clinical.Data.Sink.Database;
  * (Institution - Department - Group).
  * 28-Mar-2016 - To retrieve the institution name from the DepartmentDB class
  * instead of InstitutionDB class.
+ * 08-Apr-2016 - Bug fix: inst_name being setup with institution ID value.
  */
 
 public class Department {
@@ -33,7 +34,7 @@ public class Department {
         this.inst_id = inst_id;
         this.dept_id = dept_id;
         this.dept_name = dept_name;
-        inst_name = DepartmentDB.getDeptInstID(dept_id);
+        inst_name = InstitutionDB.getInstNameFromHash(inst_id);
     }
 
     // Return the institution name for this inst_id.
