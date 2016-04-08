@@ -80,6 +80,8 @@ import org.apache.logging.log4j.LogManager;
  * submitted_job table.
  * 29-Mar-2016 - Changes due to the removal of input_path and the addition of
  * input_sn in submitted_job table.
+ * 08-Apr-2016 - Changes due to addition fields defined in FinalizingJobEntry
+ * class.
  */
 
 public abstract class SubmittedJobDB {
@@ -306,7 +308,8 @@ public abstract class SubmittedJobDB {
         (String studyID, String pipeline) {
         Connection conn = null;
         List<FinalizingJobEntry> jobList = new ArrayList<>();
-        String query = "SELECT job_id, tid, submit_time, user_id "
+        String query = "SELECT study_id, job_id, tid, submit_time, user_id, "
+                     + "chip_type, input_sn, normalization "
                      + "FROM submitted_job sj INNER JOIN pipeline pl "
                      + "ON sj.pipeline_name = pl.name WHERE "
                      + "status_id = 3 AND study_id = ? AND "
@@ -322,10 +325,14 @@ public abstract class SubmittedJobDB {
             while (rs.next()) {
                 FinalizingJobEntry tmp = new FinalizingJobEntry(
                                             rs.getInt("job_id"),
+                                            rs.getInt("input_sn"),
+                                            rs.getString("study_id"),
                                             rs.getString("tid"),
                                             pipeline,
                                             rs.getString("submit_time"),
-                                            rs.getString("user_id"));
+                                            rs.getString("user_id"),
+                                            rs.getString("chip_type"),
+                                            rs.getString("normalization"));
                 
                 jobList.add(tmp);
             }
@@ -347,12 +354,14 @@ public abstract class SubmittedJobDB {
     
     // Return the list of completed jobs that are ready to be finalized for
     // this study.
+    // NOT IN USE.
     public static List<FinalizingJobEntry> getCompletedJobsInStudy
         (String studyID, String tid) {
         Connection conn = null;
         List<FinalizingJobEntry> jobList = new ArrayList<>();
-        String query = "SELECT job_id, tid, pipeline_name, submit_time, "
-                     + "user_id FROM submitted_job sj INNER JOIN pipeline pl "
+        String query = "SELECT study_id, job_id, tid, pipeline_name, submit_time, "
+                     + "user_id, chip_type, input_sn, normalization "
+                     + "FROM submitted_job sj INNER JOIN pipeline pl "
                      + "ON sj.pipeline_name = pl.name WHERE "
                      + "status_id = 3 AND study_id = ? AND tid = ? "
                      + "ORDER BY job_id";
@@ -367,10 +376,14 @@ public abstract class SubmittedJobDB {
             while (rs.next()) {
                 FinalizingJobEntry tmp = new FinalizingJobEntry(
                                             rs.getInt("job_id"),
+                                            rs.getInt("input_sn"),
+                                            rs.getString("study_id"),
                                             rs.getString("tid"),
                                             rs.getString("pipeline_name"),
                                             rs.getString("submit_time"),
-                                            rs.getString("user_id"));
+                                            rs.getString("user_id"),
+                                            rs.getString("chip_type"),
+                                            rs.getString("normalization"));
                 jobList.add(tmp);
             }
             
