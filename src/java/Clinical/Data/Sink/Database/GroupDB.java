@@ -35,6 +35,8 @@ import org.apache.logging.log4j.LogManager;
  * active and have pi setup.
  * 05-Apr-2016 - Added new method getInstDeptGrpList(), that return the list of 
  * group hierarchy structure (together with its leading PI).
+ * 08-Apr-2016 - Added new method getInstGrpHash, to retrieve the HashMap of 
+ * all the group IDs setup under a specific institution.
  */
 
 public abstract class GroupDB implements Serializable {
@@ -78,6 +80,14 @@ public abstract class GroupDB implements Serializable {
     // Return the HashMap of all the group IDs setup in the system.
     public static LinkedHashMap<String, String> getAllGrpHash() {
         String query = "SELECT grp_id, grp_name FROM grp ORDER BY grp_id";
+        
+        return getGrpHash(query);
+    }
+    // Return the HashMap of all the group IDs setup under this institution in
+    // the system.
+    public static LinkedHashMap<String, String> getInstGrpHash(String instID) {
+        String query = "SELECT grp_id, grp_name FROM inst_dept_grp "
+                     + "WHERE inst_id = \'" + instID + "\' ORDER BY grp_id";
         
         return getGrpHash(query);
     }

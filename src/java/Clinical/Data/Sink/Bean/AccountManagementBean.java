@@ -31,6 +31,7 @@ import org.primefaces.event.RowEditEvent;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.util.ComponentUtils;
 import org.primefaces.context.RequestContext;
+import org.primefaces.event.TabChangeEvent;
 
 /**
  * AccountManagementBean is the backing bean for the accountmanagement view.
@@ -77,6 +78,9 @@ import org.primefaces.context.RequestContext;
  * 29-Mar-2016 - Added one new method onRowEditInit() to handle the rowEditInit 
  * event; to build the unit ID Hash according to the user role at the selected 
  * row.
+ * 08-Apr-2016 - Added in the logic to prevent user from switching from one
+ * institution to another institution during updating of user account. Added in
+ * the institution selection during account creation.
  */
 
 @ManagedBean (name="acctMgntBean")
@@ -93,7 +97,7 @@ public class AccountManagementBean implements Serializable {
     // Store the user ID of the current user.
     private final String userName;
     private List<UserAccount> userAcctList;
-    private LinkedHashMap<String,String> instNameHash, unitIDHash, userIDHash;
+    private LinkedHashMap<String,String> instNameHash, instUnitIDHash, userIDHash;
     private LinkedHashMap<String,Integer> roleNameHash;
     // For uploading of user photo.
     private FileUploadBean photo = null;
@@ -101,7 +105,7 @@ public class AccountManagementBean implements Serializable {
     public AccountManagementBean() {
         userName = (String) getFacesContext().getExternalContext().
                 getSessionMap().get("User");
-        unitIDHash = new LinkedHashMap<>();
+        instUnitIDHash = new LinkedHashMap<>();
         logger.debug("AccountManagementBean created.");
     }
     
@@ -114,7 +118,15 @@ public class AccountManagementBean implements Serializable {
         // Retrieve the list of role name setup in the system.
         roleNameHash = UserRoleDB.getRoleNameHash();
         // Retrieve the list of institution setup in the system.
-        instNameHash = InstitutionDB.getInstNameHash();
+        instNameHash = InstitutionDB.getAllInstNameHash();
+    }
+    
+    // Clear the instUnitIDHash, and reset the institution and role selection 
+    // whenever there is a tab change.
+    public void onTabChange(TabChangeEvent event) {
+        role_id = 0;
+        inst_id = "None";
+        instUnitIDHash.clear();
     }
     
     // Return all the user ID currently in the system.
@@ -130,8 +142,9 @@ public class AccountManagementBean implements Serializable {
     // Build the unit ID Hash according to the user role at the selected row.
     public void onRowEditInit(RowEditEvent event) {
         UserAccount user = (UserAccount) event.getObject();
-        // Build the unit ID Hash based on the user role.
-        configUnitIDHash(user.getRole_id());
+        // Build the unit ID Hash based on the institution and user role.
+        String instID = InstitutionDB.getInstID(user.getUnit_id());
+        configInstUnitIDHash(instID, user.getRole_id());
         // Update the selectOneMenu (with ID unitID) for the selected row.
         String updateClientId = ComponentUtils.findComponentClientId("unitID");
         RequestContext.getCurrentInstance().update(updateClientId);
@@ -335,41 +348,48 @@ public class AccountManagementBean implements Serializable {
     public LinkedHashMap<String, String> getInstNameHash() {
         return instNameHash;
     }
-    // Return the list of Unit ID (InstID|DeptID|GrpID) depending on the role
-    // selected.
-    public LinkedHashMap<String, String> getUnitIDHash() {
-        return unitIDHash;
+    // Return the list of Unit ID (InstID|DeptID|GrpID) depending on the
+    // institution and the role selected.
+    public LinkedHashMap<String, String> getInstUnitIDHash() {
+        return instUnitIDHash;
     }
     
     // The enabled/disabled status of "Select User Unit" will depend on
-    // whether the role has been selected or not.
-    public Boolean isUnitIDHashReady() {
-        return unitIDHash.isEmpty();
+    // whether the institution and role have been selected or not.
+    public boolean isInstUnitIDHashReady() {
+        return instUnitIDHash.isEmpty();
     }
     
-    // Listener for role selection change, it's job is to update the unit ID
-    // selection list according to the type of role.
-    public void roleChange() {
-        configUnitIDHash(role_id);
+    // Listener for institution and role selection change, it's job is to update
+    // the unit ID selection list accordingly to the institution + type of role.
+    public void instRoleChange() {
+        // Both the institution and role need to have a valid value in order to
+        // proceed.
+        if (inst_id != null) {
+            if ( (role_id != 0) && (inst_id.compareTo("None") != 0) ) {
+                configInstUnitIDHash(inst_id, role_id);
+            }
+        }
     }
     // Listener for role selection change in the "Edit User Account" panel.
     public void roleEditChange() {
         UserAccount user = getFacesContext().getApplication().
                 evaluateExpressionGet(getFacesContext(), "#{acct}", 
                 UserAccount.class);
-        
-        configUnitIDHash(user.getRole_id());
+        String instID = InstitutionDB.getInstID(user.getUnit_id());
+        configInstUnitIDHash(instID, user.getRole_id());
     }
-    // Helper method to setup the unitIDHash based on the user's role.
-    private void configUnitIDHash(int roleID) {
+    // Helper method to setup the instUnitIDHash based on the institution and
+    // user's role.
+    private void configInstUnitIDHash(String instID, int roleID) {
         if (roleID == UserRoleDB.director()) {
-            unitIDHash = InstitutionDB.getInstNameHash();
+            instUnitIDHash = InstitutionDB.getSingleInstNameHash(instID);
         }
         else if (roleID == UserRoleDB.hod()) {
-            unitIDHash = DepartmentDB.getAllDeptHash();
+            instUnitIDHash = DepartmentDB.getInstDeptHash(instID);
         }
         else {
-            unitIDHash = GroupDB.getAllGrpHash();
+            instUnitIDHash = GroupDB.getInstGrpHash(instID);
         }        
     }
     

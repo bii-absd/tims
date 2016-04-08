@@ -42,6 +42,8 @@ import org.apache.logging.log4j.LogManager;
  * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
  * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
  * (Institution - Department - Group).
+ * Enhanced the getInstNameHash method to retrieve the hashmap for all or 
+ * specific institution.
  */
 
 public abstract class InstitutionDB implements Serializable {
@@ -138,10 +140,23 @@ public abstract class InstitutionDB implements Serializable {
         return instList;
     }
     
-    // Return the hashmap of institution setup in the database.
-    public static LinkedHashMap<String, String> getInstNameHash() {
-        Connection conn = null;
+    // Return the hashmap of the institution setup with the specific ID.
+    public static LinkedHashMap<String, String> getSingleInstNameHash(String instID) 
+    {
+        String query = "SELECT * FROM inst WHERE inst_id = \'" + instID 
+                     + "\' ORDER BY inst_name";
+        
+        return getInstNameHash(query);
+    }    
+    // Return the hashmap of all the institution setup in the database.
+    public static LinkedHashMap<String, String> getAllInstNameHash() {
         String query = "SELECT * FROM inst ORDER BY inst_name";
+        
+        return getInstNameHash(query);
+    }
+    // Helper function to return the hashmap of the institution setup.
+    public static LinkedHashMap<String, String> getInstNameHash(String query) {
+        Connection conn = null;
         LinkedHashMap<String, String> instNameHash = new LinkedHashMap<>();
         
         try {
@@ -155,10 +170,10 @@ public abstract class InstitutionDB implements Serializable {
             }
 
             stm.close();
-            logger.debug("Full institution name hash built.");
+            logger.debug("Institution name hash built.");
         }
         catch (SQLException|NamingException e) {
-            logger.error("FAIL to build full institution name hash!");
+            logger.error("FAIL to build institution name hash!");
             logger.error(e.getMessage());
         }
         finally {
@@ -168,12 +183,27 @@ public abstract class InstitutionDB implements Serializable {
         return instNameHash;
     }
     
+    // Return the ID of the institution where this unit ID belongs to.
+    public static String getInstID(String unitID) {
+        String query = "SELECT inst_id FROM inst_dept_grp WHERE inst_id = ? "
+                     + "OR dept_id = ? OR grp_id = ?";
+        
+        return getInstProperty(query, unitID, "inst_id");        
+    }
     // Return the name of the institution where this unit ID belongs to.
     public static String getInstName(String unitID) {
-        Connection conn = null;
-        String instName = Constants.DATABASE_INVALID_STR;
         String query = "SELECT inst_name FROM inst_dept_grp WHERE inst_id = ? "
                      + "OR dept_id = ? OR grp_id = ?";
+        
+        return getInstProperty(query, unitID, "inst_name");
+    }
+    // Helper function to retrieve the institution ID or name where this unit
+    // ID belongs to.
+    public static String getInstProperty(String query, String unitID, 
+            String property) 
+    {
+        Connection conn = null;
+        String instName = Constants.DATABASE_INVALID_STR;
 
         try {
             conn = DBHelper.getDSConn();
@@ -184,13 +214,13 @@ public abstract class InstitutionDB implements Serializable {
             ResultSet rs = stm.executeQuery();
             
             if (rs.next()) {
-                instName = rs.getString("inst_name");
+                instName = rs.getString(property);
             }
             
             stm.close();
         }
         catch (SQLException|NamingException e) {
-            logger.error("FAIL to retrieve institution name for unit " + unitID);
+            logger.error("FAIL to retrieve " + property + " for unit " + unitID);
             logger.error(e.getMessage());
         }
         finally {

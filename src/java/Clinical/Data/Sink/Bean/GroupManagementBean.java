@@ -95,7 +95,7 @@ public class GroupManagementBean implements Serializable {
         deptList = DepartmentDB.getDeptList();                    
         grpList = GroupDB.getFullGrpList();
 //        idgList = GroupDB.getInstDeptGrpList();
-        instNameHash = InstitutionDB.getInstNameHash();
+        instNameHash = InstitutionDB.getAllInstNameHash();
     }
 
     // To catch the tab change event.

@@ -12,7 +12,8 @@
     <ui:define name="content">
         <p:growl id="acctMsg"/>
         <p:accordionPanel id="acPanel">
-            <p:tab id="editaccount" title="Edit User Account" 
+            <p:ajax event="tabChange" listener="#{acctMgntBean.onTabChange}"/>
+            <p:tab id="editAcct" title="Edit User Account" 
                    rendered="#{authBean.isAdministrator()}" 
                    titleStyleClass="tab-title">
                 <h:form id="editAcctForm">
@@ -64,7 +65,7 @@
                             <f:facet name="input">
                                 <p:selectOneMenu value="#{acct.role_id}" style="width: 100%">
                                     <f:selectItems value="#{acctMgntBean.roleNameHash}"/>
-                                    <p:ajax listener="#{acctMgntBean.roleEditChange()}" 
+                                    <p:ajax listener="#{acctMgntBean.roleEditChange}" 
                                             update="unitID"/>
                                 </p:selectOneMenu>
                             </f:facet>
@@ -78,7 +79,7 @@
                             <f:facet name="input">
                                 <p:selectOneMenu id="unitID" style="width: 100%" 
                                                  value="#{acct.unit_id}">
-                                    <f:selectItems value="#{acctMgntBean.unitIDHash}"/>
+                                    <f:selectItems value="#{acctMgntBean.instUnitIDHash}"/>
                                 </p:selectOneMenu>
                             </f:facet>
                         </p:cellEditor>
@@ -116,11 +117,11 @@
                 </h:form>
             </p:tab>
 
-            <p:tab id="newaccount" title="Create New User Account" 
+            <p:tab id="newAcct" title="Create New User Account" 
                    titleStyleClass="tab-title"
                    rendered="#{authBean.isAdministrator()}">
-                <h:form id="newacct">
-                    <p:messages id="newacct-msg" showDetail="true"/>
+                <h:form id="newAcctForm">
+                    <p:messages id="newAcct-msg" showDetail="true"/>
                     <h:panelGrid columns="3" border="0" cellpadding="4" 
                                  cellspacing="2">
                         <p:inputText id="userid" size="32" maxlength="20" autocomplete="off"
@@ -153,22 +154,30 @@
                         <h:panelGroup/>
                         <h:panelGroup/>
                     
-                        <p:selectOneMenu id="role" 
-                                         style="width:180px" required="true"
-                                         value="#{acctMgntBean.role_id}">
-                            <f:selectItem itemLabel="Select Role" itemValue=""/>
+                        <p:selectOneMenu id="inst" value="#{acctMgntBean.inst_id}" 
+                                         style="width: 180px" required="true">
+                            <f:selectItem itemLabel="Select Institution" itemValue="None"/>
+                            <f:selectItems value="#{acctMgntBean.instNameHash}"/>
+                            <p:ajax listener="#{acctMgntBean.instRoleChange}" update="unit"/>
+                        </p:selectOneMenu>
+                        <h:message for="inst" styleClass="errors"/>
+                        <h:panelGroup/>
+                        
+                        <p:selectOneMenu id="role" value="#{acctMgntBean.role_id}"
+                                         style="width:180px" required="true">
+                            <f:selectItem itemLabel="Select Role" itemValue="0"/>
                             <f:selectItems value="#{acctMgntBean.roleNameHash}"/>
-                            <p:ajax listener="#{acctMgntBean.roleChange()}" update="unit"/>
+                            <p:ajax listener="#{acctMgntBean.instRoleChange}" update="unit"/>
                         </p:selectOneMenu>
                         <h:message for="role" styleClass="errors"/>
                         <h:panelGroup/>
 
                         <p:selectOneMenu id="unit" style="width: 180px" 
                                          required="true"
-                                         disabled="#{acctMgntBean.isUnitIDHashReady()}" 
+                                         disabled="#{acctMgntBean.instUnitIDHashReady}" 
                                          value="#{acctMgntBean.unit_id}">
                             <f:selectItem itemLabel="Select User Unit" itemValue=""/>
-                            <f:selectItems value="#{acctMgntBean.unitIDHash}"/>
+                            <f:selectItems value="#{acctMgntBean.instUnitIDHash}"/>
                         </p:selectOneMenu>
                         <h:message for="unit" styleClass="errors"/>
                         <h:panelGroup/>
