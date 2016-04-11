@@ -95,6 +95,8 @@ import org.apache.logging.log4j.LogManager;
  * get the database connection instead of using DriverManager.
  * 29-Mar-2016 - Instead of storing the input path, the system will store the 
  * input SN.
+ * 11-Apr-2016 - Changes due to the removal of attributes (sample_average, 
+ * standardization, region and probe_select) from submitted_job table.
  */
 
 public abstract class ConfigBean implements Serializable {
@@ -104,9 +106,7 @@ public abstract class ConfigBean implements Serializable {
     protected String studyID;
     // Common Processing Parameters. 
     protected String type, normalization, probeFilter, phenotype, summarization;
-    private boolean probeSelect, sampleAverage;
     // Further Processing
-    private String stdLog2Ratio;
     protected String commandLink;
     // Indicator of whether user have new data to upload or not.
     protected Boolean haveNewData;
@@ -482,16 +482,11 @@ public abstract class ConfigBean implements Serializable {
             fw.write("### PROCESSING parameters\n" +
                      "NORMALIZATION\t=\t" + getNormalization() +
                      "\nPROBE_FILTERING\t=\t" + getProbeFilter() +
-                     "\nPROBE_SELECTION\t=\t" + booleanToYesNo(isProbeSelect()) +
                      "\nPHENOTYPE_COLUMN\t=\t" + getPhenotype() + 
                      "\nSUMMARIZATION\t=\t" + getSummarization() + "\n\n");
 
             fw.write("### Output file after normalization and processing\n" +
                      "OUTPUT\t=\t" + pipelineOutput + "\n\n");
-
-            fw.write("### Further Processing\n" +
-                     "SAMPLE_AVERAGING\t=\t" + booleanToYesNo(isSampleAverage()) +
-                     "\nSTANDARDIZATION\t=\t" + getStdLog2Ratio() + "\n\n");
 
             fw.write("### Report Generation\n" +
                      "REP_FILENAME\t=\t" + pipelineReport + "\n\n");
@@ -612,24 +607,6 @@ public abstract class ConfigBean implements Serializable {
     }
     public void setSummarization(String summarization) {
         this.summarization = summarization;
-    }
-    public boolean isProbeSelect() {
-        return probeSelect;
-    }
-    public void setProbeSelect(boolean probeSelect) {
-        this.probeSelect = probeSelect;
-    }
-    public boolean isSampleAverage() {
-        return sampleAverage;
-    }
-    public void setSampleAverage(boolean sampleAverage) {
-        this.sampleAverage = sampleAverage;
-    }
-    public String getStdLog2Ratio() {
-        return stdLog2Ratio;
-    }
-    public void setStdLog2Ratio(String stdLog2Ratio) {
-        this.stdLog2Ratio = stdLog2Ratio;
     }
     public Boolean getJobSubmissionStatus() {
         return jobSubmissionStatus;

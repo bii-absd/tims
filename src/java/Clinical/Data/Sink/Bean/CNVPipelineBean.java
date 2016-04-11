@@ -40,6 +40,8 @@ import javax.naming.NamingException;
  * submitted_job table.
  * 29-Mar-2016 - Instead of storing the input path, the system will store the 
  * input SN.
+ * 11-Apr-2016 - Changes due to the removal of attributes (sample_average, 
+ * standardization, region and probe_select) from submitted_job table.
  */
 
 @ManagedBean (name="cnvPBean")
@@ -50,8 +52,7 @@ public class CNVPipelineBean extends GEXAffymetrixBean {
     public CNVPipelineBean() {
         logger.debug("CNVPipelineBean created.");
     }
-    
-    @PostConstruct
+
     @Override
     public void initFiles() {
         init();
@@ -62,7 +63,7 @@ public class CNVPipelineBean extends GEXAffymetrixBean {
             ctrlFile = new FileUploadBean(dir);            
         }
     }
-    
+
     @Override
     public void updateJobSubmissionStatus() {
         if (!haveNewData) {
@@ -70,6 +71,7 @@ public class CNVPipelineBean extends GEXAffymetrixBean {
             // for reuse.
             if (selectedInput != null) {
                 setJobSubmissionStatus(true);
+                input_sn = selectedInput.getSn();
                 logger.debug("Data uploaded on " + selectedInput.getDate() + 
                              " has been selected for reuse.");
             }
@@ -104,21 +106,17 @@ public class CNVPipelineBean extends GEXAffymetrixBean {
         // job_id will not be used during insertion, just send in any value will
         // do e.g. 0
         // Insert the new job request into datbase; job status is 1 i.e. Waiting
-        // For attributes type, normalization, probeFilter, StdLog2Ratio and 
-        // region, set them to "NA". For probeSelect and sample_average, set 
-        // them to false.
+        // For attributes type, normalization and probeFilter, set them to "NA". 
         // For complete_time, set to "waiting" for the start.
         // 
         // SubmittedJob(job_id, study_id, user_id, pipeline_name, status_id, 
         // submit_time, complete_time, chip_type, input_sn, normalization, 
-        // probe_filtering, probe_select, phenotype_column, summarization, 
-        // output_file, sample_average, standardization, region, report) 
+        // probe_filtering, phenotype_column, summarization, output_file, report)
         SubmittedJob newJob = 
                 new SubmittedJob(0, getStudyID(), userName, pipelineName, 1,
                                  submitTimeInDB, "waiting", "NA", input_sn, 
-                                 "NA", "NA", false, getPhenotype(), 
-                                 getSummarization(), outputFilePath, false, 
-                                 "NA", "NA", reportFilePath);
+                                 "NA", "NA", getPhenotype(), 
+                                 getSummarization(), outputFilePath, reportFilePath);
         
         try {
             // Store the job_id of the inserted record

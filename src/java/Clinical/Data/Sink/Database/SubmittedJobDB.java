@@ -82,6 +82,8 @@ import org.apache.logging.log4j.LogManager;
  * input_sn in submitted_job table.
  * 08-Apr-2016 - Changes due to addition fields defined in FinalizingJobEntry
  * class.
+ * 11-Apr-2016 - Changes due to the removal of attributes (sample_average, 
+ * standardization, region and probe_select) from submitted_job table.
  */
 
 public abstract class SubmittedJobDB {
@@ -101,10 +103,9 @@ public abstract class SubmittedJobDB {
         String query = "INSERT INTO submitted_job"
                      + "(study_id, user_id, pipeline_name, status_id, "
                      + "submit_time, chip_type, input_sn,"
-                     + "normalization, probe_filtering, probe_select, "
-                     + "phenotype_column, summarization, output_file, "
-                     + "sample_average, standardization, region, report) "
-                     + "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                     + "normalization, probe_filtering, "
+                     + "phenotype_column, summarization, output_file, report) "
+                     + "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)";
         
         conn = DBHelper.getDSConn();
         // To request for the return of generated key upon successful insertion.
@@ -121,14 +122,10 @@ public abstract class SubmittedJobDB {
         stm.setInt(7, job.getInput_sn());
         stm.setString(8, job.getNormalization());
         stm.setString(9, job.getProbe_filtering());
-        stm.setBoolean(10, job.getProbe_select());
-        stm.setString(11, job.getPhenotype_column());
-        stm.setString(12, job.getSummarization());
-        stm.setString(13, job.getOutput_file());
-        stm.setBoolean(14, job.getSample_average());
-        stm.setString(15, job.getStandardization());
-        stm.setString(16, job.getRegion());
-        stm.setString(17, job.getReport());
+        stm.setString(10, job.getPhenotype_column());
+        stm.setString(11, job.getSummarization());
+        stm.setString(12, job.getOutput_file());
+        stm.setString(13, job.getReport());
         // Execute the INSERT statement
         stm.executeUpdate();
         // Retrieve and store the last inserted Job ID
@@ -441,13 +438,9 @@ public abstract class SubmittedJobDB {
                                 rs.getInt("input_sn"),
                                 rs.getString("normalization"),
                                 rs.getString("probe_filtering"),
-                                rs.getBoolean("probe_select"),
                                 rs.getString("phenotype_column"),
                                 rs.getString("summarization"),
                                 rs.getString("output_file"),
-                                rs.getBoolean("sample_average"),
-                                rs.getString("standardization"),
-                                rs.getString("region"),
                                 rs.getString("report"));
                 
                 jobList.add(job);

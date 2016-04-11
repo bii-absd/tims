@@ -59,6 +59,8 @@ import javax.naming.NamingException;
  * submitted_job table.
  * 29-Mar-2016 - Instead of storing the input path, the system will store the 
  * input SN.
+ * 11-Apr-2016 - Changes due to the removal of attributes (sample_average, 
+ * standardization, region and probe_select) from submitted_job table.
  */
 
 @ManagedBean (name="gexAffyBean")
@@ -116,20 +118,17 @@ public class GEXAffymetrixBean extends ConfigBean {
         // job_id will not be used during insertion, just send in any value will
         // do e.g. 0
         // Insert the new job request into datbase; job status is 1 i.e. Waiting
-        // DB 2.0 - For attributes summarization and region, set them to "NA".
+        // DB 2.0 - For attribute summarization, set it to "NA".
         // For complete_time, set to "waiting" for the start.
         // 
         // SubmittedJob(job_id, study_id, user_id, pipeline_name, status_id, 
         // submit_time, complete_time, chip_type, input_sn, normalization, 
-        // probe_filtering, probe_select, phenotype_column, summarization, 
-        // output_file, sample_average, standardization, region, report) 
+        // probe_filtering, phenotype_column, summarization, output_file, report)
         SubmittedJob newJob = 
                 new SubmittedJob(0, getStudyID(), userName, pipelineName, 1,
                                  submitTimeInDB, "waiting", getType(), 
                                  input_sn, getNormalization(), probeFilter, 
-                                 isProbeSelect(), getPhenotype(), "NA", 
-                                 outputFilePath, isSampleAverage(), 
-                                 getStdLog2Ratio(), "NA", reportFilePath);
+                                 getPhenotype(), "NA", outputFilePath, reportFilePath);
         
         try {
             // Store the job_id of the inserted record

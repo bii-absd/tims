@@ -41,6 +41,8 @@ import java.io.Serializable;
  * the pipeline completed it's execution.
  * 29-Mar-2016 - Instead of storing the input path, the system will store the 
  * input SN.
+ * 11-Apr-2016 - Changes due to the removal of attributes (sample_average, 
+ * standardization, region and probe_select) from submitted_job table.
  */
 
 public class SubmittedJob implements Serializable {
@@ -49,12 +51,11 @@ public class SubmittedJob implements Serializable {
     // phenotype_column, summarization, sample_average, standardization & 
     // region) added for DB 2.0
     // For DB 3.0, removed input_path and added input_sn.
+    // For DB 3.3, Removed sample_average, standardization, region, probe_select,
     private int job_id, status_id, input_sn;
     private String study_id, user_id, pipeline_name, submit_time, complete_time;
     private String chip_type, normalization, probe_filtering;
-    private Boolean probe_select, sample_average;
-    private String phenotype_column, summarization, output_file;
-    private String standardization, region, report;
+    private String phenotype_column, summarization, output_file, report;
     // status_name will be used by the job status page
     private String status_name;
 
@@ -62,9 +63,8 @@ public class SubmittedJob implements Serializable {
     public SubmittedJob(int job_id, String study_id, String user_id,
             String pipeline_name, int status_id, String submit_time, 
             String complete_time, String chip_type, int input_sn, 
-            String normalization, String probe_filtering, Boolean probe_select, 
+            String normalization, String probe_filtering, 
             String phenotype_column, String summarization, String output_file, 
-            Boolean sample_average, String standardization, String region, 
             String report) 
     {
         this.job_id = job_id;
@@ -78,13 +78,9 @@ public class SubmittedJob implements Serializable {
         this.input_sn = input_sn;
         this.normalization = normalization;
         this.probe_filtering = probe_filtering;
-        this.probe_select = probe_select;
         this.phenotype_column = phenotype_column;
         this.summarization = summarization;
         this.output_file = output_file;
-        this.sample_average = sample_average;
-        this.standardization = standardization;
-        this.region = region;
         this.report = report;
     }
     
@@ -212,12 +208,6 @@ public class SubmittedJob implements Serializable {
     public void setProbe_filtering(String probe_filtering) {
         this.probe_filtering = probe_filtering;
     }
-    public Boolean getProbe_select() {
-        return probe_select;
-    }
-    public void setProbe_select(Boolean probe_select) {
-        this.probe_select = probe_select;
-    }
     public String getPhenotype_column() {
         return phenotype_column;
     }
@@ -235,24 +225,6 @@ public class SubmittedJob implements Serializable {
     }
     public void setOutput_file(String output_file) {
         this.output_file = output_file;
-    }
-    public Boolean getSample_average() {
-        return sample_average;
-    }
-    public void setSample_average(Boolean sample_average) {
-        this.sample_average = sample_average;
-    }
-    public String getStandardization() {
-        return standardization;
-    }
-    public void setStandardization(String standardization) {
-        this.standardization = standardization;
-    }
-    public String getRegion() {
-        return region;
-    }
-    public void setRegion(String region) {
-        this.region = region;
     }
     public String getReport() {
         return report;

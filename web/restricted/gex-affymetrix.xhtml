@@ -61,7 +61,7 @@
             <p:separator styleClass="configsep"/>
 
             <p:panel id="required" header="#{msg['config-para1']}">
-                <h:panelGrid columns="5" cellpadding="5" cellspacing="7" styleClass="configcolumn">
+                <h:panelGrid columns="4" cellpadding="5" cellspacing="7" styleClass="configcolumn">
                     <p:column>
                         <h:panelGrid columns="1">
                             <p:outputLabel value="#{msg['config-type']}" styleClass="configlabel"/>
@@ -97,38 +97,6 @@
                                 <f:selectItems value="#{gexAffyBean.annotationList}"/>
                             </p:selectOneMenu>
                         </h:panelGrid>
-                    </p:column>
-                    <p:column>
-                        <h:outputText value="#{msg['config-prosel']}" styleClass="configlabel"/>
-                        <p:selectBooleanButton id="probeselection" 
-                                               value="#{gexAffyBean.probeSelect}" 
-                                               title="#{msg['probe.selection']}"
-                                               onLabel="Yes" offLabel="No"/>
-                    </p:column>
-                </h:panelGrid>
-            </p:panel>
-            <p:separator styleClass="configsep"/>
-
-            <p:panel id="optional" header="#{msg['config-para2']}">
-                <h:panelGrid columns="2" cellpadding="5">
-                    <p:column>
-                        <h:panelGrid columns="1">
-                            <p:outputLabel value="#{msg['config-std']}" styleClass="configlabel"/>
-                            <p:selectOneMenu id="stdlog2ratio" value="#{gexAffyBean.stdLog2Ratio}">
-                                <f:selectItem itemLabel="None" itemValue="none"/>
-                                <f:selectItem itemLabel="Standardize" itemValue="Standardize" 
-                                              itemDescription="#{msg['standardization']}"/>
-                                <f:selectItem itemLabel="Log2Ratio" itemValue="Log2Ratio" 
-                                              itemDescription="#{msg['log2ratio']}"/>
-                            </p:selectOneMenu>
-                        </h:panelGrid>
-                    </p:column>
-                    <p:column>
-                        <h:outputText value="#{msg['config-samave']}" styleClass="configlabel"/>
-                        <p:selectBooleanButton id="averaging" 
-                                               value="#{gexAffyBean.sampleAverage}" 
-                                               title="#{msg['sample.averaging']}" 
-                                               onLabel="Yes" offLabel="No"/>
                     </p:column>
                 </h:panelGrid>
             </p:panel>
@@ -184,12 +152,6 @@
                     <h:outputText value="#{gexAffyBean.normalization}"/>
                     <h:outputText value="#{msg['config-pheno']}"/>
                     <h:outputText value="#{gexAffyBean.phenotype}"/>
-                    <h:outputText value="#{msg['config-prosel']}"/>
-                    <h:outputText value="#{gexAffyBean.probeSelect?'Yes':'No'}"/>
-                    <h:outputText value="#{msg['config-std']}"/>
-                    <h:outputText value="#{gexAffyBean.stdLog2Ratio}"/>
-                    <h:outputText value="#{msg['config-samave']}"/>
-                    <h:outputText value="#{gexAffyBean.sampleAverage?'Yes':'No'}"/>
                 </p:panelGrid>
                 <p:separator styleClass="configsep"/>
                 <h:panelGrid columns="2" cellspacing="2" cellpadding="2">
