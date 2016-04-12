@@ -18,16 +18,19 @@ package Clinical.Data.Sink.Database;
  * 22-Jan-2016 - Added one new field, user_id and one new method getUserName().
  * 08-Apr-2016 - Added new fields; input_sn, study_id, chip_type and 
  * normalization, and one new method getInputDesc().
+ * 12-Apr-2016 - Added one new field, summarization.
  */
 
 public class FinalizingJobEntry {
     private int job_id, input_sn;
     private String study_id, tid, pipeline_name, submit_time, user_id, 
-            chip_type, normalization;
+            chip_type, normalization, summarization;
 
     public FinalizingJobEntry(int job_id, int input_sn, String study_id, 
             String tid, String pipeline_name, String submit_time, 
-            String user_id, String chip_type, String normalization) {
+            String user_id, String chip_type, String normalization, 
+            String summarization) 
+    {
         this.job_id = job_id;
         this.input_sn = input_sn;
         this.study_id = study_id;
@@ -37,6 +40,7 @@ public class FinalizingJobEntry {
         this.user_id = user_id;
         this.chip_type = chip_type;
         this.normalization = normalization;
+        this.summarization = summarization;
     }
 
     // Return a string representation of this object.
@@ -92,4 +96,8 @@ public class FinalizingJobEntry {
     { return normalization; }
     public void setNormalization(String normalization) 
     { this.normalization = normalization; }
+    public String getSummarization() 
+    { return summarization; }
+    public void setSummarization(String summarization) 
+    { this.summarization = summarization; }
 }

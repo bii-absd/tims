@@ -30,11 +30,11 @@
                             update="acctMsg"/>
                     <p:ajax event="rowEditInit" 
                             listener="#{acctMgntBean.onRowEditInit}"/>
-                    <p:column headerText="User ID" styleClass="jssmallcol" 
+                    <p:column headerText="User ID" styleClass="col140" 
                               sortBy="#{acct.user_id}">
                         <h:outputText value="#{acct.user_id}"/>
                     </p:column>
-                    <p:column headerText="Last Name" styleClass="jssmallcol" 
+                    <p:column headerText="Last Name" styleClass="col140" 
                               sortBy="#{acct.last_name}">
                         <p:cellEditor>
                             <f:facet name="output">
@@ -45,7 +45,7 @@
                             </f:facet>
                         </p:cellEditor>
                     </p:column>
-                    <p:column headerText="First Name" styleClass="jssmallcol" 
+                    <p:column headerText="First Name" styleClass="col140" 
                               sortBy="#{acct.first_name}">
                         <p:cellEditor>
                             <f:facet name="output">

@@ -85,7 +85,8 @@ import org.apache.logging.log4j.LogManager;
  * 11-Apr-2016 - Changes due to the removal of attributes (sample_average, 
  * standardization, region and probe_select) from submitted_job table.
  * 12-Apr-2016 - Changes due to the removal of attributes (probe_filtering and
- * phenotype_column) from submitted_job table.
+ * phenotype_column) from submitted_job table. Changes due to addition one field
+ * (i.e. summarization) defined in FinalizingJobEntry.
  */
 
 public abstract class SubmittedJobDB {
@@ -305,7 +306,7 @@ public abstract class SubmittedJobDB {
         Connection conn = null;
         List<FinalizingJobEntry> jobList = new ArrayList<>();
         String query = "SELECT study_id, job_id, tid, submit_time, user_id, "
-                     + "chip_type, input_sn, normalization "
+                     + "chip_type, input_sn, normalization, summarization "
                      + "FROM submitted_job sj INNER JOIN pipeline pl "
                      + "ON sj.pipeline_name = pl.name WHERE "
                      + "status_id = 3 AND study_id = ? AND "
@@ -328,7 +329,8 @@ public abstract class SubmittedJobDB {
                                             rs.getString("submit_time"),
                                             rs.getString("user_id"),
                                             rs.getString("chip_type"),
-                                            rs.getString("normalization"));
+                                            rs.getString("normalization"),
+                                            rs.getString("summarization"));
                 
                 jobList.add(tmp);
             }
@@ -356,7 +358,7 @@ public abstract class SubmittedJobDB {
         Connection conn = null;
         List<FinalizingJobEntry> jobList = new ArrayList<>();
         String query = "SELECT study_id, job_id, tid, pipeline_name, submit_time, "
-                     + "user_id, chip_type, input_sn, normalization "
+                     + "user_id, chip_type, input_sn, normalization, summarization "
                      + "FROM submitted_job sj INNER JOIN pipeline pl "
                      + "ON sj.pipeline_name = pl.name WHERE "
                      + "status_id = 3 AND study_id = ? AND tid = ? "
@@ -379,7 +381,8 @@ public abstract class SubmittedJobDB {
                                             rs.getString("submit_time"),
                                             rs.getString("user_id"),
                                             rs.getString("chip_type"),
-                                            rs.getString("normalization"));
+                                            rs.getString("normalization"),
+                                            rs.getString("summarization"));
                 jobList.add(tmp);
             }
             
