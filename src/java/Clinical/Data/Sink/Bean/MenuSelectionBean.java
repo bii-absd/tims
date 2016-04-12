@@ -61,6 +61,8 @@ import org.apache.logging.log4j.LogManager;
  * for user selection when managing subject Meta data.
  * 07-Apr-2016 - Only build the study and open study list when the user click
  * on the pipeline or subject meta data management link.
+ * 12-Apr-2016 - The Study ID list for administrator will be the full list of
+ * unclosed Study ID; to be selected for raw data uploading.
  */
 
 @ManagedBean (name="menuSelBean")
@@ -96,6 +98,9 @@ public class MenuSelectionBean implements Serializable{
     public void setupPlConfigPageURL() {
         if (UserRoleDB.isLead(roleID)) {
             studyList = StudyDB.getPIStudyHash(userName);
+        }
+        else if (roleID == UserRoleDB.admin()) {
+            studyList = StudyDB.getAllStudyHash();
         }
         else {
             studyList = StudyDB.getUserStudyHash(userName);

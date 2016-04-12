@@ -28,10 +28,9 @@
             <p:separator styleClass="configsep"/>
 
             <p:panel id="annotfile" visible="#{methPBean.haveNewData}" header="#{msg['config-ulannot']}">
-                <p:fileUpload mode="advanced"
-                              update="uploadStatus phenotype"
+                <p:fileUpload mode="advanced" update="uploadStatus"
                               label="#{msg['config-selannot']}"
-                              fileUploadListener="#{methPBean.sampleAnnotFileUploadListener}"/>
+                              fileUploadListener="#{methPBean.sampleFile.singleFileUploadListener}"/>
             </p:panel>
             
             <p:panel id="reuseInput" visible="#{!methPBean.haveNewData}" header="#{msg['config-reuse']}">
@@ -53,32 +52,18 @@
                     </p:column>
                     <p:column headerText="Select Data to Reuse" selectionMode="single" 
                               style="width: 120px; text-align: center"/>
-                    <p:ajax event="rowSelectRadio" 
-                            listener="#{methPBean.reuseInputRadioButtonSelected}"
-                            update=":mainForm:phenotype"/>
                 </p:dataTable>
             </p:panel>
             <p:separator styleClass="configsep"/>
             
             <p:panel id="required" header="#{msg['config-para1']}">
-                <h:panelGrid columns="2" cellpadding="5" cellspacing="7" styleClass="configcolumn">
+                <h:panelGrid columns="1" cellpadding="5" cellspacing="7" styleClass="configcolumn">
                     <p:column>
                         <h:panelGrid columns="1">
                             <p:outputLabel value="#{msg['config-norm']}" styleClass="configlabel"/>
                             <p:selectOneMenu id="normalization" required="true"
                                              value="#{methPBean.normalization}">
                                 <f:selectItem itemLabel="SWAN" itemValue="Swan"/>
-                            </p:selectOneMenu>
-                        </h:panelGrid>
-                    </p:column>
-                    <p:column>
-                        <h:panelGrid columns="1">
-                            <p:outputLabel value="#{msg['config-pheno']}" styleClass="configlabel"/>
-                            <p:selectOneMenu id="phenotype" required="true" 
-                                             disabled="#{methPBean.isAnnotationListReady()}"
-                                             title="#{msg['phenotype.column']}"
-                                             value="#{methPBean.phenotype}">
-                                <f:selectItems value="#{methPBean.annotationList}"/>
                             </p:selectOneMenu>
                         </h:panelGrid>
                     </p:column>
@@ -130,18 +115,19 @@
                                   value="#{methPBean.sampleFile.inputFilename}"/>
                     <h:outputText value="#{msg['revcfg-norm']}"/>
                     <h:outputText value="#{methPBean.normalization}"/>
-                    <h:outputText value="#{msg['config-pheno']}"/>
-                    <h:outputText value="#{methPBean.phenotype}"/>
                 </p:panelGrid>
                 <p:separator styleClass="configsep"/>
-                <h:panelGrid columns="2" cellspacing="2" cellpadding="2">
+                <h:panelGrid columns="3" cellspacing="2" cellpadding="2">
                     <p:commandButton value="Cancel" title="#{msg['revcfg-cantit']}"
-                                     style="width: 145px" oncomplete="PF('dlg').hide()"
+                                     style="width: 120px" oncomplete="PF('dlg').hide()"
                                      action="#{methPBean.cancelJob}"/>
                     <p:commandButton value="Confirm" title="#{msg['revcfg-cfmtit']}"
-                                     style="width: 145px"
+                                     style="width: 120px"
                                      action="#{methPBean.submitJob}" 
                                      rendered="#{methPBean.jobSubmissionStatus}"/>
+                    <p:commandButton value="Upload Data" title="#{msg['revcfg-upload']}" 
+                                     style="width: 120px" action="#{methPBean.uploadRawData}" 
+                                     rendered="#{methPBean.uploadDataOnly}"/>
                 </h:panelGrid>
             </h:form>
         </p:dialog>

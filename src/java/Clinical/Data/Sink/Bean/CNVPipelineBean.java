@@ -10,7 +10,6 @@ import Clinical.Data.Sink.General.Constants;
 import java.io.File;
 import java.sql.SQLException;
 // Libraries for Java Extension
-import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
 import javax.naming.NamingException;
@@ -42,6 +41,8 @@ import javax.naming.NamingException;
  * input SN.
  * 11-Apr-2016 - Changes due to the removal of attributes (sample_average, 
  * standardization, region and probe_select) from submitted_job table.
+ * 12-Apr-2016 - Changes due to the removal of attributes (probe_filtering and
+ * phenotype_column) from submitted_job table.
  */
 
 @ManagedBean (name="cnvPBean")
@@ -106,17 +107,16 @@ public class CNVPipelineBean extends GEXAffymetrixBean {
         // job_id will not be used during insertion, just send in any value will
         // do e.g. 0
         // Insert the new job request into datbase; job status is 1 i.e. Waiting
-        // For attributes type, normalization and probeFilter, set them to "NA". 
+        // For attributes type and normalization, set them to "NA". 
         // For complete_time, set to "waiting" for the start.
         // 
         // SubmittedJob(job_id, study_id, user_id, pipeline_name, status_id, 
         // submit_time, complete_time, chip_type, input_sn, normalization, 
-        // probe_filtering, phenotype_column, summarization, output_file, report)
+        // summarization, output_file, report)
         SubmittedJob newJob = 
                 new SubmittedJob(0, getStudyID(), userName, pipelineName, 1,
                                  submitTimeInDB, "waiting", "NA", input_sn, 
-                                 "NA", "NA", getPhenotype(), 
-                                 getSummarization(), outputFilePath, reportFilePath);
+                                 "NA", getSummarization(), outputFilePath, reportFilePath);
         
         try {
             // Store the job_id of the inserted record

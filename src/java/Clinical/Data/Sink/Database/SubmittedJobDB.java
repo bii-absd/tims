@@ -84,6 +84,8 @@ import org.apache.logging.log4j.LogManager;
  * class.
  * 11-Apr-2016 - Changes due to the removal of attributes (sample_average, 
  * standardization, region and probe_select) from submitted_job table.
+ * 12-Apr-2016 - Changes due to the removal of attributes (probe_filtering and
+ * phenotype_column) from submitted_job table.
  */
 
 public abstract class SubmittedJobDB {
@@ -103,9 +105,8 @@ public abstract class SubmittedJobDB {
         String query = "INSERT INTO submitted_job"
                      + "(study_id, user_id, pipeline_name, status_id, "
                      + "submit_time, chip_type, input_sn,"
-                     + "normalization, probe_filtering, "
-                     + "phenotype_column, summarization, output_file, report) "
-                     + "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                     + "normalization, summarization, output_file, report) "
+                     + "VALUES(?,?,?,?,?,?,?,?,?,?,?)";
         
         conn = DBHelper.getDSConn();
         // To request for the return of generated key upon successful insertion.
@@ -121,11 +122,9 @@ public abstract class SubmittedJobDB {
         stm.setString(6, job.getChip_type());
         stm.setInt(7, job.getInput_sn());
         stm.setString(8, job.getNormalization());
-        stm.setString(9, job.getProbe_filtering());
-        stm.setString(10, job.getPhenotype_column());
-        stm.setString(11, job.getSummarization());
-        stm.setString(12, job.getOutput_file());
-        stm.setString(13, job.getReport());
+        stm.setString(9, job.getSummarization());
+        stm.setString(10, job.getOutput_file());
+        stm.setString(11, job.getReport());
         // Execute the INSERT statement
         stm.executeUpdate();
         // Retrieve and store the last inserted Job ID
@@ -437,8 +436,6 @@ public abstract class SubmittedJobDB {
                                 rs.getString("chip_type"),
                                 rs.getInt("input_sn"),
                                 rs.getString("normalization"),
-                                rs.getString("probe_filtering"),
-                                rs.getString("phenotype_column"),
                                 rs.getString("summarization"),
                                 rs.getString("output_file"),
                                 rs.getString("report"));

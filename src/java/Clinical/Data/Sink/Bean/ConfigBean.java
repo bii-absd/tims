@@ -9,32 +9,29 @@ import Clinical.Data.Sink.Database.InputDataDB;
 import Clinical.Data.Sink.Database.Pipeline;
 import Clinical.Data.Sink.Database.PipelineDB;
 import Clinical.Data.Sink.Database.SubmittedJobDB;
+import Clinical.Data.Sink.Database.UserAccountDB;
+import Clinical.Data.Sink.Database.UserRoleDB;
 import Clinical.Data.Sink.General.Constants;
 import Clinical.Data.Sink.General.ExitListener;
+import Clinical.Data.Sink.General.Postman;
 import Clinical.Data.Sink.General.ProcessExitDetector;
 import Clinical.Data.Sink.General.ResourceRetriever;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.LinkedHashMap;
 import java.util.List;
 // Libraries for Java Extension
-import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.naming.NamingException;
-// Libraries for PrimeFaces
-import org.primefaces.event.FileUploadEvent;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -97,17 +94,18 @@ import org.apache.logging.log4j.LogManager;
  * input SN.
  * 11-Apr-2016 - Changes due to the removal of attributes (sample_average, 
  * standardization, region and probe_select) from submitted_job table.
+ * 12-Apr-2016 - Changes due to the removal of attributes (probe_filtering and
+ * phenotype_column) from submitted_job table. Allow administrator to upload 
+ * raw data through the UI.
  */
 
 public abstract class ConfigBean implements Serializable {
     // Get the logger for Log4j
     protected final static Logger logger = LogManager.
             getLogger(ConfigBean.class.getName());
-    protected String studyID;
+    protected String studyID, commandLink;
     // Common Processing Parameters. 
-    protected String type, normalization, probeFilter, phenotype, summarization;
-    // Further Processing
-    protected String commandLink;
+    protected String type, normalization, summarization;
     // Indicator of whether user have new data to upload or not.
     protected Boolean haveNewData;
     // Pipeline name and technology
@@ -118,8 +116,9 @@ public abstract class ConfigBean implements Serializable {
     protected String inputFileDesc;
     // Record the time this job was created
     protected String submitTimeInDB, submitTimeInFilename;
-    // job_id of the inserted record. sn of the input data.
-    protected int job_id, input_sn;
+    // job_id of the inserted record. sn of the input data. role ID of the 
+    // current user.
+    protected int job_id, input_sn, roleID;
     // jobSubmissionStatus will keep track of whether has all the input files
     // been uploaded, all the required parameters been filled up, etc.
     private Boolean jobSubmissionStatus;
@@ -128,7 +127,7 @@ public abstract class ConfigBean implements Serializable {
     // Pipeline input, control and sample annotation filename
     protected String input, ctrl, sample;
     // Annotation list build from Sample Annotation file
-    private LinkedHashMap<String,String> annotationList = new LinkedHashMap<>();
+//    private LinkedHashMap<String,String> annotationList = new LinkedHashMap<>();
     // The list of input data belonging to the study, that are available for
     // reuse.
     private List<InputData> inputDataList = new ArrayList<>();
@@ -151,6 +150,7 @@ public abstract class ConfigBean implements Serializable {
         // Retrieve the setting from the session map.
         userName = (String) getFacesContext().getExternalContext().
                     getSessionMap().get("User");
+        roleID = UserAccountDB.getRoleID(userName);
         studyID = (String) getFacesContext().getExternalContext().
                     getSessionMap().get("study_id");
         haveNewData = (Boolean) getFacesContext().getExternalContext().
@@ -213,6 +213,9 @@ public abstract class ConfigBean implements Serializable {
         
         return filenameList;
     }
+    
+    /* Phenotype column has been removed. 
+       NOT IN USE ANYMORE!
     
     // To build the annotation list for user selection based on file passed in.
     private void buildAnnotationList(File file) {
@@ -281,7 +284,31 @@ public abstract class ConfigBean implements Serializable {
         annotationList.clear();
         sampleFile.singleFileUploadListener(event);
     }
+    
+    // Need to rebuild the drop down list everytime a input data has 
+    // been selected.
+    public void reuseInputRadioButtonSelected() {
+        // Clear the annotationList, so that it get rebuild again.
+        annotationList.clear();
+    }
+    */
+    
+    // The administrator uploading raw data for this pipeline in this study.
+    public String uploadRawData() {
+        logger.info(userName + ": uploaded raw data for pipeline " + 
+                    pipelineName + " under study " + studyID);
+        // Create an input_data record for the raw data uploaded.
+        saveSampleFileDetail();
+        // Rename sample annotation file (and control probe file) to a
+        // common name for future use.
+        renameAnnotCtrlFiles();
+        // Send the input data path to the administrator.
+        Postman.sendDataUploadedEmail(userName, studyID, pipelineName, 
+                                      inputFile.getLocalDirectoryPath());
 
+        return Constants.MAIN_PAGE;
+    }
+    
     // After reviewing the configuration, if user decided to proceed with 
     // the pipeline execution and click on Confirm button, submitJob will be
     // called. A series of operations will then occur:
@@ -481,8 +508,6 @@ public abstract class ConfigBean implements Serializable {
 
             fw.write("### PROCESSING parameters\n" +
                      "NORMALIZATION\t=\t" + getNormalization() +
-                     "\nPROBE_FILTERING\t=\t" + getProbeFilter() +
-                     "\nPHENOTYPE_COLUMN\t=\t" + getPhenotype() + 
                      "\nSUMMARIZATION\t=\t" + getSummarization() + "\n\n");
 
             fw.write("### Output file after normalization and processing\n" +
@@ -552,11 +577,9 @@ public abstract class ConfigBean implements Serializable {
                 "Please select a input to reuse";
     }
     
-    // Need to rebuild the drop down list everytime a input data has 
-    // been selected.
-    public void reuseInputRadioButtonSelected() {
-        // Clear the annotationList, so that it get rebuild again.
-        annotationList.clear();
+    // Only allow administrator to upload raw data.
+    public boolean isUploadDataOnly() {
+        return jobSubmissionStatus && haveNewData && (roleID == UserRoleDB.admin());
     }
     
     // Machine generated getters and setters
@@ -589,18 +612,6 @@ public abstract class ConfigBean implements Serializable {
     }
     public void setNormalization(String normalization) {
         this.normalization = normalization;
-    }
-    public String getProbeFilter() {
-        return probeFilter;
-    }
-    public void setProbeFilter(String probeFilter) {
-        this.probeFilter = probeFilter;
-    }
-    public String getPhenotype() {
-        return phenotype;
-    }
-    public void setPhenotype(String phenotype) {
-        this.phenotype = phenotype;
     }
     public String getSummarization() {
         return summarization;

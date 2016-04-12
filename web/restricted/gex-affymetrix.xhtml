@@ -28,10 +28,9 @@
             <p:separator styleClass="configsep"/>
             
             <p:panel id="annotfile" visible="#{gexAffyBean.haveNewData}" header="#{msg['config-ulannot']}">
-                <p:fileUpload mode="advanced"
-                              update="uploadStatus phenotype"
+                <p:fileUpload mode="advanced" update="uploadStatus"
                               label="#{msg['config-selannot']}"
-                              fileUploadListener="#{gexAffyBean.sampleAnnotFileUploadListener}"/>
+                              fileUploadListener="#{gexAffyBean.sampleFile.singleFileUploadListener}"/>
             </p:panel>
 
             <p:panel id="reuseInput" visible="#{!gexAffyBean.haveNewData}" header="#{msg['config-reuse']}">
@@ -53,15 +52,12 @@
                     </p:column>
                     <p:column headerText="Select Data to Reuse" selectionMode="single" 
                               style="width: 120px; text-align: center"/>
-                    <p:ajax event="rowSelectRadio" 
-                            listener="#{gexAffyBean.reuseInputRadioButtonSelected}"
-                            update=":mainForm:phenotype"/>
                 </p:dataTable>
             </p:panel>
             <p:separator styleClass="configsep"/>
 
             <p:panel id="required" header="#{msg['config-para1']}">
-                <h:panelGrid columns="4" cellpadding="5" cellspacing="7" styleClass="configcolumn">
+                <h:panelGrid columns="2" cellpadding="5" cellspacing="7" styleClass="configcolumn">
                     <p:column>
                         <h:panelGrid columns="1">
                             <p:outputLabel value="#{msg['config-type']}" styleClass="configlabel"/>
@@ -72,29 +68,10 @@
                     </p:column>
                     <p:column>
                         <h:panelGrid columns="1">
-                            <p:outputLabel value="#{msg['config-profil']}" styleClass="configlabel"/>
-                            <p:selectOneMenu id="probefilter" value="#{gexAffyBean.probeFilter}">
-                                <f:selectItem itemLabel="Low-expression" itemValue="low-expression"/>
-                            </p:selectOneMenu>
-                        </h:panelGrid>
-                    </p:column>
-                    <p:column>
-                        <h:panelGrid columns="1">
                             <p:outputLabel value="#{msg['config-norm']}" styleClass="configlabel"/>
                             <p:selectOneMenu id="normalization" required="true"
                                              value="#{gexAffyBean.normalization}">
                                 <f:selectItem itemLabel="RMA" itemValue="rma"/>
-                            </p:selectOneMenu>
-                        </h:panelGrid>
-                    </p:column>
-                    <p:column>
-                        <h:panelGrid columns="1">
-                            <p:outputLabel value="#{msg['config-pheno']}" styleClass="configlabel"/>
-                            <p:selectOneMenu id="phenotype" required="true" 
-                                             disabled="#{gexAffyBean.isAnnotationListReady()}"
-                                             title="#{msg['phenotype.column']}"
-                                             value="#{gexAffyBean.phenotype}">
-                                <f:selectItems value="#{gexAffyBean.annotationList}"/>
                             </p:selectOneMenu>
                         </h:panelGrid>
                     </p:column>
@@ -146,22 +123,21 @@
                                   value="#{msg['revcfg-annot']}"/>
                     <h:outputText rendered="#{gexAffyBean.haveNewData}" 
                                   value="#{gexAffyBean.sampleFile.inputFilename}"/>
-                    <h:outputText value="#{msg['config-profil']}"/>
-                    <h:outputText value="#{gexAffyBean.probeFilter}"/>
                     <h:outputText value="#{msg['revcfg-norm']}"/>
                     <h:outputText value="#{gexAffyBean.normalization}"/>
-                    <h:outputText value="#{msg['config-pheno']}"/>
-                    <h:outputText value="#{gexAffyBean.phenotype}"/>
                 </p:panelGrid>
                 <p:separator styleClass="configsep"/>
-                <h:panelGrid columns="2" cellspacing="2" cellpadding="2">
+                <h:panelGrid columns="3" cellspacing="2" cellpadding="2">
                     <p:commandButton value="Cancel" title="#{msg['revcfg-cantit']}"
-                                     style="width: 145px" oncomplete="PF('dlg').hide()"
+                                     style="width: 120px" oncomplete="PF('dlg').hide()"
                                      action="#{gexAffyBean.cancelJob}"/>
                     <p:commandButton value="Confirm" title="#{msg['revcfg-cfmtit']}"
-                                     style="width: 145px"
+                                     style="width: 120px"
                                      action="#{gexAffyBean.submitJob}" 
                                      rendered="#{gexAffyBean.jobSubmissionStatus}"/>
+                    <p:commandButton value="Upload Data" title="#{msg['revcfg-upload']}" 
+                                     style="width: 120px" action="#{gexAffyBean.uploadRawData}" 
+                                     rendered="#{gexAffyBean.uploadDataOnly}"/>
                 </h:panelGrid>
             </h:form>
         </p:dialog>

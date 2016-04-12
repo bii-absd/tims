@@ -65,6 +65,8 @@ import org.apache.logging.log4j.LogManager;
  * for pipeline execution and subject meta data management.
  * 07-Apr-2016 - For subject meta data management, the method used to build the
  * studies hash map will be split into 2 (one for users one for PI).
+ * 12-Apr-2016 - Added new method getAllStudyHash(), to return all the unclosed
+ * Study ID for administrator selection during raw data upload.
  */
 
 public abstract class StudyDB {
@@ -358,6 +360,15 @@ public abstract class StudyDB {
                      + userID + "\') ORDER BY study_id";
 
         logger.debug("Retrieving study list for user " + userID);
+        return getStudyHash(query);
+    }
+    // Return all the unclosed Study ID setup in the system. This list of Study
+    // ID will only be available to administrator to perform raw data uploading 
+    // for the users.
+    public static LinkedHashMap<String, String> getAllStudyHash() {
+        String query = "SELECT study_id FROM study WHERE closed = false ORDER BY study_id";
+        
+        logger.debug("Retrieving full study list.");
         return getStudyHash(query);
     }
     

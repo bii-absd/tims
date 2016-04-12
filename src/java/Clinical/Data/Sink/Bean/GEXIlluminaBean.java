@@ -10,8 +10,6 @@ import Clinical.Data.Sink.Database.SubmittedJobDB;
 import Clinical.Data.Sink.General.Constants;
 import java.io.File;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 // Libraries for Java Extension
 import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
@@ -64,17 +62,16 @@ import javax.naming.NamingException;
  * input SN.
  * 11-Apr-2016 - Changes due to the removal of attributes (sample_average, 
  * standardization, region and probe_select) from submitted_job table.
+ * 12-Apr-2016 - Changes due to the removal of attributes (probe_filtering and
+ * phenotype_column) from submitted_job table.
  */
 
 @ManagedBean (name="gexIlluBean")
 @ViewScoped
 public class GEXIlluminaBean extends ConfigBean {
     private FileUploadBean ctrlFile;
-    private List<String> probeFilters;
 
     public GEXIlluminaBean() {
-        probeFilters = new ArrayList<>();
-
         logger.debug("GEXIlluminaBean created.");
     }
     
@@ -126,12 +123,11 @@ public class GEXIlluminaBean extends ConfigBean {
         // 
         // SubmittedJob(job_id, study_id, user_id, pipeline_name, status_id, 
         // submit_time, complete_time, chip_type, input_sn, normalization, 
-        // probe_filtering, phenotype_column, summarization, output_file, report) 
+        // summarization, output_file, report) 
         SubmittedJob newJob = 
                 new SubmittedJob(0, getStudyID(), userName, pipelineName, 1,
-                                 submitTimeInDB, "waiting", getType(), 
-                                 input_sn, getNormalization(), probeFilter, 
-                                 getPhenotype(), "NA", outputFilePath, reportFilePath);
+                                 submitTimeInDB, "waiting", getType(), input_sn, 
+                                 getNormalization(), "NA", outputFilePath, reportFilePath);
         
         try {
             // Store the job_id of the inserted record
@@ -193,16 +189,7 @@ public class GEXIlluminaBean extends ConfigBean {
                      Constants.getSAMPLE_ANNOT_FILE_NAME() + 
                      Constants.getSAMPLE_ANNOT_FILE_EXT();
         }
-        probeFilter = Constants.NONE;
-        
-        if (probeFilters.size() > 0) {
-            probeFilter = probeFilters.get(0);
 
-            for (int i = 1; i < probeFilters.size(); i++) {
-                probeFilter += ";";
-                probeFilter += probeFilters.get(i);
-            }
-        }
         // Call the base class method to create the Config File.
         return super.createConfigFile();
     }
@@ -213,11 +200,5 @@ public class GEXIlluminaBean extends ConfigBean {
     }
     public void setCtrlFile(FileUploadBean ctrlFile) {
         this.ctrlFile = ctrlFile;
-    }
-    public List<String> getProbeFilters() {
-        return probeFilters;
-    }
-    public void setProbeFilters(List<String> probeFilters) {
-        this.probeFilters = probeFilters;
     }
 }

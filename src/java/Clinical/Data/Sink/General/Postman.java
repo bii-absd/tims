@@ -35,6 +35,8 @@ import org.apache.logging.log4j.LogManager;
  * name.
  * 14-Mar-2016 - Added 3 new methods sendStudyClosureStatusEmail(), 
  * sendFinalizationStatusEmail() and sendTaskStatusEmail().
+ * 12-Apr-2016 - Added new method sendDataUploadedEmail(), to send the input
+ * data path to the administrator after raw data upload.
  */
 
 public abstract class Postman {
@@ -55,6 +57,40 @@ public abstract class Postman {
         properties.setProperty("mail.smtp.host", host);
         // Get the default session object
         session = Session.getDefaultInstance(properties);
+    }
+    
+    // Send a data uploaded status email to notify the admin that the raw data
+    // has been uploaded; include the input data path in the email so that the
+    // admin could upload those huge raw data files (i.e. >10GB) directly into 
+    // the path located in the server.
+    public static void sendDataUploadedEmail(String adminID, String studyID, 
+            String plName, String inputPath) 
+    {
+        setupMailServer();
+        UserAccount admin = UserAccountDB.getUserAct(adminID);
+
+        try {
+            // Create a default MimeMessage object
+            MimeMessage message = new MimeMessage(session);
+            // Set From: header field
+            message.setFrom(new InternetAddress(from));
+            // Set To: header field
+            message.addRecipient(Message.RecipientType.TO,
+                    new InternetAddress(admin.getEmail()));
+            message.setSubject("TIMS - Raw Data Uploaded.");
+            message.setText(
+                    "Raw data for pipeline " + plName + 
+                    " under study " + studyID +
+                    " has been successfully uploaded to the following path:\n\n" + inputPath);
+            // Send the message
+            Transport.send(message);
+            
+            logger.debug("Data uploaded email sent.");
+        }
+        catch (MessagingException me) {
+            logger.error("FAIL to send data uploaded email!");
+            logger.error(me.getMessage());
+        }
     }
     
     // Send a exception email to the administrator to ask for help.
@@ -83,7 +119,6 @@ public abstract class Postman {
             logger.error("FAIL to send exception email!");
             logger.error(me.getMessage());
         }
-        
     }
 
     // Send a job status email to notify the user that the pipeline has 

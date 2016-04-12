@@ -43,6 +43,9 @@ import java.io.Serializable;
  * input SN.
  * 11-Apr-2016 - Changes due to the removal of attributes (sample_average, 
  * standardization, region and probe_select) from submitted_job table.
+ * 12-Apr-2016 - Changes due to the removal of attributes (probe_filtering and
+ * phenotype_column) from submitted_job table. Added 3 methods to check for the
+ * availability of chip type, normalization and summarization info.
  */
 
 public class SubmittedJob implements Serializable {
@@ -52,10 +55,10 @@ public class SubmittedJob implements Serializable {
     // region) added for DB 2.0
     // For DB 3.0, removed input_path and added input_sn.
     // For DB 3.3, Removed sample_average, standardization, region, probe_select,
+    // probe_filtering and phenotype_column.
     private int job_id, status_id, input_sn;
     private String study_id, user_id, pipeline_name, submit_time, complete_time;
-    private String chip_type, normalization, probe_filtering;
-    private String phenotype_column, summarization, output_file, report;
+    private String chip_type, normalization, summarization, output_file, report;
     // status_name will be used by the job status page
     private String status_name;
 
@@ -63,8 +66,7 @@ public class SubmittedJob implements Serializable {
     public SubmittedJob(int job_id, String study_id, String user_id,
             String pipeline_name, int status_id, String submit_time, 
             String complete_time, String chip_type, int input_sn, 
-            String normalization, String probe_filtering, 
-            String phenotype_column, String summarization, String output_file, 
+            String normalization, String summarization, String output_file, 
             String report) 
     {
         this.job_id = job_id;
@@ -77,8 +79,6 @@ public class SubmittedJob implements Serializable {
         this.chip_type = chip_type;
         this.input_sn = input_sn;
         this.normalization = normalization;
-        this.probe_filtering = probe_filtering;
-        this.phenotype_column = phenotype_column;
         this.summarization = summarization;
         this.output_file = output_file;
         this.report = report;
@@ -140,7 +140,20 @@ public class SubmittedJob implements Serializable {
     public String getInputDescrition() {
         return InputDataDB.getInputDescription(study_id, input_sn);
     }
-    
+
+    // Return true if chip type info is available.
+    public boolean isTypeAvail() {
+        return (chip_type.compareTo("NA") != 0);
+    }
+    // Return true if normalization info is available.
+    public boolean isNormAvail() {
+        return (normalization.compareTo("NA") != 0);
+    }
+    // Return true if summarization info is available.
+    public boolean isSummAvail() {
+        return (summarization.compareTo("NA") != 0);
+    }
+
     // Machine generated getters and setters
     public int getJob_id() {
         return job_id;
@@ -201,18 +214,6 @@ public class SubmittedJob implements Serializable {
     }
     public void setNormalization(String normalization) {
         this.normalization = normalization;
-    }
-    public String getProbe_filtering() {
-        return probe_filtering;
-    }
-    public void setProbe_filtering(String probe_filtering) {
-        this.probe_filtering = probe_filtering;
-    }
-    public String getPhenotype_column() {
-        return phenotype_column;
-    }
-    public void setPhenotype_column(String phenotype_column) {
-        this.phenotype_column = phenotype_column;
     }
     public String getSummarization() {
         return summarization;

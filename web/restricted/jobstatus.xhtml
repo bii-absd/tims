@@ -39,6 +39,9 @@
                           style="text-align: left">
                     <h:outputText value="#{job.plDescription}"/>
                 </p:column>
+                <p:column headerText="Raw Data" style="text-align: left">
+                    <h:outputText value="#{job.inputDescrition}"/>
+                </p:column>
                 <p:column headerText="Requestor" sortBy="#{job.user_id}" 
                           rendered="#{!jsBean.singleUser}" style="width: 80px">
                     <h:outputText value="#{job.user_id}"/>
@@ -74,18 +77,18 @@
                       resizable="false">
                 <p:outputPanel id="jobDetail">
                     <p:panelGrid columns="2">
-                        <h:outputText value="Input Data: "/>
-                        <h:outputText value="#{jsBean.selectedJob.inputDescrition}"/>
-                        <h:outputText value="Chip Type: "/>
-                        <h:outputText value="#{jsBean.selectedJob.chip_type}"/>
-                        <h:outputText value="Probe Filtering: "/>
-                        <h:outputText value="#{jsBean.selectedJob.probe_filtering}"/>
-                        <h:outputText value="Normalization Method: "/>
-                        <h:outputText value="#{jsBean.selectedJob.normalization}"/>
-                        <h:outputText value="Phenotype Column: "/>
-                        <h:outputText value="#{jsBean.selectedJob.phenotype_column}"/>
-                        <h:outputText value="Summarization: "/>
-                        <h:outputText value="#{jsBean.selectedJob.summarization}"/>
+                        <h:outputText rendered="#{jsBean.selectedJob.typeAvail}" 
+                                      value="Chip Type: "/>
+                        <h:outputText rendered="#{jsBean.selectedJob.typeAvail}" 
+                                      value="#{jsBean.selectedJob.chip_type}"/>
+                        <h:outputText rendered="#{jsBean.selectedJob.normAvail}" 
+                                      value="Normalization Method: "/>
+                        <h:outputText rendered="#{jsBean.selectedJob.normAvail}" 
+                                      value="#{jsBean.selectedJob.normalization}"/>
+                        <h:outputText rendered="#{jsBean.selectedJob.summAvail}" 
+                                      value="Summarization: "/>
+                        <h:outputText rendered="#{jsBean.selectedJob.summAvail}" 
+                                      value="#{jsBean.selectedJob.summarization}"/>
                     </p:panelGrid>
                 </p:outputPanel>
             </p:dialog>
