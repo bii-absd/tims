@@ -26,6 +26,8 @@ import org.apache.logging.log4j.LogManager;
  * Revision History
  * 31-Mar-2016 - First baseline with 4 static methods, insertSS, getSSList, 
  * updateSS and isSSExist.
+ * 13-Apr-2016 - Added new method updatePartialSS(), to exclude event and
+ * event date during updating of study_subject table.
  * 
  */
 
@@ -115,6 +117,49 @@ public abstract class StudySubjectDB {
         }
         
         return ssList;
+    }
+    
+    // Update subject meta data under this study in database. To be called 
+    // during Meta data upload by batch.
+    // Only allow changes to age_at_diagnosis, height, weight and remarks.
+    public static boolean updatePartialSS(StudySubject ss) {
+        boolean result = Constants.OK;
+        Connection conn = null;
+        String query = "UPDATE study_subject SET age_at_diagnosis = ?, "
+                     + "height = ?, weight = ?, remarks = ? "
+                     + "WHERE subject_id = ? AND grp_id = ? AND study_id = ?";
+        
+        try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            stm.setInt(1, ss.getAge_at_diagnosis());
+            stm.setFloat(2, ss.getHeight());
+            stm.setFloat(3, ss.getWeight());
+            stm.setString(4, ss.getRemarks());
+            stm.setString(5, ss.getSubject_id());
+            stm.setString(6, ss.getGrp_id());
+            stm.setString(7, ss.getStudy_id());
+            stm.executeUpdate();
+            stm.close();
+            
+            logger.debug("Updated partial meta data for subject "
+                        + ss.getSubject_id() + " under group " 
+                        + ss.getGrp_id() + " in study "
+                        + ss.getStudy_id());
+        }
+        catch (SQLException|NamingException e) {
+            result = Constants.NOT_OK;
+            logger.error("FAIL to update partial meta data for subject " 
+                        + ss.getSubject_id() + " under group " 
+                        + ss.getGrp_id() + " in study "
+                        + ss.getStudy_id());
+            logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
+        }
+        
+        return result;        
     }
     
     // Update subject meta data under this study in database.

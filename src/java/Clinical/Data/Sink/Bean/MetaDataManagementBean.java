@@ -68,6 +68,9 @@ import org.primefaces.model.UploadedFile;
  * insert/update according to whether the subject exist in database or not.
  * 04-Apr-2016 - For new subject record entry, only allow new record insertion
  * i.e. no update allowed.
+ * 12-Apr-2016 - To include remarks field during Meta data upload. To refine 
+ * the logic for new subject record entry; allow update to subject record BUT 
+ * only allow insertion for study_subject record.
  */
 
 @ManagedBean (name="MDMgntBean")
@@ -123,7 +126,7 @@ public class MetaDataManagementBean implements Serializable {
     }
 
     // Insert subject meta data into database. Will only perform new record 
-    // insertion.
+    // insertion for study_subject table.
     public String insertMetaData() {
         FacesContext fc = getFacesContext();
         boolean dbInsertStatus = Constants.NOT_OK;
@@ -139,11 +142,26 @@ public class MetaDataManagementBean implements Serializable {
                                            remarks, event, age_at_diagnosis, 
                                            height, weight, event_date);
         
-        // Insert a new subject record.
-        dbInsertStatus = SubjectDB.insertSubject(subt);
+        // Update/insert subject record.
+        try {
+            if (SubjectDB.isSubjectExistInGrp(subject_id, grp_id)) {
+                // This Subject ID already exist in this group; update.
+                dbInsertStatus = SubjectDB.updateSubject(subt);
+            }
+            else {
+                // Subject ID not found in this group; insert.
+                dbInsertStatus = SubjectDB.insertSubject(subt);
+            }
+        }
+        catch (SQLException|NamingException e) {
+            logger.error(e.getMessage());
+        }
+
         // Continue to insert the study subject record only if the insertion to 
         // subject table is ok.
         if (dbInsertStatus) {
+            // For study subject record, we will only perform insertion. 
+            // Updating should be performed using the Edit UI.
             dbInsertStatus = StudySubjectDB.insertSS(ss);
         }
         
@@ -186,15 +204,21 @@ public class MetaDataManagementBean implements Serializable {
             boolean dbUpdateStatus = Constants.NOT_OK;
 
             while ((lineRead = br.readLine()) != null) {
-                // Subject_ID|Age_at_diagnosis|gender|nationality|race|height|weight
+                // Subject_ID|Age_at_diagnosis|gender|nationality|race|height|weight|remarks
                 data = lineRead.split("\\|");
                 // The system will only insert the complete meta data into database.
-                if (data.length == 7) {
+                if (data.length == 8 || data.length == 7) {
                     // By default, the nationality of all the subjects will be Singapore i.e. SGP.
                     String cc = "SGP";
                     if (!data[3].isEmpty()) {
                         cc = data[3];
                     }
+                    String rmk = "";
+                    // Update remarks with the value uploaded if available.
+                    if (data.length == 8) {
+                        rmk = data[7];
+                    }
+
                     // Need to make sure the strings represent valid integer and
                     // float values.
                     if (isInteger(data[1]) && isFloat(data[5]) && isFloat(data[6])) {
@@ -204,7 +228,7 @@ public class MetaDataManagementBean implements Serializable {
                         // For now, set the subtype_code to "SUS" first.
                         StudySubject ss = new StudySubject
                                             (data[0], grp_id, study_id, "SUS",
-                                            "", "", Integer.parseInt(data[1]), 
+                                            rmk, "", Integer.parseInt(data[1]), 
                                             Float.parseFloat(data[5]), 
                                             Float.parseFloat(data[6]), null);
 
@@ -226,8 +250,9 @@ public class MetaDataManagementBean implements Serializable {
                         if (dbUpdateStatus) {
                             try {
                                 if (StudySubjectDB.isSSExist(data[0], grp_id, study_id)) {
-                                    // Study subject data exist in DB; update.
-                                    dbUpdateStatus = StudySubjectDB.updateSS(ss);
+                                    // Study subject data exist in DB; update 
+                                    // partial data (i.e. exclude event and event date).
+                                    dbUpdateStatus = StudySubjectDB.updatePartialSS(ss);
                                 }
                                 else {
                                     // Study subject data not found in DB; insert.
