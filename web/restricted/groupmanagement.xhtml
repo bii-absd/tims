@@ -191,16 +191,7 @@
                         </p:cellEditor>
                     </p:column>
                     <p:column headerText="Institution" styleClass="studytitlecol">
-                        <p:cellEditor>
-                            <f:facet name="output">
-                                <h:outputText value="#{dept.inst_name}"/>
-                            </f:facet>
-                            <f:facet name="input">
-                                <p:selectOneMenu style="width: 100%" value="#{dept.inst_id}">
-                                    <f:selectItems value="#{grpMgntBean.instNameHash}"/>
-                                </p:selectOneMenu>
-                            </f:facet>
-                        </p:cellEditor>
+                        <h:outputText value="#{dept.inst_name}"/>
                     </p:column>
                     <p:column style="width: 32px">
                         <p:rowEditor/>

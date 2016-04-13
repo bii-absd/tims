@@ -49,6 +49,8 @@ import org.apache.logging.log4j.LogManager;
  * (Institution - Department - Group).
  * 07-Apr-2016 - Implemented the general function for building the hashmap of 
  * the department IDs setup in the system.
+ * 13-Apr-2016 - Changed method updateDepartment() to allow update to the 
+ * department name only.
  */
 
 public abstract class DepartmentDB implements Serializable {
@@ -116,22 +118,21 @@ public abstract class DepartmentDB implements Serializable {
         return result;
     }
     
-    // Update the department information in the database.
+    // Update the department information in the database. Only allow update to
+    // the department name.
     public static Boolean updateDepartment(Department dept) {
         Connection conn = null;
         Boolean result = Constants.OK;
-        String query = "UPDATE dept SET inst_id = ?, dept_name = ? "
-                     + "WHERE dept_id = ?";
+        String query = "UPDATE dept SET dept_name = ? WHERE dept_id = ?";
         
         try {
             conn = DBHelper.getDSConn();
             PreparedStatement stm = conn.prepareStatement(query);
-            stm.setString(1, dept.getInst_id());
-            stm.setString(2, dept.getDept_name());
-            stm.setString(3, dept.getDept_id());
+            stm.setString(1, dept.getDept_name());
+            stm.setString(2, dept.getDept_id());
             stm.executeUpdate();
             stm.close();
-            logger.debug("Department " + dept.getDept_id() + " updated.");
+            logger.debug("Department " + dept.getDept_id() + " name updated.");
         }
         catch (SQLException|NamingException e) {
             result = Constants.NOT_OK;

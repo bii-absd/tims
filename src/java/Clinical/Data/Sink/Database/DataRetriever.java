@@ -4,6 +4,7 @@
 package Clinical.Data.Sink.Database;
 
 import Clinical.Data.Sink.General.Constants;
+import Clinical.Data.Sink.General.Postman;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -44,6 +45,8 @@ import org.apache.logging.log4j.LogManager;
  * and weight in the consolidated output.
  * 04-Apr-2016 - To retrieve and include the subject class, remarks, event and
  * event date in the consolidated output.
+ * 13-Apr-2016 - To send the finalization completed status email to user once
+ * all the pipeline output have been consolidated.
  */
 
 public class DataRetriever extends Thread {
@@ -51,16 +54,18 @@ public class DataRetriever extends Thread {
     private final static Logger logger = LogManager.
             getLogger(DataRetriever.class.getName());
     private Connection conn = null;
-    private final String study_id, annot_ver, finalize_file;
+    private final String study_id, annot_ver, finalize_file, userName;
     private final List<OutputItems> opItemsList;
     private final List<String> geneList;
     private StringBuilder opHeader = new StringBuilder();
     
     // Using the study_id received, DataRetriever will retrieve the finalized
     // data from the database.
-    public DataRetriever(String study_id) throws SQLException, NamingException
+    public DataRetriever(String study_id, String userName) 
+            throws SQLException, NamingException
     {
         this.study_id = study_id;
+        this.userName = userName;
         finalize_file = Constants.getSYSTEM_PATH() + 
                         Constants.getFINALIZE_PATH() + 
                         study_id + Constants.getFINALIZE_FILE_EXT();
@@ -84,6 +89,8 @@ public class DataRetriever extends Thread {
         DBHelper.closeDSConn(conn);
         // Update the study with the finalized file path.
         StudyDB.updateStudyFinalizedFile(study_id, finalize_file);
+        // Send success finalization status email to the user.
+        Postman.sendFinalizationStatusEmail(study_id, userName, Constants.OK);
     }
     
     // To build the subject line for the output file.
