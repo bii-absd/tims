@@ -6,6 +6,9 @@ package Clinical.Data.Sink.Database;
 import Clinical.Data.Sink.General.Constants;
 import Clinical.Data.Sink.General.ResourceRetriever;
 import java.io.Serializable;
+import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 
 /**
  * SubmittedJob is used to represent the submitted_job table in the database.
@@ -46,6 +49,7 @@ import java.io.Serializable;
  * 12-Apr-2016 - Changes due to the removal of attributes (probe_filtering and
  * phenotype_column) from submitted_job table. Added 3 methods to check for the
  * availability of chip type, normalization and summarization info.
+ * 14-Apr-2016 - Change type for submit_time and complete_time to Timestamp.
  */
 
 public class SubmittedJob implements Serializable {
@@ -57,15 +61,17 @@ public class SubmittedJob implements Serializable {
     // For DB 3.3, Removed sample_average, standardization, region, probe_select,
     // probe_filtering and phenotype_column.
     private int job_id, status_id, input_sn;
-    private String study_id, user_id, pipeline_name, submit_time, complete_time;
+    private String study_id, user_id, pipeline_name;
     private String chip_type, normalization, summarization, output_file, report;
+    private Timestamp submit_time, complete_time;
     // status_name will be used by the job status page
     private String status_name;
+    private final static DateFormat df = new SimpleDateFormat("dd-MMM-yyyy hh:mmaa");
 
     // Full constructor
     public SubmittedJob(int job_id, String study_id, String user_id,
-            String pipeline_name, int status_id, String submit_time, 
-            String complete_time, String chip_type, int input_sn, 
+            String pipeline_name, int status_id, Timestamp submit_time, 
+            Timestamp complete_time, String chip_type, int input_sn, 
             String normalization, String summarization, String output_file, 
             String report) 
     {
@@ -86,8 +92,8 @@ public class SubmittedJob implements Serializable {
     
     // Simplify constructor for data table.
     public SubmittedJob(int job_id, String study_id, String user_id,
-            String pipeline_name, int status_id, String submit_time, 
-            String complete_time, String output_file, String report) 
+            String pipeline_name, int status_id, Timestamp submit_time, 
+            Timestamp complete_time, String output_file, String report) 
     {
         this.job_id = job_id;
         this.study_id = study_id;
@@ -154,6 +160,20 @@ public class SubmittedJob implements Serializable {
         return (summarization.compareTo("NA") != 0);
     }
 
+    // Return the submit_time and complete_time in format "dd-MMM-yyyy hh:mmaa"
+    // for showing in pipeline job status page.
+    public String getSubmitTimeString() {
+        return df.format(submit_time);
+    }
+    public String getCompleteTimeString() {
+        if (complete_time != null) {
+            return df.format(complete_time);
+        }
+        else {
+            return "In-progress";
+        }
+    }
+    
     // Machine generated getters and setters
     public int getJob_id() {
         return job_id;
@@ -185,16 +205,16 @@ public class SubmittedJob implements Serializable {
     public void setStatus_id(int status_id) {
         this.status_id = status_id;
     }
-    public String getSubmit_time() {
+    public Timestamp getSubmit_time() {
         return submit_time;
     }
-    public void setSubmit_time(String submit_time) {
+    public void setSubmit_time(Timestamp submit_time) {
         this.submit_time = submit_time;
     }
-    public String getComplete_time() {
+    public Timestamp getComplete_time() {
         return complete_time;
     }
-    public void setComplete_time(String complete_time) {
+    public void setComplete_time(Timestamp complete_time) {
         this.complete_time = complete_time;
     }
     public String getChip_type() {

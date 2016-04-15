@@ -39,15 +39,13 @@
                              selection="#{gexAffyBean.selectedInput}" 
                              rowKey="#{reuseIP.sn}" 
                              styleClass="table-odd-row table-even-row">
-                    <p:column headerText="Data Uploaded By" 
-                              style="width: 120px">
+                    <p:column headerText="Data Uploaded By" styleClass="col120">
                         <h:outputText value="#{reuseIP.user_id}"/>
                     </p:column>
-                    <p:column headerText="Data Upload Date" 
-                              style="width: 150px">
-                        <h:outputText value="#{reuseIP.date}"/>
+                    <p:column headerText="Data Upload Date" styleClass="jsmedcol">
+                        <h:outputText value="#{reuseIP.dateString}"/>
                     </p:column>
-                    <p:column headerText="Data Description">
+                    <p:column headerText="Data Description" style="text-align: left">
                         <h:outputText value="#{reuseIP.description}"/>
                     </p:column>
                     <p:column headerText="Select Data to Reuse" selectionMode="single" 

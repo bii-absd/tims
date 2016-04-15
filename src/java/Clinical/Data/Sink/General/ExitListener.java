@@ -4,8 +4,7 @@
 package Clinical.Data.Sink.General;
 
 import Clinical.Data.Sink.Database.SubmittedJobDB;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+import java.sql.Timestamp;
 import java.util.Date;
 import java.util.EventListener;
 // Libraries for Log4j
@@ -32,6 +31,8 @@ import org.apache.logging.log4j.LogManager;
  * 13-Jan-2016 - Removed all the static variables in Account Management module.
  * 18-Jan-2016 - Moved the sendMail method to Postman class.
  * 24-Mar-2016 - To record into database, the pipeline execution completion time.
+ * 14-Apr-2016 - Changes due to the type change (i.e. to Timestamp) for 
+ * submit_time and complete_time in submitted_job table.
  */
 
 public class ExitListener implements EventListener {
@@ -55,8 +56,8 @@ public class ExitListener implements EventListener {
             Postman.sendJobStatusEmail(job_id, study_id, Constants.NOT_OK);
         }
         // Record into database, the completion time of this job.
-        DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-        String complete_time = df.format(new Date());
+        Date now = new Date();
+        Timestamp complete_time = new Timestamp(now.getTime());
         SubmittedJobDB.updateJobCompleteTime(job_id, complete_time);
     }
 }

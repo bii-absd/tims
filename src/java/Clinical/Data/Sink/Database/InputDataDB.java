@@ -39,6 +39,8 @@ import org.apache.logging.log4j.LogManager;
  * get the database connection instead of using DriverManager.
  * 29-Mar-2016 - Added one new method, getInputDescription() to return the
  * input data description.
+ * 14-Apr-2016 - Changes due to the type change (i.e. to Timestamp) for date
+ * in submitted_job table.
  */
 
 public abstract class InputDataDB {
@@ -64,7 +66,7 @@ public abstract class InputDataDB {
             stm.setString(5, idata.getFilename());
             stm.setString(6, idata.getFilepath());
             stm.setString(7, idata.getDescription());
-            stm.setString(8, idata.getDate());
+            stm.setTimestamp(8, idata.getDate());
             stm.executeUpdate();
             stm.close();
             
@@ -105,7 +107,7 @@ public abstract class InputDataDB {
                                               rs.getString("filepath"),
                                               rs.getString("description"),
                                               rs.getInt("sn"),
-                                              rs.getString("date"));
+                                              rs.getTimestamp("date"));
                 ipList.add(tmp);
             }
             

@@ -4,6 +4,9 @@
 package Clinical.Data.Sink.Database;
 
 import java.io.Serializable;
+import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 
 /**
  * InputData is used to represent the input_data table in the database.
@@ -19,17 +22,20 @@ import java.io.Serializable;
  * identify the user who has uploaded this input data.
  * 21-Jan-2016 - Added one new field pipeline_name in the input_data table; to
  * associate this input_data with the respective pipeline.
+ * 14-Apr-2016 - Change type for date to Timestamp.
  */
 
 public class InputData implements Serializable {
     // input_data table attributes
     private String study_id, user_id, pipeline_name, filename, 
-                   filepath, description, date;
+                   filepath, description;
+    private Timestamp date;
     private int sn;
-
+    private final static DateFormat df = new SimpleDateFormat("dd-MMM-yyyy hh:mmaa");
+    
     public InputData(String study_id, String user_id, String pipeline_name, 
             String filename, String filepath, String description, int sn, 
-            String date) {
+            Timestamp date) {
         this.study_id = study_id;
         this.user_id = user_id;
         this.pipeline_name = pipeline_name;
@@ -38,6 +44,12 @@ public class InputData implements Serializable {
         this.description = description;
         this.sn = sn;
         this.date = date;
+    }
+    
+    // Return the timestamp in format "dd-MMM-yyyy hh:mmaa" for showing in 
+    // pipeline config pages.
+    public String getDateString() {
+        return df.format(date);
     }
     
     // Machine generated getters and setters.
@@ -83,10 +95,10 @@ public class InputData implements Serializable {
     public void setSn(int sn) {
         this.sn = sn;
     }
-    public String getDate() {
+    public Timestamp getDate() {
         return date;
     }
-    public void setDate(String date) {
+    public void setDate(Timestamp date) {
         this.date = date;
     }
 }

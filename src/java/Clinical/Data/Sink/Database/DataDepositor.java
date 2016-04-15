@@ -86,6 +86,8 @@ import org.apache.pdfbox.pdmodel.graphics.xobject.PDJpeg;
  * 13-Apr-2016 - Only send out the finalization status email here if the 
  * finalization has failed, else let DataRetriever send out the status email
  * after all the pipeline output have been consolidated.
+ * 14-Apr-2016 - Changes due to the type change (i.e. to Timestamp) for 
+ * submit_time and complete_time in submitted_job table.
  */
 
 public class DataDepositor extends Thread {
@@ -308,7 +310,7 @@ public class DataDepositor extends Thread {
                 l1.append(ResourceRetriever.getMsg(job.getPipeline_name()));
                 StringBuilder l2 = new StringBuilder
                                 ("(Submitted by ").append(job.getUserName());
-                l2.append(" @").append(job.getSubmit_time()).append(")");
+                l2.append(" @").append(job.getSubmitTimeString()).append(")");
                 cs.beginText();
                 cs.moveTextPositionByAmount(lineX, getNextLineYaxis());
                 cs.drawString(l1.toString());

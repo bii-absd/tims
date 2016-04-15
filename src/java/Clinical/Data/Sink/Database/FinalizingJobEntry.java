@@ -3,6 +3,10 @@
  */
 package Clinical.Data.Sink.Database;
 
+import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+
 /**
  * FinalizingJobEntry is used to represent the job_id, pipeline technology 
  * (i.e. tid), pipeline name and submission time that will be retrieved from
@@ -19,15 +23,18 @@ package Clinical.Data.Sink.Database;
  * 08-Apr-2016 - Added new fields; input_sn, study_id, chip_type and 
  * normalization, and one new method getInputDesc().
  * 12-Apr-2016 - Added one new field, summarization.
+ * 14-Apr-2016 - Change type for submit_time to Timestamp.
  */
 
 public class FinalizingJobEntry {
     private int job_id, input_sn;
-    private String study_id, tid, pipeline_name, submit_time, user_id, 
+    private String study_id, tid, pipeline_name, user_id, 
             chip_type, normalization, summarization;
+    private Timestamp submit_time;
+    private final static DateFormat df = new SimpleDateFormat("dd-MMM-yyyy hh:mmaa");
 
     public FinalizingJobEntry(int job_id, int input_sn, String study_id, 
-            String tid, String pipeline_name, String submit_time, 
+            String tid, String pipeline_name, Timestamp submit_time, 
             String user_id, String chip_type, String normalization, 
             String summarization) 
     {
@@ -54,9 +61,16 @@ public class FinalizingJobEntry {
     public String getUserName() {
         return UserAccountDB.getFullName(user_id);
     }
+    
     // Return the input data description.
     public String getInputDesc() {
         return InputDataDB.getInputDescription(study_id, input_sn);
+    }
+    
+    // Return the submit_time in format "dd-MMM-yyyy hh:mmaa" for showing in
+    // the finalization summary report.
+    public String getSubmitTimeString() {
+        return df.format(submit_time);
     }
     
     // Machine generated getters and setters.
@@ -80,9 +94,9 @@ public class FinalizingJobEntry {
     { return pipeline_name; }
     public void setPipeline_name(String pipeline_name) 
     { this.pipeline_name = pipeline_name; }
-    public String getSubmit_time() 
+    public Timestamp getSubmit_time() 
     { return submit_time; }
-    public void setSubmit_time(String submit_time) 
+    public void setSubmit_time(Timestamp submit_time) 
     { this.submit_time = submit_time; }
     public String getUser_id() 
     { return user_id; }

@@ -47,6 +47,8 @@ import javax.naming.NamingException;
  * standardization, region and probe_select) from submitted_job table.
  * 12-Apr-2016 - Changes due to the removal of attributes (probe_filtering and
  * phenotype_column) from submitted_job table.
+ * 14-Apr-2016 - Changes due to the type change (i.e. to Timestamp) for 
+ * submit_time and complete_time in submitted_job table.
  */
 
 @ManagedBean (name="methPBean")
@@ -64,14 +66,14 @@ public class METHPipelineBean extends GEXAffymetrixBean {
         // do e.g. 0
         // Insert the new job request into datbase; job status is 1 i.e. Waiting
         // For attributes type and summarization, set them to "NA".
-        // For complete_time, set to "waiting" for the start.
+        // For complete_time, set to null for the start.
         // 
         // SubmittedJob(job_id, study_id, user_id, pipeline_name, status_id, 
         // submit_time, complete_time, chip_type, input_sn, normalization, 
         // summarization, output_file, report)
         SubmittedJob newJob = 
                 new SubmittedJob(0, getStudyID(), userName, pipelineName, 1,
-                                 submitTimeInDB, "waiting", "NA", input_sn, 
+                                 submitTimeInDB, null, "NA", input_sn, 
                                  getNormalization(), "NA", outputFilePath, reportFilePath);
         
         try {

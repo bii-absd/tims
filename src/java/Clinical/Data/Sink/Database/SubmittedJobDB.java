@@ -9,6 +9,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 // Libraries for Java Extension
@@ -87,6 +88,8 @@ import org.apache.logging.log4j.LogManager;
  * 12-Apr-2016 - Changes due to the removal of attributes (probe_filtering and
  * phenotype_column) from submitted_job table. Changes due to addition one field
  * (i.e. summarization) defined in FinalizingJobEntry.
+ * 14-Apr-2016 - Changes due to the type change (i.e. to Timestamp) for 
+ * submit_time and complete_time in submitted_job table.
  */
 
 public abstract class SubmittedJobDB {
@@ -119,7 +122,7 @@ public abstract class SubmittedJobDB {
         stm.setString(2, job.getUser_id());
         stm.setString(3, job.getPipeline_name());
         stm.setInt(4, job.getStatus_id());
-        stm.setString(5, job.getSubmit_time());
+        stm.setTimestamp(5, job.getSubmit_time());
         stm.setString(6, job.getChip_type());
         stm.setInt(7, job.getInput_sn());
         stm.setString(8, job.getNormalization());
@@ -188,7 +191,7 @@ public abstract class SubmittedJobDB {
     }
     
     // Pipeline has completed execution, update the complete time for this job.
-    public static void updateJobCompleteTime(int job_id, String complete_time) {
+    public static void updateJobCompleteTime(int job_id, Timestamp complete_time) {
         Connection conn = null;
         String query = "UPDATE submitted_job SET complete_time = ? "
                      + "WHERE job_id = " + job_id;
@@ -196,7 +199,7 @@ public abstract class SubmittedJobDB {
         try {
             conn = DBHelper.getDSConn();
             PreparedStatement stm = conn.prepareStatement(query);
-            stm.setString(1, complete_time);
+            stm.setTimestamp(1, complete_time);
             stm.executeUpdate();
             stm.close();
             logger.debug("Job ID " + job_id + " completion time updated to " 
@@ -326,7 +329,7 @@ public abstract class SubmittedJobDB {
                                             rs.getString("study_id"),
                                             rs.getString("tid"),
                                             pipeline,
-                                            rs.getString("submit_time"),
+                                            rs.getTimestamp("submit_time"),
                                             rs.getString("user_id"),
                                             rs.getString("chip_type"),
                                             rs.getString("normalization"),
@@ -378,7 +381,7 @@ public abstract class SubmittedJobDB {
                                             rs.getString("study_id"),
                                             rs.getString("tid"),
                                             rs.getString("pipeline_name"),
-                                            rs.getString("submit_time"),
+                                            rs.getTimestamp("submit_time"),
                                             rs.getString("user_id"),
                                             rs.getString("chip_type"),
                                             rs.getString("normalization"),
@@ -434,8 +437,8 @@ public abstract class SubmittedJobDB {
                                 rs.getString("user_id"),
                                 rs.getString("pipeline_name"),
                                 rs.getInt("status_id"),
-                                rs.getString("submit_time"),
-                                rs.getString("complete_time"),
+                                rs.getTimestamp("submit_time"),
+                                rs.getTimestamp("complete_time"),
                                 rs.getString("chip_type"),
                                 rs.getInt("input_sn"),
                                 rs.getString("normalization"),
@@ -484,8 +487,8 @@ public abstract class SubmittedJobDB {
                                 user_id,
                                 rs.getString("pipeline_name"),
                                 rs.getInt("status_id"),
-                                rs.getString("submit_time"),
-                                rs.getString("complete_time"),
+                                rs.getTimestamp("submit_time"),
+                                rs.getTimestamp("complete_time"),
                                 rs.getString("output_file"),
                                 rs.getString("report"));
                 

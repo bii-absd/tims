@@ -71,6 +71,8 @@ import org.primefaces.model.UploadedFile;
  * 12-Apr-2016 - To include remarks field during Meta data upload. To refine 
  * the logic for new subject record entry; allow update to subject record BUT 
  * only allow insertion for study_subject record.
+ * 14-Apr-2016 - For remarks and event fields, if there are empty, store them
+ * as null value.
  */
 
 @ManagedBean (name="MDMgntBean")
@@ -213,7 +215,7 @@ public class MetaDataManagementBean implements Serializable {
                     if (!data[3].isEmpty()) {
                         cc = data[3];
                     }
-                    String rmk = "";
+                    String rmk = null;
                     // Update remarks with the value uploaded if available.
                     if (data.length == 8) {
                         rmk = data[7];
@@ -228,7 +230,7 @@ public class MetaDataManagementBean implements Serializable {
                         // For now, set the subtype_code to "SUS" first.
                         StudySubject ss = new StudySubject
                                             (data[0], grp_id, study_id, "SUS",
-                                            rmk, "", Integer.parseInt(data[1]), 
+                                            rmk, null, Integer.parseInt(data[1]), 
                                             Float.parseFloat(data[5]), 
                                             Float.parseFloat(data[6]), null);
 
@@ -313,11 +315,19 @@ public class MetaDataManagementBean implements Serializable {
     // Update the subject meta data in database
     public void onRowEdit(RowEditEvent event) {
         FacesContext fc = getFacesContext();
+        SubjectDetail subj = (SubjectDetail) event.getObject();
         // Because the system is receiving the date as java.util.Date hence
         // we need to perform a conversion here before storing it into database.
         if (util_event_date != null) {
-            ((SubjectDetail) event.getObject()).setEvent_date
-                        (new Date(util_event_date.getTime()));
+            subj.setEvent_date(new Date(util_event_date.getTime()));
+        }
+        // Set the remarks field to null if it is empty.
+        if (subj.getRemarks().isEmpty()) {
+            subj.setRemarks(null);
+        }
+        // Set the event field to null if it is empty.
+        if (subj.getEvent().isEmpty()) {
+            subj.setEvent(null);
         }
         // Build the Subject and StudySubject objects using the selected 
         // SubjectDetail object.

@@ -24,6 +24,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Serializable;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -97,6 +98,8 @@ import org.apache.logging.log4j.LogManager;
  * 12-Apr-2016 - Changes due to the removal of attributes (probe_filtering and
  * phenotype_column) from submitted_job table. Allow administrator to upload 
  * raw data through the UI.
+ * 14-Apr-2016 - Changes due to the type change (i.e. to Timestamp) for 
+ * submit_time and complete_time in submitted_job table.
  */
 
 public abstract class ConfigBean implements Serializable {
@@ -115,7 +118,8 @@ public abstract class ConfigBean implements Serializable {
     // Brief description of the input file
     protected String inputFileDesc;
     // Record the time this job was created
-    protected String submitTimeInDB, submitTimeInFilename;
+    protected String submitTimeInFilename;
+    protected Timestamp submitTimeInDB;
     // job_id of the inserted record. sn of the input data. role ID of the 
     // current user.
     protected int job_id, input_sn, roleID;
@@ -409,8 +413,8 @@ public abstract class ConfigBean implements Serializable {
         submitTimeInFilename = dateFormat.format(new Date());
         // submitTimeInDB will be stored in the submitted_job table and will
         // be display to the user in Job Status page.
-        dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-        submitTimeInDB = dateFormat.format(new Date());   
+        Date now = new Date();
+        submitTimeInDB = new Timestamp(now.getTime());
     }
     
     // Execute the pipeline together with the config file, the message 
@@ -573,7 +577,7 @@ public abstract class ConfigBean implements Serializable {
     
     // Return the date the reused input data is being uploaded.
     public String getReuseInputDate() {
-        return (selectedInput != null)?selectedInput.getDate():
+        return (selectedInput != null)?selectedInput.getDateString():
                 "Please select a input to reuse";
     }
     
