@@ -5,6 +5,7 @@ package TIMS.Bean;
 
 import TIMS.Database.ActivityLogDB;
 import TIMS.Database.NationalityDB;
+import TIMS.Database.StudyDB;
 import TIMS.Database.StudySubject;
 import TIMS.Database.StudySubjectDB;
 import TIMS.Database.Subject;
@@ -73,6 +74,8 @@ import org.primefaces.model.UploadedFile;
  * only allow insertion for study_subject record.
  * 14-Apr-2016 - For remarks and event fields, if there are empty, store them
  * as null value.
+ * 19-Apr-2016 - Bug Fix: Subject(s) uploaded or created should be pack under
+ * the owner of the study.
  */
 
 @ManagedBean (name="MDMgntBean")
@@ -106,8 +109,9 @@ public class MetaDataManagementBean implements Serializable {
 
     @PostConstruct
     public void init() {
-        // The subject(s) uploaded or created will be park under the user's group.
-        grp_id = UserAccountDB.getUnitID(userName);
+        // The subject(s) uploaded or created will be park under the owner of 
+        // study.
+        grp_id = StudyDB.getStudyGrpID(study_id);
         // Retrieve the list of nationality code setup in the system.
         nationalityCodeHash = NationalityDB.getNationalityCodeHash();
         buildSubtDetailList();

@@ -63,6 +63,8 @@ import org.apache.logging.log4j.LogManager;
  * on the pipeline or subject meta data management link.
  * 12-Apr-2016 - The Study ID list for administrator will be the full list of
  * unclosed Study ID; to be selected for raw data uploading.
+ * 19-Apr-2016 - Bug Fix: When the user entered Main Menu page, the Single User
+ * Mode should be set to True.
  */
 
 @ManagedBean (name="menuSelBean")
@@ -82,9 +84,9 @@ public class MenuSelectionBean implements Serializable{
         userName = (String) FacesContext.getCurrentInstance().
                 getExternalContext().getSessionMap().get("User");
         roleID = UserAccountDB.getRoleID(userName);
-        // Set the single user mode to false when the user enter the main page.
+        // Set the single user mode to true when the user enter the main page.
         FacesContext.getCurrentInstance().getExternalContext().
-                getSessionMap().put("singleUser", false);
+                getSessionMap().put("singleUser", true);
         logger.debug("MenuSelectionBean created.");
     }
     

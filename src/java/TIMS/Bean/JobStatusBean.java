@@ -55,6 +55,8 @@ import org.apache.logging.log4j.LogManager;
  * 18-Feb-2016 - Bug fix: In job status page, after refresh the user is able to
  * view everybody job status. To fix: User should only see his/her job in job
  * status page.
+ * 19-Apr-2016 - To log the access mode (i.e. single user) when user enter the
+ * Pipeline Job Status Page.
  */
 
 @ManagedBean(name = "jsBean")
@@ -79,7 +81,7 @@ public class JobStatusBean implements Serializable {
         singleUser = (boolean) FacesContext.getCurrentInstance().
                 getExternalContext().getSessionMap().get("singleUser");
         logger.debug("JobStatusBean created.");
-        logger.info(userName + ": access Job Status page.");
+        logger.info(userName + ": access Job Status page. Single: " + singleUser);
     }
 
     @PostConstruct
