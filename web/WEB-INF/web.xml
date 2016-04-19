@@ -1,13 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<web-app version="3.1" 
-         xmlns="http://xmlns.jcp.org/xml/ns/javaee" 
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd">
-    
+<web-app version="3.1" xmlns="http://xmlns.jcp.org/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd">
     <listener>
-        <listener-class>Clinical.Data.Sink.General.LogContextListener</listener-class>
+        <listener-class>TIMS.General.LogContextListener</listener-class>
     </listener>
-    
     <context-param>
         <param-name>javax.faces.PROJECT_STAGE</param-name>
         <param-value>Development</param-value>
@@ -48,7 +43,6 @@
         <param-name>isLog4jAutoInitializationDisabled</param-name>
         <param-value>true</param-value>
     </context-param>
-    
     <servlet>
         <servlet-name>Faces Servlet</servlet-name>
         <servlet-class>javax.faces.webapp.FacesServlet</servlet-class>
@@ -64,7 +58,6 @@
     <welcome-file-list>
         <welcome-file>login.xhtml</welcome-file>
     </welcome-file-list>
-    
     <error-page>
         <exception-type>javax.faces.application.ViewExpiredException</exception-type>
         <location>/expired.xhtml</location>
@@ -77,7 +70,6 @@
         <error-code>404</error-code>
         <location>/pagenotfound.xhtml</location>
     </error-page>
-    
     <mime-mapping>
         <extension>eot</extension>
         <mime-type>image/eot</mime-type>
@@ -94,7 +86,6 @@
         <extension>ttf</extension>
         <mime-type>image/ttf</mime-type>
     </mime-mapping>
-    
     <security-constraint>
         <display-name>LoginConstraint</display-name>
         <web-resource-collection>
