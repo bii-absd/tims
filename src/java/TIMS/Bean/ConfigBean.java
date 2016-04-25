@@ -100,6 +100,7 @@ import org.apache.logging.log4j.LogManager;
  * raw data through the UI.
  * 14-Apr-2016 - Changes due to the type change (i.e. to Timestamp) for 
  * submit_time and complete_time in submitted_job table.
+ * 25-Apr-2016 - Commented out some unnecessary comments.
  */
 
 public abstract class ConfigBean implements Serializable {
@@ -346,8 +347,8 @@ public abstract class ConfigBean implements Serializable {
         pipelineOutput = output.getAbsolutePath();
         pipelineReport = report.getAbsolutePath();
 
-        logger.debug("Pipeline output file: " + pipelineOutput);
-        logger.debug("Pipeline report file: " + pipelineReport);
+//        logger.debug("Pipeline output file: " + pipelineOutput);
+//        logger.debug("Pipeline report file: " + pipelineReport);
 
         // Step to follow for pipeline execution:
         // 1. Create Config file
@@ -520,7 +521,7 @@ public abstract class ConfigBean implements Serializable {
             fw.write("### Report Generation\n" +
                      "REP_FILENAME\t=\t" + pipelineReport + "\n\n");
 
-            logger.debug("Pipeline config file: " + pipelineConfig);
+//            logger.debug("Pipeline config file: " + pipelineConfig);
         }
         catch (IOException e) {
             result = Constants.NOT_OK;

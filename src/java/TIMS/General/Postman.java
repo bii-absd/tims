@@ -37,6 +37,8 @@ import org.apache.logging.log4j.LogManager;
  * sendFinalizationStatusEmail() and sendTaskStatusEmail().
  * 12-Apr-2016 - Added new method sendDataUploadedEmail(), to send the input
  * data path to the administrator after raw data upload.
+ * 25-Apr-2016 - To include the study ID and pipeline name in the subject title
+ * when sending out the data uploaded status email.
  */
 
 public abstract class Postman {
@@ -77,7 +79,8 @@ public abstract class Postman {
             // Set To: header field
             message.addRecipient(Message.RecipientType.TO,
                     new InternetAddress(admin.getEmail()));
-            message.setSubject("TIMS - Raw Data Uploaded.");
+            message.setSubject("TIMS - Raw data for " + studyID + 
+                               " - " + plName + " uploaded.");
             message.setText(
                     "Raw data for pipeline " + plName + 
                     " under study " + studyID +

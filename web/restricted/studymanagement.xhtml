@@ -191,7 +191,7 @@
                 
                 <p:selectOneMenu id="icd" required="true" 
                                  value="#{studyMgntBean.icd_code}" filter="true" 
-                                 filterMatchMode="startsWith" style="width: 180px">
+                                 filterMatchMode="contains" style="width: 180px">
                     <f:selectItem itemLabel="Select Disease under Study" itemValue=""/>
                     <f:selectItems value="#{studyMgntBean.icdHash}"/>
                 </p:selectOneMenu>

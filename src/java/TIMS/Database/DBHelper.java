@@ -40,6 +40,7 @@ import org.postgresql.ds.PGPoolingDataSource;
  * explictly load JDBC drivers using Class.forName(). Removed that code.
  * 29-Feb-2016 - Implementation of Data Source pooling. To use DataSource to 
  * get the database connection instead of using DriverManager.
+ * 25-Apr-2016 - Increased the maximum allowed database connections to 16.
  */
 
 @ApplicationScoped
@@ -65,7 +66,7 @@ public abstract class DBHelper {
             ds.setDatabaseName(Constants.getDATABASE_NAME());
             ds.setUser(uname);
             ds.setPassword(pword);
-            ds.setMaxConnections(10);
+            ds.setMaxConnections(16);
             
             try {
                 new InitialContext().rebind("TIMS-DS", ds);
