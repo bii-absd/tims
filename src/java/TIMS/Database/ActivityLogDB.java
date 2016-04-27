@@ -11,6 +11,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.LinkedHashMap;
 import java.util.List;
 // Libraries for Java Extension
 import javax.naming.NamingException;
@@ -35,6 +36,8 @@ import org.apache.logging.log4j.LogManager;
  * into one, and to include the time (from and/or to) for user selection.
  * 29-Feb-2016 - Implementation of Data Source pooling. To use DataSource to 
  * get the database connection instead of using DriverManager.
+ * 27-Apr-2016 - Added one new method getActivityList(), to retrieve the list of
+ * activity currently available in the database.
  */
 
 public abstract class ActivityLogDB {
@@ -76,6 +79,34 @@ public abstract class ActivityLogDB {
         }
     }
 
+    // Retrieve the list of activity currently available in the database.
+    public static LinkedHashMap<String, String> getActivityList() {
+        Connection conn = null;
+        String query = "SELECT DISTINCT activity FROM activity_log ORDER BY activity";
+        LinkedHashMap<String, String> activityList = new LinkedHashMap<>();
+        
+        try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            ResultSet rs = stm.executeQuery();
+            
+            while (rs.next()) {
+                String activity = rs.getString("activity");
+                activityList.put(activity, activity);
+            }
+            logger.debug("Activity list retrieved.");
+        }
+        catch (SQLException|NamingException e) {
+            logger.error("FAIL to retrieve activity list!");
+            logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
+        }
+
+        return activityList;
+    }
+    
     // Build and return the activity log based on the query passed in.
     private static List<ActivityLog> buildActivityLog(String query) {
         Connection conn = null;

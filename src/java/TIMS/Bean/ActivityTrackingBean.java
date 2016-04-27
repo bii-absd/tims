@@ -36,6 +36,8 @@ import org.apache.logging.log4j.LogManager;
  * into one, and to include the time (from and/or to) for user selection.
  * 28-Mar-2016 - Director is only allow to view the activities of the users 
  * from his/her institution.
+ * 27-Apr-2016 - To build and supply the list of activity for selection in the
+ * activity tracking page.
  */
 
 @ManagedBean (name = "actiBean")
@@ -46,6 +48,7 @@ public class ActivityTrackingBean implements Serializable {
             getLogger(ActivityTrackingBean.class.getName());
     private List<ActivityLog> activityLog;
     private final LinkedHashMap<String,String> userIDHash;
+    private LinkedHashMap<String,String> activityList;
     private String trackUser, trackActi;
     private Date from, to;
     // Store the user ID of the current user.
@@ -54,6 +57,7 @@ public class ActivityTrackingBean implements Serializable {
     public ActivityTrackingBean() {
         userName = (String) FacesContext.getCurrentInstance().
                 getExternalContext().getSessionMap().get("User");
+        activityList = ActivityLogDB.getActivityList();
         // Currently only allow director and administrator to use this module.
         if (UserAccountDB.isDirector(userName)) {
             // Director can only see the activities of all users under his/her
@@ -66,7 +70,6 @@ public class ActivityTrackingBean implements Serializable {
             userIDHash = UserAccountDB.getUserIDHash();
         }
         
-        logger.debug("ActivityTrackingBean created.");
         logger.info(userName + ": access Activity Tracking page.");
     }
 
@@ -115,6 +118,11 @@ public class ActivityTrackingBean implements Serializable {
         return query;
     }
     
+    // Return the list of activity currently available in the database.
+    public LinkedHashMap<String, String> getActivityList() {    
+        return activityList;
+    }
+
     // Machine generated getters.
     public LinkedHashMap<String, String> getUserIDHash() {
         return userIDHash;

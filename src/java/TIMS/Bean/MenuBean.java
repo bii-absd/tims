@@ -8,6 +8,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.LinkedHashMap;
+// Libraries for Java Extension
 import javax.faces.bean.ApplicationScoped;
 import javax.faces.bean.ManagedBean;
 import javax.faces.context.FacesContext;
@@ -40,6 +41,7 @@ import org.apache.logging.log4j.LogManager;
  * Serializable, and moved from General to Bean package. Removed all the static 
  * variables in MenuBean class.
  * 26-Jan-2016 - Added the setup for activity.
+ * 27-Apr-2016 - Moved the setup for activity to ActivityLogDB class.
  */
 
 @ManagedBean (name="menuBean")
@@ -51,12 +53,10 @@ public class MenuBean implements Serializable {
     // Used LinkedHashMap in order to maintains the insertion order
     private LinkedHashMap<String,String> affymetrixTypeList;    
     private LinkedHashMap<String,String> illuminaTypeList;
-    private LinkedHashMap<String,String> activityList;
 
     public MenuBean() {
         affymetrixTypeList = new LinkedHashMap<>();
         illuminaTypeList = new LinkedHashMap<>();
-        activityList = new LinkedHashMap<>();
         ServletContext sc = (ServletContext) FacesContext.getCurrentInstance().
                 getExternalContext().getContext();
         // Load the itemlist filename from context-param.
@@ -91,9 +91,6 @@ public class MenuBean implements Serializable {
                         case "ILLUMINA":
                             illuminaTypeList.put(itemPair[0], itemPair[1]);
                             break;
-                        case "ACTIVITY":
-                            activityList.put(itemPair[0], itemPair[1]);
-                            break;
                         default:
                             // something is wrong with the item list file
                             break;
@@ -104,7 +101,6 @@ public class MenuBean implements Serializable {
             logger.debug(uri + " loaded.");
             logger.debug(affymetrixTypeList.values());
             logger.debug(illuminaTypeList.values());
-            logger.debug(activityList.values());
         } catch (IOException ioe) {
             logger.error("FAIL to load menu item list file: " + uri);
             logger.error(ioe.getMessage());
@@ -117,6 +113,4 @@ public class MenuBean implements Serializable {
     // Return the list of Illumina type.
     public LinkedHashMap<String,String> getIlluminaType()
     {   return illuminaTypeList;    }
-    public LinkedHashMap<String, String> getActivityList() 
-    {   return activityList;        }
 }

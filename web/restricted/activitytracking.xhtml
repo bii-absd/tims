@@ -26,7 +26,7 @@
                     </p:selectOneMenu>
                     <p:selectOneMenu id="actimenu" value="#{actiBean.trackActi}">
                         <f:selectItem itemLabel="All Activity" itemValue=""/>
-                        <f:selectItems value="#{menuBean.activityList}"/>
+                        <f:selectItems value="#{actiBean.activityList}"/>
                     </p:selectOneMenu>
                     <p:calendar id="fromdate" value="#{actiBean.from}" pattern="dd-MM-yyyy hh:mma"/>
                     <p:calendar id="todate" value="#{actiBean.to}" pattern="dd-MM-yyyy hh:mma"/>

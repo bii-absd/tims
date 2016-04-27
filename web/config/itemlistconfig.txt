@@ -8,11 +8,3 @@ HumanHT12v3$HumanHT12v3
 HumanHT12v4$HumanHT12v4
 HumanWG6v1$HumanWG6v1
 HumanWG6v2$HumanWG6v2
-#ACTIVITY
-Login$Login
-Run Pipeline$Run Pipeline
-Finalize Study$Finalize Study
-Create ID$Create ID
-Update ID$Update ID
-Change Password$Change Password
-Download File$Download File
