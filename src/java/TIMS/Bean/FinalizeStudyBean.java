@@ -74,6 +74,7 @@ import org.apache.logging.log4j.LogManager;
  * (Institution - Department - Group).
  * 04-Apr-2016 - When checking for subject Meta data availability, the system
  * will now check against the new study_subject table.
+ * 13-May-2016 - Minor changes as the pipeline output file will now be zipped.
  */
 
 @ManagedBean (name="finalizedBean")
@@ -243,7 +244,7 @@ public class FinalizeStudyBean implements Serializable {
             StringBuilder metaDataNotFound, StringBuilder metaDataFound) 
             throws SQLException, IOException, NamingException {
         BufferedReader br = new BufferedReader(new FileReader
-                            (SubmittedJobDB.getOutputPath(jobID)));
+                            (SubmittedJobDB.unzipOutputFile(jobID)));
         String subjectLine = br.readLine();
         
         // To handle the case whereby the output file is empty. Throw an

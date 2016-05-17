@@ -67,7 +67,7 @@
                             <p:selectOneMenu value="#{study.icd_code}" 
                                              rendered="#{!study.finalized}" 
                                              filter="true" 
-                                             filterMatchMode="startsWith"
+                                             filterMatchMode="contains"
                                              style="width: 100%">
                                 <f:selectItems value="#{studyMgntBean.icdHash}"/>
                             </p:selectOneMenu>

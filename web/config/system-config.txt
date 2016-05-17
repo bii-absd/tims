@@ -9,12 +9,14 @@ INPUT_PATH input
 CONFIG_PATH config
 LOG_PATH log
 FINALIZE_PATH finalize_output
+TMP_PATH tmp
 # All input files (i.e. input, ctrl and sample) will be stored in the /input
 # directory.
 # All output files (i.e. output and report) will be stored in the /output dir
 # All the finalized output/report will be stored in the /finalize_output dir
 OUTPUTFILE_NAME Output_
 OUTPUTFILE_EXT .txt
+ZIPFILE_EXT .zip
 REPORTFILE_NAME Report_
 REPORTFILE_EXT .pdf
 LOGFILE_NAME Log_

@@ -47,9 +47,9 @@
         <p:confirmDialog id="cfmdlg" message="#{clstudyBean.dlgMsg}" 
                          header="Proceed to close Study" 
                          severity="alert" widgetVar="cd">
-            <p:commandButton value="CANCEL" icon="ui-icon-close" style="width: 48%"
+            <p:commandButton value="CANCEL" icon="ui-icon-close" style="width: 46%"
                              onclick="PF('cd').hide()"/>
-            <p:commandButton value="YES" icon="ui-icon-check" style="width: 48%"
+            <p:commandButton value="YES" icon="ui-icon-check" style="width: 46%"
                              rendered="#{clstudyBean.selectedStudyStatus}"
                              action="#{clstudyBean.proceedWithClosure()}"
                              oncomplete="PF('cd').hide()"/>

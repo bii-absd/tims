@@ -72,6 +72,7 @@ import org.apache.logging.log4j.LogManager;
  * 23-Feb-2016 - Enhanced the method renameFilename.
  * 01-Mar-2016 - The images directory has been moved from TIMS/user/images to
  * TIMS/images.
+ * 13-May-2016 - To create the tmp folder in method createSystemDirectories().
  */
 
 public class FileUploadBean implements Serializable {
@@ -168,7 +169,8 @@ public class FileUploadBean implements Serializable {
                 createSystemDirectory(systemDir + Constants.getUSERS_PATH()) &&
                 createSystemDirectory(systemDir + Constants.getPIC_PATH()) &&
                 createSystemDirectory(systemDir + Constants.getINPUT_PATH()) &&
-                createSystemDirectory(systemDir + Constants.getFINALIZE_PATH());
+                createSystemDirectory(systemDir + Constants.getFINALIZE_PATH()) &&
+                createSystemDirectory(systemDir + Constants.getTMP_PATH());
         
         return result;
     }

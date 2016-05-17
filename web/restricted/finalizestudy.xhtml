@@ -10,7 +10,7 @@
     <ui:define name="title">Finalize Study</ui:define>
     <ui:param name="link" value="#{msg['finalize-study']}"/>
     <ui:define name="content">
-    <h:form id="studyForm">
+    <h:form id="finStudyForm">
         <p:panel header="Select Study to finalize (Subject meta data need to be setup before finalization.)" 
                  rendered="#{authBean.PILead}">
             <p:selectOneMenu id="studyID" required="true" value="#{finalizedBean.study_id}">
@@ -19,6 +19,7 @@
                 <p:ajax update="jobsPanel" listener="#{finalizedBean.studyChange()}"/>
             </p:selectOneMenu>
         </p:panel>
+        
         <p:panel id="jobsPanel" visible="#{finalizedBean.studySelectedStatus}" 
                  header="Select job to finalize for each pipeline">
             <p:dataTable id="pl0" rendered="#{finalizedBean.studySelectedStatus}" 
@@ -156,28 +157,27 @@
                           style="width: 40px; text-align: center"/>
             </p:dataTable>
             <p:separator style="height: 20px"/>
-            
+
             <p:commandButton value="Finalize" icon="ui-icon-check" 
                              oncomplete="PF('dlg').show()" 
                              update="subjectMDStatus @form"
                              action="#{finalizedBean.prepareForFinalization}"/>
         </p:panel>
+        
         <p:dialog header="Study Finalization Review" widgetVar="dlg" 
                   width="440px" resizable="false" closable="false" modal="true">
             <h:outputText id="subjectMDStatus" 
                           value="#{finalizedBean.subMDAvailableStatus}" 
                           styleClass="preformatted"/>
             <p:separator style="height: 10px"/>
-            <h:form>
-                <h:panelGrid columns="2" cellspacing="2" cellpadding="2">
-                    <p:commandButton value="Cancel" title="Back to select job(s) for finalization" 
-                                     style="width: 130px" oncomplete="PF('dlg').hide()" 
-                                     action="#{finalizedBean.cancelFinalization}"/>
-                    <p:commandButton value="Proceed" title="Proceed with the finalization" 
-                                     style="width: 130px" rendered="#{finalizedBean.allowToProceed}" 
-                                     action="#{finalizedBean.proceedForFinalization}"/>
-                </h:panelGrid>
-            </h:form>
+            <h:panelGrid columns="2" cellspacing="2" cellpadding="2">
+                <p:commandButton value="Cancel" title="Back to select job(s) for finalization" 
+                                 style="width: 130px" oncomplete="PF('dlg').hide()" 
+                                 action="#{finalizedBean.cancelFinalization}"/>
+                <p:commandButton value="Proceed" title="Proceed with the finalization" 
+                                 style="width: 130px" rendered="#{finalizedBean.allowToProceed}" 
+                                 action="#{finalizedBean.proceedForFinalization}"/>
+            </h:panelGrid>
         </p:dialog>
     </h:form>
     </ui:define>

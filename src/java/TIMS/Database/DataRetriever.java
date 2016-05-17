@@ -47,6 +47,8 @@ import org.apache.logging.log4j.LogManager;
  * event date in the consolidated output.
  * 13-Apr-2016 - To send the finalization completed status email to user once
  * all the pipeline output have been consolidated.
+ * 13-May-2016 - To zip the finalized output file once it has been generated. 
+ * To delete the original output file after it has been zipped.
  */
 
 public class DataRetriever extends Thread {
@@ -89,6 +91,18 @@ public class DataRetriever extends Thread {
         DBHelper.closeDSConn(conn);
         // Update the study with the finalized file path.
         StudyDB.updateStudyFinalizedFile(study_id, finalize_file);
+        // Zip the finalized output file.
+        String foPath = StudyDB.zipFinalizedOutput(study_id);
+        if (foPath != null) {
+            // Delete the original finalized output file to free up memory space.
+            File foFile = new File(foPath);
+            if (foFile.delete()) {
+                logger.debug("Original finalized output file for Study ID " + study_id + " deleted.");
+            }
+            else {
+                logger.error("FAIL to delete original finalized output file!");
+            }
+        }
         // Send success finalization status email to the user.
         Postman.sendFinalizationStatusEmail(study_id, userName, Constants.OK);
     }

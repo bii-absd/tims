@@ -4,6 +4,10 @@
 package TIMS.Database;
 
 import TIMS.General.Constants;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -12,6 +16,9 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 // Libraries for Java Extension
 import javax.naming.NamingException;
 // Libraries for Log4j
@@ -90,6 +97,8 @@ import org.apache.logging.log4j.LogManager;
  * (i.e. summarization) defined in FinalizingJobEntry.
  * 14-Apr-2016 - Changes due to the type change (i.e. to Timestamp) for 
  * submit_time and complete_time in submitted_job table.
+ * 13-May-2016 - Added 3 new methods, updateOutputPath(), zipOutputFile() and
+ * unzipOutputFile().
  */
 
 public abstract class SubmittedJobDB {
@@ -227,6 +236,31 @@ public abstract class SubmittedJobDB {
             stm.executeUpdate();
             stm.close();
             logger.debug("Job ID " + job_id + " input SN updated to " + input_sn);
+        }
+        catch (SQLException|NamingException e) {
+            logger.error("FAIL to update job input SN!");
+            logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
+        }
+    }
+    
+    // Update the output_file location. Will be called after the output_file
+    // has been zipped.
+    public static void updateOutputPath(int job_id, String output_file) {
+        Connection conn = null;
+        String query = "UPDATE submitted_job SET output_file = ? "
+                     + "WHERE job_id = " + job_id;
+        
+        try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            stm.setString(1, output_file);
+            stm.executeUpdate();
+            stm.close();
+            logger.debug("Job ID " + job_id + " output filepath updated to " 
+                         + output_file);
         }
         catch (SQLException|NamingException e) {
             logger.error("FAIL to update job input SN!");
@@ -554,7 +588,7 @@ public abstract class SubmittedJobDB {
             
             if (rs.next()) {
                 path = rs.getString("output_file");
-                logger.debug("Output file for job_id " + jobID + 
+                logger.debug("Output file for Job ID " + jobID + 
                              " stored at " + path);
             }
             
@@ -598,5 +632,93 @@ public abstract class SubmittedJobDB {
         }
         
         return plName;
+    }
+    
+    // Zip the output file of this submitted job, and update the output_file
+    // path to the zipped output filepath. The original output filepath will
+    // be returned.
+    public static String zipOutputFile(int job_id) {
+        String result = null;
+        byte[] buffer = new byte[2048];
+        String opPath = getOutputPath(job_id);
+        String[] opCnts = opPath.split("\\" + File.separator);
+        // Remove the .txt extension from the filename, and replace it with .zip
+        String zipPath = opPath.substring
+                         (0, opPath.indexOf(Constants.getOUTPUTFILE_EXT()));
+        zipPath += Constants.getZIPFILE_EXT();
+
+        try {
+            FileOutputStream fos = new FileOutputStream(zipPath);
+            ZipOutputStream zos = new ZipOutputStream(fos);
+            ZipEntry ze = new ZipEntry(opCnts[opCnts.length-1]);
+            zos.putNextEntry(ze);
+            FileInputStream fis = new FileInputStream(opPath);
+            int len;
+            
+            while ((len = fis.read(buffer)) > 0) {
+                zos.write(buffer, 0, len);
+            }
+            
+            fis.close();
+            zos.closeEntry();
+            zos.close();
+            // Added the below statement due to a bug in Java that prevent the
+            // original output file for being deleted.
+            System.gc();
+            // Update the output filepath to the zipped version.
+            updateOutputPath(job_id, zipPath);
+            // Return the original output filepath.
+            result = opPath;
+            logger.debug("Output file for Job ID " + job_id + " zipped.");
+        }
+        catch (IOException e) {
+            logger.error("FAIL to zip output file!");
+            logger.error(e.getMessage());
+        }
+        
+        return result;
+    }
+    
+    // Unzip the output file of this submitted job; to be called during 
+    // finalization of Study. The unzipped output filepath will be returned.
+    public static String unzipOutputFile(int job_id) {
+        String result = null;
+        byte[] buffer = new byte[2048];
+        String zipPath = getOutputPath(job_id);
+        // The unzipped output file will be stored in the tmp folder.
+        String opPath = Constants.getSYSTEM_PATH() + Constants.getTMP_PATH();
+
+        try (ZipInputStream zis = new ZipInputStream(new FileInputStream(zipPath))) {
+            ZipEntry ze = zis.getNextEntry();
+            
+            if (ze != null) {
+                String filename = ze.getName();
+                opPath += filename;
+                File opFile = new File(opPath);
+                
+                if (!opFile.exists()) {
+                    // Only perform the unzip once.
+                    try ( FileOutputStream fos = new FileOutputStream(opFile)) {
+                        int len;
+                        
+                        while ((len = zis.read(buffer)) > 0) {
+                            fos.write(buffer, 0, len);
+                        }
+                    }
+                    logger.debug("Output file for Job ID " + job_id +
+                                 " unzipped to " + opFile.getAbsolutePath());
+                }
+            }
+            
+            zis.closeEntry();
+            // Return the unzipped output filepath.
+            result = opPath;
+        }
+        catch (IOException e) {
+            logger.error("FAIL to unzip output file!");
+            logger.error(e.getMessage());
+        }
+        
+        return result;
     }
 }

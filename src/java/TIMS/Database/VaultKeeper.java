@@ -35,6 +35,7 @@ import org.apache.logging.log4j.LogManager;
  * 04-Apr-2016 - When checking for subject Meta data availability, the system
  * will now check against the new study_subject table. The system will now store
  * the study ID (instead of icd_code) into the finalized_output record.
+ * 13-May-2016 - Minor changes as the pipeline output file will now be zipped.
  */
 
 public class VaultKeeper extends Thread {
@@ -71,7 +72,7 @@ public class VaultKeeper extends Thread {
             conn.setAutoCommit(false);
             
             for (Integer job_id : jobList) {
-                fileUri = SubmittedJobDB.getOutputPath(job_id);
+                fileUri = SubmittedJobDB.unzipOutputFile(job_id);
                 logger.debug("Storing data for: " + study_id + " - job ID " + job_id);
                 
                 if (!storePlDataIntoVault(job_id)) {

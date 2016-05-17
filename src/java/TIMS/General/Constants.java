@@ -93,6 +93,7 @@ import org.apache.logging.log4j.LogManager;
  * 14-Mar-2016 - Added one new constant, EXE_CLSTUDY; activity code for closing
  * study.
  * 30-Mar-2016 - Renamed CLINICAL_DATA_MANAGEMENT to META_DATA_MANAGEMENT.
+ * 13-May-2016 - Added two new constants, TMP_PATH and ZIPFILE_EXT.
  */
 
 @ManagedBean (name = "constants")
@@ -148,8 +149,10 @@ public class Constants {
     private static String CONFIG_PATH = null;
     private static String LOG_PATH = null;
     private static String FINALIZE_PATH = null;
+    private static String TMP_PATH = null;
     private static String OUTPUTFILE_NAME = null;
     private static String OUTPUTFILE_EXT = null;
+    private static String ZIPFILE_EXT = null;
     private static String REPORTFILE_NAME = null;
     private static String REPORTFILE_EXT = null;
     private static String LOGFILE_NAME = null;
@@ -213,8 +216,10 @@ public class Constants {
                     File.separator + setup.get("LOG_PATH") + File.separator;
             FINALIZE_PATH = 
                     File.separator + setup.get("FINALIZE_PATH") + File.separator;
+            TMP_PATH = File.separator + setup.get("TMP_PATH") + File.separator;
             OUTPUTFILE_NAME = setup.get("OUTPUTFILE_NAME");
             OUTPUTFILE_EXT = setup.get("OUTPUTFILE_EXT");
+            ZIPFILE_EXT = setup.get("ZIPFILE_EXT");
             REPORTFILE_NAME = setup.get("REPORTFILE_NAME");
             REPORTFILE_EXT = setup.get("REPORTFILE_EXT");
             LOGFILE_NAME = setup.get("LOGFILE_NAME");
@@ -262,8 +267,10 @@ public class Constants {
     public static String getCONFIG_PATH() { return CONFIG_PATH; }
     public static String getLOG_PATH() { return LOG_PATH; }
     public static String getFINALIZE_PATH() { return FINALIZE_PATH; }
+    public static String getTMP_PATH() { return TMP_PATH; }
     public static String getOUTPUTFILE_NAME() { return OUTPUTFILE_NAME; }
     public static String getOUTPUTFILE_EXT() { return OUTPUTFILE_EXT; }
+    public static String getZIPFILE_EXT() { return ZIPFILE_EXT; }
     public static String getREPORTFILE_NAME() { return REPORTFILE_NAME; }
     public static String getREPORTFILE_EXT() { return REPORTFILE_EXT; }
     public static String getLOGFILE_NAME() { return LOGFILE_NAME; }

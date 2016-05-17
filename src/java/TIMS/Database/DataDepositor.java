@@ -88,6 +88,9 @@ import org.apache.pdfbox.pdmodel.graphics.xobject.PDJpeg;
  * after all the pipeline output have been consolidated.
  * 14-Apr-2016 - Changes due to the type change (i.e. to Timestamp) for 
  * submit_time and complete_time in submitted_job table.
+ * 13-May-2016 - Bug fix: To ensure the summary report has enough space to hold 
+ * the last section of the report. Minor changes as the pipeline output file 
+ * will now be zipped.
  */
 
 public class DataDepositor extends Thread {
@@ -152,7 +155,7 @@ public class DataDepositor extends Thread {
                 // Retrieve the job ID and pipeline output file for this 
                 // selected job.
                 job_id = job.getJob_id();
-                fileUri = SubmittedJobDB.getOutputPath(job_id);
+                fileUri = SubmittedJobDB.unzipOutputFile(job_id);
                 logger.debug("Data insertion for: " + study_id + " - " + 
                              job.getPipeline_name() + " - Job ID: " + job_id);
                 
@@ -247,6 +250,11 @@ public class DataDepositor extends Thread {
     // Return true if we have reached the end of the summary report page.
     private boolean checkEndOfPage() {
         return (pageCursorYaxis <= 50);
+    }
+    // Return true if the remaining page has enough space to hold the last 
+    // section (i.e. last section is equal to 3 Header + 2 Line)
+    private boolean enoughSpaceForLastSection() {
+        return (pageCursorYaxis > (3 * 50 + 2 * 15));
     }
     
     // Get the Y-axis starting position.
@@ -366,31 +374,7 @@ public class DataDepositor extends Thread {
                     // Reset the Yaxis cursor.
                     pageCursorYaxis = getYaxisHeight() - 100;
                 }
-            }
-            
-            // Section D
-            /* MOVED TO SECTION A
-            cs.beginText();
-            cs.moveTextPositionByAmount(subheadX, getNextSubheaderYaxis());
-            cs.drawString("D. No of gene data available versus stored");
-            cs.endText();
-            
-            cs.beginText();
-            cs.moveTextPositionByAmount(lineX, getNextLineYaxis());
-            cs.drawString(String.valueOf(totalGene));
-            cs.endText();
-            // Section E
-            cs.beginText();
-            cs.moveTextPositionByAmount(subheadX, getNextSubheaderYaxis());
-            cs.drawString("E. No of gene data stored");
-            cs.endText();
-            
-            cs.beginText();
-            cs.moveTextPositionByAmount(lineX, getNextLineYaxis());
-            cs.drawString(String.valueOf(processedGene));
-            cs.endText();
-            */
-            
+            }            
             // Section D
             cs.beginText();
             cs.moveTextPositionByAmount(subheadX, getNextSubheaderYaxis());
@@ -401,6 +385,16 @@ public class DataDepositor extends Thread {
             cs.moveTextPositionByAmount(lineX, getNextLineYaxis());
             cs.drawString(annot_ver);
             cs.endText();            
+            // Try to group the last section in one page, hence check in advance
+            // whether we need another page.
+            if (!enoughSpaceForLastSection()) {
+                // Close the current content stream, and open another one.
+                cs.close();
+                cs = addNewPage();
+                cs.setFont(plainFont, 11);
+                // Reset the Yaxis cursor.
+                pageCursorYaxis = getYaxisHeight() - 100;
+            }
             // Ending section
             cs.beginText();
             cs.moveTextPositionByAmount(subheadX, getNextHeaderYaxis());

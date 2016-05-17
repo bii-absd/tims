@@ -4,6 +4,10 @@
 package TIMS.Database;
 
 import TIMS.General.Constants;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -11,6 +15,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 // Libraries for Java Extension
 import javax.naming.NamingException;
 // Libraries for Log4j
@@ -67,6 +73,7 @@ import org.apache.logging.log4j.LogManager;
  * studies hash map will be split into 2 (one for users one for PI).
  * 12-Apr-2016 - Added new method getAllStudyHash(), to return all the unclosed
  * Study ID for administrator selection during raw data upload.
+ * 13-May-2016 - Added one new method, zipFinalizedOutput().
  */
 
 public abstract class StudyDB {
@@ -615,6 +622,51 @@ public abstract class StudyDB {
         }
         
         return studyList;
+    }
+    
+    // Zip the consolidated output file of this study, and update the 
+    // finalized_output to the zipped output filepath. The original consolidated
+    // output filepath will be returned.
+    public static String zipFinalizedOutput(String study_id) {
+        String result = null;
+        byte[] buffer = new byte[2048];
+        String foPath = getStudyObject(study_id).getFinalized_output();
+        String[] foCnts = foPath.split("\\" + File.separator);
+        // Remove the .txt extension from the filename, and replace it with .zip
+        String zipPath = foPath.substring
+                         (0, foPath.indexOf(Constants.getOUTPUTFILE_EXT()));
+        zipPath += Constants.getZIPFILE_EXT();
+        
+        try {
+            FileOutputStream fos = new FileOutputStream(zipPath);
+            ZipOutputStream zos = new ZipOutputStream(fos);
+            ZipEntry ze = new ZipEntry(foCnts[foCnts.length-1]);
+            zos.putNextEntry(ze);
+            FileInputStream fis = new FileInputStream(foPath);
+            int len;
+            
+            while ((len = fis.read(buffer)) > 0) {
+                zos.write(buffer, 0, len);
+            }
+            
+            fis.close();
+            zos.closeEntry();
+            zos.close();
+            // Added the below statement due to a bug in Java that prevent the
+            // original output file for being deleted.
+            System.gc();
+            // Update the finalized output filepath to the zipped version.
+            updateStudyFinalizedFile(study_id, zipPath);
+            // Return the original finalized output filepath.
+            result = foPath;
+            logger.debug("Finalized output for Study ID " + study_id + " zipped.");
+        }
+        catch (IOException e) {
+            logger.error("FAIL to zip finalized output file!");
+            logger.error(e.getMessage());
+        }
+        
+        return result;
     }
     
     // Retrieve the annotation version used in this study.
