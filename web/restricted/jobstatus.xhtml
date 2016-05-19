@@ -64,6 +64,12 @@
                                    disabled="#{job.outputReady}">
                     </p:commandLink>
                 </p:column>
+                <p:column headerText="Detail Output" styleClass="jssmallcol">
+                    <p:commandLink ajax="false" value="Download" 
+                                   action="#{jsBean.downloadDetailOutput(job)}"
+                                   disabled="#{job.outputReady}">
+                    </p:commandLink>
+                </p:column>
                 <p:column headerText="Report" styleClass="jssmallcol">
                     <p:commandLink ajax="false" value="Download" 
                                    action="#{jsBean.downloadReport(job)}" 

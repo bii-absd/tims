@@ -50,6 +50,8 @@ import java.text.SimpleDateFormat;
  * phenotype_column) from submitted_job table. Added 3 methods to check for the
  * availability of chip type, normalization and summarization info.
  * 14-Apr-2016 - Change type for submit_time and complete_time to Timestamp.
+ * 19-May-2016 - Added one new attribute detail_output, to store the filepath
+ * of the detail output file.
  */
 
 public class SubmittedJob implements Serializable {
@@ -61,8 +63,8 @@ public class SubmittedJob implements Serializable {
     // For DB 3.3, Removed sample_average, standardization, region, probe_select,
     // probe_filtering and phenotype_column.
     private int job_id, status_id, input_sn;
-    private String study_id, user_id, pipeline_name;
-    private String chip_type, normalization, summarization, output_file, report;
+    private String study_id, user_id, pipeline_name, chip_type, normalization, 
+                   summarization, output_file, detail_output, report;
     private Timestamp submit_time, complete_time;
     // status_name will be used by the job status page
     private String status_name;
@@ -73,7 +75,7 @@ public class SubmittedJob implements Serializable {
             String pipeline_name, int status_id, Timestamp submit_time, 
             Timestamp complete_time, String chip_type, int input_sn, 
             String normalization, String summarization, String output_file, 
-            String report) 
+            String detail_output, String report) 
     {
         this.job_id = job_id;
         this.study_id = study_id;
@@ -87,6 +89,7 @@ public class SubmittedJob implements Serializable {
         this.normalization = normalization;
         this.summarization = summarization;
         this.output_file = output_file;
+        this.detail_output = detail_output;
         this.report = report;
     }
     
@@ -246,6 +249,12 @@ public class SubmittedJob implements Serializable {
     }
     public void setOutput_file(String output_file) {
         this.output_file = output_file;
+    }
+    public String getDetail_output() {
+        return detail_output;
+    }
+    public void setDetail_output(String detail_output) {
+        this.detail_output = detail_output;
     }
     public String getReport() {
         return report;

@@ -94,6 +94,7 @@ import org.apache.logging.log4j.LogManager;
  * study.
  * 30-Mar-2016 - Renamed CLINICAL_DATA_MANAGEMENT to META_DATA_MANAGEMENT.
  * 13-May-2016 - Added two new constants, TMP_PATH and ZIPFILE_EXT.
+ * 19-May-2016 - Added one new constant, DETAIL_FILE_NAME.
  */
 
 @ManagedBean (name = "constants")
@@ -161,6 +162,7 @@ public class Constants {
     private static String CONFIG_FILE_EXT = null;
     private static String SUMMARY_FILE_NAME = null;
     private static String SUMMARY_FILE_EXT = null;
+    private static String DETAIL_FILE_NAME = null;
     private static String FINALIZE_FILE_EXT = null;
     private static String SAMPLE_ANNOT_FILE_NAME = null;
     private static String SAMPLE_ANNOT_FILE_EXT = null;
@@ -228,6 +230,7 @@ public class Constants {
             CONFIG_FILE_EXT = setup.get("CONFIG_FILE_EXT");
             SUMMARY_FILE_NAME = setup.get("SUMMARY_FILE_NAME");
             SUMMARY_FILE_EXT = setup.get("SUMMARY_FILE_EXT");
+            DETAIL_FILE_NAME = setup.get("DETAIL_FILE_NAME");
             FINALIZE_FILE_EXT = setup.get("FINALIZE_FILE_EXT");
             SAMPLE_ANNOT_FILE_NAME = setup.get("SAMPLE_ANNOT_FILE_NAME");
             SAMPLE_ANNOT_FILE_EXT = setup.get("SAMPLE_ANNOT_FILE_EXT");
@@ -279,6 +282,7 @@ public class Constants {
     public static String getCONFIG_FILE_EXT() { return CONFIG_FILE_EXT; }
     public static String getSUMMARY_FILE_NAME() { return SUMMARY_FILE_NAME; }
     public static String getSUMMARY_FILE_EXT() { return SUMMARY_FILE_EXT; }
+    public static String getDETAIL_FILE_NAME() { return DETAIL_FILE_NAME; }
     public static String getFINALIZE_FILE_EXT() { return FINALIZE_FILE_EXT; }
     public static String getSAMPLE_ANNOT_FILE_NAME() 
     { return SAMPLE_ANNOT_FILE_NAME; }

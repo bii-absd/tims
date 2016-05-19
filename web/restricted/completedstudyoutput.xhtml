@@ -16,10 +16,10 @@
                 <p:column headerText="Study ID" styleClass="jsmedcol">
                     <h:outputText value="#{finStudy.study_id}"/>
                 </p:column>
-                <p:column headerText="Study Title" styleClass="col300">
+                <p:column headerText="Study Title">
                     <h:outputText value="#{finStudy.title}"/>
                 </p:column>
-                <p:column headerText="Group" styleClass="col140">
+                <p:column headerText="Group" styleClass="jsmedcol">
                     <h:outputText value="#{finStudy.groupName}"/>
                 </p:column>
                 <p:column headerText="Principal Investigator" styleClass="col140">
@@ -35,6 +35,11 @@
                     <p:commandLink ajax="false" value="Download" 
                                    disabled="#{finStudy.outputReadyStatus}"
                                    action="#{StudiesBean.downloadFinalizedOP(finStudy)}"/>
+                </p:column>
+                <p:column headerText="Detail Output" styleClass="col120">
+                    <p:commandLink ajax="false" value="Download" 
+                                   disabled="#{finStudy.outputReadyStatus}" 
+                                   action="#{StudiesBean.downloadDetailOutput(finStudy)}"/>
                 </p:column>
                 <p:column headerText="Finalized Summary" styleClass="col120">
                     <p:commandLink ajax="false" value="Download" 

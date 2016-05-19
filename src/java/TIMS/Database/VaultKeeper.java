@@ -4,6 +4,7 @@
 package TIMS.Database;
 
 import TIMS.General.Constants;
+import TIMS.General.FileHelper;
 import TIMS.General.Postman;
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -36,6 +37,8 @@ import org.apache.logging.log4j.LogManager;
  * will now check against the new study_subject table. The system will now store
  * the study ID (instead of icd_code) into the finalized_output record.
  * 13-May-2016 - Minor changes as the pipeline output file will now be zipped.
+ * 19-May-2016 - To delete those temporary files generated during closure
+ * of study.
  */
 
 public class VaultKeeper extends Thread {
@@ -81,6 +84,11 @@ public class VaultKeeper extends Thread {
                     closureStatus = Constants.NOT_OK;
                     logger.error("VaultKeeper - Hit error!");
                     break;
+                }
+                // Delete the temporary file here (i.e. fileUri)
+                if (!FileHelper.delete(fileUri)) {
+                    logger.error("FAIL to delete the temporary files generated "
+                               + "during closing of " + study_id);
                 }
             }
                 

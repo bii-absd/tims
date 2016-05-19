@@ -5,8 +5,11 @@ package TIMS.General;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 // Libraries for Log4j
@@ -14,9 +17,9 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 /**
- * FileLoader is an abstract class and not mean to be instantiate, its main job
- * is to perform file uploading/downloading operations for the user at the 
- * client side.
+ * FileHelper is an abstract class and not mean to be instantiate, its main job
+ is to perform file uploading/downloading operations for the user at the 
+ client side.
  * 
  * Author: Tay Wei Hong
  * Date: 06-Jan-2016
@@ -24,13 +27,45 @@ import org.apache.logging.log4j.LogManager;
  * Revision History
  * 06-Jan-2016 - Created with one method, download.
  * 12-Jan-2016 - Fix the static variable issues in AuthenticationBean.
+ * 19-May-2016 - Rename class name from FileLoader to FileHelper. Added 2 static
+ * methods, delete() and zipFiles().
  */
 
-public abstract class FileLoader {
+public abstract class FileHelper {
     // Get the logger for Log4j
     private final static Logger logger = LogManager.
-            getLogger(FileLoader.class.getName());
+            getLogger(FileHelper.class.getName());
 
+    // Delete the file passed in.
+    public static boolean delete(String filepath) {
+        File delFile = new File(filepath);
+        
+        return delFile.delete();
+    }
+    
+    // Zip the file(s) in srcFiles to zip file zipFile.
+    public static void zipFiles(String zipFile, String[] srcFiles) 
+            throws IOException {
+        byte[] buffer = new byte[2048];
+        FileOutputStream fos = new FileOutputStream(zipFile);
+        
+        try (ZipOutputStream zos = new ZipOutputStream(fos)) {
+            for (String srcFile : srcFiles) {
+                File toZip = new File(srcFile);
+                try (FileInputStream fis = new FileInputStream(toZip)) {
+                    zos.putNextEntry(new ZipEntry(toZip.getName()));
+                    int len;
+                        
+                    while ((len = fis.read(buffer)) > 0) {
+                        zos.write(buffer, 0, len);
+                    }
+                        
+                    zos.closeEntry();
+                }
+            }
+        }
+    }
+    
     // Download the file from the filepath.
     public static void download(String filepath) {
        // Get ready the file for user to download

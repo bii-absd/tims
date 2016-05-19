@@ -4,6 +4,7 @@
 package TIMS.Database;
 
 import TIMS.General.Constants;
+import TIMS.General.FileHelper;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -31,6 +32,8 @@ import org.apache.logging.log4j.LogManager;
  * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
  * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
  * (Institution - Department - Group).
+ * 19-May-2016 - To delete the consolidated output, detail output, and report 
+ * summary once the un-finalization has completed.
  */
 
 public class DataVoid extends Thread {
@@ -91,6 +94,18 @@ public class DataVoid extends Thread {
                 // All the SQL statements executed successfully, commit the changes.
                 logger.debug("DataVoid - Commit transaction.");
                 conn.commit();
+                // Delete the consolidated output, detail output, and report 
+                // summary from the application folder.
+                Study tmp = StudyDB.getStudyObject(study_id);
+                if (!FileHelper.delete(tmp.getFinalized_output())) {
+                    logger.error("FAIL to delete consolidated output of " + study_id);
+                }
+                if (!FileHelper.delete(tmp.getSummary())) {
+                    logger.error("FAIL to delete finalized summary report of " + study_id);
+                }
+                if (!FileHelper.delete(tmp.getDetail_files())) {
+                    logger.error("FAIL to delete zipped detail output of " + study_id);
+                }
             }
             else {
                 // Error occurred during unfinalization, rollback the transaction.

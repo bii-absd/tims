@@ -3,6 +3,8 @@
  */
 package TIMS.Database;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -24,19 +26,41 @@ import java.text.SimpleDateFormat;
  * normalization, and one new method getInputDesc().
  * 12-Apr-2016 - Added one new field, summarization.
  * 14-Apr-2016 - Change type for submit_time to Timestamp.
+ * 19-May-2016 - Added one attribute detail_output. Update the constructor to
+ * receive the FinalizingJobEntry parameters directly from the database.
  */
 
 public class FinalizingJobEntry {
     private int job_id, input_sn;
     private String study_id, tid, pipeline_name, user_id, 
-            chip_type, normalization, summarization;
+            chip_type, normalization, summarization, detail_output;
     private Timestamp submit_time;
     private final static DateFormat df = new SimpleDateFormat("dd-MMM-yyyy hh:mmaa");
 
+    // Construct the FinalizingJobEntry object directly using the result set
+    // returned from the database query.
+    public FinalizingJobEntry(ResultSet rs, String pipeline_name) 
+            throws SQLException {
+        this.job_id = rs.getInt("job_id");
+        this.input_sn = rs.getInt("input_sn");
+        this.study_id = rs.getString("study_id");
+        this.tid = rs.getString("tid");
+        this.pipeline_name = pipeline_name;
+        this.submit_time = rs.getTimestamp("submit_time");
+        this.user_id = rs.getString("user_id");
+        this.chip_type = rs.getString("chip_type");
+        this.normalization = rs.getString("normalization");
+        this.summarization = rs.getString("summarization");
+        this.detail_output = rs.getString("detail_output");
+    }
+    
+    // Full constructor.
+    // NOT IN USE ANYMORE!
+    /*
     public FinalizingJobEntry(int job_id, int input_sn, String study_id, 
             String tid, String pipeline_name, Timestamp submit_time, 
             String user_id, String chip_type, String normalization, 
-            String summarization) 
+            String summarization, String detail_output) 
     {
         this.job_id = job_id;
         this.input_sn = input_sn;
@@ -48,8 +72,10 @@ public class FinalizingJobEntry {
         this.chip_type = chip_type;
         this.normalization = normalization;
         this.summarization = summarization;
+        this.detail_output = detail_output;
     }
-
+    */
+    
     // Return a string representation of this object.
     @Override
     public String toString() {
@@ -114,4 +140,8 @@ public class FinalizingJobEntry {
     { return summarization; }
     public void setSummarization(String summarization) 
     { this.summarization = summarization; }
+    public String getDetail_output() 
+    { return detail_output; }
+    public void setDetail_output(String detail_output) 
+    { this.detail_output = detail_output; }
 }

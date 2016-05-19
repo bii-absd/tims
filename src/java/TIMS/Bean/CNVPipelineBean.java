@@ -45,6 +45,8 @@ import javax.naming.NamingException;
  * phenotype_column) from submitted_job table.
  * 14-Apr-2016 - Changes due to the type change (i.e. to Timestamp) for 
  * submit_time and complete_time in submitted_job table.
+ * 19-May-2016 - Changes due to the addition attribute (i.e. detail_output) in 
+ * submitted_job table.
  */
 
 @ManagedBean (name="cnvPBean")
@@ -104,7 +106,7 @@ public class CNVPipelineBean extends GEXAffymetrixBean {
     }
 
     @Override
-    public Boolean insertJob(String outputFilePath, String reportFilePath) {
+    public Boolean insertJob() {
         Boolean result = Constants.OK;
         // job_id will not be used during insertion, just send in any value will
         // do e.g. 0
@@ -114,11 +116,12 @@ public class CNVPipelineBean extends GEXAffymetrixBean {
         // 
         // SubmittedJob(job_id, study_id, user_id, pipeline_name, status_id, 
         // submit_time, complete_time, chip_type, input_sn, normalization, 
-        // summarization, output_file, report)
+        // summarization, output_file, detail_output, report)
         SubmittedJob newJob = 
                 new SubmittedJob(0, getStudyID(), userName, pipelineName, 1,
                                  submitTimeInDB, null, "NA", input_sn, 
-                                 "NA", getSummarization(), outputFilePath, reportFilePath);
+                                 "NA", getSummarization(), pipelineOutput, 
+                                 detailOutput, pipelineReport);
         
         try {
             // Store the job_id of the inserted record

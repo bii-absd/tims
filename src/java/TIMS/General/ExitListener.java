@@ -4,7 +4,6 @@
 package TIMS.General;
 
 import TIMS.Database.SubmittedJobDB;
-import java.io.File;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.EventListener;
@@ -36,6 +35,8 @@ import org.apache.logging.log4j.LogManager;
  * submit_time and complete_time in submitted_job table.
  * 13-May-2016 - To zip the output file once it has been generated. To delete
  * the original output file after it has been zipped.
+ * 19-May-2016 - To zip the detail output file once it has been generated. To
+ * delete the original detail output file after it has been zipped.
  */
 
 public class ExitListener implements EventListener {
@@ -49,20 +50,32 @@ public class ExitListener implements EventListener {
     // to the process return status.
     public void processFinished(int job_id, String study_id, int result) {
         if (result == 0) {
-            SubmittedJobDB.updateJobStatusToCompleted(job_id);
-            logger.debug("Job status updated to completed. ID: " + job_id);
             // Zip the output file.
             String opPath = SubmittedJobDB.zipOutputFile(job_id);
+            
             if (opPath != null) {
                 // Delete the original output file to free up memory space.
-                File opFile = new File(opPath);
-                if (opFile.delete()) {
+                if (FileHelper.delete(opPath)) {
                     logger.debug("Original output file for Job ID " + job_id + " deleted.");
                 }
                 else {
                     logger.error("FAIL to delete original output file!");
                 }
             }
+            // Zip the detail output file.
+            String doPath = SubmittedJobDB.zipDetailOutput(job_id);
+            
+            if (doPath != null) {
+                // Delete the original detail output to free up memory space.
+                if (FileHelper.delete(doPath)) {
+                    logger.debug("Original detail output for Job ID " + job_id + " deleted.");
+                }
+                else {
+                    logger.error("FAIL to delete original detail output!");
+                }
+            }            
+            SubmittedJobDB.updateJobStatusToCompleted(job_id);
+            logger.debug("Job status updated to completed. ID: " + job_id);
             // Send the status email.
             Postman.sendJobStatusEmail(job_id, study_id, Constants.OK);
         }

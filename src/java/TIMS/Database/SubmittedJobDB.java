@@ -4,6 +4,7 @@
 package TIMS.Database;
 
 import TIMS.General.Constants;
+import TIMS.General.FileHelper;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -99,6 +100,7 @@ import org.apache.logging.log4j.LogManager;
  * submit_time and complete_time in submitted_job table.
  * 13-May-2016 - Added 3 new methods, updateOutputPath(), zipOutputFile() and
  * unzipOutputFile().
+ * 19-May-2016 - Implemented the module for Pipeline Detail Output File.
  */
 
 public abstract class SubmittedJobDB {
@@ -118,8 +120,9 @@ public abstract class SubmittedJobDB {
         String query = "INSERT INTO submitted_job"
                      + "(study_id, user_id, pipeline_name, status_id, "
                      + "submit_time, chip_type, input_sn,"
-                     + "normalization, summarization, output_file, report) "
-                     + "VALUES(?,?,?,?,?,?,?,?,?,?,?)";
+                     + "normalization, summarization, output_file, "
+                     + "detail_output, report) "
+                     + "VALUES(?,?,?,?,?,?,?,?,?,?,?,?)";
         
         conn = DBHelper.getDSConn();
         // To request for the return of generated key upon successful insertion.
@@ -137,7 +140,8 @@ public abstract class SubmittedJobDB {
         stm.setString(8, job.getNormalization());
         stm.setString(9, job.getSummarization());
         stm.setString(10, job.getOutput_file());
-        stm.setString(11, job.getReport());
+        stm.setString(11, job.getDetail_output());
+        stm.setString(12, job.getReport());
         // Execute the INSERT statement
         stm.executeUpdate();
         // Retrieve and store the last inserted Job ID
@@ -246,29 +250,47 @@ public abstract class SubmittedJobDB {
         }
     }
     
+    // Update the detail_output location. Will be called after the detail_output
+    // has been zipped.
+    public static void updateDetailOutputPath(int job_id, String detail_output) {
+        String query = "UPDATE submitted_job SET detail_output = \'"
+                     + detail_output + "\' WHERE job_id = " + job_id;
+        try {
+            updateFilePath(query);
+            logger.debug("Job ID " + job_id + " detail output updated to " 
+                         + detail_output);
+        }
+        catch (SQLException|NamingException e) {
+            logger.error("FAIL to update detail output!");
+            logger.error(e.getMessage());
+        }
+        
+    }
     // Update the output_file location. Will be called after the output_file
     // has been zipped.
     public static void updateOutputPath(int job_id, String output_file) {
-        Connection conn = null;
-        String query = "UPDATE submitted_job SET output_file = ? "
-                     + "WHERE job_id = " + job_id;
-        
+        String query = "UPDATE submitted_job SET output_file = \'"
+                     + output_file + "\' WHERE job_id = " + job_id;
         try {
-            conn = DBHelper.getDSConn();
-            PreparedStatement stm = conn.prepareStatement(query);
-            stm.setString(1, output_file);
-            stm.executeUpdate();
-            stm.close();
-            logger.debug("Job ID " + job_id + " output filepath updated to " 
+            updateFilePath(query);
+            logger.debug("Job ID " + job_id + " output file updated to " 
                          + output_file);
         }
         catch (SQLException|NamingException e) {
-            logger.error("FAIL to update job input SN!");
+            logger.error("FAIL to update output file!");
             logger.error(e.getMessage());
         }
-        finally {
-            DBHelper.closeDSConn(conn);
+    }
+    
+    // Helper function to update the file path of this submitted job.
+    private static void updateFilePath(String query) 
+            throws SQLException, NamingException 
+    {
+        Connection conn = DBHelper.getDSConn();
+        try (PreparedStatement stm = conn.prepareStatement(query)) {
+            stm.executeUpdate();
         }
+        DBHelper.closeDSConn(conn);
     }
     
     // Return the list of pipeline technologies used in this study.
@@ -343,9 +365,9 @@ public abstract class SubmittedJobDB {
         Connection conn = null;
         List<FinalizingJobEntry> jobList = new ArrayList<>();
         String query = "SELECT study_id, job_id, tid, submit_time, user_id, "
-                     + "chip_type, input_sn, normalization, summarization "
-                     + "FROM submitted_job sj INNER JOIN pipeline pl "
-                     + "ON sj.pipeline_name = pl.name WHERE "
+                     + "chip_type, input_sn, normalization, summarization, "
+                     + "detail_output FROM submitted_job sj INNER JOIN "
+                     + "pipeline pl ON sj.pipeline_name = pl.name WHERE "
                      + "status_id = 3 AND study_id = ? AND "
                      + "pipeline_name = ? ORDER BY job_id";
         
@@ -357,19 +379,7 @@ public abstract class SubmittedJobDB {
             ResultSet rs = stm.executeQuery();
             
             while (rs.next()) {
-                FinalizingJobEntry tmp = new FinalizingJobEntry(
-                                            rs.getInt("job_id"),
-                                            rs.getInt("input_sn"),
-                                            rs.getString("study_id"),
-                                            rs.getString("tid"),
-                                            pipeline,
-                                            rs.getTimestamp("submit_time"),
-                                            rs.getString("user_id"),
-                                            rs.getString("chip_type"),
-                                            rs.getString("normalization"),
-                                            rs.getString("summarization"));
-                
-                jobList.add(tmp);
+                jobList.add(new FinalizingJobEntry(rs, pipeline));
             }
             
             stm.close();
@@ -387,6 +397,7 @@ public abstract class SubmittedJobDB {
         return jobList;
     }
     
+    /*
     // Return the list of completed jobs that are ready to be finalized for
     // this study.
     // NOT IN USE.
@@ -395,9 +406,9 @@ public abstract class SubmittedJobDB {
         Connection conn = null;
         List<FinalizingJobEntry> jobList = new ArrayList<>();
         String query = "SELECT study_id, job_id, tid, pipeline_name, submit_time, "
-                     + "user_id, chip_type, input_sn, normalization, summarization "
-                     + "FROM submitted_job sj INNER JOIN pipeline pl "
-                     + "ON sj.pipeline_name = pl.name WHERE "
+                     + "user_id, chip_type, input_sn, normalization, summarization, "
+                     + "detail_output FROM submitted_job sj INNER JOIN "
+                     + "pipeline pl ON sj.pipeline_name = pl.name WHERE "
                      + "status_id = 3 AND study_id = ? AND tid = ? "
                      + "ORDER BY job_id";
 
@@ -409,18 +420,7 @@ public abstract class SubmittedJobDB {
             ResultSet rs = stm.executeQuery();
             
             while (rs.next()) {
-                FinalizingJobEntry tmp = new FinalizingJobEntry(
-                                            rs.getInt("job_id"),
-                                            rs.getInt("input_sn"),
-                                            rs.getString("study_id"),
-                                            rs.getString("tid"),
-                                            rs.getString("pipeline_name"),
-                                            rs.getTimestamp("submit_time"),
-                                            rs.getString("user_id"),
-                                            rs.getString("chip_type"),
-                                            rs.getString("normalization"),
-                                            rs.getString("summarization"));
-                jobList.add(tmp);
+                jobList.add(new FinalizingJobEntry(rs, rs.getString("pipeline_name")));
             }
             
             stm.close();
@@ -437,6 +437,7 @@ public abstract class SubmittedJobDB {
         
         return jobList;
     }
+    */
     
     // Return the list of jobs that have been submitted by all the users.
     public static List<SubmittedJob> getAllUsersJobs() {
@@ -478,6 +479,7 @@ public abstract class SubmittedJobDB {
                                 rs.getString("normalization"),
                                 rs.getString("summarization"),
                                 rs.getString("output_file"),
+                                rs.getString("detail_output"),
                                 rs.getString("report"));
                 
                 jobList.add(job);
@@ -574,12 +576,39 @@ public abstract class SubmittedJobDB {
         return jobIDList;
     }
     
+    // Return the detail output filepath for this job.
+    public static String getDetailOutputPath(int jobID) {
+        String query = "SELECT detail_output FROM submitted_job WHERE job_id = " 
+                     + jobID;
+        String path = getFilePath(query, "detail_output");
+        
+        if (path.compareTo(Constants.DATABASE_INVALID_STR) != 0) {
+            logger.debug("Detail output file for Job ID " + jobID + 
+                         " stored at " + path);
+        }
+        
+        return path;
+    }
+
     // Return the output filepath for this job.
     public static String getOutputPath(int jobID) {
-        Connection conn = null;
-        String path = Constants.DATABASE_INVALID_STR;
         String query = "SELECT output_file FROM submitted_job WHERE job_id = " 
                      + jobID;
+        String path = getFilePath(query, "output_file");
+        
+        if (path.compareTo(Constants.DATABASE_INVALID_STR) != 0) {
+            logger.debug("Output file for Job ID " + jobID + 
+                         " stored at " + path);
+        }
+        
+        return path;
+    }
+
+    // Helper function to retrieve the filepath of this fileType using the 
+    // query passed in.
+    private static String getFilePath(String query, String fileType) {
+        Connection conn = null;
+        String path = Constants.DATABASE_INVALID_STR;
         
         try {
             conn = DBHelper.getDSConn();
@@ -587,15 +616,13 @@ public abstract class SubmittedJobDB {
             ResultSet rs = stm.executeQuery();
             
             if (rs.next()) {
-                path = rs.getString("output_file");
-                logger.debug("Output file for Job ID " + jobID + 
-                             " stored at " + path);
+                path = rs.getString(fileType);
             }
             
             stm.close();
         }
         catch (SQLException|NamingException e) {
-            logger.error("FAIL to retrieve output filepath!");
+            logger.error("FAIL to retrieve " + fileType);
             logger.error(e.getMessage());
         }
         finally {
@@ -634,49 +661,67 @@ public abstract class SubmittedJobDB {
         return plName;
     }
     
-    // Zip the output file of this submitted job, and update the output_file
-    // path to the zipped output filepath. The original output filepath will
+    // Zip the detail output file of this submitted job, and update the 
+    // detail_output path to the zipped filepath. The original filepath will
     // be returned.
+    public static String zipDetailOutput(int job_id) {
+        String doPath = getDetailOutputPath(job_id);
+        String zipPath = zipTextFile(doPath);
+        
+        if (zipPath != null) {
+            // Update the detail output filepath to the zipped version.
+            updateDetailOutputPath(job_id, zipPath);
+        }
+        else {
+            // Failed to zip the detail output file, return null.
+            doPath = null;
+        }
+        
+        return doPath;
+    }
+    // Zip the output file of this submitted job, and update the output_file
+    // path to the zipped filepath. The original filepath will be returned.
     public static String zipOutputFile(int job_id) {
-        String result = null;
-        byte[] buffer = new byte[2048];
         String opPath = getOutputPath(job_id);
-        String[] opCnts = opPath.split("\\" + File.separator);
+        String zipPath = zipTextFile(opPath);
+        
+        if (zipPath != null) {
+            // Update the output filepath to the zipped version.
+            updateOutputPath(job_id, zipPath);
+        }
+        else {
+            // Failed to zip the output file, return null.
+            opPath = null;
+        }
+        
+        return opPath;
+    }
+    
+    // Helper function to zip the text file (i.e. .txt), and return the 
+    // filepath of the zipped text file.
+    private static String zipTextFile(String filepath) {
+        String result = null;
+        String[] srcFile = {filepath};
         // Remove the .txt extension from the filename, and replace it with .zip
-        String zipPath = opPath.substring
-                         (0, opPath.indexOf(Constants.getOUTPUTFILE_EXT()));
+        String zipPath = filepath.substring
+                         (0, filepath.indexOf(Constants.getOUTPUTFILE_EXT()));
         zipPath += Constants.getZIPFILE_EXT();
 
         try {
-            FileOutputStream fos = new FileOutputStream(zipPath);
-            ZipOutputStream zos = new ZipOutputStream(fos);
-            ZipEntry ze = new ZipEntry(opCnts[opCnts.length-1]);
-            zos.putNextEntry(ze);
-            FileInputStream fis = new FileInputStream(opPath);
-            int len;
-            
-            while ((len = fis.read(buffer)) > 0) {
-                zos.write(buffer, 0, len);
-            }
-            
-            fis.close();
-            zos.closeEntry();
-            zos.close();
+            FileHelper.zipFiles(zipPath, srcFile);
+            // Return the zipped output filepath.
+            result = zipPath;
+            logger.debug(filepath + " zipped.");
             // Added the below statement due to a bug in Java that prevent the
             // original output file for being deleted.
             System.gc();
-            // Update the output filepath to the zipped version.
-            updateOutputPath(job_id, zipPath);
-            // Return the original output filepath.
-            result = opPath;
-            logger.debug("Output file for Job ID " + job_id + " zipped.");
         }
         catch (IOException e) {
-            logger.error("FAIL to zip output file!");
+            logger.error("FAIL to zip " + filepath);
             logger.error(e.getMessage());
         }
         
-        return result;
+        return result;        
     }
     
     // Unzip the output file of this submitted job; to be called during 
@@ -713,6 +758,9 @@ public abstract class SubmittedJobDB {
             zis.closeEntry();
             // Return the unzipped output filepath.
             result = opPath;
+            // Added the below statement due to a bug in Java that prevent the
+            // temporary output file for being deleted.
+            System.gc();
         }
         catch (IOException e) {
             logger.error("FAIL to unzip output file!");

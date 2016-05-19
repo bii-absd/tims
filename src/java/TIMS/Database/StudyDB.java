@@ -4,9 +4,7 @@
 package TIMS.Database;
 
 import TIMS.General.Constants;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
+import TIMS.General.FileHelper;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -15,8 +13,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 // Libraries for Java Extension
 import javax.naming.NamingException;
 // Libraries for Log4j
@@ -74,6 +70,8 @@ import org.apache.logging.log4j.LogManager;
  * 12-Apr-2016 - Added new method getAllStudyHash(), to return all the unclosed
  * Study ID for administrator selection during raw data upload.
  * 13-May-2016 - Added one new method, zipFinalizedOutput().
+ * 19-May-2016 - Changes due to the addition attribute (i.e. detail_files) in
+ * Study table.
  */
 
 public abstract class StudyDB {
@@ -94,22 +92,9 @@ public abstract class StudyDB {
             ResultSet rs = stm.executeQuery();
             
             if (rs.next()) {
-                study = new Study(
-                            rs.getString("study_id"),
-                            rs.getString("title"),
-                            rs.getString("grp_id"),
-                            rs.getString("annot_ver"),
-                            rs.getString("icd_code"),
-                            rs.getString("description"),
-                            rs.getString("background"),
-                            rs.getString("grant_info"),
-                            rs.getString("finalized_output"),
-                            rs.getString("summary"),
-                            rs.getDate("start_date"),
-                            rs.getDate("end_date"),
-                            rs.getBoolean("finalized"),
-                            rs.getBoolean("closed"));
+                study = new Study(rs);
             }
+            stm.close();
         }
         catch (SQLException|NamingException e) {
             logger.error("FAIL to retrieve study " + studyID);
@@ -123,7 +108,7 @@ public abstract class StudyDB {
     }
     
     // Insert the new study into database. For every new study created, 
-    // the finalized_output and summary fields will be empty.
+    // the finalized_output, detail_files and summary fields will be empty.
     public static Boolean insertStudy(Study study) {
         Connection conn = null;
         Boolean result = Constants.OK;
@@ -279,50 +264,54 @@ public abstract class StudyDB {
     
     // Update the finalized_output with the file path of the output file.
     public static void updateStudyFinalizedFile(String studyID, String path) {
-        Connection conn = null;
-        String query = "UPDATE study SET finalized_output = ? WHERE study_id = ?";
-        
+        String query = "UPDATE study SET finalized_output = \'" + path 
+                     + "\' WHERE study_id = \'" + studyID + "\'";
         try {
-            conn = DBHelper.getDSConn();
-            PreparedStatement stm = conn.prepareStatement(query);
-            stm.setString(1, path);
-            stm.setString(2, studyID);
-            stm.executeUpdate();
-            stm.close();
-            
+            updateGeneratedFile(query);
             logger.debug(studyID + " finalized file path updated to " + path);
         }
         catch (SQLException|NamingException e) {
             logger.error("FAIL to update study's finalized file path!");
             logger.error(e.getMessage());
         }
-        finally {
-            DBHelper.closeDSConn(conn);
-        }
-    }
-    
-    // Updated the summary with the file path of the summary report.
+    }    
+    // Update the summary with the file path of the summary report.
     public static void updateStudySummaryReport(String studyID, String path) {
-        Connection conn = null;
-        String query = "UPDATE study SET summary = ? WHERE study_id = ?";
-        
+        String query = "UPDATE study SET summary = \'" + path 
+                     + "\' WHERE study_id = \'" + studyID + "\'";
         try {
-            conn = DBHelper.getDSConn();
-            PreparedStatement stm = conn.prepareStatement(query);
-            stm.setString(1, path);
-            stm.setString(2, studyID);
-            stm.executeUpdate();
-            stm.close();
-            
+            updateGeneratedFile(query);
             logger.debug(studyID + " summary report path updated to " + path);
         }
         catch (SQLException|NamingException e) {
             logger.error("FAIL to update study's summary report path!");
             logger.error(e.getMessage());
         }
-        finally {
-            DBHelper.closeDSConn(conn);
+    }
+    // Update the detail_files with the file path of the detail output file.
+    public static void updateDetailOutputFiles(String studyID, String path) {
+        String query = "UPDATE study SET detail_files = \'" + path 
+                     + "\' WHERE study_id = \'" + studyID + "\'";
+        try {
+            updateGeneratedFile(query);
+            logger.debug(studyID + " detail output path updated to " + path);
         }
+        catch (SQLException|NamingException e) {
+            logger.error("FAIL to update study's detail output path!");
+            logger.error(e.getMessage());
+        }
+    }
+    
+    // Helper function to update the file path of the finalized output, report
+    // summary, and detail output files.
+    private static void updateGeneratedFile(String query) 
+            throws SQLException, NamingException 
+    {
+        Connection conn = DBHelper.getDSConn();
+        PreparedStatement stm = conn.prepareStatement(query);
+        stm.executeUpdate();
+        stm.close();
+        DBHelper.closeDSConn(conn);
     }
     
     // Return the list of 'opened' (i.e. not finalized yet) Study ID setup under
@@ -472,23 +461,7 @@ public abstract class StudyDB {
             ResultSet rs = stm.executeQuery();
 
             while (rs.next()) {
-                Study tmp = new Study(
-                            rs.getString("study_id"),
-                            rs.getString("title"),
-                            rs.getString("grp_id"),
-                            rs.getString("annot_ver"),
-                            rs.getString("icd_code"),
-                            rs.getString("description"),
-                            rs.getString("background"),
-                            rs.getString("grant_info"),
-                            rs.getString("finalized_output"),
-                            rs.getString("summary"),
-                            rs.getDate("start_date"),
-                            rs.getDate("end_date"),
-                            rs.getBoolean("finalized"),
-                            rs.getBoolean("closed"));
-                
-                deptStudies.add(tmp);
+                deptStudies.add(new Study(rs));
             }
             
             stm.close();
@@ -544,23 +517,7 @@ public abstract class StudyDB {
             ResultSet rs = stm.executeQuery();
             
             while (rs.next()) {
-                Study tmp = new Study(
-                            rs.getString("study_id"),
-                            rs.getString("title"),
-                            rs.getString("grp_id"),
-                            rs.getString("annot_ver"),
-                            rs.getString("icd_code"),
-                            rs.getString("description"),
-                            rs.getString("background"),
-                            rs.getString("grant_info"),
-                            rs.getString("finalized_output"),
-                            rs.getString("summary"),
-                            rs.getDate("start_date"),
-                            rs.getDate("end_date"),
-                            rs.getBoolean("finalized"),
-                            rs.getBoolean("closed"));
-                
-                finalizedStudies.add(tmp);
+                finalizedStudies.add(new Study(rs));
             }
             
             stm.close();
@@ -591,23 +548,7 @@ public abstract class StudyDB {
             ResultSet rs = stm.executeQuery();
         
             while (rs.next()) {
-                Study tmp = new Study(
-                            rs.getString("study_id"),
-                            rs.getString("title"),
-                            rs.getString("grp_id"),
-                            rs.getString("annot_ver"),
-                            rs.getString("icd_code"),
-                            rs.getString("description"),
-                            rs.getString("background"),
-                            rs.getString("grant_info"),
-                            rs.getString("finalized_output"),
-                            rs.getString("summary"),
-                            rs.getDate("start_date"),
-                            rs.getDate("end_date"),
-                            rs.getBoolean("finalized"),
-                            rs.getBoolean("closed"));
-                    
-                studyList.add(tmp);
+                studyList.add(new Study(rs));
             }
             
             stm.close();
@@ -629,37 +570,23 @@ public abstract class StudyDB {
     // output filepath will be returned.
     public static String zipFinalizedOutput(String study_id) {
         String result = null;
-        byte[] buffer = new byte[2048];
         String foPath = getStudyObject(study_id).getFinalized_output();
-        String[] foCnts = foPath.split("\\" + File.separator);
+        String[] srcFile = {foPath};
         // Remove the .txt extension from the filename, and replace it with .zip
         String zipPath = foPath.substring
                          (0, foPath.indexOf(Constants.getOUTPUTFILE_EXT()));
         zipPath += Constants.getZIPFILE_EXT();
         
         try {
-            FileOutputStream fos = new FileOutputStream(zipPath);
-            ZipOutputStream zos = new ZipOutputStream(fos);
-            ZipEntry ze = new ZipEntry(foCnts[foCnts.length-1]);
-            zos.putNextEntry(ze);
-            FileInputStream fis = new FileInputStream(foPath);
-            int len;
-            
-            while ((len = fis.read(buffer)) > 0) {
-                zos.write(buffer, 0, len);
-            }
-            
-            fis.close();
-            zos.closeEntry();
-            zos.close();
+            FileHelper.zipFiles(zipPath, srcFile);
+            // Return the original finalized output filepath.
+            result = foPath;
+            logger.debug("Finalized output for Study ID " + study_id + " zipped.");
             // Added the below statement due to a bug in Java that prevent the
             // original output file for being deleted.
             System.gc();
             // Update the finalized output filepath to the zipped version.
             updateStudyFinalizedFile(study_id, zipPath);
-            // Return the original finalized output filepath.
-            result = foPath;
-            logger.debug("Finalized output for Study ID " + study_id + " zipped.");
         }
         catch (IOException e) {
             logger.error("FAIL to zip finalized output file!");

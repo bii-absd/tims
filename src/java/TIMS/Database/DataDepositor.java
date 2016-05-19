@@ -4,6 +4,7 @@
 package TIMS.Database;
 
 import TIMS.General.Constants;
+import TIMS.General.FileHelper;
 import TIMS.General.Postman;
 import TIMS.General.ResourceRetriever;
 import java.io.BufferedReader;
@@ -91,6 +92,8 @@ import org.apache.pdfbox.pdmodel.graphics.xobject.PDJpeg;
  * 13-May-2016 - Bug fix: To ensure the summary report has enough space to hold 
  * the last section of the report. Minor changes as the pipeline output file 
  * will now be zipped.
+ * 19-May-2016 - To delete those temporary files generated during finalization
+ * of study. To zip all the detail output file(s) into a single zip file.
  */
 
 public class DataDepositor extends Thread {
@@ -165,6 +168,11 @@ public class DataDepositor extends Thread {
                     logger.error("DataDepositor - Hit error!");
                     break;
                 }
+                // Delete the temporary file here (i.e. fileUri)
+                if (!FileHelper.delete(fileUri)) {
+                    logger.error("FAIL to delete the temporary files generated "
+                               + "during finalization of " + study_id);
+                }
             }
             
             if (finalizeStatus) {
@@ -182,9 +190,16 @@ public class DataDepositor extends Thread {
             logger.debug("DataDepositor completed - Set auto-commit to ON.");
             
             if (finalizeStatus) {
+                String zipFile = Constants.getSYSTEM_PATH() + 
+                                 Constants.getFINALIZE_PATH() + study_id + 
+                                 Constants.getDETAIL_FILE_NAME() + 
+                                 Constants.getZIPFILE_EXT();
+                String[] srcFiles = new String[jobList.size()];
+                int count = 0;
                 // Update job status to finalized
                 for (FinalizingJobEntry job : jobList) {
                     SubmittedJobDB.updateJobStatusToFinalized(job.getJob_id());
+                    srcFiles[count++] = job.getDetail_output();
                 }
                 // Generate the summary report for this study.
                 genPDFSummaryReport();
@@ -193,6 +208,17 @@ public class DataDepositor extends Thread {
                 // Generate the consolidated output for this study.
                 DataRetriever retrieverThread = new DataRetriever(study_id, userName);
                 retrieverThread.start();
+                // Proceed to zip the detail output files from all the selected
+                // pipelines.
+                try {
+                    FileHelper.zipFiles(zipFile, srcFiles);
+                    logger.debug("Detail output for Study " + study_id + " zipped.");
+                    StudyDB.updateDetailOutputFiles(study_id, zipFile);
+                }
+                catch (IOException e) {
+                    logger.error("FAIL to zip detail output for Study " + study_id);
+                    logger.error(e.getMessage());
+                }
             }
             else {
                 // Finalization failed.

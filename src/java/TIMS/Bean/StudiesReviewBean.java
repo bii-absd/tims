@@ -9,7 +9,7 @@ import TIMS.Database.StudyDB;
 import TIMS.Database.UserAccount;
 import TIMS.Database.UserAccountDB;
 import TIMS.General.Constants;
-import TIMS.General.FileLoader;
+import TIMS.General.FileHelper;
 import java.io.Serializable;
 import java.util.List;
 // Libraries for Java Extension
@@ -39,6 +39,7 @@ import org.apache.logging.log4j.LogManager;
  * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
  * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
  * (Institution - Department - Group).
+ * 19-May-2016 - To allow user to download the detail output file.
  */
 
 @ManagedBean (name = "StudiesBean")
@@ -101,14 +102,19 @@ public class StudiesReviewBean implements Serializable {
     public void downloadFinalizedOP(Study study) {
         String detail = "Finalized output " + study.getFinalized_output();
         ActivityLogDB.recordUserActivity(userName, Constants.DWL_FIL, detail);
-        FileLoader.download(study.getFinalized_output());
+        FileHelper.download(study.getFinalized_output());
     }
-    
+    // Download the detail output for this study.
+    public void downloadDetailOutput(Study study) {
+        String detail = "Detail output " + study.getDetail_files();
+        ActivityLogDB.recordUserActivity(userName, Constants.DWL_FIL, detail);
+        FileHelper.download(study.getDetail_files());
+    }
     // Download the finalized summary report for this study.
     public void downloadSummary(Study study) {
         String detail = "Summary report " + study.getSummary();
         ActivityLogDB.recordUserActivity(userName, Constants.DWL_FIL, detail);
-        FileLoader.download(study.getSummary());
+        FileHelper.download(study.getSummary());
     }
     
     // Machine generated getters.
