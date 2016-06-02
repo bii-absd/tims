@@ -8,7 +8,6 @@ import TIMS.Database.Department;
 import TIMS.Database.DepartmentDB;
 import TIMS.Database.Group;
 import TIMS.Database.GroupDB;
-import TIMS.Database.InstDeptGrp;
 import TIMS.Database.Institution;
 import TIMS.Database.InstitutionDB;
 import TIMS.Database.UserAccountDB;
@@ -28,7 +27,6 @@ import org.primefaces.event.RowEditEvent;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.primefaces.context.RequestContext;
-import org.primefaces.event.TabChangeEvent;
 import org.primefaces.util.ComponentUtils;
 
 /**
@@ -58,6 +56,7 @@ import org.primefaces.util.ComponentUtils;
  * eligible PIs under the institution that the department/group belongs to.
  * 07-Apr-2016 - During creation/updating of group, the department ID and PI IDs
  * hashmap will be build using the institution selected as a filtering criteria.
+ * 03-Jun-2016 - Remove unused code.
  */
 
 @ManagedBean (name="grpMgntBean")
@@ -75,7 +74,6 @@ public class GroupManagementBean implements Serializable {
     private List<Institution> instList;
     private List<Department> deptList;
     private List<Group> grpList;
-    private List<InstDeptGrp> idgList;
     private LinkedHashMap<String,String> instNameHash, instDeptHash, instPiIDHash;
     // Store the user ID of the current user.
     private final String userName;
@@ -94,15 +92,9 @@ public class GroupManagementBean implements Serializable {
         instList = InstitutionDB.getInstList();
         deptList = DepartmentDB.getDeptList();                    
         grpList = GroupDB.getFullGrpList();
-//        idgList = GroupDB.getInstDeptGrpList();
         instNameHash = InstitutionDB.getAllInstNameHash();
     }
 
-    // To catch the tab change event.
-    public void onTabChange(TabChangeEvent event) {
-        // Do nothing for now.
-    }
-    
     // Create the new institution ID
     public String createNewInstID() {
         Institution newInst = new Institution(inst_id, inst_name);
@@ -296,12 +288,6 @@ public class GroupManagementBean implements Serializable {
     }
     public void setGrpList(List<Group> grpList) {
         this.grpList = grpList;
-    }
-    public List<InstDeptGrp> getIdgList() {
-        return idgList;
-    }
-    public void setIdgList(List<InstDeptGrp> idgList) {
-        this.idgList = idgList;
     }
     public String getInst_id() {
         return inst_id;

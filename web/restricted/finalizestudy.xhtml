@@ -10,16 +10,24 @@
     <ui:define name="title">Finalize Study</ui:define>
     <ui:param name="link" value="#{msg['finalize-study']}"/>
     <ui:define name="content">
-    <h:form id="finStudyForm">
+    <h:form id="selStudyForm">
         <p:panel header="Select Study to finalize (Subject meta data need to be setup before finalization.)" 
                  rendered="#{authBean.PILead}">
-            <p:selectOneMenu id="studyID" required="true" value="#{finalizedBean.study_id}">
-                <f:selectItem itemLabel="Select Study" itemValue=""/>
-                <f:selectItems value="#{finalizedBean.studyHash}"/>
-                <p:ajax update="jobsPanel" listener="#{finalizedBean.studyChange()}"/>
-            </p:selectOneMenu>
+            <h:panelGrid columns="3" id="selStudyPanel">
+                <p:selectOneMenu id="studyID" required="true" value="#{finalizedBean.study_id}">
+                    <f:selectItem itemLabel="Select Study" itemValue="0"/>
+                    <f:selectItems value="#{finalizedBean.studyHash}"/>
+                    <p:ajax update="jobsPanel finButton" listener="#{finalizedBean.studyChange()}"/>
+                </p:selectOneMenu>
+                <p:separator style="width: 40px; height: 25px; background: transparent; border-width: 0px"/>
+                <p:commandButton value="Finalize Study" icon="ui-icon-check" id="finButton"
+                                 oncomplete="PF('dlg').show()" style="height: 25px"
+                                 update=":finStudyForm:subjectMDStatus :finStudyForm:procButton" 
+                                 disabled="#{!finalizedBean.studySelectedStatus}"
+                                 action="#{finalizedBean.prepareForFinalization}"/>
+            </h:panelGrid>
         </p:panel>
-        
+
         <p:panel id="jobsPanel" visible="#{finalizedBean.studySelectedStatus}" 
                  header="Select job to finalize for each pipeline">
             <p:dataTable id="pl0" rendered="#{finalizedBean.studySelectedStatus}" 
@@ -156,14 +164,10 @@
                 <p:column headerText="Finalize" selectionMode="single" 
                           style="width: 40px; text-align: center"/>
             </p:dataTable>
-            <p:separator style="height: 20px"/>
-
-            <p:commandButton value="Finalize" icon="ui-icon-check" 
-                             oncomplete="PF('dlg').show()" 
-                             update="subjectMDStatus @form"
-                             action="#{finalizedBean.prepareForFinalization}"/>
         </p:panel>
-        
+    </h:form>
+
+    <h:form id="finStudyForm">
         <p:dialog header="Study Finalization Review" widgetVar="dlg" 
                   width="440px" resizable="false" closable="false" modal="true">
             <h:outputText id="subjectMDStatus" 
@@ -174,8 +178,9 @@
                 <p:commandButton value="Cancel" title="Back to select job(s) for finalization" 
                                  style="width: 130px" oncomplete="PF('dlg').hide()" 
                                  action="#{finalizedBean.cancelFinalization}"/>
-                <p:commandButton value="Proceed" title="Proceed with the finalization" 
-                                 style="width: 130px" rendered="#{finalizedBean.allowToProceed}" 
+                <p:commandButton id="procButton" 
+                                 value="Proceed" title="Proceed with the finalization" 
+                                 style="width: 130px" disabled="#{!finalizedBean.allowToProceed}" 
                                  action="#{finalizedBean.proceedForFinalization}"/>
             </h:panelGrid>
         </p:dialog>

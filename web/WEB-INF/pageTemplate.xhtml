@@ -15,7 +15,7 @@
     </h:head>
 
     <h:body>
-        <h:form id="template">
+        <h:form id="menuBarForm">
             <h:panelGrid columns="3" cellspacing="0" cellpadding="0" width="100%">
                 <h:panelGroup>
                     <h:graphicImage library="images" name="Astar.jpg" alt="AStar"/>
@@ -68,7 +68,7 @@
                 <p:menuitem styleClass="subheading" value="#{link}"/>
             </p:breadCrumb>
         </h:form>
-        <h:form>
+        <h:form id="timeoutForm">
             <!-- One minute before session is about to expire, warn the user about it -->
             <p:idleMonitor timeout="#{session.maxInactiveInterval * 1000 - 60000}" 
                            onidle="PF('warndlg').show()"/>
@@ -87,7 +87,7 @@
         </h:form>
         <ui:insert name="content">Content</ui:insert>
         
-        <h:form>
+        <h:form id="dockForm">
             <p:separator style="width: 100%; height: 10px"/>
             <p:dock position="bottom">
                 <p:menuitem value="Home" icon="/resources/images/Home.png" 

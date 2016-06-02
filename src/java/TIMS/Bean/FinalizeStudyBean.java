@@ -75,6 +75,8 @@ import org.apache.logging.log4j.LogManager;
  * 04-Apr-2016 - When checking for subject Meta data availability, the system
  * will now check against the new study_subject table.
  * 13-May-2016 - Minor changes as the pipeline output file will now be zipped.
+ * 03-Jun-2016 - Enhanced method getStudySelectedStatus() to handle the case
+ * whereby the study has been un-selected.
  */
 
 @ManagedBean (name="finalizedBean")
@@ -307,7 +309,14 @@ public class FinalizeStudyBean implements Serializable {
     
     // Proceed to select job(s) for finalization after a study has been selected.
     public Boolean getStudySelectedStatus() {
-        return study_id != null;
+        if (study_id != null) {
+            if (study_id.compareTo("0") != 0) {
+                // A study is selected.
+                return true;
+            }
+        }
+        
+        return false;
     }
     
     // If the PI is able to select any Study ID, there is minimum one pipeline

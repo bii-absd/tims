@@ -12,32 +12,6 @@
     <ui:define name="content">
         <p:growl id="grpMgntMsg" sticky="true"/>
         <p:accordionPanel id="acPanel" rendered="#{authBean.administrator}">
-            <p:ajax event="tabChange" listener="#{grpMgntBean.onTabChange}"/>
-            <p:tab id="idg" title="Institution-Department-Group-PI Grouping" 
-                   titleStyleClass="tab-title" rendered="off">
-                <p:dataTable var="idg" rows="15" id="idgTable"
-                             value="#{grpMgntBean.idgList}" paginator="true"
-                             paginatorTemplate="{FirstPageLink} {PreviousPageLink}
-                             {CurrentPageReport} {NextPageLink} {LastPageLink}"
-                             styleClass="table-odd-row table-even-row">
-                    <p:column headerText="Institution" style="text-align: left">
-                        <h:outputText value="#{idg.inst_name}"/>
-                    </p:column>
-                    <p:column headerText="Department" style="text-align: left">
-                        <h:outputText value="#{idg.dept_name}"/>
-                    </p:column>
-                    <p:column headerText="Group" style="text-align: left">
-                        <h:outputText value="#{idg.grp_name}"/>
-                    </p:column>
-                    <p:column headerText="PI Incharge" style="text-align: left">
-                        <h:outputText value="#{idg.pi}"/>
-                    </p:column>
-                    <p:column headerText="Status" styleClass="jssmallcol">
-                        <h:outputText value="#{idg.activeStatus}"/>
-                    </p:column>
-                </p:dataTable>
-            </p:tab>
-            
             <p:tab id="editGrp" title="Edit Group" titleStyleClass="tab-title">
                 <h:form id="editGrpForm">
                     <p:dataTable var="grp" rows="15" id="grpTable" 
