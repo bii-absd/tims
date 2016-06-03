@@ -39,6 +39,7 @@ import org.apache.logging.log4j.LogManager;
  * data path to the administrator after raw data upload.
  * 25-Apr-2016 - To include the study ID and pipeline name in the subject title
  * when sending out the data uploaded status email.
+ * 03-Jun-2016 - Added new method sendUnFinalizationStatusEmail().
  */
 
 public abstract class Postman {
@@ -183,7 +184,13 @@ public abstract class Postman {
             String userName, Boolean status)
     {
         sendTaskStatusEmail(study_id, userName, status, "finalization");
-    }    
+    }
+    // Send a unfinalization status email to notify the user of the status.
+    public static void sendUnFinalizationStatusEmail(String study_id, 
+            String userName, Boolean status) 
+    {
+        sendTaskStatusEmail(study_id, userName, status, "un-finalization");
+    }
     // Send a closure status email to notify the user of the status.
     public static void sendStudyClosureStatusEmail(String study_id, 
             String userName, Boolean status) 

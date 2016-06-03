@@ -94,6 +94,8 @@ import org.apache.pdfbox.pdmodel.graphics.xobject.PDJpeg;
  * will now be zipped.
  * 19-May-2016 - To delete those temporary files generated during finalization
  * of study. To zip all the detail output file(s) into a single zip file.
+ * 03-Jun-2016 - Reduce the top spacing of the summary report (for page 2 and
+ * beyond).
  */
 
 public class DataDepositor extends Thread {
@@ -278,9 +280,9 @@ public class DataDepositor extends Thread {
         return (pageCursorYaxis <= 50);
     }
     // Return true if the remaining page has enough space to hold the last 
-    // section (i.e. last section is equal to 3 Header + 2 Line)
+    // section (i.e. last section is equal to 2 Header + 2 Line)
     private boolean enoughSpaceForLastSection() {
-        return (pageCursorYaxis > (3 * 50 + 2 * 15));
+        return (pageCursorYaxis > (2 * 50 + 2 * 15));
     }
     
     // Get the Y-axis starting position.
@@ -310,17 +312,16 @@ public class DataDepositor extends Thread {
             int line = 0;
             // Add a new page and get the content stream to hold the created content.
             PDPageContentStream cs = addNewPage();
-            // Get the height of the page just added.
-            pageCursorYaxis = getYaxisHeight();
+            // Shift the Y-axis to the starting position.
+            pageCursorYaxis = getYaxisHeight() - 100;
             // Create 2 image objects for Astar and BII logo.
             PDJpeg astarImg = new PDJpeg(summary_pdf, 
                     new FileInputStream(astarLogo));
             PDJpeg biiImg = new PDJpeg(summary_pdf, 
                     new FileInputStream(biiLogo));
             // Draw the Astar and BII logo.
-            cs.drawImage(astarImg, subheadX, pageCursorYaxis-100);
-            cs.drawImage(biiImg, subheadX+200, pageCursorYaxis-100);
-            pageCursorYaxis -= 100;
+            cs.drawImage(astarImg, subheadX, pageCursorYaxis);
+            cs.drawImage(biiImg, subheadX+200, pageCursorYaxis);
             
             // Write the title in bold first.
             cs.beginText();
@@ -376,8 +377,8 @@ public class DataDepositor extends Thread {
                     cs.close();
                     cs = addNewPage();
                     cs.setFont(plainFont, 11);
-                    // Reset the Yaxis cursor.
-                    pageCursorYaxis = getYaxisHeight() - 100;
+                    // Shift the Y-axis to the starting position.
+                    pageCursorYaxis = getYaxisHeight();
                 }
             }
             // Section C
@@ -397,8 +398,7 @@ public class DataDepositor extends Thread {
                     cs.close();
                     cs = addNewPage();
                     cs.setFont(plainFont, 11);
-                    // Reset the Yaxis cursor.
-                    pageCursorYaxis = getYaxisHeight() - 100;
+                    pageCursorYaxis = getYaxisHeight();
                 }
             }            
             // Section D
@@ -419,7 +419,7 @@ public class DataDepositor extends Thread {
                 cs = addNewPage();
                 cs.setFont(plainFont, 11);
                 // Reset the Yaxis cursor.
-                pageCursorYaxis = getYaxisHeight() - 100;
+                pageCursorYaxis = getYaxisHeight();
             }
             // Ending section
             cs.beginText();

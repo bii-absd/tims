@@ -5,6 +5,7 @@ package TIMS.Database;
 
 import TIMS.General.Constants;
 import TIMS.General.FileHelper;
+import TIMS.General.Postman;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -34,6 +35,8 @@ import org.apache.logging.log4j.LogManager;
  * (Institution - Department - Group).
  * 19-May-2016 - To delete the consolidated output, detail output, and report 
  * summary once the un-finalization has completed.
+ * 03-Jun-2016 - To send the un-finalization status email to user once the
+ * process has completed.
  */
 
 public class DataVoid extends Thread {
@@ -128,6 +131,8 @@ public class DataVoid extends Thread {
         elapsedTime = System.nanoTime() - startTime;
         logger.debug("Total time taken to unfinalize " + study_id + 
                 " is " + (elapsedTime / 1000000000.0) + " sec.");
+        // Send un-finalization status email to the user.
+        Postman.sendUnFinalizationStatusEmail(study_id, userName, unfinResult);
     }
     
     // Retrieve all the array indexes that belong to this job ID.
