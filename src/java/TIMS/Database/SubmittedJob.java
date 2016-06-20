@@ -6,6 +6,8 @@ package TIMS.Database;
 import TIMS.General.Constants;
 import TIMS.General.ResourceRetriever;
 import java.io.Serializable;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -52,6 +54,9 @@ import java.text.SimpleDateFormat;
  * 14-Apr-2016 - Change type for submit_time and complete_time to Timestamp.
  * 19-May-2016 - Added one new attribute detail_output, to store the filepath
  * of the detail output file.
+ * 20-Jun-2016 - Added one new attribute cbio_target, to keep track which job
+ * output has been exported to cBioPortal for visualization. Added a new
+ * Constructor that takes in the ResultSet directly from the database query.
  */
 
 public class SubmittedJob implements Serializable {
@@ -66,11 +71,31 @@ public class SubmittedJob implements Serializable {
     private String study_id, user_id, pipeline_name, chip_type, normalization, 
                    summarization, output_file, detail_output, report;
     private Timestamp submit_time, complete_time;
+    private boolean cbio_target;
     // status_name will be used by the job status page
     private String status_name;
     private final static DateFormat df = new SimpleDateFormat("dd-MMM-yyyy hh:mmaa");
 
-    // Full constructor
+    // Full constructor to be used during database query.
+    public SubmittedJob(ResultSet rs) throws SQLException {
+        this.job_id = rs.getInt("job_id");
+        this.study_id = rs.getString("study_id");
+        this.user_id = rs.getString("user_id");
+        this.pipeline_name = rs.getString("pipeline_name");
+        this.status_id = rs.getInt("status_id");
+        this.submit_time = rs.getTimestamp("submit_time");
+        this.complete_time = rs.getTimestamp("complete_time");
+        this.chip_type = rs.getString("chip_type");
+        this.input_sn = rs.getInt("input_sn");
+        this.normalization = rs.getString("normalization");
+        this.summarization = rs.getString("summarization");
+        this.output_file = rs.getString("output_file");
+        this.detail_output = rs.getString("detail_output");
+        this.report = rs.getString("report");
+        this.cbio_target = rs.getBoolean("cbio_target");
+    }
+    
+    // Full constructor to be used by pipeline beans.
     public SubmittedJob(int job_id, String study_id, String user_id,
             String pipeline_name, int status_id, Timestamp submit_time, 
             Timestamp complete_time, String chip_type, int input_sn, 
@@ -92,7 +117,9 @@ public class SubmittedJob implements Serializable {
         this.detail_output = detail_output;
         this.report = report;
     }
-    
+
+    /*
+    NOT IN USE ANYMORE!
     // Simplify constructor for data table.
     public SubmittedJob(int job_id, String study_id, String user_id,
             String pipeline_name, int status_id, Timestamp submit_time, 
@@ -108,6 +135,7 @@ public class SubmittedJob implements Serializable {
         this.output_file = output_file;
         this.report = report;
     }
+    */
     
     // Return the job status name of this submitted job.
     public String getStatus_name() {
@@ -261,5 +289,11 @@ public class SubmittedJob implements Serializable {
     }
     public void setReport(String report) {
         this.report = report;
+    }
+    public boolean isCbio_target() {
+        return cbio_target;
+    }
+    public void setCbio_target(boolean cbio_target) {
+        this.cbio_target = cbio_target;
     }
 }

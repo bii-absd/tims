@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
 // Libraries for Java Extension
 import javax.naming.NamingException;
 // Libraries for Log4j
@@ -101,6 +100,7 @@ import org.apache.logging.log4j.LogManager;
  * 13-May-2016 - Added 3 new methods, updateOutputPath(), zipOutputFile() and
  * unzipOutputFile().
  * 19-May-2016 - Implemented the module for Pipeline Detail Output File.
+ * 20-Jun-2016 - Removed unused code, and updated method getJobsFullDetail().
  */
 
 public abstract class SubmittedJobDB {
@@ -397,48 +397,6 @@ public abstract class SubmittedJobDB {
         return jobList;
     }
     
-    /*
-    // Return the list of completed jobs that are ready to be finalized for
-    // this study.
-    // NOT IN USE.
-    public static List<FinalizingJobEntry> getCompletedJobsInStudy
-        (String studyID, String tid) {
-        Connection conn = null;
-        List<FinalizingJobEntry> jobList = new ArrayList<>();
-        String query = "SELECT study_id, job_id, tid, pipeline_name, submit_time, "
-                     + "user_id, chip_type, input_sn, normalization, summarization, "
-                     + "detail_output FROM submitted_job sj INNER JOIN "
-                     + "pipeline pl ON sj.pipeline_name = pl.name WHERE "
-                     + "status_id = 3 AND study_id = ? AND tid = ? "
-                     + "ORDER BY job_id";
-
-        try {
-            conn = DBHelper.getDSConn();
-            PreparedStatement stm = conn.prepareStatement(query);
-            stm.setString(1, studyID);
-            stm.setString(2, tid);
-            ResultSet rs = stm.executeQuery();
-            
-            while (rs.next()) {
-                jobList.add(new FinalizingJobEntry(rs, rs.getString("pipeline_name")));
-            }
-            
-            stm.close();
-            logger.debug("No of completed jobs for " + studyID + " under " +
-                         tid + " technology is " + jobList.size());
-        }
-        catch (SQLException|NamingException e) {
-            logger.error("FAIL to retrieve completed jobs for " + studyID);
-            logger.error(e.getMessage());
-        }
-        finally {
-            DBHelper.closeDSConn(conn);
-        }
-        
-        return jobList;
-    }
-    */
-    
     // Return the list of jobs that have been submitted by all the users.
     public static List<SubmittedJob> getAllUsersJobs() {
         String query = "SELECT * FROM submitted_job ORDER BY user_id, job_id DESC";
@@ -466,23 +424,7 @@ public abstract class SubmittedJobDB {
             ResultSet rs = stm.executeQuery();
             
             while (rs.next()) {
-                SubmittedJob job = new SubmittedJob(
-                                rs.getInt("job_id"),
-                                rs.getString("study_id"),
-                                rs.getString("user_id"),
-                                rs.getString("pipeline_name"),
-                                rs.getInt("status_id"),
-                                rs.getTimestamp("submit_time"),
-                                rs.getTimestamp("complete_time"),
-                                rs.getString("chip_type"),
-                                rs.getInt("input_sn"),
-                                rs.getString("normalization"),
-                                rs.getString("summarization"),
-                                rs.getString("output_file"),
-                                rs.getString("detail_output"),
-                                rs.getString("report"));
-                
-                jobList.add(job);
+                jobList.add(new SubmittedJob(rs));
             }
             
             stm.close();
@@ -499,6 +441,7 @@ public abstract class SubmittedJobDB {
         return jobList;
     }
 
+    /*
     // Return the list of jobs that have been submitted by this user.
     // NOT IN USE ANYMORE!
     public static List<SubmittedJob> getSubmittedJobs(String user_id) {
@@ -544,7 +487,8 @@ public abstract class SubmittedJobDB {
         
         return jobList;
     }
-
+    */
+    
     // Retrieve all the finalized job IDs for this study ID.
     public static List<Integer> getFinalizedJobIDs(String study_id) {
         Connection conn = null;

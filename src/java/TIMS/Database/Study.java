@@ -38,13 +38,15 @@ import java.sql.SQLException;
  * zipped detail output files (i.e. detail output files retrieved from the
  * pipelines selected during finalization). Update the constructor to receive 
  * the Study parameters directly from the database.
+ * 20-Jun-2016 - Added one attribute cbio_url, to store the url of the 
+ * cBioPortal (with the data for the respective study setup for visualization).
  */
 
 public class Study {
     // study table attributes
     private String study_id, title, owner_id, grp_id, annot_ver, description, 
                    background, grant_info, finalized_output, detail_files, 
-                   summary, icd_code;
+                   summary, icd_code, cbio_url;
     private Date start_date, end_date;
     private Boolean finalized, closed;
 
@@ -66,41 +68,14 @@ public class Study {
         this.end_date = rs.getDate("end_date");
         this.finalized = rs.getBoolean("finalized");
         this.closed = rs.getBoolean("closed");
+        this.cbio_url = rs.getString("cbio_url");
         // Retrieve the PI ID using the Group ID that own this Study.
         this.owner_id = GroupDB.getGrpPIID(grp_id);
     }
     
-    // Full constructor.
-    // NOT IN USE ANYMORE!
-    /*
-    public Study(String study_id, String title, String grp_id, 
-                 String annot_ver, String icd_code, String description, 
-                 String background, String grant_info, String finalized_output, 
-                 String detail_files, String summary, Date start_date, 
-                 Date end_date, Boolean finalized, Boolean closed) 
-    {
-        this.study_id = study_id;
-        this.title = title;
-        this.grp_id = grp_id;
-        this.annot_ver = annot_ver;
-        this.icd_code = icd_code;
-        this.description = description;
-        this.background = background;
-        this.grant_info = grant_info;
-        this.finalized_output = finalized_output;
-        this.detail_files = detail_files;
-        this.summary = summary;
-        this.start_date = start_date;
-        this.end_date = end_date;
-        this.finalized = finalized;
-        this.closed = closed;
-        this.owner_id = GroupDB.getGrpPIID(grp_id);
-    }
-    */
-    
     // This constructor is used for constructing new Study.
-    // For every new Study created, the finalized_output, detail_files and 
-    // summary will be empty, and closed status will be false (i.e. not closed).
+    // For every new Study created, the finalized_output, detail_files, cbio_url
+    // and summary will be empty, and closed status will be false (i.e. not closed).
     public Study(String study_id, String title, String grp_id, String annot_ver,
                  String icd_code, String description, String background, 
                  String grant_info, Date start_date, Date end_date, Boolean finalized) 
@@ -113,7 +88,7 @@ public class Study {
         this.description = description;
         this.background = background;
         this.grant_info = grant_info;
-        finalized_output = detail_files = summary = null;        
+        finalized_output = detail_files = summary = cbio_url = null;
         this.start_date = start_date;
         this.end_date = end_date;
         this.finalized = finalized;
@@ -260,6 +235,12 @@ public class Study {
     }
     public void setSummary(String summary) {
         this.summary = summary;
+    }
+    public String getCbio_url() {
+        return cbio_url;
+    }
+    public void setCbio_url(String cbio_url) {
+        this.cbio_url = cbio_url;
     }
     public Boolean getFinalized() {
         return finalized;
