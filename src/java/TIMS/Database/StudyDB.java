@@ -72,6 +72,8 @@ import org.apache.logging.log4j.LogManager;
  * 13-May-2016 - Added one new method, zipFinalizedOutput().
  * 19-May-2016 - Changes due to the addition attribute (i.e. detail_files) in
  * Study table.
+ * 22-Jun-2016 - Removed unused code. Updated method getFinalizableStudyHash().
+ * Added method getVisualizableStudyHash().
  */
 
 public abstract class StudyDB {
@@ -367,6 +369,32 @@ public abstract class StudyDB {
         logger.debug("Retrieving full study list.");
         return getStudyHash(query);
     }
+    // Only PI that lead a group can perform finalization.
+    // Return the list of unfinalized Study ID that has completed job(s), and 
+    // belongs to the group this PI is leading. This list of Study ID will be 
+    // available for PI to select for finalization.
+    public static LinkedHashMap<String, String> getFinalizableStudyHash(String piID) {
+        String query = "SELECT DISTINCT study_id FROM study st "
+                     + "NATURAL JOIN submitted_job sj WHERE sj.status_id = 3 "
+                     + "AND st.grp_id IN (SELECT grp_id FROM grp WHERE pi = \'" 
+                     + piID + "\') AND st.finalized = false "
+                     + "AND st.closed = false ORDER BY study_id";
+
+        logger.debug("Retrieving study list for finalization.");
+        return getStudyHash(query);
+    }
+    // Return the list of Study ID that has completed job(s), and belongs to
+    // the groups that this user is heading (i.e. for Director|HOD|PI) or
+    // coming from (i.e. for Admin|User).
+    public static LinkedHashMap<String, String> getVisualizableStudyHash(String grpQuery) {
+        String query = "SELECT DISTINCT study_id FROM study st "
+                     + "NATURAL JOIN submitted_job sj WHERE sj.status_id IN (3,5) "
+                     + "AND st.grp_id IN (" + grpQuery 
+                     + ") ORDER BY study_id";
+
+        logger.debug("Retrieving study list for visualization.");
+        return getStudyHash(query);
+    }
     
     // Helper function to build the study list hash map based on the input query.
     public static LinkedHashMap<String, String> getStudyHash(String query) {
@@ -395,11 +423,12 @@ public abstract class StudyDB {
         return studyHash;
     }
     
+    /* NOT IN USE ANYMORE!
     // Only PI that lead a group can perform finalization.
     // Return the list of unfinalized Study ID that has completed job(s), and 
     // belongs to the group this PI is leading. This list of Study ID will be 
     // available for PI to select for finalization.
-    public static LinkedHashMap<String, String> getFinalizableStudyHash(String piID) {
+    public static LinkedHashMap<String, String> getFinalizableStudyHashX(String piID) {
         Connection conn = null;
         LinkedHashMap<String, String> finStudyHash = new LinkedHashMap<>();
         String query = "SELECT DISTINCT study_id FROM study st "
@@ -431,22 +460,7 @@ public abstract class StudyDB {
         
         return finStudyHash;
     }
-    
-    // Return the list of studies (all status) that belong to this institution.
-    // NOT IMPLEMENTED YET UNTIL THERE IS A USE!
-    public static List<Study> queryInstStudies(String inst_id) {
-        List<Study> instStudies = new ArrayList<>();
-        
-        return instStudies;
-    }
-    
-    // Return the list of studies (all status) that belong to this group.
-    // NOT IMPLEMENTED YET UNTIL THERE IS A USE!
-    public static List<Study> queryGrpStudies(String grp_id) {
-        List<Study> grpStudies = new ArrayList<>();
-        
-        return grpStudies;
-    }
+    */
     
     // Return the list of studies (all status) that this user is allowed to view.
     public static List<Study> queryStudies(String groupQuery) {

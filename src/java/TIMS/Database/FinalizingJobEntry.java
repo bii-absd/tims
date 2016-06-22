@@ -1,5 +1,5 @@
 /*
- * Copyright @2015
+ * Copyright @2015-2016
  */
 package TIMS.Database;
 
@@ -28,6 +28,8 @@ import java.text.SimpleDateFormat;
  * 14-Apr-2016 - Change type for submit_time to Timestamp.
  * 19-May-2016 - Added one attribute detail_output. Update the constructor to
  * receive the FinalizingJobEntry parameters directly from the database.
+ * 22-Jun-2016 - Removed unused code. Added one attribute cbio_target; to 
+ * indicate whether this job had been selected for export to cBioPortal.
  */
 
 public class FinalizingJobEntry {
@@ -35,6 +37,7 @@ public class FinalizingJobEntry {
     private String study_id, tid, pipeline_name, user_id, 
             chip_type, normalization, summarization, detail_output;
     private Timestamp submit_time;
+    private boolean cbio_target;
     private final static DateFormat df = new SimpleDateFormat("dd-MMM-yyyy hh:mmaa");
 
     // Construct the FinalizingJobEntry object directly using the result set
@@ -52,29 +55,8 @@ public class FinalizingJobEntry {
         this.normalization = rs.getString("normalization");
         this.summarization = rs.getString("summarization");
         this.detail_output = rs.getString("detail_output");
+        this.cbio_target = rs.getBoolean("cbio_target");
     }
-    
-    // Full constructor.
-    // NOT IN USE ANYMORE!
-    /*
-    public FinalizingJobEntry(int job_id, int input_sn, String study_id, 
-            String tid, String pipeline_name, Timestamp submit_time, 
-            String user_id, String chip_type, String normalization, 
-            String summarization, String detail_output) 
-    {
-        this.job_id = job_id;
-        this.input_sn = input_sn;
-        this.study_id = study_id;
-        this.tid = tid;
-        this.pipeline_name = pipeline_name;
-        this.submit_time = submit_time;
-        this.user_id = user_id;
-        this.chip_type = chip_type;
-        this.normalization = normalization;
-        this.summarization = summarization;
-        this.detail_output = detail_output;
-    }
-    */
     
     // Return a string representation of this object.
     @Override
@@ -144,4 +126,8 @@ public class FinalizingJobEntry {
     { return detail_output; }
     public void setDetail_output(String detail_output) 
     { this.detail_output = detail_output; }
+    public boolean isCbio_target() 
+    { return cbio_target;   }
+    public void setCbio_target(boolean cbio_target) 
+    { this.cbio_target = cbio_target;   }
 }

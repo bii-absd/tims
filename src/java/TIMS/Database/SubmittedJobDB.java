@@ -101,6 +101,14 @@ import org.apache.logging.log4j.LogManager;
  * unzipOutputFile().
  * 19-May-2016 - Implemented the module for Pipeline Detail Output File.
  * 20-Jun-2016 - Removed unused code, and updated method getJobsFullDetail().
+ * 22-Jun-2016 - Renamed methods getPipelineExeInStudy() to 
+ * getCompletedPlNameInStudy(), and updateFilePath() to updateSJField(). 
+ * Changed the query condition in methods getCompletedPlJobsInStudy() and 
+ * getCompletedPlNameInStudy() to include both completed and finalized jobs.
+ * Added methods setCbioTarget4Job() and resetCbioTarget4Study() to update the
+ * cbio_target status at job and study level.
+ * Enhanced methods updateJobInputSN(), updateDetailOutputPath and 
+ * updateOutputPath() to make use of the helper function updateSJField().
  */
 
 public abstract class SubmittedJobDB {
@@ -230,33 +238,25 @@ public abstract class SubmittedJobDB {
     // Update the input sn used in this job. Will be called when there is new
     // raw data uploaded during pipeline configuration.
     public static void updateJobInputSN(int job_id, int input_sn) {
-        Connection conn = null;
         String query = "UPDATE submitted_job SET input_sn = " + input_sn 
                      + " WHERE job_id = " + job_id;
         
         try {
-            conn = DBHelper.getDSConn();
-            PreparedStatement stm = conn.prepareStatement(query);
-            stm.executeUpdate();
-            stm.close();
+            updateSJField(query);
             logger.debug("Job ID " + job_id + " input SN updated to " + input_sn);
         }
         catch (SQLException|NamingException e) {
             logger.error("FAIL to update job input SN!");
             logger.error(e.getMessage());
         }
-        finally {
-            DBHelper.closeDSConn(conn);
-        }
     }
-    
     // Update the detail_output location. Will be called after the detail_output
     // has been zipped.
     public static void updateDetailOutputPath(int job_id, String detail_output) {
         String query = "UPDATE submitted_job SET detail_output = \'"
                      + detail_output + "\' WHERE job_id = " + job_id;
         try {
-            updateFilePath(query);
+            updateSJField(query);
             logger.debug("Job ID " + job_id + " detail output updated to " 
                          + detail_output);
         }
@@ -272,7 +272,7 @@ public abstract class SubmittedJobDB {
         String query = "UPDATE submitted_job SET output_file = \'"
                      + output_file + "\' WHERE job_id = " + job_id;
         try {
-            updateFilePath(query);
+            updateSJField(query);
             logger.debug("Job ID " + job_id + " output file updated to " 
                          + output_file);
         }
@@ -281,9 +281,37 @@ public abstract class SubmittedJobDB {
             logger.error(e.getMessage());
         }
     }
+    // Set the cbio_target to true for this job. Will be called once the user 
+    // decided which job(s) to export for visualization.
+    public static void setCbioTarget4Job(int job_id) {
+        String query = "UPDATE submitted_job SET cbio_target = true "
+                     + "WHERE job_id = " + job_id;
+        try {
+            updateSJField(query);
+            logger.debug("cbio_target updated to true for Job " + job_id);
+        }
+        catch (SQLException|NamingException e) {
+            logger.error("FAIL to set cbio_target for job!");
+            logger.error(e.getMessage());
+        }
+    }
+    // Reset the cbio_target to false for all the jobs in this study.
+    public static void resetCbioTarget4Study(String study_id) {
+        String query = "UPDATE submitted_job SET cbio_target = false "
+                     + "WHERE study_id = \'" + study_id + "\'";
+        try {
+            updateSJField(query);
+            logger.debug("cbio_target updated to false for Sudy " + study_id);
+        }
+        catch (SQLException|NamingException e) {
+            logger.error("FAIL to reset cbio_target for study!");
+            logger.error(e.getMessage());
+        }
+        
+    }
     
-    // Helper function to update the file path of this submitted job.
-    private static void updateFilePath(String query) 
+    // Helper function to update the individual field of the submitted job.
+    private static void updateSJField(String query) 
             throws SQLException, NamingException 
     {
         Connection conn = DBHelper.getDSConn();
@@ -316,7 +344,7 @@ public abstract class SubmittedJobDB {
                          + tidList.toString());
         }
         catch (SQLException|NamingException e) {
-            logger.error("FAIL to retrieve pipeline technologies executed!");
+            logger.error("FAIL to retrieve pipeline technologies!");
             logger.error(e.getMessage());
         }
         finally {
@@ -326,12 +354,14 @@ public abstract class SubmittedJobDB {
         return tidList;
     }
     
-    // Return the list of distinct pipeline that have been executed in this study.
-    public static List<String> getPipelineExeInStudy(String studyID) {
+    // Return the list of distinct pipeline name that have job(s) that 
+    // successfully executed in this study.
+    public static List<String> getCompletedPlNameInStudy(String studyID) {
         Connection conn = null;
         List<String> plList = new ArrayList<>();
         String query = "SELECT DISTINCT pipeline_name FROM submitted_job "
-                     + "WHERE study_id = ? ORDER BY pipeline_name";
+                     + "WHERE study_id = ? AND status_id IN (3,5) "
+                     + "ORDER BY pipeline_name";
         
         try {
             conn = DBHelper.getDSConn();
@@ -358,17 +388,14 @@ public abstract class SubmittedJobDB {
         return plList;
     }
     
-    // Return the list of completed jobs for this pipeline that are ready to
-    // be finalized for this study.
+    // Return the list of completed jobs for this pipeline in this study.
     public static List<FinalizingJobEntry> getCompletedPlJobsInStudy
         (String studyID, String pipeline) {
         Connection conn = null;
         List<FinalizingJobEntry> jobList = new ArrayList<>();
-        String query = "SELECT study_id, job_id, tid, submit_time, user_id, "
-                     + "chip_type, input_sn, normalization, summarization, "
-                     + "detail_output FROM submitted_job sj INNER JOIN "
+        String query = "SELECT * FROM submitted_job sj INNER JOIN "
                      + "pipeline pl ON sj.pipeline_name = pl.name WHERE "
-                     + "status_id = 3 AND study_id = ? AND "
+                     + "status_id IN (3,5) AND study_id = ? AND "
                      + "pipeline_name = ? ORDER BY job_id";
         
         try {
@@ -533,7 +560,6 @@ public abstract class SubmittedJobDB {
         
         return path;
     }
-
     // Return the output filepath for this job.
     public static String getOutputPath(int jobID) {
         String query = "SELECT output_file FROM submitted_job WHERE job_id = " 

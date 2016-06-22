@@ -77,6 +77,7 @@ import org.apache.logging.log4j.LogManager;
  * 13-May-2016 - Minor changes as the pipeline output file will now be zipped.
  * 03-Jun-2016 - Enhanced method getStudySelectedStatus() to handle the case
  * whereby the study has been un-selected.
+ * 22-Jun-2016 - Changes due to function name change in SubmittedJobDB class.
  */
 
 @ManagedBean (name="finalizedBean")
@@ -294,7 +295,7 @@ public class FinalizeStudyBean implements Serializable {
     // Build new lists based on the study_id selected by user.
     private void buildLists() {
         int index = 0;
-        plList = SubmittedJobDB.getPipelineExeInStudy(study_id);
+        plList = SubmittedJobDB.getCompletedPlNameInStudy(study_id);
         
         for (String pipeline : plList) {
             jobEntryLists.add(index++, SubmittedJobDB.
@@ -307,7 +308,7 @@ public class FinalizeStudyBean implements Serializable {
        return studyHash; 
     }
     
-    // Proceed to select job(s) for finalization after a study has been selected.
+    // A study has been selected if it is not equal to null and "0".
     public Boolean getStudySelectedStatus() {
         if (study_id != null) {
             if (study_id.compareTo("0") != 0) {

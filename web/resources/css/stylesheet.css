@@ -241,6 +241,13 @@
     text-align: left !important;
 }
 
+/* Style defined for colum with button|checkbox|etc. @22Jun2016
+*/
+.colbutton {
+    width: 40px;
+    text-align: center !important;
+}
+
 /* Style defined for study title column.
 */
 .studytitlecol {

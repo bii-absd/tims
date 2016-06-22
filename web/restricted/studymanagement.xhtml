@@ -168,7 +168,10 @@
         <h:form id="addStudyForm">
             <h:panelGrid columns="3" border="0" cellpadding="4" cellspacing="2">
                 <p:inputText id="studyid" size="32" autocomplete="off" 
-                             required="true" value="#{studyMgntBean.study_id}"/>
+                             required="true" value="#{studyMgntBean.study_id}" 
+                             validatorMessage="#{msg['error-studyid']}">
+                    <f:validateRegex pattern="^[a-zA-Z0-9_-]*$"/>
+                </p:inputText>
                 <h:message id="studyid-status" for="studyid" styleClass="errors"/>
                 <p:watermark for="studyid" value="New Study ID"/>
                 

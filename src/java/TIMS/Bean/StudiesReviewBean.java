@@ -10,6 +10,7 @@ import TIMS.Database.UserAccount;
 import TIMS.Database.UserAccountDB;
 import TIMS.General.Constants;
 import TIMS.General.FileHelper;
+import TIMS.General.QueryStringGenerator;
 import java.io.Serializable;
 import java.util.List;
 // Libraries for Java Extension
@@ -40,6 +41,8 @@ import org.apache.logging.log4j.LogManager;
  * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
  * (Institution - Department - Group).
  * 19-May-2016 - To allow user to download the detail output file.
+ * 22-Jun-2016 - Updated init() to use the query string generation function 
+ * in QueryStringGenerator.
  */
 
 @ManagedBean (name = "StudiesBean")
@@ -64,37 +67,25 @@ public class StudiesReviewBean implements Serializable {
     
     @PostConstruct
     public void init() {
-        String groupQuery = null;
-        // For finalizedStudies: retrieve the list of finalized studies that 
-        // this user is allowed to access their finalized output.
         // For studiesReview: retrieve the list of studies that this user is 
         // allowed to review based on his role.
+        String groupQuery = QueryStringGenerator.genGrpQuery4Review(user);
+        studiesReview = StudyDB.queryStudies(groupQuery);
+        
+        // For finalizedStudies: retrieve the list of finalized studies that 
+        // this user is allowed to access.
         switch (user.getRoleName()) {
             case "Director":
-                groupQuery = "SELECT grp_id FROM inst_dept_grp "
-                           + "WHERE inst_id = \'" + user.getUnit_id() + "\'";
-                break;
             case "HOD":
-                groupQuery = "SELECT grp_id FROM inst_dept_grp "
-                           + "WHERE dept_id = \'" + user.getUnit_id() + "\'";
-                break;
             case "PI":
-                groupQuery = "SELECT grp_id FROM grp WHERE pi = \'" + userName + "\'";
+                finalizedStudies = StudyDB.queryFinalizedStudiesByGrps(userName);
                 break;
             case "Admin":
             case "User":
             default:
                 finalizedStudies = StudyDB.queryFinalizedStudiesByGrp
                                    (user.getUnit_id());
-                studiesReview = StudyDB.queryStudies
-                                ("\'" + user.getUnit_id() + "\'");
                 break;
-        }
-        
-        if (groupQuery != null) {
-            // User is a Director|HOD|PI
-            finalizedStudies = StudyDB.queryFinalizedStudiesByGrps(userName);
-            studiesReview = StudyDB.queryStudies(groupQuery);
         }
     }
     
