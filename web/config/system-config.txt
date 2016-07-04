@@ -10,6 +10,8 @@ CONFIG_PATH config
 LOG_PATH log
 FINALIZE_PATH finalize_output
 TMP_PATH tmp
+CBIO_PATH cbio
+CBIO_CASE_DIR case_lists
 # All input files (i.e. input, ctrl and sample) will be stored in the /input
 # directory.
 # All output files (i.e. output and report) will be stored in the /output dir

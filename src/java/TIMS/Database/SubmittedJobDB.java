@@ -109,6 +109,7 @@ import org.apache.logging.log4j.LogManager;
  * cbio_target status at job and study level.
  * Enhanced methods updateJobInputSN(), updateDetailOutputPath and 
  * updateOutputPath() to make use of the helper function updateSJField().
+ * 04-Jul-2016 - Updated the comments for method unzipOutputFile().
  */
 
 public abstract class SubmittedJobDB {
@@ -196,9 +197,9 @@ public abstract class SubmittedJobDB {
 
         try {
             conn = DBHelper.getDSConn();
-            PreparedStatement stm = conn.prepareStatement(query);
-            stm.executeUpdate();
-            stm.close();
+            try (PreparedStatement stm = conn.prepareStatement(query)) {
+                stm.executeUpdate();
+            }
             logger.debug("Job ID " + job_id + ": status updated to " + 
                     JobStatusDB.getJobStatusName(status_id));
         }
@@ -219,10 +220,10 @@ public abstract class SubmittedJobDB {
         
         try {
             conn = DBHelper.getDSConn();
-            PreparedStatement stm = conn.prepareStatement(query);
-            stm.setTimestamp(1, complete_time);
-            stm.executeUpdate();
-            stm.close();
+            try (PreparedStatement stm = conn.prepareStatement(query)) {
+                stm.setTimestamp(1, complete_time);
+                stm.executeUpdate();
+            }
             logger.debug("Job ID " + job_id + " completion time updated to " 
                     + complete_time);
         }
@@ -695,7 +696,8 @@ public abstract class SubmittedJobDB {
     }
     
     // Unzip the output file of this submitted job; to be called during 
-    // finalization of Study. The unzipped output filepath will be returned.
+    // finalization of Study and exporting of data to visualizer. The unzipped 
+    // output filepath will be returned.
     public static String unzipOutputFile(int job_id) {
         String result = null;
         byte[] buffer = new byte[2048];

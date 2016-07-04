@@ -10,6 +10,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -74,6 +75,10 @@ import org.apache.logging.log4j.LogManager;
  * Study table.
  * 22-Jun-2016 - Removed unused code. Updated method getFinalizableStudyHash().
  * Added method getVisualizableStudyHash().
+ * 04-Jul-2016 - Added 3 new methods, updateStudyCbioUrl(), getCbioURL() and 
+ * updateStudyVisualTime(). Renamed updateGeneratedFile() to updateStudyField(). 
+ * Enhanced all the updating methods to make use of the helper function. 
+ * Updated method getVisualizableStudyHash() to exclude closed study.
  */
 
 public abstract class StudyDB {
@@ -216,104 +221,96 @@ public abstract class StudyDB {
         return result;
     }
     
+    // Update study's visual time; the time it last export data for 
+    // visualization.
+    public static void updateStudyVisualTime(String studyID, Timestamp visual_time) {
+        Connection conn = null;
+        String query = "UPDATE study SET visual_time = ? WHERE study_id = ?";
+        
+        try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            stm.setTimestamp(1, visual_time);
+            stm.setString(2, studyID);
+            stm.executeUpdate();
+            stm.close();
+            
+            logger.debug(studyID + " visual time updated to " + visual_time.toString());
+        }
+        catch (SQLException|NamingException e) {
+            logger.error("FAIL to update study visual time!");
+            logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
+        }
+    }
+    
+    // Update study's cbio_url.
+    public static void updateStudyCbioUrl(String studyID, String cbio_url) {
+        String query = "UPDATE study SET cbio_url = \'" + cbio_url 
+                     + "\' WHERE study_id = \'" + studyID + "\'";
+        
+        logger.debug("Updating cbio_url for " + studyID);
+        updateStudyField(query);
+    }
     // Update study's finalized status.
     public static void updateStudyFinalizedStatus(String studyID, Boolean status) {
-        Connection conn = null;
         String query = "UPDATE study SET finalized = " + status 
-                     + " WHERE study_id = ?";
+                     + " WHERE study_id = \'" + studyID + "\'";
         
-        try {
-            conn = DBHelper.getDSConn();
-            PreparedStatement stm = conn.prepareStatement(query);
-            stm.setString(1, studyID);
-            stm.executeUpdate();
-            stm.close();
-            
-            logger.debug(studyID + " finalized status updated to " + status);
-        }
-        catch (SQLException|NamingException e) {
-            logger.error("FAIL to update study to finalized!");
-            logger.error(e.getMessage());
-        }
-        finally {
-            DBHelper.closeDSConn(conn);
-        }
+        logger.debug("Updating finalized status for " + studyID);
+        updateStudyField(query);
     }
-    
     // Update study's closed status.
     public static void updateStudyClosedStatus(String studyID, Boolean status) {
-        Connection conn = null;
         String query = "UPDATE study SET closed = " + status 
-                     + " WHERE study_id = ?";
+                     + " WHERE study_id = \'" + studyID + "\'";
         
-        try {
-            conn = DBHelper.getDSConn();
-            PreparedStatement stm = conn.prepareStatement(query);
-            stm.setString(1, studyID);
-            stm.executeUpdate();
-            stm.close();
-            
-            logger.debug(studyID + " closed status updated to " + status);
-        }
-        catch (SQLException|NamingException e) {
-            logger.error("FAIL to update study's closed status!");
-            logger.error(e.getMessage());
-        }
-        finally {
-            DBHelper.closeDSConn(conn);
-        }
+        logger.debug("Updating closed status for " + studyID);
+        updateStudyField(query);
     }
-    
-    // Update the finalized_output with the file path of the output file.
+    // Update the finalized_output field with the path of the output file.
     public static void updateStudyFinalizedFile(String studyID, String path) {
         String query = "UPDATE study SET finalized_output = \'" + path 
                      + "\' WHERE study_id = \'" + studyID + "\'";
-        try {
-            updateGeneratedFile(query);
-            logger.debug(studyID + " finalized file path updated to " + path);
-        }
-        catch (SQLException|NamingException e) {
-            logger.error("FAIL to update study's finalized file path!");
-            logger.error(e.getMessage());
-        }
-    }    
-    // Update the summary with the file path of the summary report.
+        
+        logger.debug("Updating finalized file path for " + studyID);
+        updateStudyField(query);
+    }
+    // Update the summary field with the path of the summary report.
     public static void updateStudySummaryReport(String studyID, String path) {
         String query = "UPDATE study SET summary = \'" + path 
                      + "\' WHERE study_id = \'" + studyID + "\'";
-        try {
-            updateGeneratedFile(query);
-            logger.debug(studyID + " summary report path updated to " + path);
-        }
-        catch (SQLException|NamingException e) {
-            logger.error("FAIL to update study's summary report path!");
-            logger.error(e.getMessage());
-        }
+        
+        logger.debug("Updating summary report path for " + studyID);
+        updateStudyField(query);
     }
-    // Update the detail_files with the file path of the detail output file.
+    // Update the detail_files field with the path of the detail output file.
     public static void updateDetailOutputFiles(String studyID, String path) {
         String query = "UPDATE study SET detail_files = \'" + path 
                      + "\' WHERE study_id = \'" + studyID + "\'";
+        
+        logger.debug("Updating detail output path for " + studyID);
+        updateStudyField(query);
+    }
+    // Helper function to update study's field using the query passed in.
+    private static void updateStudyField(String query) {
+        Connection conn = null;
+        
         try {
-            updateGeneratedFile(query);
-            logger.debug(studyID + " detail output path updated to " + path);
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            stm.executeUpdate();
+            stm.close();
         }
         catch (SQLException|NamingException e) {
-            logger.error("FAIL to update study's detail output path!");
+            logger.error("FAIL to update study!");
             logger.error(e.getMessage());
         }
-    }
-    
-    // Helper function to update the file path of the finalized output, report
-    // summary, and detail output files.
-    private static void updateGeneratedFile(String query) 
-            throws SQLException, NamingException 
-    {
-        Connection conn = DBHelper.getDSConn();
-        PreparedStatement stm = conn.prepareStatement(query);
-        stm.executeUpdate();
-        stm.close();
-        DBHelper.closeDSConn(conn);
+        finally {
+            DBHelper.closeDSConn(conn);
+        }
     }
     
     // Return the list of 'opened' (i.e. not finalized yet) Study ID setup under
@@ -383,14 +380,14 @@ public abstract class StudyDB {
         logger.debug("Retrieving study list for finalization.");
         return getStudyHash(query);
     }
-    // Return the list of Study ID that has completed job(s), and belongs to
-    // the groups that this user is heading (i.e. for Director|HOD|PI) or
-    // coming from (i.e. for Admin|User).
+    // Return the list of unclosed Study ID that has completed job(s), and 
+    // belongs to the groups that this user is heading (i.e. for 
+    // Director|HOD|PI) or coming from (i.e. for Admin|User).
     public static LinkedHashMap<String, String> getVisualizableStudyHash(String grpQuery) {
         String query = "SELECT DISTINCT study_id FROM study st "
                      + "NATURAL JOIN submitted_job sj WHERE sj.status_id IN (3,5) "
                      + "AND st.grp_id IN (" + grpQuery 
-                     + ") ORDER BY study_id";
+                     + ") AND st.closed = false ORDER BY study_id";
 
         logger.debug("Retrieving study list for visualization.");
         return getStudyHash(query);
@@ -621,6 +618,10 @@ public abstract class StudyDB {
     // Retrieve the ICD code for this study.
     public static String getICDCode(String study_id) {
         return getStudyPropValue(study_id, "icd_code");
+    }
+    // Retrieve the cbio_url for this study.
+    public static String getCbioURL(String study_id) {
+        return getStudyPropValue(study_id, "cbio_url");
     }
     
     // Helper function to retrieve one of the study's property value.

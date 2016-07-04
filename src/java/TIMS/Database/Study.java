@@ -40,6 +40,7 @@ import java.sql.SQLException;
  * the Study parameters directly from the database.
  * 20-Jun-2016 - Added one attribute cbio_url, to store the url of the 
  * cBioPortal (with the data for the respective study setup for visualization).
+ * 04-Jul-2016 - Added one new method getCBioDisableStatus().
  */
 
 public class Study {
@@ -95,8 +96,19 @@ public class Study {
         closed = false;
     }
     
+    // If data has been exported to cBioPortal, don't disable the link (i.e.
+    // return false.)
+    public boolean getCBioDisableStatus() {
+        if (cbio_url == null) {
+            // Data has not been exported to cBioPortal, diable the link.
+            return Constants.OK;
+        }
+        
+        return Constants.NOT_OK;
+    }
+    
     // If finalized output is ready for download, don't disable the link (i.e.
-    // return false).
+    // return false.)
     public Boolean getOutputReadyStatus() {
         if (finalized_output != null) {
             return !checkFileReady(finalized_output);            

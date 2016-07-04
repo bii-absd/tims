@@ -39,13 +39,19 @@ import org.apache.logging.log4j.LogManager;
  * 13-Jan-2016 - Removed all the static variables in Pipeline Management module.
  * 29-Feb-2016 - Implementation of Data Source pooling. To use DataSource to 
  * get the database connection instead of using DriverManager.
+ * 04-Jul-2016 - Added 4 constant strings to store the name of the pipelines.
  */
 
 public abstract class PipelineDB {
     // Get the logger for Log4j
     private final static Logger logger = LogManager.
             getLogger(PipelineDB.class.getName());
-
+    // Define a common name for each pipeline here.
+    public static final String METHYLATION = "meth-pipeline";
+    public static final String GEX_AFFYMETRIX = "gex-affymetrix";
+    public static final String GEX_ILLUMINA = "gex-illumina";
+    public static final String CNV = "cnv-pipeline";
+    
     // Return the pipeline technology for this pipeline name.
     public static String getPipelineTechnology(String pipeline_name) {
         Connection conn = null;

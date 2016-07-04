@@ -95,6 +95,8 @@ import org.apache.logging.log4j.LogManager;
  * 30-Mar-2016 - Renamed CLINICAL_DATA_MANAGEMENT to META_DATA_MANAGEMENT.
  * 13-May-2016 - Added two new constants, TMP_PATH and ZIPFILE_EXT.
  * 19-May-2016 - Added one new constant, DETAIL_FILE_NAME.
+ * 04-Jul-2016 - Added 5 new constants, CBIO_PATH, CBIO_CASES, EXP_DAT, VIS_DAT 
+ * and FAILED.
  */
 
 @ManagedBean (name = "constants")
@@ -113,7 +115,8 @@ public class Constants {
     public final static String TRUE = "true";
     public final static String FALSE = "false";
     public final static String NONE = "none";
-    // Categories of activity (LOG, EXE, CRE, CHG & DWL).
+    public final static String FAILED = "FAILED";
+    // Categories of activity (LOG, EXE, CRE, CHG, DWL, EXP & VIS).
     public final static String LOG_IN = "Login";
     public final static String LOG_OFF = "Logoff";
     public final static String EXE_PL = "Run Pipeline";
@@ -124,6 +127,8 @@ public class Constants {
     public final static String CHG_PWD = "Change Password";
     public final static String CHG_ID = "Update ID";
     public final static String DWL_FIL = "Download File";
+    public final static String EXP_DAT = "Export Data";
+    public final static String VIS_DAT = "Visualize Study Data";
     // Navigation Strings
     public final static String PAGES_DIR = "restricted/";
     // For Login page, we shouldn't redirect because most of the time the 
@@ -151,6 +156,8 @@ public class Constants {
     private static String LOG_PATH = null;
     private static String FINALIZE_PATH = null;
     private static String TMP_PATH = null;
+    private static String CBIO_PATH = null;
+    private static String CBIO_CASE_DIR = null;
     private static String OUTPUTFILE_NAME = null;
     private static String OUTPUTFILE_EXT = null;
     private static String ZIPFILE_EXT = null;
@@ -219,6 +226,8 @@ public class Constants {
             FINALIZE_PATH = 
                     File.separator + setup.get("FINALIZE_PATH") + File.separator;
             TMP_PATH = File.separator + setup.get("TMP_PATH") + File.separator;
+            CBIO_PATH = File.separator + setup.get("CBIO_PATH") + File.separator;
+            CBIO_CASE_DIR = setup.get("CBIO_CASE_DIR") + File.separator;
             OUTPUTFILE_NAME = setup.get("OUTPUTFILE_NAME");
             OUTPUTFILE_EXT = setup.get("OUTPUTFILE_EXT");
             ZIPFILE_EXT = setup.get("ZIPFILE_EXT");
@@ -271,6 +280,8 @@ public class Constants {
     public static String getLOG_PATH() { return LOG_PATH; }
     public static String getFINALIZE_PATH() { return FINALIZE_PATH; }
     public static String getTMP_PATH() { return TMP_PATH; }
+    public static String getCBIO_PATH() { return CBIO_PATH; }
+    public static String getCBIO_CASE_DIR() { return CBIO_CASE_DIR; }
     public static String getOUTPUTFILE_NAME() { return OUTPUTFILE_NAME; }
     public static String getOUTPUTFILE_EXT() { return OUTPUTFILE_EXT; }
     public static String getZIPFILE_EXT() { return ZIPFILE_EXT; }

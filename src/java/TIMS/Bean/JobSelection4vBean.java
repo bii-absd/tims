@@ -3,6 +3,7 @@
  */
 package TIMS.Bean;
 
+import TIMS.Database.ActivityLogDB;
 import TIMS.Database.FinalizingJobEntry;
 import TIMS.Database.StudyDB;
 import TIMS.Database.SubmittedJobDB;
@@ -11,6 +12,7 @@ import TIMS.Database.UserAccountDB;
 import TIMS.General.Constants;
 import TIMS.General.QueryStringGenerator;
 import TIMS.General.ResourceRetriever;
+import TIMS.Visualizers.cBioVisualizer;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -34,6 +36,7 @@ import org.apache.logging.log4j.Logger;
  * Revision History
  * 22-Jun-2016 - Created with all the standard getters and setters. Implemented
  * the UI for Job Selection during Exporting in the Visualization Module.
+ * 04-Jul-2016 - Implemented the integration with cBioPortal application.
  */
 
 @ManagedBean (name="js4vBean")
@@ -61,7 +64,7 @@ public class JobSelection4vBean implements Serializable {
                 getExternalContext().getSessionMap().get("User");
         user = UserAccountDB.getUserAct(userName);
         logger.debug("JobSelection4vBean created.");
-        logger.info(userName + ": access Job Selection for Visualization page.");
+        logger.info(userName + " access Job Selection for Visualization page.");
     }
     
     @PostConstruct
@@ -121,8 +124,12 @@ public class JobSelection4vBean implements Serializable {
             SubmittedJobDB.setCbioTarget4Job(job.getJob_id());
         }
         
-        // Ready for export to visualizer.
-        // TO BE IMPLEMENTED!
+        // Ready for export to cBioPortal.
+        cBioVisualizer cbio = new cBioVisualizer(userName, study_id, selectedJobs);
+        // Record this export activity into database.
+        ActivityLogDB.recordUserActivity(userName, Constants.EXP_DAT, study_id);
+        // Start the exporting of pipeline data to cBioPortal.
+        cbio.start();
         
         return nextpage;
     }

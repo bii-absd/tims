@@ -73,6 +73,8 @@ import org.apache.logging.log4j.LogManager;
  * 01-Mar-2016 - The images directory has been moved from TIMS/user/images to
  * TIMS/images.
  * 13-May-2016 - To create the tmp folder in method createSystemDirectories().
+ * 04-Jul-2016 - Removed unused code. Updated methods createSystemDirectories()
+ * and createStudyDirectory(), to create directory for cBioPortal application.
  */
 
 public class FileUploadBean implements Serializable {
@@ -163,14 +165,15 @@ public class FileUploadBean implements Serializable {
     }
     
     // Create TIMS system directories i.e. .../TIMS/users .../TIMS/images
-    // .../TIMS/input .../TIMS/finalize_output
+    // .../TIMS/input .../TIMS/finalize_output etc.
     public static Boolean createSystemDirectories(String systemDir) {
         Boolean result = 
                 createSystemDirectory(systemDir + Constants.getUSERS_PATH()) &&
                 createSystemDirectory(systemDir + Constants.getPIC_PATH()) &&
                 createSystemDirectory(systemDir + Constants.getINPUT_PATH()) &&
                 createSystemDirectory(systemDir + Constants.getFINALIZE_PATH()) &&
-                createSystemDirectory(systemDir + Constants.getTMP_PATH());
+                createSystemDirectory(systemDir + Constants.getTMP_PATH()) &&
+                createSystemDirectory(systemDir + Constants.getCBIO_PATH());
         
         return result;
     }
@@ -188,10 +191,13 @@ public class FileUploadBean implements Serializable {
         return result;
     }
     
-    // Create study system directory i.e. .../TIMS/input/Bayer
+    // Create study system directory i.e. .../TIMS/input/Bayer .../TIMS/cbio/Bayer
     public static Boolean createStudyDirectory(String study_id) {
-        return createSystemDirectory(Constants.getSYSTEM_PATH() + 
-                                     Constants.getINPUT_PATH() + study_id);
+        Boolean result = 
+            createSystemDirectory(Constants.getSYSTEM_PATH() + Constants.getINPUT_PATH() + study_id) &&
+            createSystemDirectory(Constants.getSYSTEM_PATH() + Constants.getCBIO_PATH() + study_id);
+                
+        return result;
     }
     
     // Helper function to create system directory.
@@ -332,57 +338,4 @@ public class FileUploadBean implements Serializable {
     private FacesContext getFacesContext() {
 	return FacesContext.getCurrentInstance();
     }
-    
-    /* NOT IN USE ANYMORE
-    
-    // Constructor for pipeline input files.
-    public FileUploadBean(String study_id, String submitTime) {
-        fileDirectory = Constants.getSYSTEM_PATH() + Constants.getINPUT_PATH() 
-                        + study_id + File.separator + submitTime + File.separator;
-        
-        setFileDirectory();
-    }
-
-    // Use method renameFilename instead
-
-    // Rename the sample annotation file to a common filename 
-    // (i.e. ANNOTATION.txt)
-    public void renameAnnotFile() {
-        Path from = FileSystems.getDefault().getPath
-            (localDirectoryPath + getInputFilename());
-        Path to = FileSystems.getDefault().getPath
-            (localDirectoryPath + 
-                Constants.getSAMPLE_ANNOT_FILE_NAME() + 
-                Constants.getSAMPLE_ANNOT_FILE_EXT());
-        // Rename the filename (from -> to).
-        try {
-            Files.move(from, to);
-            logger.debug("Sample annotation file renamed.");
-        }
-        catch (IOException ioe) {
-            logger.error("FAIL to rename sample annotation file!");
-            logger.error(ioe.getMessage());
-        }
-    }
-
-    // Rename the control probe file to a common filename 
-    // (i.e. CONTROL_PROBE.txt)
-    public void renameCtrlProbeFile() {
-        Path from = FileSystems.getDefault().getPath
-            (localDirectoryPath + getInputFilename());
-        Path to = FileSystems.getDefault().getPath
-            (localDirectoryPath +
-                Constants.getCONTROL_PROBE_FILE_NAME() +
-                Constants.getCONTROL_PROBE_FILE_EXT());
-        // Rename the filename (from -> to).
-        try {
-            Files.move(from, to);
-            logger.debug("Control probe file renamed.");
-        }
-        catch (IOException ioe) {
-            logger.error("FAIL to rename control probe file!");
-            logger.error(ioe.getMessage());
-        }
-    }
-    */
 }
