@@ -79,6 +79,9 @@ import org.apache.logging.log4j.LogManager;
  * updateStudyVisualTime(). Renamed updateGeneratedFile() to updateStudyField(). 
  * Enhanced all the updating methods to make use of the helper function. 
  * Updated method getVisualizableStudyHash() to exclude closed study.
+ * 07-Jul-2016 - Updated getVisualizableStudyHash(), only allow the study to be 
+ * export for visualization once every hour. Added one new method, 
+ * resetStudyCbioUrl() to reset the cbio_url to NULL.
  */
 
 public abstract class StudyDB {
@@ -246,6 +249,14 @@ public abstract class StudyDB {
         }
     }
     
+    // Reset the study's cbio_url to default i.e. NULL
+    public static void resetStudyCbioUrl(String studyID) {
+        String query = "UPDATE study SET cbio_url = DEFAULT " 
+                     + "WHERE study_id = \'" + studyID + "\'";
+        
+        logger.debug("Reset cbio_url for " + studyID);
+        updateStudyField(query);
+    }
     // Update study's cbio_url.
     public static void updateStudyCbioUrl(String studyID, String cbio_url) {
         String query = "UPDATE study SET cbio_url = \'" + cbio_url 
@@ -382,12 +393,15 @@ public abstract class StudyDB {
     }
     // Return the list of unclosed Study ID that has completed job(s), and 
     // belongs to the groups that this user is heading (i.e. for 
-    // Director|HOD|PI) or coming from (i.e. for Admin|User).
+    // Director|HOD|PI) or coming from (i.e. for Admin|User). Only allow the 
+    // study to be export for visualization every one hour.
     public static LinkedHashMap<String, String> getVisualizableStudyHash(String grpQuery) {
         String query = "SELECT DISTINCT study_id FROM study st "
                      + "NATURAL JOIN submitted_job sj WHERE sj.status_id IN (3,5) "
                      + "AND st.grp_id IN (" + grpQuery 
-                     + ") AND st.closed = false ORDER BY study_id";
+                     + ") AND st.closed = false "
+                     + "AND (st.visual_time < current_timestamp - interval \'1 hours\' "
+                     + "OR st.visual_time IS NULL) ORDER BY study_id";
 
         logger.debug("Retrieving study list for visualization.");
         return getStudyHash(query);

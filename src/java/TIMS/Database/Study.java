@@ -8,6 +8,8 @@ import java.io.File;
 import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Study is used to represent the study table in the database.
@@ -41,6 +43,8 @@ import java.sql.SQLException;
  * 20-Jun-2016 - Added one attribute cbio_url, to store the url of the 
  * cBioPortal (with the data for the respective study setup for visualization).
  * 04-Jul-2016 - Added one new method getCBioDisableStatus().
+ * 07-Jul-2016 - Added one new method getExportedJobsDetail() to return the list 
+ * of job detail that have exported to the visualizer.
  */
 
 public class Study {
@@ -167,6 +171,20 @@ public class Study {
         return study_id + "  [PI: " + getOwnerFullName() + 
                "]  [Grant Duration: " + start_date + " to " + end_date + 
                "]  [Status: " + status + "]";
+    }
+    
+    // Return the list of job detail that have exported to the visualizer.
+    public List<String> getExportedJobsDetail() {
+        List<String> plDetails = new ArrayList<>();
+        List<SubmittedJob> jobs = SubmittedJobDB.getcBioExportedJobs(study_id);
+        
+        for (SubmittedJob job : jobs) {
+            plDetails.add(job.getPipeline_name() + 
+                          " - Date run: " + job.getSubmitTimeString() + 
+                          " Request by: " + UserAccountDB.getFullName(job.getUser_id()));
+        }
+        
+        return plDetails;
     }
     
     // Machine generated getters and setters

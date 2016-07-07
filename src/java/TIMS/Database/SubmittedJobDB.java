@@ -110,6 +110,8 @@ import org.apache.logging.log4j.LogManager;
  * Enhanced methods updateJobInputSN(), updateDetailOutputPath and 
  * updateOutputPath() to make use of the helper function updateSJField().
  * 04-Jul-2016 - Updated the comments for method unzipOutputFile().
+ * 07-Jul-2016 - Removed unused code. Added one new method, 
+ * getcBioExportedJobs().
  */
 
 public abstract class SubmittedJobDB {
@@ -425,13 +427,20 @@ public abstract class SubmittedJobDB {
         return jobList;
     }
     
+    // Return the list of jobs that have been exported to cBioPortal for this
+    // Study ID.
+    public static List<SubmittedJob> getcBioExportedJobs(String studyID) {
+        String query = "SELECT * FROM submitted_job WHERE study_id =\'"
+                + studyID + "\' AND cbio_target = true";
+        
+        return getJobsFullDetail(query);
+    }
     // Return the list of jobs that have been submitted by all the users.
     public static List<SubmittedJob> getAllUsersJobs() {
         String query = "SELECT * FROM submitted_job ORDER BY user_id, job_id DESC";
         
         return getJobsFullDetail(query);
     }
-    
     // Return the list of jobs that have been submitted by this user.
     public static List<SubmittedJob> getUserJobs(String user_id) {
         // Don't retrieve those jobs which are in finalizing stage.
@@ -469,54 +478,6 @@ public abstract class SubmittedJobDB {
         return jobList;
     }
 
-    /*
-    // Return the list of jobs that have been submitted by this user.
-    // NOT IN USE ANYMORE!
-    public static List<SubmittedJob> getSubmittedJobs(String user_id) {
-        Connection conn = null;
-        List<SubmittedJob> jobList = new ArrayList<>();
-        // Don't retrieve those jobs which are in finalizing stage.
-        String query = "SELECT job_id, study_id, pipeline_name, "
-                + "status_id, submit_time, complete_time, output_file, report "
-                + "FROM submitted_job WHERE user_id = ? AND "
-                + "status_id NOT IN (4) ORDER BY job_id DESC"; 
-
-        try {
-            conn = DBHelper.getDSConn();
-            PreparedStatement stm = conn.prepareStatement(query);
-            stm.setString(1, user_id);
-            ResultSet rs = stm.executeQuery();
-            
-            while (rs.next()) {
-                SubmittedJob job = new SubmittedJob(
-                                rs.getInt("job_id"),
-                                rs.getString("study_id"),
-                                user_id,
-                                rs.getString("pipeline_name"),
-                                rs.getInt("status_id"),
-                                rs.getTimestamp("submit_time"),
-                                rs.getTimestamp("complete_time"),
-                                rs.getString("output_file"),
-                                rs.getString("report"));
-                
-                jobList.add(job);
-            }
-            
-            stm.close();
-            logger.debug("Submitted job retrieved for " + user_id);
-        } 
-        catch (SQLException|NamingException e) {
-                logger.error("FAIL to retrieve submitted job!");
-                logger.error(e.getMessage());
-        }
-        finally {
-            DBHelper.closeDSConn(conn);
-        }
-        
-        return jobList;
-    }
-    */
-    
     // Retrieve all the finalized job IDs for this study ID.
     public static List<Integer> getFinalizedJobIDs(String study_id) {
         Connection conn = null;

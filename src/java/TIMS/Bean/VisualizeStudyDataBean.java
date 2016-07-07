@@ -32,6 +32,8 @@ import org.apache.logging.log4j.LogManager;
  * Revision History
  * 04-Jul-2016 - Implemented the visualization module. Integration with the 
  * first visualizer i.e. cBioportal.
+ * 07-Jul-2016 - Added one new variable, selectedStudy and it's associated 
+ * functions.
  */
 
 @ManagedBean (name = "visStudyBean")
@@ -43,6 +45,7 @@ public class VisualizeStudyDataBean implements Serializable {
     private final String userName;
     private final UserAccount user;
     private List<Study> studies;
+    private Study selectedStudy;
     
     public VisualizeStudyDataBean() {
         userName = (String) FacesContext.getCurrentInstance().
@@ -67,8 +70,14 @@ public class VisualizeStudyDataBean implements Serializable {
         ec.redirect(cbio);
     }
     
-    // Machine generated getters.
+    // Machine generated getters and setters.
     public List<Study> getStudies() {
         return studies;
+    }
+    public Study getSelectedStudy() {
+        return selectedStudy;
+    }
+    public void setSelectedStudy(Study selectedStudy) {
+        this.selectedStudy = selectedStudy;
     }
 }

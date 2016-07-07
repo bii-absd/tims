@@ -11,8 +11,25 @@
     <ui:param name="link" value="#{msg['visualize-data']}"/>
     <ui:define name="content">
         <h:form id="visualizeForm">
-            <p:dataTable var="visStudy" value="#{visStudyBean.studies}" 
+            <p:contextMenu for="visTable">
+                <p:menuitem value="View Pipeline Exported" update="exportDetail" 
+                            icon="ui-icon-search" oncomplete="PF('exportDlg').show()"/>
+            </p:contextMenu>
+            
+            <p:dataTable var="visStudy" rows="10" id="visTable" 
+                         value="#{visStudyBean.studies}" 
+                         rowKey="#{visStudy.study_id}" 
+                         selection="#{visStudyBean.selectedStudy}" 
+                         selectionMode="single"
+                         paginator="true" paginatorTemplate="{RowsPerPageDropdown} 
+                         {FirstPageLink} {PreviousPageLink} {CurrentPageReport} 
+                         {NextPageLink} {LastPageLink}"
+                         rowsPerPageTemplate="5,10,15"
                          styleClass="table-odd-row table-even-row">
+                <f:facet name="header">
+                    <h:outputText value="Right click to view pipeline output exported" 
+                                  style="color: blue; font-size: 11pt"/>
+                </f:facet>
                 <p:column headerText="Study ID" styleClass="jsmedcol">
                     <h:outputText value="#{visStudy.study_id}"/>
                 </p:column>
@@ -35,6 +52,19 @@
                                      onclick="form.target='_blank'"/>
                 </p:column>
             </p:dataTable>
+            
+            <p:dialog header="Pipeline Output Exported" widgetVar="exportDlg" 
+                      modal="true" showEffect="fade" hideEffect="fade" 
+                      resizable="false">
+                <p:outputPanel id="exportDetail">
+                    <p:dataList itemType="square" rows="10" 
+                                rendered="#{!visStudyBean.selectedStudy.CBioDisableStatus}" 
+                                value="#{visStudyBean.selectedStudy.exportedJobsDetail}" 
+                                var="exportedPl" styleClass="datalist" type="none">
+                        <h:outputText value="#{exportedPl}"/><br/><br/>
+                    </p:dataList>
+                </p:outputPanel>
+            </p:dialog>
         </h:form>
     </ui:define>
 </ui:composition>

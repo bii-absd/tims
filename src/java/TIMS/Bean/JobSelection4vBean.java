@@ -37,6 +37,7 @@ import org.apache.logging.log4j.Logger;
  * 22-Jun-2016 - Created with all the standard getters and setters. Implemented
  * the UI for Job Selection during Exporting in the Visualization Module.
  * 04-Jul-2016 - Implemented the integration with cBioPortal application.
+ * 07-Jul-2016 - To reset the cbio_url to NULL before starting the export.
  */
 
 @ManagedBean (name="js4vBean")
@@ -128,6 +129,8 @@ public class JobSelection4vBean implements Serializable {
         cBioVisualizer cbio = new cBioVisualizer(userName, study_id, selectedJobs);
         // Record this export activity into database.
         ActivityLogDB.recordUserActivity(userName, Constants.EXP_DAT, study_id);
+        // Reset the cBioPortal URL to null in the database.
+        StudyDB.resetStudyCbioUrl(study_id);
         // Start the exporting of pipeline data to cBioPortal.
         cbio.start();
         
