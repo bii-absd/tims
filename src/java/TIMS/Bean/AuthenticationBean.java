@@ -5,6 +5,7 @@ package TIMS.Bean;
 
 import TIMS.Database.ActivityLogDB;
 import TIMS.Database.DBHelper;
+import TIMS.Database.FeatureDB;
 import TIMS.Database.GroupDB;
 import TIMS.Database.ICD10DB;
 import TIMS.Database.InstitutionDB;
@@ -18,6 +19,7 @@ import java.io.Serializable;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.LinkedHashMap;
 // Libraries for Java Extension
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
@@ -106,6 +108,8 @@ import org.apache.logging.log4j.LogManager;
  * 14-Mar-2016 - Fix the null pointer exception when the system is first setup.
  * 22-Mar-2016 - To build the ICD code HashMap once user login.
  * 08-Apr-2016 - To build the Institution ID HashMap once user login.
+ * 21-Jul-2016 - To retrieve and build the feature active status list from 
+ * the database. Added 2 new methods, isCBioPortalON() and isVisualizationON().
  */
 
 @ManagedBean (name="authBean")
@@ -116,9 +120,15 @@ public class AuthenticationBean implements Serializable {
             getLogger(AuthenticationBean.class.getName());
     private String loginName, password, instName;
     private UserAccount userAcct;
+    private LinkedHashMap<String, Boolean> featureList;
     
     public AuthenticationBean() {
         logger.debug("AuthenticationBean created.");
+    }
+    
+    // Retrieve and setup the feature active status list from the database.
+    private void setupFeatureList() {
+        featureList = FeatureDB.getAllFeatureStatusHash();
     }
     
     // Setup the database configuration, input and config file path according 
@@ -172,6 +182,8 @@ public class AuthenticationBean implements Serializable {
         ICD10DB.buildICDHashMaps();
         // Build the Institution ID HashMap.
         InstitutionDB.buildInstIDHash();
+        // Setup the feature active status list.
+        setupFeatureList();
         
         // Temporary hack to allow me to enter to create user when the 
         // application is first deployed.
@@ -258,6 +270,15 @@ public class AuthenticationBean implements Serializable {
         logger.info(loginName + ": logout from the system.");
         // User logoff from system, redirect to Login Page.
         return Constants.LOGIN_PAGE + "?faces-redirect=true";
+    }
+    
+    // Return the active status for feature CBIOPORTAL VISUALIZER.
+    public boolean isCBioPortalON() {
+        return featureList.get("CBIOPORTAL VISUALIZER");
+    }
+    // Return the active status for feature VISUALIZATION.
+    public boolean isVisualizationON() {
+        return featureList.get("VISUALIZATION");
     }
     
     // Return true if the user is an Admin else return false. The return value 

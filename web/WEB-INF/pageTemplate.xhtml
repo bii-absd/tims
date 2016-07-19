@@ -26,6 +26,9 @@
                     <p:submenu label="Admin">
                         <p:menuitem value="#{msg['acct-mgnt']}" icon="fa fa-user" 
                                     url="accountmanagement.xhtml"/>
+                        <p:menuitem value="#{msg['feature-mgnt']}" icon="fa fa-key" 
+                                    url="featuresetup.xhtml" 
+                                    rendered="#{authBean.administrator}"/>
                         <p:menuitem value="#{msg['study-mgnt']}" icon="fa fa-book" 
                                     url="studymanagement.xhtml" 
                                     rendered="#{authBean.administrator}"/>

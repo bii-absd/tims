@@ -97,6 +97,7 @@ import org.apache.logging.log4j.LogManager;
  * 19-May-2016 - Added one new constant, DETAIL_FILE_NAME.
  * 04-Jul-2016 - Added 5 new constants, CBIO_PATH, CBIO_CASES, EXP_DAT, VIS_DAT 
  * and FAILED.
+ * 21-Jul-2016 - Added one new constant, SET_FTE (i.e. Setup Feature).
  */
 
 @ManagedBean (name = "constants")
@@ -116,7 +117,7 @@ public class Constants {
     public final static String FALSE = "false";
     public final static String NONE = "none";
     public final static String FAILED = "FAILED";
-    // Categories of activity (LOG, EXE, CRE, CHG, DWL, EXP & VIS).
+    // Categories of activity (LOG, EXE, CRE, CHG, DWL, EXP, SET & VIS).
     public final static String LOG_IN = "Login";
     public final static String LOG_OFF = "Logoff";
     public final static String EXE_PL = "Run Pipeline";
@@ -128,6 +129,7 @@ public class Constants {
     public final static String CHG_ID = "Update ID";
     public final static String DWL_FIL = "Download File";
     public final static String EXP_DAT = "Export Data";
+    public final static String SET_FTE = "Setup Feature";
     public final static String VIS_DAT = "Visualize Study Data";
     // Navigation Strings
     public final static String PAGES_DIR = "restricted/";

@@ -17,6 +17,7 @@
             </p:contextMenu>
             
             <p:dataTable var="visStudy" rows="10" id="visTable" 
+                         rendered="#{authBean.visualizationON}"
                          value="#{visStudyBean.studies}" 
                          rowKey="#{visStudy.study_id}" 
                          selection="#{visStudyBean.selectedStudy}" 
@@ -45,7 +46,8 @@
                 <p:column headerText="Disease" styleClass="jsmedcol">
                     <h:outputText value="#{visStudy.ICDName}"/>
                 </p:column>
-                <p:column headerText="cBioPortal" style="width: 65px">
+                <p:column rendered="#{authBean.CBioPortalON}" 
+                          headerText="cBioPortal" style="width: 65px">
                     <p:commandButton ajax="false" value="Launch" 
                                      disabled="#{visStudy.CBioDisableStatus}" 
                                      action="#{visStudyBean.tocBioPortal(visStudy)}" 

@@ -59,7 +59,8 @@
             </h:panelGrid>
         </p:tab>
             
-        <p:tab id="visualization" title="Visualization" titleStyleClass="tab-title">
+        <p:tab id="visualization" rendered="#{authBean.visualizationON}" 
+               title="Visualization" titleStyleClass="tab-title">
             <h:panelGrid cellpadding="1">
                 <h:outputLink title="Select the job(s) to export for visualization" 
                               value="jobselection4v.xhtml" 

@@ -11,7 +11,8 @@
     <ui:param name="link" value="#{msg['jobs-sel']}"/>
     <ui:define name="content">
     <h:form id="jobsSelForm">
-        <p:panel header="Select Study to setup for visualization">
+        <p:panel rendered="#{authBean.visualizationON}" 
+                 header="Select Study to setup for visualization">
             <h:panelGrid columns="3" id="studyPanel">
                 <p:selectOneMenu id="studyID" required="true" value="#{js4vBean.study_id}">
                     <f:selectItem itemLabel="Select Study" itemValue="0"/>
@@ -19,10 +20,11 @@
                     <p:ajax update="jobsPanel exportButton" listener="#{js4vBean.studyChange}"/>
                 </p:selectOneMenu>
                 <p:separator style="width: 40px; height: 25px; background: transparent; border-width: 0px"/>
-                <p:commandButton value="Export Data for Visualization" icon="ui-icon-check" id="exportButton"
+                <p:commandButton value="Export Data to cBioPortal" icon="ui-icon-check" id="exportButton"
                                  oncomplete="PF('dlg').show()" style="height: 25px"
                                  update=":js4vForm:exportStatus :js4vForm:procButton" 
-                                 disabled="#{!js4vBean.studySelectedStatus}"
+                                 disabled="#{!js4vBean.studySelectedStatus}" 
+                                 rendered="#{authBean.CBioPortalON}"
                                  action="#{js4vBean.prepare2ExportData}"/>
             </h:panelGrid>
         </p:panel>
@@ -58,7 +60,8 @@
                 <p:column headerText="#{msg['fstudy-header7']}" style="text-align: left">
                     <h:outputText value="#{jobL0.inputDesc}"/>
                 </p:column>
-                <p:column headerText="#{msg['js4v-header8']}" styleClass="colbutton">
+                <p:column rendered="#{authBean.CBioPortalON}" 
+                          headerText="#{msg['js4v-header8']}" styleClass="colbutton">
                     <p:button rendered="#{jobL0.cbio_target}" disabled="true" 
                               style="background-color: deepskyblue" icon="ui-icon-check"/>
                 </p:column>
@@ -95,7 +98,8 @@
                 <p:column headerText="#{msg['fstudy-header7']}" style="text-align: left">
                     <h:outputText value="#{jobL1.inputDesc}"/>
                 </p:column>
-                <p:column headerText="#{msg['js4v-header8']}" styleClass="colbutton">
+                <p:column rendered="#{authBean.CBioPortalON}" 
+                          headerText="#{msg['js4v-header8']}" styleClass="colbutton">
                     <p:button rendered="#{jobL1.cbio_target}" disabled="true" 
                               style="background-color: deepskyblue" icon="ui-icon-check"/>
                 </p:column>
@@ -132,7 +136,8 @@
                 <p:column headerText="#{msg['fstudy-header7']}" style="text-align: left">
                     <h:outputText value="#{jobL2.inputDesc}"/>
                 </p:column>
-                <p:column headerText="#{msg['js4v-header8']}" styleClass="colbutton">
+                <p:column rendered="#{authBean.CBioPortalON}" 
+                          headerText="#{msg['js4v-header8']}" styleClass="colbutton">
                     <p:button rendered="#{jobL2.cbio_target}" disabled="true" 
                               style="background-color: deepskyblue" icon="ui-icon-check"/>
                 </p:column>
@@ -169,7 +174,8 @@
                 <p:column headerText="#{msg['fstudy-header7']}" style="text-align: left">
                     <h:outputText value="#{jobL3.inputDesc}"/>
                 </p:column>
-                <p:column headerText="#{msg['js4v-header8']}" styleClass="colbutton">
+                <p:column rendered="#{authBean.CBioPortalON}" 
+                          headerText="#{msg['js4v-header8']}" styleClass="colbutton">
                     <p:button rendered="#{jobL3.cbio_target}" disabled="true" 
                               style="background-color: deepskyblue" icon="ui-icon-check"/>
                 </p:column>
