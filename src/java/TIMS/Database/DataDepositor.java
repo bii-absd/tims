@@ -96,6 +96,8 @@ import org.apache.pdfbox.pdmodel.graphics.xobject.PDJpeg;
  * of study. To zip all the detail output file(s) into a single zip file.
  * 03-Jun-2016 - Reduce the top spacing of the summary report (for page 2 and
  * beyond).
+ * 22-Jul-2016 - Fix the bug where empty string get printed in section B when 
+ * generating the summary report.
  */
 
 public class DataDepositor extends Thread {
@@ -128,6 +130,7 @@ public class DataDepositor extends Thread {
             throws SQLException, NamingException
     {
         conn = DBHelper.getDSConn();
+        page = new PDPage(PDPage.PAGE_SIZE_A4);
         subjectNotFound = new StringBuilder();
         subjectFound = new StringBuilder();
         geneAvailableVsStored = new StringBuilder();
@@ -269,10 +272,12 @@ public class DataDepositor extends Thread {
     // Add a new page to the summary report and return the new content stream.
     private PDPageContentStream addNewPage() throws IOException {
         // Add a new page to the summary report.
-        page = new PDPage(PDPage.PAGE_SIZE_A4);
-        summary_pdf.addPage(page);
-        
-        return new PDPageContentStream(summary_pdf, page);
+        PDPage newPage = new PDPage(PDPage.PAGE_SIZE_A4);
+        summary_pdf.addPage(newPage);
+        // Shift the Y-axis to the starting position.
+        pageCursorYaxis = getYaxisHeight() - 100;
+
+        return new PDPageContentStream(summary_pdf, newPage);
     }
     
     // Return true if we have reached the end of the summary report page.
@@ -312,8 +317,6 @@ public class DataDepositor extends Thread {
             int line = 0;
             // Add a new page and get the content stream to hold the created content.
             PDPageContentStream cs = addNewPage();
-            // Shift the Y-axis to the starting position.
-            pageCursorYaxis = getYaxisHeight() - 100;
             // Create 2 image objects for Astar and BII logo.
             PDJpeg astarImg = new PDJpeg(summary_pdf, 
                     new FileInputStream(astarLogo));
@@ -327,7 +330,7 @@ public class DataDepositor extends Thread {
             cs.beginText();
             cs.setFont(boldFont, 14);
             cs.moveTextPositionByAmount(subheadX, getNextHeaderYaxis());
-            cs.drawString("Summary Report for Finalization of " + study_id);
+            cs.drawString("Summary Report for " + study_id);
             cs.endText();
             
             // Write the body in plain.
@@ -370,15 +373,13 @@ public class DataDepositor extends Thread {
                 cs.beginText();
                 cs.moveTextPositionByAmount(lineX, getNextLineYaxis());
                 cs.drawString(sub);
-                cs.endText();
+                cs.endText();                
                 // After printing each line, check whether we need another page.
                 if (checkEndOfPage()) {
                     // Close the current content stream, and open another one.
                     cs.close();
                     cs = addNewPage();
                     cs.setFont(plainFont, 11);
-                    // Shift the Y-axis to the starting position.
-                    pageCursorYaxis = getYaxisHeight();
                 }
             }
             // Section C
@@ -398,9 +399,8 @@ public class DataDepositor extends Thread {
                     cs.close();
                     cs = addNewPage();
                     cs.setFont(plainFont, 11);
-                    pageCursorYaxis = getYaxisHeight();
                 }
-            }            
+            }
             // Section D
             cs.beginText();
             cs.moveTextPositionByAmount(subheadX, getNextSubheaderYaxis());
@@ -418,8 +418,6 @@ public class DataDepositor extends Thread {
                 cs.close();
                 cs = addNewPage();
                 cs.setFont(plainFont, 11);
-                // Reset the Yaxis cursor.
-                pageCursorYaxis = getYaxisHeight();
             }
             // Ending section
             cs.beginText();
@@ -593,6 +591,10 @@ public class DataDepositor extends Thread {
                                 // have meta data in database.
                                 subjectFound.append(values[i]).append(" ");
                                 numSubjectFound++;
+                                // At the end of each subject line, place a marker '$'
+                                if (numSubjectFound%SUBJECTS_PER_LINE == 0) {
+                                    subjectFound.append("$");
+                                }
                             }
                             processedRecord++;
                             arrayIndex[i] = getNextArrayInd();
@@ -601,10 +603,6 @@ public class DataDepositor extends Thread {
                                  job_id, study_id);
                             // Insert the finalized output record.
                             insertToFinalizedOutput(insertStm, record);
-                            // At the end of each subject line, place a marker '$'
-                            if (numSubjectFound%SUBJECTS_PER_LINE == 0) {
-                                subjectFound.append("$");
-                            }
                         }
                         else {
                             if (!subjectNotFound.toString().contains(values[i])) {
@@ -612,13 +610,13 @@ public class DataDepositor extends Thread {
                                 // do not have meta data in database.
                                 subjectNotFound.append(values[i]).append(" ");
                                 numSubjectNotFound++;
+                                // At the end of each subject line, place a marker '$'
+                                if (numSubjectNotFound%SUBJECTS_PER_LINE == 0) {
+                                    subjectNotFound.append("$");
+                                }
                             }
                             unprocessedRecord++;
                             arrayIndex[i] = Constants.DATABASE_INVALID_ID;
-                            // At the end of each subject line, place a marker '$'
-                            if (numSubjectNotFound%SUBJECTS_PER_LINE == 0) {
-                                subjectNotFound.append("$");
-                            }
                         }
                     } catch (SQLException e) {
                         // Error occurred, return to caller.
@@ -688,6 +686,11 @@ public class DataDepositor extends Thread {
                         // Error occurred, return to caller.
                         logger.error(e.getMessage());
                         return Constants.NOT_OK;
+                    }
+                    // Print a message after every 5,000 genes processed.
+                    // To make sure this loop is still alive.
+                    if (totalGene%5000 == 0) {
+                        logger.debug("Gene count: " + totalGene);
                     }
                 }
                 // Close the stream and releases any system resources associated

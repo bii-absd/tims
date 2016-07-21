@@ -39,6 +39,7 @@ import org.apache.logging.log4j.LogManager;
  * 13-May-2016 - Minor changes as the pipeline output file will now be zipped.
  * 19-May-2016 - To delete those temporary files generated during closure
  * of study.
+ * 22-July-2016 - To print a debug message after every 5,000 genes processed.
  */
 
 public class VaultKeeper extends Thread {
@@ -235,6 +236,11 @@ public class VaultKeeper extends Thread {
                         // Error occurred, return to caller.
                         logger.error(e.getMessage());
                         return Constants.NOT_OK;
+                    }
+                    // Print a message after every 5,000 genes processed.
+                    // To make sure this loop is still alive.
+                    if (totalGene%5000 == 0) {
+                        logger.debug("Gene count: " + totalGene);
                     }
                 }
                 // Close the stream and releases any system resources associated
