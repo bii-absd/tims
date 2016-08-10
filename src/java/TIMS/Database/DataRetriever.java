@@ -49,6 +49,8 @@ import org.apache.logging.log4j.LogManager;
  * all the pipeline output have been consolidated.
  * 13-May-2016 - To zip the finalized output file once it has been generated. 
  * To delete the original output file after it has been zipped.
+ * 10-Aug-2016 - In method consolidateFinalizedData(), use the try-with-resource
+ * statement to create the PrintStream object. Removed unused code.
  */
 
 public class DataRetriever extends Thread {
@@ -146,9 +148,8 @@ public class DataRetriever extends Thread {
         // For time logging purpose.
         long elapsedTime;
         long startTime = System.nanoTime();
-        
-        try {
-            PrintStream ps = new PrintStream(new File(finalize_file));
+
+        try (PrintStream ps = new PrintStream(new File(finalize_file))) {
             // Write the header/subject line first
             ps.println(opHeader);
             // Loop through the output items and write the subject output one
@@ -230,47 +231,6 @@ public class DataRetriever extends Thread {
 
         return opList;
     }
-    
-    /* NOT IN USE ANYMORE!
-    // Retrieve the output row information (i.e. subject_id|tid|array_index 
-    // where gene's values are stored) from the database.
-    private List<OutputItems> getOpItemsListByTID() {
-        List<OutputItems> opList = new ArrayList<>();
-        String query = 
-                "SELECT y.subject_id, x.tid, y.array_index FROM " +
-                "(SELECT tid, job_id FROM submitted_job sj INNER JOIN pipeline pl " +
-                "ON sj.pipeline_name = pl.name " +
-                "WHERE study_id = ? AND status_id = 5) x " +
-                "NATURAL JOIN " +
-                "(SELECT * FROM finalized_output WHERE job_id IN " +
-                "(SELECT job_id FROM submitted_job WHERE study_id = ? AND status_id = 5) " +
-                "AND annot_ver = ?) y " +
-                "ORDER BY y.subject_id, y.array_index";
-        
-        try (PreparedStatement stm = conn.prepareStatement(query)) {
-            stm.setString(1, study_id);
-            stm.setString(2, study_id);
-            stm.setString(3, annot_ver);
-            ResultSet rs = stm.executeQuery();
-            
-            while (rs.next()) {
-                OutputItems item = new OutputItems(
-                                    rs.getString("subject_id"),
-                                    rs.getString("tid"),
-                                    rs.getInt("array_index"));
-                opList.add(item);                
-            }
-            
-            logger.debug("Total output row retrieved: " + opList.size());
-        }
-        catch (SQLException e) {
-            logger.error("FAIL to build output list!");
-            logger.error(e.getMessage());
-        }
-        
-        return opList;
-    }
-    */
 
     /*
     // NOTE: When using System.out.println the last character CANNOT be a "|"

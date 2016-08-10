@@ -41,6 +41,8 @@ import org.apache.logging.log4j.LogManager;
  * when sending out the data uploaded status email.
  * 03-Jun-2016 - Added new method sendUnFinalizationStatusEmail().
  * 04-Jul-2016 - Added new method sendExportDataStatusEmail().
+ * 10-Aug-2016 - Enhanced method sendTaskStatusEmail(), to allow customization 
+ * of email content.
  */
 
 public abstract class Postman {
@@ -89,7 +91,6 @@ public abstract class Postman {
                     " has been successfully uploaded to the following path:\n\n" + inputPath);
             // Send the message
             Transport.send(message);
-            
             logger.debug("Data uploaded email sent.");
         }
         catch (MessagingException me) {
@@ -117,7 +118,6 @@ public abstract class Postman {
                     + "please help to take a look. Thank you!");
             // Send the message
             Transport.send(message);
-            
             logger.debug("Exception email sent.");
         }
         catch (MessagingException me) {
@@ -167,11 +167,10 @@ public abstract class Postman {
                     "The team is looking at the root cause now.\n\n" +
                     "We will get back to you once we have any finding.\n\n" +
                     "Sorry for the inconvenience caused.\n\n\n" +
-                    "Please do not reply to this message.");                
+                    "Please do not reply to this message.");
             }
             // Send the message
             Transport.send(message);
-            
             logger.debug("Email sent to: " + user.getEmail());
         }
         catch (MessagingException me) {
@@ -184,29 +183,32 @@ public abstract class Postman {
     public static void sendExportDataStatusEmail(String study_id, 
             String userName, boolean status)
     {
-        sendTaskStatusEmail(study_id, userName, status, "export data");
+        sendTaskStatusEmail(study_id, userName, status, "export data", 
+                "\n\nPlease login to TIMS to visualize your data.\n\n");
     }
     // Send a finalization status email to notify the user of the status.
     public static void sendFinalizationStatusEmail(String study_id,
             String userName, boolean status)
     {
-        sendTaskStatusEmail(study_id, userName, status, "finalization");
+        sendTaskStatusEmail(study_id, userName, status, "finalization", 
+                "\n\nConsolidated output, detail output and finalized summary are ready"
+                + "\nfor download at Completed Study Output page.\n\n");
     }
     // Send a unfinalization status email to notify the user of the status.
     public static void sendUnFinalizationStatusEmail(String study_id, 
             String userName, boolean status) 
     {
-        sendTaskStatusEmail(study_id, userName, status, "un-finalization");
+        sendTaskStatusEmail(study_id, userName, status, "un-finalization", "\n\n\n");
     }
     // Send a closure status email to notify the user of the status.
     public static void sendStudyClosureStatusEmail(String study_id, 
             String userName, boolean status) 
     {
-        sendTaskStatusEmail(study_id, userName, status, "closure");
+        sendTaskStatusEmail(study_id, userName, status, "closure", "\n\n\n");
     }
     // Helper function to send out the status email for each task.
     public static void sendTaskStatusEmail(String study_id, String userName, 
-            boolean status, String task) {
+            boolean status, String task, String content) {
         setupMailServer();
         UserAccount user = UserAccountDB.getUserAct(userName);
         
@@ -219,19 +221,18 @@ public abstract class Postman {
                 msg.setSubject("Study " + study_id + " " + task + " completed successfully.");
                 msg.setText(
                     "Dear " + user.getFirst_name() + ",\n\n" +
-                    "Study " + study_id + " " + task + " has completed successfully.\n\n\n" +
-                    "Please do not reply to this message.");                
+                    "Study " + study_id + " " + task + " has completed successfully." +
+                    content + "Please do not reply to this message.");
             }
             else {
                 msg.setSubject("Study " + study_id + " " + task + " failed to complete.");
                 msg.setText(
                     "Dear " + user.getFirst_name() + ",\n\n" +
                     "Study " + study_id + " " + task + " failed to complete.\n\n\n" +
-                    "Please do not reply to this message.");                
+                    "Please do not reply to this message.");
             }
             // Send the message.
             Transport.send(msg);
-            
             logger.debug("Email sent to: " + user.getEmail());
         }
         catch (MessagingException me) {

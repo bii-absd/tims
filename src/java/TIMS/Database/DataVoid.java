@@ -37,6 +37,8 @@ import org.apache.logging.log4j.LogManager;
  * summary once the un-finalization has completed.
  * 03-Jun-2016 - To send the un-finalization status email to user once the
  * process has completed.
+ * 10-Aug-2016 - In method getArrayIndexes(), use the try-with-resource 
+ * statement to create the ResultSet object.
  */
 
 public class DataVoid extends Thread {
@@ -61,7 +63,7 @@ public class DataVoid extends Thread {
     
     @Override
     public void run() {
-        Boolean unfinResult = Constants.OK;
+        boolean unfinResult = Constants.OK;
         // To record the time taken to unfinalize the study.
         long startTime, elapsedTime;
 
@@ -118,7 +120,6 @@ public class DataVoid extends Thread {
             
             conn.setAutoCommit(true);
             logger.debug("DataVoid completed - Set auto-commit to ON");
-            
         }
         catch (SQLException e) {
             logger.error("FAIL to unfinalize study!");
@@ -142,9 +143,8 @@ public class DataVoid extends Thread {
                      + "annot_ver = \'" + annot_ver + "\' AND job_id = " 
                      + job_id;
         
-        try (PreparedStatement stm = conn.prepareStatement(query)) {
-            ResultSet rs = stm.executeQuery();
-            
+        try (PreparedStatement stm = conn.prepareStatement(query);
+             ResultSet rs = stm.executeQuery()) {
             while (rs.next()) {
                 indexList.add(rs.getInt("array_index"));
             }
@@ -159,8 +159,8 @@ public class DataVoid extends Thread {
     }
     
     // Set all the related data at data depository table to VOID.
-    private Boolean voidAllData() {
-        Boolean result = Constants.OK;
+    private boolean voidAllData() {
+        boolean result = Constants.OK;
         // To record the time taken to void the data.
         long startTime, elapsedTime;
         String query = "UPDATE data_depository SET data[?] = \'VOID\' "
@@ -194,8 +194,8 @@ public class DataVoid extends Thread {
     
     // Void all the related records in finalized output table i.e. by setting
     // job_id to 0 and subject_id to VOID.
-    private Boolean voidAllFinalizedRecords() {
-        Boolean result = Constants.OK;
+    private boolean voidAllFinalizedRecords() {
+        boolean result = Constants.OK;
         String query = "UPDATE finalized_output SET job_id = 0, "
                      + "subject_id = \'VOID\' WHERE annot_ver = \'" 
                      + annot_ver + "\' AND job_id = ?";

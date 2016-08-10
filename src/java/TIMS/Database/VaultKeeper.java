@@ -39,7 +39,9 @@ import org.apache.logging.log4j.LogManager;
  * 13-May-2016 - Minor changes as the pipeline output file will now be zipped.
  * 19-May-2016 - To delete those temporary files generated during closure
  * of study.
- * 22-July-2016 - To print a debug message after every 5,000 genes processed.
+ * 10-Aug-2016 - In method storePlDataIntoVault(), use the try-with-resource
+ * statement to create the BufferedReader object. Performed code refactoring on
+ * method storePlDataIntoVault().
  */
 
 public class VaultKeeper extends Thread {
@@ -50,7 +52,10 @@ public class VaultKeeper extends Thread {
     private List<Integer> jobList = new ArrayList<>();
     private String fileUri;
     private final String study_id, grp_id, annot_ver, userName;
-    
+    // Variables to be used during processing of pipeline output.
+    private int totalRecord, processedRecord, totalGene, processedGene;
+    private int[] vaultIndex;
+
     public VaultKeeper(String userName, String study_id) 
             throws SQLException, NamingException 
     {
@@ -73,6 +78,7 @@ public class VaultKeeper extends Thread {
         try {
             // All the SQL statements executed here will be treated as one
             // big transaction.
+            logger.debug("VaultKeeper start - Set auto-commit to OFF.");
             conn.setAutoCommit(false);
             
             for (Integer job_id : jobList) {
@@ -120,29 +126,126 @@ public class VaultKeeper extends Thread {
         }
     }
     
-    // Store the subject's pipeline data into the vault.
-    private Boolean storePlDataIntoVault(int job_id) {
-        Boolean result = Constants.OK;
-        int[] vaultIndex;
-        String[] values;
+    // Helper function to process the first line (i.e. subject line) of 
+    // pipeline data file. Return the processing status.
+    private boolean procSubjectLine(String[] values, int job_id) {
+        boolean result = Constants.OK;
         StringBuilder subjectNotFound = new StringBuilder();
-        // For record purpose.
-        int totalRecord, processedRecord, unprocessedRecord;
+        // INSERT statement to insert a record into vault_record table.
+        String insertStr = "INSERT INTO vault_record(array_index,"
+                         + "annot_ver,job_id,subject_id,grp_id,study_id) "
+                         + "VALUES(?,?,?,?,?,?)";
+
+        try (PreparedStatement insertStm = conn.prepareStatement(insertStr)) {
+            // Ignore the first two strings (i.e. geneID and EntrezID).
+            for (int i = 2; i < values.length; i++) {
+                // Only store the pipeline data if the study subject meta 
+                // data is available in the database.
+                if (StudySubjectDB.isSSExist(values[i], grp_id, study_id)) {
+                    processedRecord++;
+                    vaultIndex[i] = getNextVaultInd();
+                    FinalizedOutput record = new FinalizedOutput
+                        (vaultIndex[i], annot_ver, values[i], grp_id, job_id, study_id);
+                    // Create an vault record.
+                    createVaultRecord(insertStm, record);
+                }
+                else {
+                    subjectNotFound.append(values[i]).append(" ");
+                    vaultIndex[i] = Constants.DATABASE_INVALID_ID;
+                }
+            }
+            logger.debug("Records processed: " + processedRecord + 
+                         " out of " + totalRecord);
+            // Some of the subject IDs are not found for this pipeline.
+            // Display the consolidated subject IDs that are not found.
+            if (totalRecord > processedRecord) {
+                logger.debug("The following subject IDs are not found " + 
+                             subjectNotFound);
+            }
+        }
+        catch (SQLException|NamingException e) {
+            logger.error("FAIL to create vault records!");
+            logger.error(e.getMessage());
+            // Error occurred, return to caller.
+            result = Constants.NOT_OK;
+        }
+        
+        return result;
+    }
+    
+    // Helper function to process the gene data of pipeline output. Return the 
+    // processing status.
+    private boolean procGeneData(BufferedReader br, int job_id) throws IOException {
+        boolean result = Constants.OK;
+        String genename, lineRead;
+        String[] values;
+        totalGene = processedGene = 0;
+        // UPDATE statement to update the data array in vault_data table.
+        String updateStr = "UPDATE vault_data SET data[?] = ? WHERE " 
+                         + "genename = ? AND annot_ver = \'" 
+                         + annot_ver + "\'";
+        // SELECT statement to check the existence of gene in database.
+        String queryGene = "SELECT 1 FROM vault_data WHERE "
+                         + "genename = ? AND annot_ver = \'" 
+                         + annot_ver + "\'";
+        // This debug message serve as a check point.
+        logger.debug("Start gene data processing for job " + job_id);
+        
+        try (PreparedStatement updateStm = conn.prepareStatement(updateStr);
+             PreparedStatement queryGeneStm = conn.prepareStatement(queryGene)) 
+        {
+            while ((lineRead = br.readLine()) != null) {
+                totalGene++;
+                values = lineRead.split("\t");
+                // The first string is the gene symbol.
+                genename = values[0];
+                // Only store the data if the genename exist in vault_data.
+                if (isGeneExistInVault(queryGeneStm,genename)) {
+                    processedGene++;
+                    // Gene data start from the 3rd column. 
+                    for (int i = 2; i < values.length; i++) {
+                        // Only process those data with valid PID
+                        if (vaultIndex[i] != Constants.DATABASE_INVALID_ID) {
+                            // Store gene data into vault.
+                            storeGeneDataIntoVault(updateStm, vaultIndex[i],
+                                                   values[i],genename);                                    
+                        }
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            logger.error("FAIL to store gene data into vault!");
+            logger.error(e.getMessage());
+            result = Constants.NOT_OK;
+        }
+
+        return result;
+    }
+    
+    // Store the subject's pipeline data into the vault.
+    private boolean storePlDataIntoVault(int job_id) {
+        boolean result = Constants.OK;
+        String[] values;
+        // Reset global variables before start processing.
+        totalRecord = processedRecord = 0;
+        vaultIndex = null;
         // To record the time taken to store the finalized data.
         long startTime, elapsedTime;
 
-        try {
-            BufferedReader br = new BufferedReader(new FileReader(fileUri));
-            //
-            // **Subject line processing start here.
-            //
+        try (BufferedReader br = new BufferedReader(new FileReader(fileUri))) {
             String lineRead = br.readLine();
             values = lineRead.split("\t");
-            // Declare a integer array with size equal to the no of columns
+            // Update the size of the integer array.
             vaultIndex = new int[values.length];
             // No of records = total column - 2
             totalRecord = values.length - 2;
-            processedRecord = unprocessedRecord = 0;
+            // Start subject line processing.
+            if (!procSubjectLine(values, job_id)) {
+                // Error occurred, return to caller.
+                return Constants.NOT_OK;
+            }
+            
+            /* Moved to helper function.
             // INSERT statement to insert a record into vault_record table.
             String insertStr = "INSERT INTO vault_record(array_index,"
                              + "annot_ver,job_id,subject_id,grp_id,study_id) "
@@ -154,36 +257,26 @@ public class VaultKeeper extends Thread {
                 for (int i = 2; i < values.length; i++) {
                     // Only store the pipeline data if the study subject meta 
                     // data is available in the database.
-                    try {
-                        if (StudySubjectDB.isSSExist(values[i], grp_id, study_id)) {
-                            processedRecord++;
-                            vaultIndex[i] = getNextVaultInd();
-                            FinalizedOutput record = new FinalizedOutput
-                                (vaultIndex[i], annot_ver, values[i], grp_id, 
-                                 job_id, study_id);
-                            // Create an vault record.
-                            createVaultRecord(insertStm, record);                            
-                        }
-                        else {
-                            subjectNotFound.append(values[i]).append(" ");
-                            unprocessedRecord++;
-                            vaultIndex[i] = Constants.DATABASE_INVALID_ID;
-                        }
-                    } 
-                    catch (SQLException e) {
-                        // Error occurred, return to caller.
-                        logger.error(e.getMessage());
-                        return Constants.NOT_OK;
+                    if (StudySubjectDB.isSSExist(values[i], grp_id, study_id)) {
+                        processedRecord++;
+                        vaultIndex[i] = getNextVaultInd();
+                        FinalizedOutput record = new FinalizedOutput
+                            (vaultIndex[i], annot_ver, values[i], grp_id, 
+                             job_id, study_id);
+                        // Create an vault record.
+                        createVaultRecord(insertStm, record);                            
+                    }
+                    else {
+                        subjectNotFound.append(values[i]).append(" ");
+                        vaultIndex[i] = Constants.DATABASE_INVALID_ID;
                     }
                 }
                 logger.debug("Records processed: " + processedRecord + 
                              " out of " + totalRecord);
-                // Record those subject ID not found i.e. data will not be stored.
-                if (subjectNotFound.toString().isEmpty()) {
-                    logger.debug("All the subject ID is found in database.");
-                }
-                else {
-                    logger.debug("The following subject ID is not found in database " + 
+                // Some of the subject IDs are not found for this pipeline.
+                // Display the consolidated subject IDs that are not found.
+                if (totalRecord > processedRecord) {
+                    logger.debug("The following subject IDs are not found " + 
                                  subjectNotFound);
                 }
             }
@@ -193,32 +286,44 @@ public class VaultKeeper extends Thread {
                 // Error occurred, return to caller.
                 return Constants.NOT_OK;
             }
-            //
-            // **Gene data processing start here.
-            //
-            String genename;
-            int totalGene, processedGene;
-            totalGene = processedGene = 0;
-            // To record the time taken to store the data into the vault.
-            startTime = System.nanoTime();
-            // UPDATE statement to update the data array in vault_data table.
-            String updateStr = "UPDATE vault_data SET data[?] = ? WHERE " 
-                             + "genename = ? AND annot_ver = \'" 
-                             + annot_ver + "\'";
-            // SELECT statement to check the existence of gene in database.
-            String queryGene = "SELECT 1 FROM vault_data WHERE "
-                             + "genename = ? AND annot_ver = \'" 
-                             + annot_ver + "\'";
+            */
 
-            try (PreparedStatement updateStm = conn.prepareStatement(updateStr);
-                 PreparedStatement queryGeneStm = conn.prepareStatement(queryGene)) 
-            {
-                while ((lineRead = br.readLine()) != null) {
-                    totalGene++;
-                    values = lineRead.split("\t");
-                    // The first string is the gene symbol.
-                    genename = values[0];
-                    try {
+            // Only proceed with gene data processing if subject ID is found in
+            // the database.
+            if (processedRecord > 0) {
+                startTime = System.nanoTime();
+                if (procGeneData(br, job_id)) {
+                    // Record the time taken for storing the data into vault.
+                    elapsedTime = System.nanoTime() - startTime;
+                    logger.debug("Gene record processed: " + processedGene + "/" + totalGene);
+                    logger.debug("Time taken: " + (elapsedTime / 1000000000.0) + " sec");
+
+                }
+                else {
+                    // Error occurred, return to caller.
+                    return Constants.NOT_OK;
+                }
+                
+                /* Moved to helper function.
+                // UPDATE statement to update the data array in vault_data table.
+                String updateStr = "UPDATE vault_data SET data[?] = ? WHERE " 
+                                 + "genename = ? AND annot_ver = \'" 
+                                 + annot_ver + "\'";
+                // SELECT statement to check the existence of gene in database.
+                String queryGene = "SELECT 1 FROM vault_data WHERE "
+                                 + "genename = ? AND annot_ver = \'" 
+                                 + annot_ver + "\'";
+                // This debug message serve as a check point.
+                logger.debug("Start gene data processing for job " + job_id);
+
+                try (PreparedStatement updateStm = conn.prepareStatement(updateStr);
+                     PreparedStatement queryGeneStm = conn.prepareStatement(queryGene)) 
+                {
+                    while ((lineRead = br.readLine()) != null) {
+                        totalGene++;
+                        values = lineRead.split("\t");
+                        // The first string is the gene symbol.
+                        genename = values[0];
                         // Only store the data if the genename exist in vault_data.
                         if (isGeneExistInVault(queryGeneStm,genename)) {
                             processedGene++;
@@ -232,31 +337,19 @@ public class VaultKeeper extends Thread {
                                 }
                             }
                         }
-                    } catch (SQLException e) {
-                        // Error occurred, return to caller.
-                        logger.error(e.getMessage());
-                        return Constants.NOT_OK;
                     }
-                    // Print a message after every 5,000 genes processed.
-                    // To make sure this loop is still alive.
-                    if (totalGene%5000 == 0) {
-                        logger.debug("Gene count: " + totalGene);
-                    }
+                } catch (SQLException e) {
+                    logger.error("FAIL to store gene data into vault!");
+                    logger.error(e.getMessage());
+                    // Error occurred, return to caller.
+                    return Constants.NOT_OK;
                 }
-                // Close the stream and releases any system resources associated
-                // with it.
-                br.close();
-            } catch (SQLException e) {
-                logger.error("FAIL to store gene data into vault!");
-                logger.error(e.getMessage());
-                // Error occurred, return to caller.
-                return Constants.NOT_OK;
+                */
             }
-            // Record total time taken for storing the data into vault.
-            elapsedTime = System.nanoTime() - startTime;
-            
-            logger.debug("Gene record processed: " + processedGene + "/" + totalGene);
-            logger.debug("Time taken: " + (elapsedTime / 1000000000.0) + " sec");
+            else {
+                logger.debug("None of the subject ID for this pipeline output is found. "
+                        + "Gene data will not be stored into database.");
+            }
         }
         catch (IOException e) {
             logger.error("FAIL to read pipeline output file for job ID " + job_id);
@@ -273,13 +366,11 @@ public class VaultKeeper extends Thread {
         String query = "SELECT MAX(array_index) FROM vault_record "
                      + "WHERE annot_ver = \'" + annot_ver + "\'";
         
-        try (PreparedStatement stm = conn.prepareStatement(query)) {
-            ResultSet rs = stm.executeQuery();
-            
+        try (PreparedStatement stm = conn.prepareStatement(query);
+             ResultSet rs = stm.executeQuery()) {
             if (rs.next()) {
                 count = rs.getInt(1) + 1;
             }
-            rs.close();
         }
         catch (SQLException e) {
             logger.debug("FAIL to retrieve the next vault index!");
