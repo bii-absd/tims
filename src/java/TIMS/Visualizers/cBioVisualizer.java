@@ -56,6 +56,8 @@ import org.mindrot.jbcrypt.BCrypt;
  * 3. Only one thread can restart the tomcat application server at one time.
  * 4. The stable_id in the meta file need to end in pre-defined code.
  * 5. To convert the data values from Affymetrix pipeline to z-score format.
+ * 12-Aug-2016 - To make sure the Affymetrix z-score result is exactly 2 
+ * decimal places.
  */
 
 public class cBioVisualizer extends Thread {
@@ -67,7 +69,7 @@ public class cBioVisualizer extends Thread {
     // Only one thread can restart the tomcat application server at one time.
     private static Semaphore tcCtrl = new Semaphore(1);
     // Use for formating the z-score to 2 decimals.
-    private static DecimalFormat df = new DecimalFormat("#.##");
+    private static DecimalFormat df = new DecimalFormat("0.00");
     // Commands for cBioPortal.
     private final static String IMPORT_STUDY = "import-study";
     private final static String REMOVE_STUDY = "remove-study";
@@ -344,7 +346,7 @@ public class cBioVisualizer extends Thread {
                     // If standard deviation is zero, z-score is undefined; 
                     // will store as 0.0 here.
                     if (sd == 0.0) {
-                        zsLine.append("0.0").append("\t");
+                        zsLine.append("0.00").append("\t");
                     }
                     else {
                         Double zs = Statistics.zScore(Double.parseDouble(values[i]), mean, sd);
