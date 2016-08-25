@@ -8,6 +8,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 // Libraries for Java Extension
@@ -41,6 +42,8 @@ import org.apache.logging.log4j.LogManager;
  * input data description.
  * 14-Apr-2016 - Changes due to the type change (i.e. to Timestamp) for date
  * in submitted_job table.
+ * 25-Aug-2016 - Added one new method, updateInputDataFields. Implementation 
+ * for database 3.6 Part I.
  */
 
 public abstract class InputDataDB {
@@ -49,11 +52,11 @@ public abstract class InputDataDB {
             getLogger(InputDataDB.class.getName());
     
     // Insert the new input data detail into database.
-    public static Boolean insertInputData(InputData idata) {
+    public static boolean insertInputData(InputData idata) {
         Connection conn = null;
-        Boolean result = Constants.OK;
-        String query = "INSERT INTO input_data(study_id,sn,user_id,"
-                     + "pipeline_name,filename,filepath,description,date) "
+        boolean result = Constants.OK;
+        String query = "INSERT INTO input_data(study_id,sn,create_uid,"
+                     + "pipeline_name,filename,filepath,description,create_time) "
                      + "VALUES(?,?,?,?,?,?,?,?)";
         
         try {
@@ -61,12 +64,12 @@ public abstract class InputDataDB {
             PreparedStatement stm = conn.prepareStatement(query);
             stm.setString(1, idata.getStudy_id());
             stm.setInt(2, idata.getSn());
-            stm.setString(3, idata.getUser_id());
+            stm.setString(3, idata.getCreate_uid());
             stm.setString(4, idata.getPipeline_name());
             stm.setString(5, idata.getFilename());
             stm.setString(6, idata.getFilepath());
             stm.setString(7, idata.getDescription());
-            stm.setTimestamp(8, idata.getDate());
+            stm.setTimestamp(8, idata.getCreate_time());
             stm.executeUpdate();
             stm.close();
             
@@ -100,22 +103,14 @@ public abstract class InputDataDB {
             ResultSet rs = stm.executeQuery();
             
             while (rs.next()) {
-                InputData tmp = new InputData(rs.getString("study_id"),
-                                              rs.getString("user_id"),
-                                              rs.getString("pipeline_name"),
-                                              rs.getString("filename"),
-                                              rs.getString("filepath"),
-                                              rs.getString("description"),
-                                              rs.getInt("sn"),
-                                              rs.getTimestamp("date"));
-                ipList.add(tmp);
+                ipList.add(new InputData(rs));
             }
             
             stm.close();
-            logger.debug("Query input data completed.");
+            logger.debug("Input data list retrieved.");
         }
         catch (SQLException|NamingException e) {
-            logger.debug("FAIL to query input data!");
+            logger.debug("FAIL to retrieve input data list!");
             logger.debug(e.getMessage());
         }
         finally {
@@ -123,6 +118,41 @@ public abstract class InputDataDB {
         }
         
         return ipList;
+    }
+    
+    // Update 3 fields in the input_data table after making changes in the Raw 
+    // Data Management page.
+    public static boolean updateFieldsAfterEdit(String study_id, int sn, 
+            String desc, String update_uid, Timestamp update_time) 
+    {
+        Connection conn = null;
+        boolean result = Constants.OK;
+        String query = "UPDATE input_data SET update_uid = ?, update_time = ?, "
+                     + "description = ? WHERE study_id = ? AND sn = ?";
+        
+        try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            stm.setString(1, update_uid);
+            stm.setTimestamp(2, update_time);
+            stm.setString(3, desc);
+            stm.setString(4, study_id);
+            stm.setInt(5, sn);
+            stm.executeUpdate();
+            stm.close();
+            
+            logger.debug("Updated input data for study " + study_id + " serial no " + sn);
+        }
+        catch (SQLException|NamingException e) {
+            result = Constants.NOT_OK;
+            logger.error("FAIL to update input data for study " + study_id + " serial no " + sn);
+            logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
+        }
+
+        return result;
     }
     
     // Return the next sn for the input data detail for this study.

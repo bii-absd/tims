@@ -75,11 +75,18 @@
         </p:tab>
             
         <p:tab id="clData" title="Clinical Subject Data" titleStyleClass="tab-title">
-            <p:commandLink value="#{msg['subject-md']}" 
-                           action="#{menuSelBean.setupOpenStudyList}"
-                           styleClass="mainmenuitem" update=":mdDlgForm"
-                           title="Upload or edit subject meta data"
-                           oncomplete="PF('mdDlg').show()"/>
+            <h:panelGrid cellpadding="1">
+                <p:commandLink value="#{msg['md-mgnt']}" 
+                               action="#{menuSelBean.setupOpenStudyList}"
+                               styleClass="mainmenuitem" update=":mdDlgForm"
+                               title="Upload or edit subject meta data"
+                               oncomplete="PF('mdDlg').show()"/>
+                <p:commandLink value="#{msg['rd-mgnt']}" 
+                               action="#{menuSelBean.setupRawDataMgnt}"
+                               styleClass="mainmenuitem" update=":rdDlgForm"
+                               title="Manage subject raw data"
+                               oncomplete="PF('rdDlg').show()"/>
+            </h:panelGrid>
         </p:tab>
 
         <p:tab id="job" title="My Work Area" titleStyleClass="tab-title">
@@ -97,16 +104,21 @@
                               styleClass="mainmenuitem">
                     Completed Study Output
                 </h:outputLink>
+            </h:panelGrid>
+        </p:tab>
+        
+        <p:tab id="study" rendered="#{authBean.adminPILead}" title="My Study" titleStyleClass="tab-title">
+            <h:panelGrid cellpadding="1">
                 <h:outputLink title="#{msg['finalize-study']}" value="finalizestudy.xhtml" 
-                              styleClass="mainmenuitem" rendered="#{authBean.isPILead()}">
+                              styleClass="mainmenuitem" rendered="#{authBean.PILead}">
                     Finalize Study
                 </h:outputLink>
                 <h:outputLink title="#{msg['unfinalize-study']}" value="unfinalizestudy.xhtml" 
-                              styleClass="mainmenuitem" rendered="#{authBean.isAdministrator()}">
+                              styleClass="mainmenuitem" rendered="#{authBean.administrator}">
                     Unfinalize Study
                 </h:outputLink>
                 <h:outputLink title="#{msg['close-study']}" value="closestudy.xhtml" 
-                              styleClass="mainmenuitem" rendered="#{authBean.isAdministrator()}">
+                              styleClass="mainmenuitem" rendered="#{authBean.administrator}">
                     Close Study
                 </h:outputLink>
             </h:panelGrid>
@@ -114,9 +126,40 @@
     </p:accordionPanel>
     </h:form>
 
-        <p:dialog modal="true" header="Select Study to work on" 
-                  widgetVar="mdDlg" resizable="false">
-            <h:form id="mdDlgForm">
+    <p:dialog modal="true" header="Select Study and Pipeline to work on" 
+              widgetVar="rdDlg" resizable="false">
+        <h:form id="rdDlgForm">
+            <h:panelGrid columns="2">
+                <p:outputLabel value="Study: " styleClass="configlabel"/>
+                <p:selectOneMenu id="rdDlg-studyID" value="#{menuSelBean.study_id}">
+                    <f:selectItem itemLabel="Select Study" itemValue=""/>
+                    <f:selectItems value="#{menuSelBean.openStudyList}"/>
+                    <p:ajax update="rdDlg-selPanel"/>
+                </p:selectOneMenu>
+
+                <p:outputLabel value="Pipeline: " styleClass="configlabel"/>
+                <p:selectOneMenu id="rdDlg-pipeline" value="#{menuSelBean.plName}">
+                    <f:selectItems value="#{menuSelBean.pipelineList}"/>
+                </p:selectOneMenu>
+            </h:panelGrid>
+            <p:separator styleClass="configsep"/>
+            
+            <h:panelGrid id="rdDlg-selPanel" width="100%" columns="2" cellspacing="2" 
+                         cellpadding="2">
+                <p:commandButton value="Cancel" oncomplete="PF('rdDlg').hide()" 
+                                 action="#{menuSelBean.backToMainMenu}" 
+                                 style="width: 100%"/>
+                <p:commandButton value="Proceed" 
+                                 rendered="#{menuSelBean.studySelectedStatus}" 
+                                 action="#{menuSelBean.proceedToRawDataMgnt}" 
+                                 style="width: 100%"/>
+            </h:panelGrid>
+        </h:form>
+    </p:dialog>
+
+    <p:dialog modal="true" header="Select Study to work on" 
+              widgetVar="mdDlg" resizable="false">
+        <h:form id="mdDlgForm">
             <h:panelGrid columns="1">
                 <h:panelGroup>
                     <p:selectOneMenu id="mdDlg-studyID" value="#{menuSelBean.study_id}">
@@ -138,12 +181,12 @@
                                  action="#{menuSelBean.proceedToMetaDataMgnt}" 
                                  style="width: 100%"/>
             </h:panelGrid>
-            </h:form>
-        </p:dialog>
+        </h:form>
+    </p:dialog>
         
-        <p:dialog modal="true" header="Select Study to work on" 
-                  widgetVar="dlg" resizable="false">
-            <h:form id="dlgForm">
+    <p:dialog modal="true" header="Select Study to work on" 
+              widgetVar="dlg" resizable="false">
+        <h:form id="dlgForm">
             <h:panelGrid columns="1">
                 <h:panelGroup>
                     <p:selectOneMenu id="dlg-studyID" value="#{menuSelBean.study_id}">
@@ -171,7 +214,7 @@
                                  action="#{menuSelBean.proceedToConfig}" 
                                  style="width: 100%"/>
             </h:panelGrid>
-            </h:form>
-        </p:dialog>
+        </h:form>
+    </p:dialog>
     </ui:define>
 </ui:composition>

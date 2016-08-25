@@ -39,13 +39,19 @@
                              selection="#{gexAffyBean.selectedInput}" 
                              rowKey="#{reuseIP.sn}" 
                              styleClass="table-odd-row table-even-row">
-                    <p:column headerText="Data Uploaded By" styleClass="col120">
-                        <h:outputText value="#{reuseIP.user_id}"/>
+                    <p:column headerText="Creation Date" styleClass="jsmedcol">
+                        <h:outputText value="#{reuseIP.createTimeString}"/>
                     </p:column>
-                    <p:column headerText="Data Upload Date" styleClass="jsmedcol">
-                        <h:outputText value="#{reuseIP.dateString}"/>
+                    <p:column headerText="Create By" styleClass="col120">
+                        <h:outputText value="#{reuseIP.create_uid}"/>
                     </p:column>
-                    <p:column headerText="Data Description" style="text-align: left">
+                    <p:column headerText="Last Update" styleClass="jsmedcol">
+                        <h:outputText value="#{reuseIP.updateTimeString}"/>
+                    </p:column>
+                    <p:column headerText="Update By" styleClass="col120">
+                        <h:outputText value="#{reuseIP.update_uid}"/>
+                    </p:column>
+                    <p:column headerText="Description" style="text-align: left">
                         <h:outputText value="#{reuseIP.description}"/>
                     </p:column>
                     <p:column headerText="Select Data to Reuse" selectionMode="single" 

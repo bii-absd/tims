@@ -110,6 +110,8 @@ import org.apache.logging.log4j.LogManager;
  * 08-Apr-2016 - To build the Institution ID HashMap once user login.
  * 21-Jul-2016 - To retrieve and build the feature active status list from 
  * the database. Added 2 new methods, isCBioPortalON() and isVisualizationON().
+ * 25-Aug-2016 - Renamed the method isPI() to isAdminPILead(), and changed it's 
+ * implementation.
  */
 
 @ManagedBean (name="authBean")
@@ -133,7 +135,7 @@ public class AuthenticationBean implements Serializable {
     
     // Setup the database configuration, input and config file path according 
     // to the OS the application is hosted on.
-    private Boolean setupConstants(ServletContext context) {
+    private boolean setupConstants(ServletContext context) {
         String setupFile, root;
         String OS = System.getProperty("os.name");
         // Load the system setup file location from context-param.
@@ -296,9 +298,9 @@ public class AuthenticationBean implements Serializable {
     public boolean isDirector() {
         return isAdministrator() || (userAcct.getRole_id() == UserRoleDB.director());
     }
-    // Return true if the user is an Admin or PI.
-    public boolean isPI() {
-        return isAdministrator() || (userAcct.getRole_id() == UserRoleDB.pi());
+    // Return true if the user is an Admin or an PI Lead.
+    public boolean isAdminPILead() {
+        return isAdministrator() || isPILead();
     }
     // Return true if the user is an Admin or User.
     public boolean isUser() {

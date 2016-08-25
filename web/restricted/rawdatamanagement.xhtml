@@ -1,0 +1,73 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition template="/WEB-INF/pageTemplate.xhtml"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    
+    <ui:define name="title">Raw Data Management</ui:define>
+    <ui:param name="link" value="#{RDMgntBean.breadCrumbLink}"/>
+    <ui:define name="content">
+        <h:form id="rdForm" enctype="multipart/form-data">
+            <p:panel id="inputPanel" header="Select input data package to work on">
+                <p:dataTable id="inputTable" var="input" 
+                             value="#{RDMgntBean.inputDataList}" 
+                             selection="#{RDMgntBean.selectedInput}" 
+                             selectionMode="single"
+                             rowKey="#{input.sn}"
+                             styleClass="table-odd-row table-even-row">
+                    <p:ajax event="rowSelect" update="rdForm:rdMgntPanel rdForm:rdBtnSave" 
+                            listener="#{RDMgntBean.inputSelectionChange}"/>
+                    <p:column headerText="Creation Date" styleClass="jsmedcol">
+                        <h:outputText value="#{input.createTimeString}"/>
+                    </p:column>
+                    <p:column headerText="Create By" styleClass="col120">
+                        <h:outputText value="#{input.create_uid}"/>
+                    </p:column>
+                    <p:column headerText="Last Update" styleClass="jsmedcol">
+                        <h:outputText value="#{input.updateTimeString}"/>
+                    </p:column>
+                    <p:column headerText="Update By" styleClass="col120">
+                        <h:outputText value="#{input.update_uid}"/>
+                    </p:column>
+                    <p:column headerText="Description" style="text-align: left">
+                        <h:outputText value="#{input.description}"/>
+                    </p:column>
+                </p:dataTable>
+            </p:panel>
+            <p:separator styleClass="configsep" rendered="#{RDMgntBean.inputSelectedStatus}"/>
+            
+            <p:panel id="rdMgntPanel" header="Upload new input data" visible="#{RDMgntBean.inputSelectedStatus}">
+                <p:growl id="uploadStatus"/>
+                <h:panelGrid columns="2" style="width: 100%">
+                    <p:outputLabel value="Description" styleClass="configlabel"/>
+                    <p:inputText id="inputDesc" value="#{RDMgntBean.inputFileDesc}" autocomplete="false"
+                                 size="200" styleClass="configinput"/>
+                </h:panelGrid>
+                <p:separator styleClass="configsep" rendered="#{RDMgntBean.inputSelectedStatus}"/>
+                <p:fileUpload mode="advanced" multiple="true" 
+                              update="uploadStatus" sequential="true" 
+                              allowTypes="#{RDMgntBean.allowTypes}" 
+                              onstart="b4upload()" label="#{msg['config-selsam']}"
+                              fileUploadListener="#{RDMgntBean.inputFile.multipleFileUploadListener}"/>
+                <p:remoteCommand name="b4upload" partialSubmit="true" process="@this" 
+                                 actionListener="#{RDMgntBean.inputFile.createInputDirectory}"/>
+                <p:separator styleClass="configsep" rendered="#{RDMgntBean.controlFileStatus}"/>
+                <p:fileUpload mode="advanced" update="uploadStatus" 
+                              rendered="#{RDMgntBean.controlFileStatus}"
+                              label="#{msg['config-selctl']}" 
+                              fileUploadListener="#{RDMgntBean.ctrlFile.singleFileUploadListener}"/>
+                <p:separator styleClass="configsep" rendered="#{RDMgntBean.inputSelectedStatus}"/>
+                <p:fileUpload mode="advanced" update="uploadStatus" label="#{msg['config-selannot']}" 
+                              fileUploadListener="#{RDMgntBean.annotFile.singleFileUploadListener}"/>
+            </p:panel>
+            
+            <p:separator styleClass="configsep"/>
+            <p:commandButton id="rdBtnSave" disabled="#{!RDMgntBean.inputSelectedStatus}" 
+                             value="Save Changes" action="#{RDMgntBean.confirmChanges}"/>
+        </h:form>
+
+    </ui:define>
+</ui:composition>

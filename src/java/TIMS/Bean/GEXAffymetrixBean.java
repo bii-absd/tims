@@ -67,6 +67,8 @@ import javax.naming.NamingException;
  * submit_time and complete_time in submitted_job table.
  * 19-May-2016 - Changes due to the addition attribute (i.e. detail_output) in 
  * submitted_job table.
+ * 25-Aug-2016 - Changes due to method name (i.e. getCreateTimeString) change 
+ * in InputData class.
  */
 
 @ManagedBean (name="gexAffyBean")
@@ -91,7 +93,7 @@ public class GEXAffymetrixBean extends ConfigBean {
             if (selectedInput != null) {
                 setJobSubmissionStatus(true);
                 input_sn = selectedInput.getSn();
-                logger.debug("Data uploaded on " + selectedInput.getDate() + 
+                logger.debug("Data uploaded on " + selectedInput.getCreateTimeString() + 
                              " has been selected for reuse.");
             }
             else {

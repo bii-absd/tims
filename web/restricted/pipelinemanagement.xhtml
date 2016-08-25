@@ -22,10 +22,20 @@
                          editable="true">
                 <p:ajax event="rowEdit" listener="#{plMgntBean.onRowEdit}" 
                         update="cmdMsg"/>
-                <p:column headerText="Pipeline Name" style="width: 300px; text-align: left">
+                <p:column headerText="Pipeline" styleClass="jsmedcol">
                     <h:outputText value="#{cmd.name}"/>
                 </p:column>
-                <p:column headerText="Technology" style="width: 150px; text-align: left">
+                <p:column headerText="Description" style="width: 400px; text-align: left">
+                    <p:cellEditor>
+                        <f:facet name="output">
+                            <h:outputText value="#{cmd.description}"/>
+                        </f:facet>
+                        <f:facet name="input">
+                            <p:inputText value="#{cmd.description}" style="width: 100%"/>
+                        </f:facet>
+                    </p:cellEditor>
+                </p:column>
+                <p:column headerText="Technology" styleClass="col140">
                     <p:cellEditor>
                         <f:facet name="output">
                             <h:outputText value="#{cmd.tid}"/>
@@ -41,14 +51,14 @@
                 <p:column headerText="Command" style="text-align: left">
                     <p:cellEditor>
                         <f:facet name="output">
-                            <h:outputText value="#{cmd.code}"/>
+                            <h:outputText value="#{cmd.command}"/>
                         </f:facet>
                         <f:facet name="input">
-                            <p:inputText value="#{cmd.code}" style="width: 100%"/>
+                            <p:inputText value="#{cmd.command}" style="width: 100%"/>
                         </f:facet>
                     </p:cellEditor>
                 </p:column>
-                <p:column headerText="Parameter" style="width: 250px; text-align: left">
+                <p:column headerText="Parameter" style="text-align: left">
                     <p:cellEditor>
                         <f:facet name="output">
                             <h:outputText value="#{cmd.parameter}"/>
@@ -56,6 +66,21 @@
                         <f:facet name="input">
                             <p:inputText value="#{cmd.parameter}" 
                                          style="width: 100%"/>
+                        </f:facet>
+                    </p:cellEditor>
+                </p:column>
+                <p:column headerText="Editable" style="width: 60px">
+                    <p:cellEditor>
+                        <f:facet name="output">
+                            <div align="center">
+                                <h:outputText value="#{cmd.editable?'YES':'NO'}"/>
+                            </div>
+                        </f:facet>
+                        <f:facet name="input">
+                            <p:selectOneMenu value="#{cmd.editable}" style="width: 100%">
+                                <f:selectItem itemLabel="YES" itemValue="true"/>
+                                <f:selectItem itemLabel="NO" itemValue="false"/>
+                            </p:selectOneMenu>
                         </f:facet>
                     </p:cellEditor>
                 </p:column>
@@ -69,11 +94,17 @@
         <p:tab id="addCmd" title="Add New Pipeline" titleStyleClass="tab-title">
         <h:form id="addCmdForm">
             <h:panelGrid columns="3" border="0" cellpadding="4" cellspacing="2">
-                <p:inputText id="plname" size="32" maxlength="20" 
+                <p:inputText id="plname" size="32" maxlength="32" 
                              autocomplete="off" required="true" 
-                             value="#{plMgntBean.pipeline_name}"/>
+                             value="#{plMgntBean.plName}"/>
                 <h:message id="plname-status" for="plname" styleClass="errors"/>
-                <p:watermark for="plname" value="New Pipeline Name"/>
+                <p:watermark for="plname" value="Pipeline Name"/>
+                
+                <p:inputText id="pldesc" size="32" maxlength="100" 
+                             autocomplete="off" required="true" 
+                             value="#{plMgntBean.plDesc}"/>
+                <h:message id="pldesc-status" for="pldesc" styleClass="errors"/>
+                <p:watermark for="pldesc" value="Description"/>
                 
                 <p:selectOneMenu id="tid" required="true" value="#{plMgntBean.tid}" 
                                  style="width: 180px">
@@ -84,14 +115,24 @@
                 <h:message id="tid-status" for="tid" styleClass="errors"/>
                 <h:panelGroup/>
                 
-                <p:inputText id="code" size="32" maxlength="100" autocomplete="off" 
-                             required="true" value="#{plMgntBean.code}"/>
-                <h:message id="code-status" for="code" styleClass="errors"/>
-                <p:watermark for="code" value="Command"/>
+                <p:inputText id="command" size="32" maxlength="100" 
+                             autocomplete="off" required="true" 
+                             value="#{plMgntBean.command}"/>
+                <h:message id="command-status" for="command" styleClass="errors"/>
+                <p:watermark for="command" value="Command"/>
                 
-                <p:inputText id="para" size="32" maxlength="50" autocomplete="off" 
+                <p:inputText id="para" size="32" maxlength="20" autocomplete="off" 
                              value="#{plMgntBean.parameter}"/>
                 <p:watermark for="para" value="Parameter"/>
+                <h:panelGroup/>
+                
+                <h:panelGrid columns="2" cellpadding="2">
+                    <p:outputLabel value="Editable?" styleClass="configlabel"/>
+                    <p:selectBooleanButton id="editable" title="#{msg['editable-rd']}" 
+                                           value="#{plMgntBean.editable}" 
+                                           onLabel="Yes" offLabel="No"/>
+                </h:panelGrid>
+                <h:panelGroup/>
                 <h:panelGroup/>
                 
                 <h:commandButton action="#{plMgntBean.createNewPipeline}" 

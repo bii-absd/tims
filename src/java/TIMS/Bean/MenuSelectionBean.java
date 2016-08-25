@@ -3,6 +3,7 @@
  */
 package TIMS.Bean;
 
+import TIMS.Database.PipelineDB;
 import TIMS.Database.StudyDB;
 import TIMS.Database.UserAccountDB;
 import TIMS.Database.UserRoleDB;
@@ -65,6 +66,8 @@ import org.apache.logging.log4j.LogManager;
  * unclosed Study ID; to be selected for raw data uploading.
  * 19-Apr-2016 - Bug Fix: When the user entered Main Menu page, the Single User
  * Mode should be set to True.
+ * 25-Aug-2016 - Added 2 new methods, setupRawDataMgnt() and 
+ * proceedToRawDataMgnt() to support Raw Data Management module Part I.
  */
 
 @ManagedBean (name="menuSelBean")
@@ -75,7 +78,7 @@ public class MenuSelectionBean implements Serializable{
             getLogger(MenuSelectionBean.class.getName());
     private String study_id, plConfigPageURL, plName;
     private Boolean haveNewData;
-    private LinkedHashMap<String, String> studyList, openStudyList;
+    private LinkedHashMap<String, String> studyList, openStudyList, pipelineList;
     // Store the user ID of the current user.
     private final String userName;
     private final int roleID;
@@ -110,7 +113,13 @@ public class MenuSelectionBean implements Serializable{
         plConfigPageURL = plName + "?faces-redirect=true";
     }
     
-    // Setup the Study ID list for user selection to manage subject meta data.
+    // Setup the hash maps needed for raw data management.
+    public void setupRawDataMgnt() {
+        setupOpenStudyList();
+        pipelineList = PipelineDB.getEditablePlHash();
+    }
+
+    // Setup the Study ID list for user selection to manage subject data.
     public void setupOpenStudyList() {
         if (UserRoleDB.isLead(roleID)) {
             openStudyList = StudyDB.getPIOpenStudyHash(userName);
@@ -127,8 +136,8 @@ public class MenuSelectionBean implements Serializable{
         plConfigPageURL = null;
     }
     
-    // User selected Study to manage it's Meta data, and has decided to proceed 
-    // with the management.
+    // Save the study selection in the session map, and proceed to meta data
+    // management page.
     public String proceedToMetaDataMgnt() {
         // Save the Study ID selection in the session map to be use by 
         // MetaDataManagementBean.
@@ -141,6 +150,20 @@ public class MenuSelectionBean implements Serializable{
         return Constants.META_DATA_MANAGEMENT + "?faces-redirect=true";
     }
     
+    // Save the study and pipeline selection in the session map, and proceed to
+    // raw data management page.
+    public String proceedToRawDataMgnt() {
+        FacesContext.getCurrentInstance().getExternalContext().
+                getSessionMap().put("study_id", study_id);
+        FacesContext.getCurrentInstance().getExternalContext().
+                getSessionMap().put("pipeline", plName);
+        
+        logger.debug(userName + ": choose to work on the " + 
+                     plName + " raw data in study " + study_id);
+        // Proceed to Raw data management page.
+        return Constants.RAW_DATA_MANAGEMENT + "?faces-redirect=true";
+    }
+
     // User selected Study to work on, and has decided to proceed to pipeline
     // configuration page.
     public String proceedToConfig() {
@@ -183,6 +206,7 @@ public class MenuSelectionBean implements Serializable{
     }
     
     // Machine generated getters and setters
+    public LinkedHashMap<String, String> getPipelineList() { return pipelineList; }
     public String getStudy_id() { return study_id; }
     public void setStudy_id(String study_id) { this.study_id = study_id; }
     public String getPlName() { return plName; }

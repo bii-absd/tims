@@ -41,8 +41,10 @@ import org.apache.logging.log4j.LogManager;
  * when sending out the data uploaded status email.
  * 03-Jun-2016 - Added new method sendUnFinalizationStatusEmail().
  * 04-Jul-2016 - Added new method sendExportDataStatusEmail().
- * 10-Aug-2016 - Enhanced method sendTaskStatusEmail(), to allow customization 
+ * 10-Aug-2016 - Enhanced method sendTaskStatusEmail; to allow customization 
  * of email content.
+ * 25-Aug-2016 - Enhanced sendDataUploadedEmail and sendJobStatusEmail; to show 
+ * the pipeline description in the email subject and content.
  */
 
 public abstract class Postman {
@@ -67,7 +69,7 @@ public abstract class Postman {
     
     // Send a data uploaded status email to notify the admin that the raw data
     // has been uploaded; include the input data path in the email so that the
-    // admin could upload those huge raw data files (i.e. >10GB) directly into 
+    // admin could upload those huge raw data files (i.e. >1GB) directly into 
     // the path located in the server.
     public static void sendDataUploadedEmail(String adminID, String studyID, 
             String plName, String inputPath) 
@@ -84,9 +86,9 @@ public abstract class Postman {
             message.addRecipient(Message.RecipientType.TO,
                     new InternetAddress(admin.getEmail()));
             message.setSubject("TIMS - Raw data for " + studyID + 
-                               " - " + plName + " uploaded.");
+                               " - " + ResourceRetriever.getMsg(plName) + " uploaded.");
             message.setText(
-                    "Raw data for pipeline " + plName + 
+                    "Raw data for " + ResourceRetriever.getMsg(plName) + 
                     " under study " + studyID +
                     " has been successfully uploaded to the following path:\n\n" + inputPath);
             // Send the message
@@ -133,8 +135,8 @@ public abstract class Postman {
         setupMailServer();
         // Retrieve the user account of the job requestor.
         UserAccount user = UserAccountDB.getJobRequestor(job_id);
-        // Retrieve the pipeline executed in this job.
-        String plName = SubmittedJobDB.getPipelineName(job_id);
+        // Retrieve the pipeline description executed in this job.
+        String plDesc = ResourceRetriever.getMsg(SubmittedJobDB.getPipelineName(job_id));
         
         try {
             // Create a default MimeMessage object
@@ -147,11 +149,11 @@ public abstract class Postman {
             if (status) {
                 // Set the Subject and message content according to execution 
                 // return status.
-                message.setSubject("Pipeline " + plName + " execution for " + 
+                message.setSubject(plDesc + " execution for " + 
                                    study_id + " successfully completed.");
                 message.setText(
                     "Dear " + user.getFirst_name() + ",\n\n" +
-                    "Pipeline " + plName + " execution has completed.\n\n" +
+                    plDesc + " execution has completed.\n\n" +
                     "Output and report files are ready for download at Job Status page.\n\n\n" +
                     "Please do not reply to this message.");
             }
@@ -159,11 +161,11 @@ public abstract class Postman {
                 // For failed case, BCC the email to the administrator(s).
                 String adminEmails = UserAccountDB.getAdminEmails();
                 message.addRecipients(Message.RecipientType.BCC, adminEmails);
-                message.setSubject("Pipeline " + plName + " execution for " + 
+                message.setSubject(plDesc + " execution for " + 
                                    study_id + " failed to complete.");
                 message.setText(
                     "Dear " + user.getFirst_name() + ",\n\n" +
-                    "Pipeline " + plName + " execution failed to complete.\n\n" +
+                    plDesc + " execution failed to complete.\n\n" +
                     "The team is looking at the root cause now.\n\n" +
                     "We will get back to you once we have any finding.\n\n" +
                     "Sorry for the inconvenience caused.\n\n\n" +

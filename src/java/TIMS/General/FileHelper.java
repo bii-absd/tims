@@ -6,10 +6,18 @@ package TIMS.General;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+// Libraries for Java Extension
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 // Libraries for Log4j
@@ -28,7 +36,9 @@ import org.apache.logging.log4j.LogManager;
  * 06-Jan-2016 - Created with one method, download.
  * 12-Jan-2016 - Fix the static variable issues in AuthenticationBean.
  * 19-May-2016 - Rename class name from FileLoader to FileHelper. Added 2 static
- * methods, delete() and zipFiles().
+ * methods, delete and zipFiles.
+ * 25-Aug-2016 - Added 2 static methods, fileExistInDirectory and 
+ * deleteDirectory.
  */
 
 public abstract class FileHelper {
@@ -101,5 +111,41 @@ public abstract class FileHelper {
         // will fail since it's already written with a file and closed.
         FacesContext.getCurrentInstance().responseComplete();
         logger.info(filename + " downloaded.");
+    }
+    
+    // Return true if the file is found in the directory.
+    public static boolean fileExistInDirectory(String dir, String filename) {
+        File f = new File(dir);
+        File[] matchedFile = f.listFiles(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                return (name.compareTo(filename) == 0);
+            }
+        });
+        
+        return (matchedFile.length > 0);
+    }
+    
+    // Delete the directory recursively.
+    public static void deleteDirectory(String dir) throws IOException {
+        Path directory = Paths.get(dir);
+        
+        Files.walkFileTree(directory, new SimpleFileVisitor<Path>() {
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) 
+                   throws IOException {
+                Files.delete(file);
+                return FileVisitResult.CONTINUE;
+            }
+            @Override
+            public FileVisitResult postVisitDirectory(Path dir, IOException exc) 
+                   throws IOException {
+                Files.delete(dir);
+                return FileVisitResult.CONTINUE;
+            }
+           
+        });
+        
+        logger.debug(dir + " deleted.");
     }
 }

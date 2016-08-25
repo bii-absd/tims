@@ -98,6 +98,7 @@ import org.apache.logging.log4j.LogManager;
  * 04-Jul-2016 - Added 5 new constants, CBIO_PATH, CBIO_CASES, EXP_DAT, VIS_DAT 
  * and FAILED.
  * 21-Jul-2016 - Added one new constant, SET_FTE (i.e. Setup Feature).
+ * 25-Aug-2016 - Added one new constant, RAW_DATA_MANAGEMENT.
  */
 
 @ManagedBean (name = "constants")
@@ -142,6 +143,7 @@ public class Constants {
     public final static String GROUP_MANAGEMENT = "groupmanagement";
     public final static String STUDY_MANAGEMENT = "studymanagement";
     public final static String META_DATA_MANAGEMENT = "metadatamanagement";
+    public final static String RAW_DATA_MANAGEMENT = "rawdatamanagement";
     public final static String JOB_STATUS = "jobstatus?faces-redirect=true";
     public final static String FINALIZE_STUDY = "finalizestudy";
     public final static String COMPLETED_STUDY_OUTPUT = "completedstudyoutput";

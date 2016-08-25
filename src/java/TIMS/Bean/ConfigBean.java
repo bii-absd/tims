@@ -104,6 +104,9 @@ import org.apache.logging.log4j.LogManager;
  * 13-May-2016 - Minor changes; to rename some of the variables.
  * 19-May-2016 - Changes due to the addition attribute (i.e. detail_output) in 
  * submitted_job table.
+ * 25-Aug-2016 - Changes due to attribute name change in Pipeline table, and 
+ * method name (i.e. getCreateTimeString) change in InputData class. Removed 
+ * unused code.
  */
 
 public abstract class ConfigBean implements Serializable {
@@ -134,10 +137,7 @@ public abstract class ConfigBean implements Serializable {
     protected String pipelineOutput, detailOutput, pipelineReport, pipelineConfig;
     // Pipeline input, control and sample annotation filename
     protected String input, ctrl, sample;
-    // Annotation list build from Sample Annotation file
-//    private LinkedHashMap<String,String> annotationList = new LinkedHashMap<>();
-    // The list of input data belonging to the study, that are available for
-    // reuse.
+    // List of input data belonging to the study, that are available for reuse.
     private List<InputData> inputDataList = new ArrayList<>();
     protected InputData selectedInput;
     // Store the user ID and home directory of the current user.
@@ -221,85 +221,6 @@ public abstract class ConfigBean implements Serializable {
         
         return filenameList;
     }
-    
-    /* Phenotype column has been removed. 
-       NOT IN USE ANYMORE!
-    
-    // To build the annotation list for user selection based on file passed in.
-    private void buildAnnotationList(File file) {
-        try (FileInputStream fis = new FileInputStream(file);
-             BufferedReader br = new BufferedReader(new InputStreamReader(fis));) 
-        {
-            // We are only interested in the first line i.e. subject line
-            String line = br.readLine();
-            // All the subjects need to be separated by the TAB key
-            String[] annotList = line.split("\t");
-                
-            for (int i = 0; i < annotList.length; i++) {
-                annotationList.put(annotList[i], annotList[i]);
-            }
-            logger.debug("Annotation List: " + annotationList.toString());
-        }
-        catch (IOException e) {
-            logger.error("FAIL to read annotation file!");
-            logger.error(e.getMessage());
-            getFacesContext().addMessage(null, new FacesMessage(
-                                FacesMessage.SEVERITY_ERROR,
-                                "Failed to create annotation list!", ""));
-        }
-    }
-    
-    // Read in the subject line (i.e. first line) from the uploaded sample
-    // annotation file, and build the selection list for "Phenotype Column"
-    // and "Sample Averaging".
-    public LinkedHashMap<String,String> getAnnotationList() {
-        File file;
-        
-        if (haveNewData) {
-            // Only construct the selection list if the sample annotation file has
-            // been uploaded by the user and the selection list has yet to be build.
-            if (!sampleFile.isFilelistEmpty() && annotationList.isEmpty()) {
-                // Retrieve the sample annotation file from local drive
-                file = new File(sampleFile.getLocalDirectoryPath() +
-                                sampleFile.getInputFilename());
-                buildAnnotationList(file);
-            }
-        }
-        else {
-            // Only construct the selection list if an input data has been
-            // selected for reuse and the selection list has yet to be build.
-            if ((selectedInput != null) && annotationList.isEmpty()) {
-                file = new File(selectedInput.getFilepath() +
-                                Constants.getSAMPLE_ANNOT_FILE_NAME() +
-                                Constants.getSAMPLE_ANNOT_FILE_EXT());
-                buildAnnotationList(file);
-            }
-        }
-        return annotationList;
-    }
-    
-    // The enabled/disabled status of the 'Phenotype Column' and 'Sample
-    // Averaging' will depend on whether the annotation list is constructed 
-    // or not.
-    public Boolean isAnnotationListReady() {
-        return annotationList.isEmpty();
-    }
-    
-    // Special handling for sample annotation file because we need to build
-    // the drop down list after the file has been uploaded.
-    public void sampleAnnotFileUploadListener(FileUploadEvent event) {
-        // Clear the annotationList, so that it get rebuild again.
-        annotationList.clear();
-        sampleFile.singleFileUploadListener(event);
-    }
-    
-    // Need to rebuild the drop down list everytime a input data has 
-    // been selected.
-    public void reuseInputRadioButtonSelected() {
-        // Clear the annotationList, so that it get rebuild again.
-        annotationList.clear();
-    }
-    */
     
     // The administrator uploading raw data for this pipeline in this study.
     public String uploadRawData() {
@@ -435,7 +356,7 @@ public abstract class ConfigBean implements Serializable {
             return Constants.ERROR;
         }
         
-        command.add(cmd.getCode());
+        command.add(cmd.getCommand());
         command.add(cmd.getParameter());
         command.add(pipelineConfig);
         
@@ -572,7 +493,7 @@ public abstract class ConfigBean implements Serializable {
     
     // Return the date the reused input data is being uploaded.
     public String getReuseInputDate() {
-        return (selectedInput != null)?selectedInput.getDateString():
+        return (selectedInput != null)?selectedInput.getCreateTimeString():
                 "Please select a input to reuse";
     }
     

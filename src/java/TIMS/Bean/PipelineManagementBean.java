@@ -34,13 +34,14 @@ import org.primefaces.event.RowEditEvent;
  * method onRowEdit to handle pipeline command updating.
  * 16-Nov-2015 - Added one new method createNewPipelineCommand, to allow user
  * to create new pipeline command.
- * 24-Nov-2015 - Changed variable name from command_id to pipeline_name. Added
+ * 24-Nov-2015 - Changed variable name from command_id to plName. Added
  * one variable tid (Technology ID).
  * 12-Jan-2016 - Fix the static variable issues in AuthenticationBean.
  * 13-Jan-2016 - Removed all the static variables in Pipeline Management module.
  * 26-Jan-2016 - Implemented audit data capture module.
  * 29-Feb-2016 - Implementation of Data Source pooling. To use DataSource to 
  * get the database connection instead of using DriverManager.
+ * 25-Aug-2016 - Implementation for database 3.6 Part I.
  */
 
 @ManagedBean (name="plMgntBean")
@@ -49,7 +50,8 @@ public class PipelineManagementBean implements Serializable {
     // Get the logger for Log4j
     private final static Logger logger = LogManager.
             getLogger(PipelineManagementBean.class.getName());
-    private String pipeline_name, tid, code, parameter;
+    private String plName, plDesc, tid, command, parameter;
+    private boolean editable;
     private List<Pipeline> plList;
     // Store the user ID of the current user.
     private final String userName;
@@ -78,11 +80,11 @@ public class PipelineManagementBean implements Serializable {
     // Create the new pipeline.
     public String createNewPipeline() {
        FacesContext fc = getFacesContext();
-       Pipeline newCmd = new Pipeline(pipeline_name, tid, code, parameter);
+       Pipeline newCmd = new Pipeline(plName, plDesc, tid, command, parameter, editable);
        
        if (PipelineDB.insertPipeline(newCmd)) {
            // Record this pipeline creation activity into database.
-           String detail = "Pipeline " + pipeline_name + " for technology " 
+           String detail = "Pipeline " + plName + " for technology " 
                          + tid;
            ActivityLogDB.recordUserActivity(userName, Constants.CRE_ID, detail);
            logger.info(userName + ": created " + detail);
@@ -91,7 +93,7 @@ public class PipelineManagementBean implements Serializable {
                     "New pipeline created.", ""));
        }
        else {
-           logger.error("FAIL to create new pipeline: " + pipeline_name);
+           logger.error("FAIL to create new pipeline: " + plName);
            fc.addMessage(null, new FacesMessage(
                     FacesMessage.SEVERITY_ERROR,
                     "Failed to create new pipeline!", ""));
@@ -127,11 +129,17 @@ public class PipelineManagementBean implements Serializable {
     }
     
     // Machine generated getters and setters
-    public String getPipeline_name() {
-        return pipeline_name;
+    public String getPlName() {
+        return plName;
     }
-    public void setPipeline_name(String pipeline_name) {
-        this.pipeline_name = pipeline_name;
+    public void setPlName(String plName) {
+        this.plName = plName;
+    }
+    public String getPlDesc() {
+        return plDesc;
+    }
+    public void setPlDesc(String plDesc) {
+        this.plDesc = plDesc;
     }
     public String getTid() {
         return tid;
@@ -139,17 +147,23 @@ public class PipelineManagementBean implements Serializable {
     public void setTid(String tid) {
         this.tid = tid;
     }
-    public String getCode() {
-        return code;
+    public String getCommand() {
+        return command;
     }
-    public void setCode(String code) {
-        this.code = code;
+    public void setCommand(String command) {
+        this.command = command;
     }
     public String getParameter() {
         return parameter;
     }
     public void setParameter(String parameter) {
         this.parameter = parameter;
+    }
+    public boolean isEditable() {
+        return editable;
+    }
+    public void setEditable(boolean editable) {
+        this.editable = editable;
     }
     public List<Pipeline> getPlList() {
         return plList;

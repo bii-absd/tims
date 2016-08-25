@@ -82,6 +82,9 @@ import org.apache.logging.log4j.LogManager;
  * 07-Jul-2016 - Updated getVisualizableStudyHash(), only allow the study to be 
  * export for visualization once every hour. Added one new method, 
  * resetStudyCbioUrl() to reset the cbio_url to NULL.
+ * 25-Aug-2016 - Changed the access level modifier for the helper functions 
+ * (i.e. getStudyHash, queryFinalizedStudies & getStudyPropValue) from public
+ * to private. Removed unused code. Changed all Boolean variables to boolean.
  */
 
 public abstract class StudyDB {
@@ -119,9 +122,9 @@ public abstract class StudyDB {
     
     // Insert the new study into database. For every new study created, 
     // the finalized_output, detail_files and summary fields will be empty.
-    public static Boolean insertStudy(Study study) {
+    public static boolean insertStudy(Study study) {
         Connection conn = null;
-        Boolean result = Constants.OK;
+        boolean result = Constants.OK;
         String query = "INSERT INTO study(study_id,title,grp_id,annot_ver,"
                      + "icd_code,description,background,grant_info,start_date,"
                      + "end_date,finalized,closed) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)";
@@ -161,9 +164,9 @@ public abstract class StudyDB {
     
     // Update study description, background or grant information (aka DBGI) in
     // database.
-    public static Boolean updateStudyDBGI(Study study) {
+    public static boolean updateStudyDBGI(Study study) {
         Connection conn = null;
-        Boolean result = Constants.OK;
+        boolean result = Constants.OK;
         String query = "UPDATE study SET description = ?, background = ?, "
                      + "grant_info = ? WHERE study_id = ?";
         
@@ -192,9 +195,9 @@ public abstract class StudyDB {
     }
     
     // Update study main info in database.
-    public static Boolean updateStudyMI(Study study) {
+    public static boolean updateStudyMI(Study study) {
         Connection conn = null;
-        Boolean result = Constants.OK;
+        boolean result = Constants.OK;
         String query = "UPDATE study SET title=?, grp_id = ?, icd_code = ?, "
                      + "start_date = ?, end_date = ? WHERE study_id = ?";
         
@@ -305,6 +308,7 @@ public abstract class StudyDB {
         logger.debug("Updating detail output path for " + studyID);
         updateStudyField(query);
     }
+    
     // Helper function to update study's field using the query passed in.
     private static void updateStudyField(String query) {
         Connection conn = null;
@@ -408,7 +412,7 @@ public abstract class StudyDB {
     }
     
     // Helper function to build the study list hash map based on the input query.
-    public static LinkedHashMap<String, String> getStudyHash(String query) {
+    private static LinkedHashMap<String, String> getStudyHash(String query) {
         Connection conn = null;
         LinkedHashMap<String, String> studyHash = new LinkedHashMap<>();
         
@@ -433,45 +437,6 @@ public abstract class StudyDB {
         
         return studyHash;
     }
-    
-    /* NOT IN USE ANYMORE!
-    // Only PI that lead a group can perform finalization.
-    // Return the list of unfinalized Study ID that has completed job(s), and 
-    // belongs to the group this PI is leading. This list of Study ID will be 
-    // available for PI to select for finalization.
-    public static LinkedHashMap<String, String> getFinalizableStudyHashX(String piID) {
-        Connection conn = null;
-        LinkedHashMap<String, String> finStudyHash = new LinkedHashMap<>();
-        String query = "SELECT DISTINCT study_id FROM study st "
-                     + "NATURAL JOIN submitted_job sj WHERE sj.status_id = 3 "
-                     + "AND st.grp_id IN (SELECT grp_id FROM grp WHERE pi =?) "
-                     + "AND st.finalized = false AND st.closed = false "
-                     + "ORDER BY study_id";
-        
-        try {
-            conn = DBHelper.getDSConn();
-            PreparedStatement stm = conn.prepareStatement(query);
-            stm.setString(1, piID);
-            ResultSet rs = stm.executeQuery();
-            
-            while (rs.next()) {
-                finStudyHash.put(rs.getString("study_id"), rs.getString("study_id"));
-            }
-            
-            stm.close();
-            logger.debug("Study list available for finalization retrieved.");
-        }
-        catch (SQLException|NamingException e) {
-            logger.error("FAIL to retrieve study that could be finalize!");
-            logger.error(e.getMessage());
-        }
-        finally {
-            DBHelper.closeDSConn(conn);
-        }
-        
-        return finStudyHash;
-    }
-    */
     
     // Return the list of studies (all status) that this user is allowed to view.
     public static List<Study> queryStudies(String groupQuery) {
@@ -532,7 +497,7 @@ public abstract class StudyDB {
     
     // Helper function to retrieve the list of finalized studies from the 
     // database using the query passed in.
-    public static List<Study> queryFinalizedStudies(String query) {
+    private static List<Study> queryFinalizedStudies(String query) {
         Connection conn = null;
         List<Study> finalizedStudies = new ArrayList<>();
         
@@ -639,7 +604,7 @@ public abstract class StudyDB {
     }
     
     // Helper function to retrieve one of the study's property value.
-    public static String getStudyPropValue(String study_id, String property) {
+    private static String getStudyPropValue(String study_id, String property) {
         Connection conn = null;
         String propValue = Constants.DATABASE_INVALID_STR;
         String query = "SELECT * FROM study WHERE study_id = ?";
