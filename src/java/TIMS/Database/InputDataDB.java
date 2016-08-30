@@ -44,6 +44,8 @@ import org.apache.logging.log4j.LogManager;
  * in submitted_job table.
  * 25-Aug-2016 - Added one new method, updateInputDataFields. Implementation 
  * for database 3.6 Part I.
+ * 30-Aug-2016 - Enhanced method updateFieldsAfterEdit, to also update the 
+ * filename field.
  */
 
 public abstract class InputDataDB {
@@ -123,12 +125,12 @@ public abstract class InputDataDB {
     // Update 3 fields in the input_data table after making changes in the Raw 
     // Data Management page.
     public static boolean updateFieldsAfterEdit(String study_id, int sn, 
-            String desc, String update_uid, Timestamp update_time) 
+            String desc, String update_uid, Timestamp update_time, String filename) 
     {
         Connection conn = null;
         boolean result = Constants.OK;
         String query = "UPDATE input_data SET update_uid = ?, update_time = ?, "
-                     + "description = ? WHERE study_id = ? AND sn = ?";
+                     + "description = ?, filename = ? WHERE study_id = ? AND sn = ?";
         
         try {
             conn = DBHelper.getDSConn();
@@ -136,8 +138,9 @@ public abstract class InputDataDB {
             stm.setString(1, update_uid);
             stm.setTimestamp(2, update_time);
             stm.setString(3, desc);
-            stm.setString(4, study_id);
-            stm.setInt(5, sn);
+            stm.setString(4, filename);
+            stm.setString(5, study_id);
+            stm.setInt(6, sn);
             stm.executeUpdate();
             stm.close();
             

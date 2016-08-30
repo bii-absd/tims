@@ -45,7 +45,7 @@ import javax.naming.NamingException;
  * 14-Jan-2016 - Deleted method getTypeList(). The pipeline type list will be 
  * retrieved from MenuBean.
  * 18-Jan-2016 - Changed the type of variable sample_average from String to
- * Boolean.
+ * boolean.
  * 19-Jan-2016 - Initialize the variable probeFilters in the constructor. 
  * 20-Jan-2016 - To streamline the navigation flow and passing of pipeline name
  * from main menu to pipeline configuration pages.
@@ -119,8 +119,8 @@ public class GEXIlluminaBean extends ConfigBean {
     }
 
     @Override
-    public Boolean insertJob() {
-        Boolean result = Constants.OK;
+    public boolean insertJob() {
+        boolean result = Constants.OK;
         // job_id will not be used during insertion, just send in any value will
         // do e.g. 0
         // Insert the new job request into datbase; job status is 1 i.e. Waiting
@@ -177,7 +177,7 @@ public class GEXIlluminaBean extends ConfigBean {
     // Make the necessary setup to those attributes that are relevant to this
     // pipeline, and then call the base class method to create the Config File.
     @Override
-    public Boolean createConfigFile() {
+    public boolean createConfigFile() {
         if (haveNewData) {
             input = inputFile.getLocalDirectoryPath() + inputFile.getInputFilename();
             ctrl = ctrlFile.getLocalDirectoryPath() + 

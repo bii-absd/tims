@@ -4,15 +4,12 @@
 package TIMS.Bean;
 
 import TIMS.General.Constants;
+import TIMS.General.FileHelper;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -75,6 +72,9 @@ import org.apache.logging.log4j.LogManager;
  * 13-May-2016 - To create the tmp folder in method createSystemDirectories().
  * 04-Jul-2016 - Removed unused code. Updated methods createSystemDirectories()
  * and createStudyDirectory(), to create directory for cBioPortal application.
+ * 30-Aug-2016 - Added 3 new methods, getInputFilenameForRDM(), resetFileBean() 
+ * and getFilename. Enhanced method renameFilename. Change all Boolean 
+ * variables to boolean.
  */
 
 public class FileUploadBean implements Serializable {
@@ -88,14 +88,24 @@ public class FileUploadBean implements Serializable {
     private String localDirectoryPath = null;
     private List<String> inputList = null;
     private LinkedHashMap<Integer,String> fileList = new LinkedHashMap<>();
-    private Boolean inputDir = Constants.NOT_OK;
+    private boolean inputDir = Constants.NOT_OK;
 
-    // Generic constructor for common file upload. File uploaded will be stored 
-    // into the directory.
+    // File uploaded will be stored into the directory.
     public FileUploadBean(String directory) {
         fileDirectory = directory;
 
         setFileDirectory();
+    }
+    
+    // This function is called in Raw Data Management module when user click 
+    // on another input data package i.e. need to reset all the changes that
+    // has been done so far.
+    public void resetFileBean() {
+        fileCount = 0;
+        fileList.clear();
+        if (inputList != null){
+            inputList.clear();
+        }
     }
     
     // Create the input files directory before the uploading started. This 
@@ -166,8 +176,8 @@ public class FileUploadBean implements Serializable {
     
     // Create TIMS system directories i.e. .../TIMS/users .../TIMS/images
     // .../TIMS/input .../TIMS/finalize_output etc.
-    public static Boolean createSystemDirectories(String systemDir) {
-        Boolean result = 
+    public static boolean createSystemDirectories(String systemDir) {
+        boolean result = 
                 createSystemDirectory(systemDir + Constants.getUSERS_PATH()) &&
                 createSystemDirectory(systemDir + Constants.getPIC_PATH()) &&
                 createSystemDirectory(systemDir + Constants.getINPUT_PATH()) &&
@@ -181,8 +191,8 @@ public class FileUploadBean implements Serializable {
     // Create user system directories i.e. .../TIMS/users/whtay/output
     // .../TIMS/users/whtay/config
     // .../TIMS/users/whtay/log
-    public static Boolean createUsersDirectories(String homeDir) {
-        Boolean result = 
+    public static boolean createUsersDirectories(String homeDir) {
+        boolean result = 
                 createSystemDirectory(homeDir) && 
                 createSystemDirectory(homeDir + Constants.getOUTPUT_PATH()) &&
                 createSystemDirectory(homeDir + Constants.getCONFIG_PATH()) &&
@@ -192,8 +202,8 @@ public class FileUploadBean implements Serializable {
     }
     
     // Create study system directory i.e. .../TIMS/input/Bayer .../TIMS/cbio/Bayer
-    public static Boolean createStudyDirectory(String study_id) {
-        Boolean result = 
+    public static boolean createStudyDirectory(String study_id) {
+        boolean result = 
             createSystemDirectory(Constants.getSYSTEM_PATH() + Constants.getINPUT_PATH() + study_id) &&
             createSystemDirectory(Constants.getSYSTEM_PATH() + Constants.getCBIO_PATH() + study_id);
                 
@@ -201,8 +211,8 @@ public class FileUploadBean implements Serializable {
     }
     
     // Helper function to create system directory.
-    public static Boolean createSystemDirectory(String systemDir) {
-        Boolean result = Constants.OK;
+    public static boolean createSystemDirectory(String systemDir) {
+        boolean result = Constants.OK;
         File dir = new File(systemDir);
         
         if (!dir.exists()) {
@@ -294,15 +304,25 @@ public class FileUploadBean implements Serializable {
     }
 
     // Check whether any input file uploaded by the user.
-    public Boolean isFilelistEmpty() {
+    public boolean isFilelistEmpty() {
         return fileList.isEmpty();
     }
     
-    // Return the input filename that has been been uploaded by the 
-    // user; single file upload.
+    // This function is called by the pipeline configuration pages. Return the 
+    // filename of the single file uploaded.
     public String getInputFilename() {
+        return getFilename("This field is required.");
+    }
+    // This function is called by Raw Data Management page. Return the filename
+    // of the single file uploaded.
+    public String getInputFilenameForRDM() {
+        return getFilename("None");
+    }
+    // Helper function to return the filename of the single file uploaded. The
+    // default string will be returned if no file has been uploaded.
+    private String getFilename(String noFile) {
         if (fileList.isEmpty()) {
-            return "This field is required.";
+            return noFile;
         }
         else {
             return fileList.get(1);            
@@ -311,27 +331,13 @@ public class FileUploadBean implements Serializable {
     
     // Rename the single file name to the new filename.
     public void renameFilename(String newFilename) {
-        Path from = FileSystems.getDefault().getPath
-            (localDirectoryPath + getInputFilename());
-        Path to = FileSystems.getDefault().getPath
-            (localDirectoryPath + newFilename);
-        // Rename the filename (from -> to), and replace existing file if found.
-        try {
-            // Check whether is there any existing file with the same name.
-            if (Files.exists(to)) {
-                Files.move(from, to, REPLACE_EXISTING);
-            }
-            else {
-                Files.move(from, to);
-            }
+        if (FileHelper.moveFile(localDirectoryPath + getInputFilename(), 
+                                localDirectoryPath + newFilename)) 
+        {
             logger.debug(getInputFilename() + " renamed to " + newFilename);
             // Update file list to new filename.
             fileList.replace(1, newFilename);
         }
-        catch (IOException ioe) {
-            logger.error("FAIL to rename " + getInputFilename());
-            logger.error(ioe.getMessage());
-        }        
     }
     
     // Retrieve the faces context

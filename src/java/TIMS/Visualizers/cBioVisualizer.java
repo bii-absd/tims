@@ -25,9 +25,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import java.sql.Timestamp;
-import java.text.DateFormat;
 import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -58,6 +56,8 @@ import org.mindrot.jbcrypt.BCrypt;
  * 5. To convert the data values from Affymetrix pipeline to z-score format.
  * 12-Aug-2016 - To make sure the Affymetrix z-score result is exactly 2 
  * decimal places.
+ * 30-Aug-2016 - Enhanced method recordVisualTime(), to call the helper function
+ * in Constants class.
  */
 
 public class cBioVisualizer extends Thread {
@@ -512,12 +512,11 @@ public class cBioVisualizer extends Thread {
     // string to be used as the name of the folder for storing the meta
     // files.
     private String recordVisualTime() {
-        DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HHmm");
         Date now = new Date();
         // visual_time will be stored in the study table.
         visual_time = new Timestamp(now.getTime());
 
-        return dateFormat.format(now);
+        return Constants.getDT_yyyyMMdd_HHmm();
     }
     
     // Trim the target string (if needed) to less than or equal to length, and

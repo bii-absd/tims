@@ -75,7 +75,7 @@ import org.apache.logging.log4j.LogManager;
  * 14-Jan-2016 - Removed all the static variables in Pipeline Configuration
  * Management module.
  * 18-Jan-2016 - Changed the type of variable sample_average from String to
- * Boolean.
+ * boolean.
  * 20-Jan-2016 - To streamline the navigation flow and passing of pipeline name
  * from main menu to pipeline configuration pages.
  * 21-Jan-2016 - Added one new field pipeline_name in the input_data table; to
@@ -117,7 +117,7 @@ public abstract class ConfigBean implements Serializable {
     // Common Processing Parameters. 
     protected String type, normalization, summarization;
     // Indicator of whether user have new data to upload or not.
-    protected Boolean haveNewData;
+    protected boolean haveNewData;
     // Pipeline name and technology
     protected String pipelineName, pipelineTech;
     // Common input files that will be uploaded by the users
@@ -132,7 +132,7 @@ public abstract class ConfigBean implements Serializable {
     protected int job_id, input_sn, roleID;
     // jobSubmissionStatus will keep track of whether has all the input files
     // been uploaded, all the required parameters been filled up, etc.
-    private Boolean jobSubmissionStatus;
+    private boolean jobSubmissionStatus;
     // Pipeline output, report and config filename
     protected String pipelineOutput, detailOutput, pipelineReport, pipelineConfig;
     // Pipeline input, control and sample annotation filename
@@ -150,7 +150,7 @@ public abstract class ConfigBean implements Serializable {
     abstract void updateJobSubmissionStatus();
     // Insert the current job request into the submitted_job table. The status
     // of the insertion operation will be return.
-    abstract Boolean insertJob();
+    abstract boolean insertJob();
     // Save the input data detail into the database.
     abstract void saveSampleFileDetail();
     
@@ -161,7 +161,7 @@ public abstract class ConfigBean implements Serializable {
         roleID = UserAccountDB.getRoleID(userName);
         studyID = (String) getFacesContext().getExternalContext().
                     getSessionMap().get("study_id");
-        haveNewData = (Boolean) getFacesContext().getExternalContext().
+        haveNewData = (boolean) getFacesContext().getExternalContext().
                     getSessionMap().get("haveNewData");
         pipelineName = (String) getFacesContext().getExternalContext().
                     getSessionMap().get("pipeline");
@@ -404,8 +404,8 @@ public abstract class ConfigBean implements Serializable {
     }
 
     // Create the config file that will be used during pipeline execution.
-    protected Boolean createConfigFile() {
-        Boolean result = Constants.OK;
+    protected boolean createConfigFile() {
+        boolean result = Constants.OK;
         String configDir = homeDir + Constants.getCONFIG_PATH();
         // Config File will be send to the pipeline during execution
         File configFile = new File(configDir + 
@@ -539,10 +539,10 @@ public abstract class ConfigBean implements Serializable {
     public void setSummarization(String summarization) {
         this.summarization = summarization;
     }
-    public Boolean getJobSubmissionStatus() {
+    public boolean getJobSubmissionStatus() {
         return jobSubmissionStatus;
     }
-    public void setJobSubmissionStatus(Boolean jobSubmissionStatus) {
+    public void setJobSubmissionStatus(boolean jobSubmissionStatus) {
         this.jobSubmissionStatus = jobSubmissionStatus;
     }
     public InputData getSelectedInput() {        
@@ -559,7 +559,7 @@ public abstract class ConfigBean implements Serializable {
     public String getCommandLink() {
         return commandLink;
     }
-    public Boolean getHaveNewData() {
+    public boolean getHaveNewData() {
         return haveNewData;
     }
     public String getPipelineName() {

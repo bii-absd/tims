@@ -9,10 +9,12 @@ import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.zip.ZipEntry;
@@ -26,8 +28,8 @@ import org.apache.logging.log4j.LogManager;
 
 /**
  * FileHelper is an abstract class and not mean to be instantiate, its main job
- is to perform file uploading/downloading operations for the user at the 
- client side.
+ * is to perform file uploading/downloading operations for the user at the 
+ * client side.
  * 
  * Author: Tay Wei Hong
  * Date: 06-Jan-2016
@@ -37,8 +39,8 @@ import org.apache.logging.log4j.LogManager;
  * 12-Jan-2016 - Fix the static variable issues in AuthenticationBean.
  * 19-May-2016 - Rename class name from FileLoader to FileHelper. Added 2 static
  * methods, delete and zipFiles.
- * 25-Aug-2016 - Added 2 static methods, fileExistInDirectory and 
- * deleteDirectory.
+ * 25-Aug-2016 - Added 2 static methods, fileExist and deleteDirectory.
+ * 30-Aug-2016 - Added 2 static methods, moveFile and getFilesWithExt.
  */
 
 public abstract class FileHelper {
@@ -113,17 +115,24 @@ public abstract class FileHelper {
         logger.info(filename + " downloaded.");
     }
     
-    // Return true if the file is found in the directory.
-    public static boolean fileExistInDirectory(String dir, String filename) {
-        File f = new File(dir);
-        File[] matchedFile = f.listFiles(new FilenameFilter() {
+    // Return true if the file exist.
+    public static boolean fileExist(String filepath) {
+        File f = new File(filepath);
+        
+        return f.exists();
+    }
+    
+    // Return all the file(s) in the directory that end with ext.
+    public static File[] getFilesWithExt(String directory, String ext) {
+        File dir = new File(directory);
+        File[] matchedFile = dir.listFiles(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String name) {
-                return (name.compareTo(filename) == 0);
+                return name.endsWith(ext);
             }
         });
         
-        return (matchedFile.length > 0);
+        return matchedFile;
     }
     
     // Delete the directory recursively.
@@ -147,5 +156,29 @@ public abstract class FileHelper {
         });
         
         logger.debug(dir + " deleted.");
+    }
+    
+    // Move the file from src to dest.
+    public static boolean moveFile(String src, String dest) {
+        boolean result = Constants.OK;
+        Path from = FileSystems.getDefault().getPath(src);
+        Path to = FileSystems.getDefault().getPath(dest);
+        // Move the file (from -> to), and replace existing file if found.
+        try {
+            if (Files.exists(to)) {
+                Files.move(from, to, REPLACE_EXISTING);
+            }
+            else {
+                Files.move(from, to);
+            }
+            logger.debug("File moved to " + dest);
+        }
+        catch (IOException ioe) {
+            result = Constants.NOT_OK;
+            logger.error("FAIL to move file. SRC: " + src + " DEST: " + dest);
+            logger.error(ioe.getMessage());
+        }
+        
+        return result;
     }
 }

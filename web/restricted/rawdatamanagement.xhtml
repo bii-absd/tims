@@ -65,9 +65,52 @@
             </p:panel>
             
             <p:separator styleClass="configsep"/>
-            <p:commandButton id="rdBtnSave" disabled="#{!RDMgntBean.inputSelectedStatus}" 
-                             value="Save Changes" action="#{RDMgntBean.confirmChanges}"/>
+            <p:commandButton id="rdBtnSave" update=":cfmForm" 
+                             disabled="#{!RDMgntBean.inputSelectedStatus}" 
+                             oncomplete="PF('cfmDlg').show()" 
+                             value="Save Changes" icon="ui-icon-check" 
+                             action="#{RDMgntBean.preForReview}"/>
         </h:form>
 
+        <p:dialog header="Review Changes to Input Data Package" widgetVar="cfmDlg" resizable="false">
+            <h:form id="cfmForm">
+                <p:panelGrid columns="2" id="cfmDisplay">
+                    <h:outputText value="Description"/>
+                    <h:outputText value="#{RDMgntBean.inputFileDesc}" style="color: red"/>
+                    <h:outputText value="New Sample File(s)"/>
+                    <p:dataList itemType="square" rows="10"
+                        paginator="true" paginatorTemplate="{FirstPageLink} 
+                        {PreviousPageLink} {CurrentPageReport} 
+                        {NextPageLink} {LastPageLink}"
+                        value="#{RDMgntBean.newSampleFiles}"
+                        var="newlist" styleClass="datalist" type="none">
+                        <h:outputText value="#{newlist}"/><br/>
+                    </p:dataList>
+                    <h:outputText value="Replacing Sample File(s)"/>
+                    <p:dataList itemType="square" rows="10"
+                        paginator="true" paginatorTemplate="{FirstPageLink} 
+                        {PreviousPageLink} {CurrentPageReport} 
+                        {NextPageLink} {LastPageLink}"
+                        value="#{RDMgntBean.replaceSampleFiles}"
+                        var="replacelist" styleClass="datalist" type="none">
+                        <h:outputText value="#{replacelist}"/><br/>
+                    </p:dataList>
+                    <h:outputText rendered="#{RDMgntBean.controlFileStatus}" 
+                                  value="Replacing Control File"/>
+                    <h:outputText rendered="#{RDMgntBean.controlFileStatus}" 
+                                  value="#{RDMgntBean.ctrlFile.inputFilenameForRDM}"/>
+                    <h:outputText value="Replacing Annotation File"/>
+                    <h:outputText value="#{RDMgntBean.annotFile.inputFilenameForRDM}"/>
+                </p:panelGrid>
+                <p:separator styleClass="configsep"/>
+                <h:panelGrid columns="2" cellspacing="2" cellpadding="2" width="100%">
+                    <p:commandButton value="Cancel" title="Return to add new input files" 
+                                     style="width: 100%" oncomplete="PF('cfmDlg').hide()" 
+                                     action="#{RDMgntBean.doNotProceed}"/>
+                    <p:commandButton value="Confirm" title="Save the changes" 
+                                     style="width: 100%" action="#{RDMgntBean.confirmChanges}"/>
+                </h:panelGrid>
+            </h:form>
+        </p:dialog>
     </ui:define>
 </ui:composition>

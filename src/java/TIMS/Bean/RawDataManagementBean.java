@@ -3,6 +3,7 @@
  */
 package TIMS.Bean;
 
+import TIMS.Database.ActivityLogDB;
 import TIMS.Database.InputData;
 import TIMS.Database.InputDataDB;
 import TIMS.Database.PipelineDB;
@@ -34,6 +35,7 @@ import org.apache.logging.log4j.LogManager;
  * 
  * Revision History
  * 25-Aug-2016 - Implemented Raw Data Management Module Part I.
+ * 30-Aug-2016 - Implemented Raw Data Management Module Part II.
  */
 
 @ManagedBean (name="RDMgntBean")
@@ -50,6 +52,8 @@ public class RawDataManagementBean implements Serializable {
     private final FileUploadBean inputFile, ctrlFile, annotFile;
     // Input file description.
     private String inputFileDesc;
+    // Sample file(s) list for new and replace.
+    private List<String> newSampleFiles, replaceSampleFiles;
     // Temporary directory to store the input files.
     String tmpDir;
     
@@ -63,6 +67,8 @@ public class RawDataManagementBean implements Serializable {
         // Setup the temporary directory to store the input files.
         tmpDir = Constants.getSYSTEM_PATH() + Constants.getUSERS_PATH() 
                + userName + Constants.getTMP_PATH();
+        // Clean up the temporary directory before using it.
+        deleteTempDir();
         // Initialise the file upload beans.
         inputFile = new FileUploadBean(tmpDir);
         annotFile = new FileUploadBean(tmpDir);
@@ -85,12 +91,16 @@ public class RawDataManagementBean implements Serializable {
     @PreDestroy
     public void cleanUp() {
         // Perform some house cleaning before exiting this page.
+        deleteTempDir();
+    }
+    
+    // Delete the temporary directory.
+    private void deleteTempDir() {
         File dir = new File(tmpDir);
         
         if (dir.exists()) {
-            // Delete the temporary directory before exit.
+            // Delete the temporary directory if it exists.
             try {
-                logger.debug("Delete temporary directory before exit.");
                 FileHelper.deleteDirectory(tmpDir);
             }
             catch (IOException e) {
@@ -98,6 +108,15 @@ public class RawDataManagementBean implements Serializable {
                 logger.error(e.getMessage());
             }
         }
+    }
+
+    // After reviewing the input data, the user decided not to proceed with the
+    // changes.
+    public void doNotProceed() {
+        // Release the file lists memory.
+        newSampleFiles = replaceSampleFiles = null;
+        
+        logger.debug(userName + ": did not confirm the changes to input data.");
     }
     
     // Return the wording to be display at the link under the BreadCrumb in the
@@ -116,22 +135,110 @@ public class RawDataManagementBean implements Serializable {
     public void inputSelectionChange() {
         // Retrieve the current input file description.
         inputFileDesc = selectedInput.getDescription();
+        // Reset all the file beans.
+        inputFile.resetFileBean();
+        annotFile.resetFileBean();
+        if (getControlFileStatus()) {
+            ctrlFile.resetFileBean();
+        }
+        // Delete all the uploaded files.
+        deleteTempDir();
     }
     
-    // The Save Changes button has been clicked.
+    // User click on Save Changes button, prepare the input data review content.
+    public void preForReview() {
+        // Initialise the file lists.
+        newSampleFiles = new ArrayList<>();
+        replaceSampleFiles = new ArrayList<>();
+        // Create the sample file list.
+        inputFile.createInputList();
+        List<String> filenames = inputFile.getInputFileList();
+        // Retrieve the file directory from the selected input data package.
+        String dir = selectedInput.getFilepath();
+        // Go through the list of sample files uploaded, and separate them into
+        // new and replace file lists.
+        for (String filename : filenames) {
+            if (FileHelper.fileExist(dir + filename)) {
+                replaceSampleFiles.add(filename);
+            }
+            else {
+                newSampleFiles.add(filename);
+            }
+        }
+    }
+    
+    // User confirmed the changes after reviewing them. Update the entry in 
+    // input_data table, backup the replacement files, and move the newly 
+    // uploaded files to input data directory.
     public String confirmChanges() {
         // Record the time when the changes happened, and save it into database.
         Date now = new Date();
         Timestamp update_time = new Timestamp(now.getTime());
+        // Extension used in backup files.
+        String ext = "." + Constants.getDT_yyyyMMdd_HHmm();
+        // Input data directory.
+        String destDir = selectedInput.getFilepath();
+        // Record this raw data management activity into database.
+        ActivityLogDB.recordUserActivity(userName, Constants.CHG_RD, 
+                            studyID + " - Input SN " + selectedInput.getSn());
         // Update entry in input_data table.
-        InputDataDB.updateFieldsAfterEdit(studyID, selectedInput.getSn(), 
-                inputFileDesc, userName, update_time);
+        if (plName.compareTo(PipelineDB.GEX_ILLUMINA) == 0) {
+            InputDataDB.updateFieldsAfterEdit(studyID, selectedInput.getSn(), 
+                    inputFileDesc, userName, update_time, inputFile.getInputFilename());
+        }
+        else {
+            InputDataDB.updateFieldsAfterEdit(studyID, selectedInput.getSn(), 
+                    inputFileDesc, userName, update_time, "");
+        }
+        
+        // For replacement sample file(s), backup the original sample file(s) 
+        // using current datetime as extension.
+        for (String repFile : replaceSampleFiles) {
+            FileHelper.moveFile(destDir + repFile, 
+                                destDir + repFile + ext);
+        }
+        // Move all the newly uploaded sample file(s) to input data directory 
+        // (keep the filename).
+        for (String newFile : inputFile.getInputFileList()) {
+            FileHelper.moveFile(tmpDir + newFile, destDir + newFile);
+        }
+        // If a new control file has been uploaded, backup the original control
+        // file, move and rename the new control file to the input data
+        // directory.
+        if (getControlFileStatus()) {
+            if (!ctrlFile.isFilelistEmpty()) {
+                String ctrlFilename = Constants.getCONTROL_PROBE_FILE_NAME() 
+                                    + Constants.getCONTROL_PROBE_FILE_EXT();
+                // Backup the original control file.
+                FileHelper.moveFile(destDir + ctrlFilename, 
+                                    destDir + ctrlFilename + ext);
+                // Move and rename the new control file.
+                FileHelper.moveFile(tmpDir + ctrlFile.getInputFilename(), 
+                                    destDir + ctrlFilename);
+                logger.debug("New control file saved.");
+            }
+        }
+        // If a new annotation file has been uploaded, backup the original 
+        // annotation file, move and rename the new annotation file to the input
+        // data directory.
+        if (!annotFile.isFilelistEmpty()) {
+            String annotFilename = Constants.getSAMPLE_ANNOT_FILE_NAME()
+                                 + Constants.getSAMPLE_ANNOT_FILE_EXT();
+            // Backup the original annotation file.
+            FileHelper.moveFile(destDir + annotFilename,
+                                destDir + annotFilename + ext);
+            // Move and rename the new annotation file.
+            FileHelper.moveFile(tmpDir + annotFile.getInputFilename(), 
+                                destDir + annotFilename);
+            logger.debug("New annotation file saved.");
+        }
         
         return Constants.MAIN_PAGE;
     }
     
     // Return the input file allowed types for each pipeline.
     public String getAllowTypes() {
+        // Default file types for Illumina and CNV.
         String filter = "/(\\.|\\/)(txt)$/";
 
         switch (plName) {
@@ -141,8 +248,6 @@ public class RawDataManagementBean implements Serializable {
             case PipelineDB.METHYLATION:
                 filter = "/(\\.|\\/)(idat)$/";
                 break;
-            case PipelineDB.CNV:
-                filter = "/(\\.|\\/)(txt)$/";
         }
 
         return filter;
@@ -150,7 +255,8 @@ public class RawDataManagementBean implements Serializable {
     
     // Return true if this pipeline has control file, else return false.
     public final boolean getControlFileStatus() {
-        return (plName.compareTo(PipelineDB.CNV) == 0 );
+        return (plName.compareTo(PipelineDB.CNV) == 0 ) || 
+               (plName.compareTo(PipelineDB.GEX_ILLUMINA) == 0);
     }
     
     // Machine generated code.
@@ -177,5 +283,11 @@ public class RawDataManagementBean implements Serializable {
     }
     public FileUploadBean getAnnotFile() {
         return annotFile;
+    }
+    public List<String> getNewSampleFiles() {
+        return newSampleFiles;
+    }
+    public List<String> getReplaceSampleFiles() {
+        return replaceSampleFiles;
     }
 }

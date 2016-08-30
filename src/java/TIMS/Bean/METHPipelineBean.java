@@ -31,7 +31,7 @@ import javax.naming.NamingException;
  * 14-Jan-2016 - Removed all the static variables in Pipeline Configuration
  * Management module.
  * 18-Jan-2016 - Changed the type of variable sample_average from String to
- * Boolean.
+ * boolean.
  * 20-Jan-2016 - To streamline the navigation flow and passing of pipeline name
  * from main menu to pipeline configuration pages.
  * 18-Feb-2016 - To check the input files received with the filename listed in
@@ -62,8 +62,8 @@ public class METHPipelineBean extends GEXAffymetrixBean {
     }
     
     @Override
-    public Boolean insertJob() {
-        Boolean result = Constants.OK;        
+    public boolean insertJob() {
+        boolean result = Constants.OK;        
         // job_id will not be used during insertion, just send in any value will
         // do e.g. 0
         // Insert the new job request into datbase; job status is 1 i.e. Waiting

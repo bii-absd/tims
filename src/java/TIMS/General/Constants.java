@@ -38,7 +38,7 @@ import org.apache.logging.log4j.LogManager;
  * 01-Oct-2015 - Added 2 new constants LOGOFF and OUTPUTFILE_PATH.
  * 06-Oct-2015 - Added in comments for the code. Added Log4j2 for this class.
  * 08-Oct-2015 - Changed the scope of this class to application, hence we only
- * need to load from the setup file once only. Added 2 new Boolean constants 
+ * need to load from the setup file once only. Added 2 new boolean constants 
  * OK and NOT_OK.
  * 14-Oct-2015 - Using annotation for JSF. Added one new constant ERROR. Moved 
  * the initialization code out of the Constructor.
@@ -99,6 +99,8 @@ import org.apache.logging.log4j.LogManager;
  * and FAILED.
  * 21-Jul-2016 - Added one new constant, SET_FTE (i.e. Setup Feature).
  * 25-Aug-2016 - Added one new constant, RAW_DATA_MANAGEMENT.
+ * 30-Aug-2016 - Added one new constant CHG_RD, and one new method 
+ * getDT_yyyyMMdd_HHmm(). Renamed method getDateTime() to getStandardDT().
  */
 
 @ManagedBean (name = "constants")
@@ -128,6 +130,7 @@ public class Constants {
     public final static String CRE_ID = "Create ID";
     public final static String CHG_PWD = "Change Password";
     public final static String CHG_ID = "Update ID";
+    public final static String CHG_RD = "Update Raw Data";
     public final static String DWL_FIL = "Download File";
     public final static String EXP_DAT = "Export Data";
     public final static String SET_FTE = "Setup Feature";
@@ -262,10 +265,14 @@ public class Constants {
         return OK;
     }
     
-    // To display the date and time.
-    public static String getDateTime() {
+    // To get the current datetime in different format.
+    public static String getStandardDT() {
         DateFormat dateFormat = new SimpleDateFormat("dd-MMM-yy hh:mmaa");
         return dateFormat.format(new Date());
+    }
+    public static String getDT_yyyyMMdd_HHmm() {
+        DateFormat dt = new SimpleDateFormat("yyyyMMdd_HHmm");
+        return dt.format(new Date());
     }
     
     // Display date and time at the views.
@@ -273,7 +280,7 @@ public class Constants {
         DateFormat dateFormat = new SimpleDateFormat("dd-MMM-yyyy hh:mm:ss aa");
         return dateFormat.format(new Date());        
     }
-        
+    
     // Machine generated getters
     public static String getSYSTEM_PATH() { return SYSTEM_PATH; }
     public static String getUSERS_PATH() { return USERS_PATH; }

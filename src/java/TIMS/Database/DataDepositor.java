@@ -8,11 +8,9 @@ import TIMS.General.FileHelper;
 import TIMS.General.Postman;
 import TIMS.General.ResourceRetriever;
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -101,6 +99,8 @@ import org.apache.pdfbox.pdmodel.graphics.xobject.PDJpeg;
  * 10-Aug-2016 - In method insertFinalizedDataIntoDB(), use the 
  * try-with-resource statement to create the BufferedReader object. Performed
  * code refactoring on method insertFinalizedDataIntoDB().
+ * 30-Aug-2016 - Changes due to change in method name in Constants class. 
+ * Removed unused code.
  */
 
 public class DataDepositor extends Thread {
@@ -157,7 +157,7 @@ public class DataDepositor extends Thread {
     
     @Override
     public void run() {
-        Boolean finalizeStatus = Constants.OK;
+        boolean finalizeStatus = Constants.OK;
         
         try {
             // All the SQL statements executed here will be treated as one 
@@ -438,7 +438,7 @@ public class DataDepositor extends Thread {
             
             cs.beginText();
             cs.moveTextPositionByAmount(subheadX, getNextLineYaxis());
-            cs.drawString("Date: " + Constants.getDateTime());
+            cs.drawString("Date: " + Constants.getStandardDT());
             cs.endText();
             
             // Application Signature
@@ -460,6 +460,7 @@ public class DataDepositor extends Thread {
         }
     }
     
+    /*
     // NO LONGER IN USE!
     // Generate the summary report (.txt) for the finalization of study.
     private void genTxtSummaryReport() {
@@ -487,7 +488,7 @@ public class DataDepositor extends Thread {
         summary.append("\t").append(processedGene).append("\n\n");
         summary.append("Author: ").append(UserAccountDB.getFullName(userName)).append("\n");
         summary.append("From: ").append(UserAccountDB.getInstNameUnitID(userName)).append("\n");
-        summary.append("Date: ").append(Constants.getDateTime());
+        summary.append("Date: ").append(Constants.getStandardDT());
 
         // Start to produce the summary report.
         try (PrintStream ps = new PrintStream(new File(summaryReportPath))) {
@@ -498,6 +499,7 @@ public class DataDepositor extends Thread {
             logger.error(ioe.getMessage());
         }
     }
+    */
     
     // Insert the gene value into the data array using the PreparedStatement
     // passed in.
@@ -546,7 +548,7 @@ public class DataDepositor extends Thread {
     }
     
     // Check whether genename exists using the PreparedStatement passed in.
-    private Boolean checkGeneExistInDB(PreparedStatement stm, 
+    private boolean checkGeneExistInDB(PreparedStatement stm, 
             String genename) throws SQLException {
         stm.setString(1, genename);
         ResultSet rs = stm.executeQuery();
@@ -689,76 +691,7 @@ public class DataDepositor extends Thread {
             if (!procSubjectLine(values)) {
                 // Error occurred, return to caller.
                 return Constants.NOT_OK;
-            }
-            
-            /* Moved to helper function.
-            // INSERT statement to insert a record into finalized_output table.
-            String insertStr = "INSERT INTO finalized_output(array_index,"
-                             + "annot_ver,job_id,subject_id,grp_id,study_id) "
-                             + "VALUES(?,?,?,?,?,?)";
-            
-            try (PreparedStatement insertStm = conn.prepareStatement(insertStr)) {
-                // Ignore the first two strings (i.e. geneID and EntrezID); 
-                for (int i = 2; i < values.length; i++) {
-                    // Only store the pipeline data if the study subject meta 
-                    // data is available in the database.
-                    try {
-                        if (StudySubjectDB.isSSExist(values[i], grp_id, study_id)) {
-                            if (!subjectFound.toString().contains(values[i])) {
-                                // Only want to store the unqiue subject ID that
-                                // have meta data in database.
-                                subjectFound.append(values[i]).append(" ");
-                                numSubjectFound++;
-                                // At the end of each subject line, place a marker '$'
-                                if (numSubjectFound%SUBJECTS_PER_LINE == 0) {
-                                    subjectFound.append("$");
-                                }
-                            }
-                            processedRecord++;
-                            arrayIndex[i] = getNextArrayInd();
-                            FinalizedOutput record = new FinalizedOutput
-                                (arrayIndex[i], annot_ver, values[i], grp_id, 
-                                 job_id, study_id);
-                            // Insert the finalized output record.
-                            insertToFinalizedOutput(insertStm, record);
-                        }
-                        else {
-                            if (!subjectNotFound.toString().contains(values[i])) {
-                                // Only want to store the unqiue subject ID that
-                                // do not have meta data in database.
-                                subjectNotFound.append(values[i]).append(" ");
-                                numSubjectNotFound++;
-                                // At the end of each subject line, place a marker '$'
-                                if (numSubjectNotFound%SUBJECTS_PER_LINE == 0) {
-                                    subjectNotFound.append("$");
-                                }
-                            }
-                            arrayIndex[i] = Constants.DATABASE_INVALID_ID;
-                        }
-                    } catch (SQLException e) {
-                        // Error occurred, return to caller.
-                        logger.error(e.getMessage());
-                        return Constants.NOT_OK;
-                    }
-                }
-                logger.debug("Subject records processed: " + processedRecord + 
-                            " out of " + totalRecord);
-                // Some of the subject IDs are not found for this pipeline.
-                // Display the consolidated subject IDs that are not found.
-                if (totalRecord > processedRecord) {
-                    logger.debug("The following subject IDs are not found " + 
-                                 subjectNotFound);
-                }
-            }
-            catch (SQLException|NamingException e) {
-                logger.error("FAIL to insert finalized records!");
-                logger.error(e.getMessage());
-                // Error occurred, return to caller.
-                return Constants.NOT_OK;
-            }
-            */
-            
-            
+            }            
             // Only proceed with gene data processing if subject ID is found in
             // the database.
             if (processedRecord > 0) {
@@ -776,64 +709,7 @@ public class DataDepositor extends Thread {
                 else {
                     // Error occurred, return to caller.
                     return Constants.NOT_OK;
-                }
-                
-                /* Move to helper function.
-                String genename;
-                totalGene = processedGene = 0;
-                // Record the total time taken to insert the finalized data.
-                startTime = System.nanoTime();
-                // UPDATE statement to update the data array in data_depository table.
-                String updateStr = 
-                        "UPDATE data_depository SET data[?] = ? WHERE " +
-                        "genename = ? AND annot_ver = \'" + annot_ver + "\'";
-                // SELECT statement to check the existence of gene in database.
-                String queryGene = "SELECT 1 FROM data_depository "
-                            + "WHERE genename = ? AND annot_ver = \'" 
-                            + annot_ver + "\'";
-
-                // This debug message serve as a check point.
-                logger.debug("Start gene data processing for job " + job_id);
-                try (PreparedStatement updateStm = conn.prepareStatement(updateStr);
-                     PreparedStatement queryGeneStm = conn.prepareStatement(queryGene)) 
-                {
-                    while ((lineRead = br.readLine()) != null) {
-                        totalGene++;
-                        values = lineRead.split("\t");
-                        // The first string is the gene symbol.
-                        genename = values[0];
-                        try {
-                            // Check whether genename exist in data_depository.
-                            if (checkGeneExistInDB(queryGeneStm,genename)) {
-                                processedGene++;
-                                // Start reading in the data from 3rd string; 
-                                for (int i = 2; i < values.length; i++) {
-                                    // Only process those data with valid PID
-                                    if (arrayIndex[i] != Constants.DATABASE_INVALID_ID) {
-                                        // Insert gene value into data array.
-                                        insertToDataArray(updateStm, arrayIndex[i],
-                                                values[i],genename);
-                                    }
-                                }
-                            }
-                        } catch (SQLException e) {
-                            // Error occurred, return to caller.
-                            logger.error(e.getMessage());
-                            return Constants.NOT_OK;
-                        }
-                        // Print a message after every 5,000 genes processed.
-                        // To make sure this loop is still alive.
-                        if (totalGene%5000 == 0) {
-                            logger.debug("Gene count: " + totalGene);
-                        }
-                    }
-                } catch (SQLException e) {
-                    logger.error("FAIL to insert into data array!");
-                    logger.error(e.getMessage());
-                    // Error occurred, return to caller.
-                    return Constants.NOT_OK;
-                }
-                */
+                }                
             }
             else {
                 geneAvailableVsStored.append("Subject ID not found. Gene data will not be stored into database").append("$");

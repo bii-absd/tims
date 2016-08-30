@@ -108,8 +108,8 @@ public class CNVPipelineBean extends GEXAffymetrixBean {
     }
 
     @Override
-    public Boolean insertJob() {
-        Boolean result = Constants.OK;
+    public boolean insertJob() {
+        boolean result = Constants.OK;
         // job_id will not be used during insertion, just send in any value will
         // do e.g. 0
         // Insert the new job request into datbase; job status is 1 i.e. Waiting
@@ -149,7 +149,7 @@ public class CNVPipelineBean extends GEXAffymetrixBean {
     // Make the necessary setup to those attributes that are relevant to this
     // pipeline, and then call the base class method to create the Config File.
     @Override
-    public Boolean createConfigFile() {
+    public boolean createConfigFile() {
         if (haveNewData) {
             ctrl = ctrlFile.getLocalDirectoryPath() + 
                    Constants.getCONTROL_PROBE_FILE_NAME() +

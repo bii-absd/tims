@@ -112,6 +112,7 @@ import org.apache.logging.log4j.LogManager;
  * the database. Added 2 new methods, isCBioPortalON() and isVisualizationON().
  * 25-Aug-2016 - Renamed the method isPI() to isAdminPILead(), and changed it's 
  * implementation.
+ * 30-Aug-2016 - Changes due to change in method name in Constants class.
  */
 
 @ManagedBean (name="authBean")
@@ -215,7 +216,7 @@ public class AuthenticationBean implements Serializable {
                 String homeDir = Constants.getSYSTEM_PATH() + 
                                  Constants.getUSERS_PATH() + loginName;
                 // Update the last login of this user            
-                UserAccountDB.updateLastLogin(loginName, Constants.getDateTime());
+                UserAccountDB.updateLastLogin(loginName, Constants.getStandardDT());
                 // Save the user ID in the session map.
                 getFacesContext().getExternalContext().getSessionMap().
                                     put("User", loginName);
