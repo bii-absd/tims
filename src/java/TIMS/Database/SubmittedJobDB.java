@@ -112,6 +112,7 @@ import org.apache.logging.log4j.LogManager;
  * 04-Jul-2016 - Updated the comments for method unzipOutputFile().
  * 07-Jul-2016 - Removed unused code. Added one new method, 
  * getcBioExportedJobs().
+ * 01-Sep-2016 - Implementation for database 3.6 Part II.
  */
 
 public abstract class SubmittedJobDB {
@@ -130,10 +131,10 @@ public abstract class SubmittedJobDB {
         int job_id = Constants.DATABASE_INVALID_ID;
         String query = "INSERT INTO submitted_job"
                      + "(study_id, user_id, pipeline_name, status_id, "
-                     + "submit_time, chip_type, input_sn,"
+                     + "submit_time, chip_type, input_sn, input_desc,"
                      + "normalization, summarization, output_file, "
                      + "detail_output, report) "
-                     + "VALUES(?,?,?,?,?,?,?,?,?,?,?,?)";
+                     + "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)";
         
         conn = DBHelper.getDSConn();
         // To request for the return of generated key upon successful insertion.
@@ -148,11 +149,12 @@ public abstract class SubmittedJobDB {
         stm.setTimestamp(5, job.getSubmit_time());
         stm.setString(6, job.getChip_type());
         stm.setInt(7, job.getInput_sn());
-        stm.setString(8, job.getNormalization());
-        stm.setString(9, job.getSummarization());
-        stm.setString(10, job.getOutput_file());
-        stm.setString(11, job.getDetail_output());
-        stm.setString(12, job.getReport());
+        stm.setString(8, job.getInput_desc());
+        stm.setString(9, job.getNormalization());
+        stm.setString(10, job.getSummarization());
+        stm.setString(11, job.getOutput_file());
+        stm.setString(12, job.getDetail_output());
+        stm.setString(13, job.getReport());
         // Execute the INSERT statement
         stm.executeUpdate();
         // Retrieve and store the last inserted Job ID

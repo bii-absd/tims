@@ -49,6 +49,8 @@ import javax.naming.NamingException;
  * submitted_job table.
  * 25-Aug-2016 - Changes due to method name (i.e. getCreateTimeString) change 
  * in InputData class.
+ * 01-Sep-2016 - Changes due to the addition attribute (i.e. input_desc) in 
+ * submitted_job table.
  */
 
 @ManagedBean (name="cnvPBean")
@@ -110,6 +112,12 @@ public class CNVPipelineBean extends GEXAffymetrixBean {
     @Override
     public boolean insertJob() {
         boolean result = Constants.OK;
+        // If new raw data has been uploaded, input_desc will follow the 
+        // description that the user has entered.
+        String input_desc = inputFileDesc;
+        if (!haveNewData) {
+            input_desc = selectedInput.getDescription();
+        }
         // job_id will not be used during insertion, just send in any value will
         // do e.g. 0
         // Insert the new job request into datbase; job status is 1 i.e. Waiting
@@ -117,11 +125,11 @@ public class CNVPipelineBean extends GEXAffymetrixBean {
         // For complete_time, set to null for the start.
         // 
         // SubmittedJob(job_id, study_id, user_id, pipeline_name, status_id, 
-        // submit_time, complete_time, chip_type, input_sn, normalization, 
-        // summarization, output_file, detail_output, report)
+        // submit_time, complete_time, chip_type, input_sn, input_desc, 
+        // normalization, summarization, output_file, detail_output, report)
         SubmittedJob newJob = 
                 new SubmittedJob(0, getStudyID(), userName, pipelineName, 1,
-                                 submitTimeInDB, null, "NA", input_sn, 
+                                 submitTimeInDB, null, "NA", input_sn, input_desc,
                                  "NA", getSummarization(), pipelineOutput, 
                                  detailOutput, pipelineReport);
         

@@ -58,6 +58,8 @@ import org.mindrot.jbcrypt.BCrypt;
  * decimal places.
  * 30-Aug-2016 - Enhanced method recordVisualTime(), to call the helper function
  * in Constants class.
+ * 01-Sep-2016 - Changes due to change in method name in FinalizingJobEntry 
+ * class.
  */
 
 public class cBioVisualizer extends Thread {
@@ -239,7 +241,7 @@ public class cBioVisualizer extends Thread {
             // Create the meta file and case list file for each pipeline.
             String meta_file = createMetaPLFile(job.getPipeline_name(), stableID_code);
             String case_file = createCaseListFile(job.getPipeline_name(), 
-                                job.getInputDesc(), case_list_ids, stableID_code);
+                                job.getInput_desc(), case_list_ids, stableID_code);
             
             logger.debug("Meta file created: " + meta_file);
             logger.debug("Case list file created: " + case_file);

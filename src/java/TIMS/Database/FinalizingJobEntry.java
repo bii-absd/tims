@@ -30,12 +30,13 @@ import java.text.SimpleDateFormat;
  * receive the FinalizingJobEntry parameters directly from the database.
  * 22-Jun-2016 - Removed unused code. Added one attribute cbio_target; to 
  * indicate whether this job had been selected for export to cBioPortal.
+ * 01-Sep-2016 - Added one attribute input_desc. Removed method getInputDesc().
  */
 
 public class FinalizingJobEntry {
     private int job_id, input_sn;
-    private String study_id, tid, pipeline_name, user_id, 
-            chip_type, normalization, summarization, detail_output;
+    private String study_id, tid, pipeline_name, user_id, chip_type, input_desc, 
+                   normalization, summarization, detail_output;
     private Timestamp submit_time;
     private boolean cbio_target;
     private final static DateFormat df = new SimpleDateFormat("dd-MMM-yyyy hh:mmaa");
@@ -52,6 +53,7 @@ public class FinalizingJobEntry {
         this.submit_time = rs.getTimestamp("submit_time");
         this.user_id = rs.getString("user_id");
         this.chip_type = rs.getString("chip_type");
+        this.input_desc = rs.getString("input_desc");
         this.normalization = rs.getString("normalization");
         this.summarization = rs.getString("summarization");
         this.detail_output = rs.getString("detail_output");
@@ -70,10 +72,12 @@ public class FinalizingJobEntry {
         return UserAccountDB.getFullName(user_id);
     }
     
+    /* NOT IN USE ANYMORE.
     // Return the input data description.
     public String getInputDesc() {
         return InputDataDB.getInputDescription(study_id, input_sn);
     }
+    */
     
     // Return the submit_time in format "dd-MMM-yyyy hh:mmaa" for showing in
     // the finalization summary report.
@@ -114,6 +118,10 @@ public class FinalizingJobEntry {
     { return chip_type; }
     public void setChip_type(String chip_type) 
     { this.chip_type = chip_type; }
+    public String getInput_desc() 
+    { return input_desc; }
+    public void setInput_desc(String input_desc) 
+    { this.input_desc = input_desc; }
     public String getNormalization() 
     { return normalization; }
     public void setNormalization(String normalization) 

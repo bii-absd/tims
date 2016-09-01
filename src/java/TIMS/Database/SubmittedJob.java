@@ -57,6 +57,8 @@ import java.text.SimpleDateFormat;
  * 20-Jun-2016 - Added one new attribute cbio_target, to keep track which job
  * output has been exported to cBioPortal for visualization. Added a new
  * Constructor that takes in the ResultSet directly from the database query.
+ * 01-Sep-2016 - Implementation for database 3.6 Part II. Removed unused code.
+ * Removed method getInputDescrition().
  */
 
 public class SubmittedJob implements Serializable {
@@ -65,11 +67,13 @@ public class SubmittedJob implements Serializable {
     // phenotype_column, summarization, sample_average, standardization & 
     // region) added for DB 2.0
     // For DB 3.0, removed input_path and added input_sn.
-    // For DB 3.3, Removed sample_average, standardization, region, probe_select,
+    // For DB 3.3, removed sample_average, standardization, region, probe_select,
     // probe_filtering and phenotype_column.
+    // For DB 3.6, added input_desc.
     private int job_id, status_id, input_sn;
-    private String study_id, user_id, pipeline_name, chip_type, normalization, 
-                   summarization, output_file, detail_output, report;
+    private String study_id, user_id, pipeline_name, chip_type, input_desc, 
+                   normalization, summarization, output_file, detail_output, 
+                   report;
     private Timestamp submit_time, complete_time;
     private boolean cbio_target;
     // status_name will be used by the job status page
@@ -87,6 +91,7 @@ public class SubmittedJob implements Serializable {
         this.complete_time = rs.getTimestamp("complete_time");
         this.chip_type = rs.getString("chip_type");
         this.input_sn = rs.getInt("input_sn");
+        this.input_desc = rs.getString("input_desc");
         this.normalization = rs.getString("normalization");
         this.summarization = rs.getString("summarization");
         this.output_file = rs.getString("output_file");
@@ -99,8 +104,8 @@ public class SubmittedJob implements Serializable {
     public SubmittedJob(int job_id, String study_id, String user_id,
             String pipeline_name, int status_id, Timestamp submit_time, 
             Timestamp complete_time, String chip_type, int input_sn, 
-            String normalization, String summarization, String output_file, 
-            String detail_output, String report) 
+            String input_desc, String normalization, String summarization, 
+            String output_file, String detail_output, String report) 
     {
         this.job_id = job_id;
         this.study_id = study_id;
@@ -111,6 +116,7 @@ public class SubmittedJob implements Serializable {
         this.complete_time = complete_time;
         this.chip_type = chip_type;
         this.input_sn = input_sn;
+        this.input_desc = input_desc;
         this.normalization = normalization;
         this.summarization = summarization;
         this.output_file = output_file;
@@ -118,25 +124,6 @@ public class SubmittedJob implements Serializable {
         this.report = report;
     }
 
-    /*
-    NOT IN USE ANYMORE!
-    // Simplify constructor for data table.
-    public SubmittedJob(int job_id, String study_id, String user_id,
-            String pipeline_name, int status_id, Timestamp submit_time, 
-            Timestamp complete_time, String output_file, String report) 
-    {
-        this.job_id = job_id;
-        this.study_id = study_id;
-        this.user_id = user_id;
-        this.pipeline_name = pipeline_name;
-        this.status_id = status_id;
-        this.submit_time = submit_time;
-        this.complete_time = complete_time;
-        this.output_file = output_file;
-        this.report = report;
-    }
-    */
-    
     // Return the job status name of this submitted job.
     public String getStatus_name() {
         return JobStatusDB.getJobStatusName(status_id);
@@ -173,11 +160,13 @@ public class SubmittedJob implements Serializable {
         return ResourceRetriever.getMsg(pipeline_name);
     }
     
+    /* NOT IN USE ANYMORE.
     // Return the description of the input data used in this job.
     public String getInputDescrition() {
         return InputDataDB.getInputDescription(study_id, input_sn);
     }
-
+    */
+    
     // Return true if chip type info is available.
     public boolean isTypeAvail() {
         return (chip_type.compareTo("NA") != 0);
@@ -259,6 +248,12 @@ public class SubmittedJob implements Serializable {
     }
     public void setInput_sn(int input_sn) {
         this.input_sn = input_sn;
+    }
+    public String getInput_desc() {
+        return input_desc;
+    }
+    public void setInput_desc(String input_desc) {
+        this.input_desc = input_desc;
     }
     public String getNormalization() {
         return normalization;
