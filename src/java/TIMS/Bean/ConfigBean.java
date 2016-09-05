@@ -13,6 +13,7 @@ import TIMS.Database.UserAccountDB;
 import TIMS.Database.UserRoleDB;
 import TIMS.General.Constants;
 import TIMS.General.ExitListener;
+import TIMS.General.FileHelper;
 import TIMS.General.Postman;
 import TIMS.General.ProcessExitDetector;
 import TIMS.General.ResourceRetriever;
@@ -107,6 +108,8 @@ import org.apache.logging.log4j.LogManager;
  * 25-Aug-2016 - Changes due to attribute name change in Pipeline table, and 
  * method name (i.e. getCreateTimeString) change in InputData class. Removed 
  * unused code.
+ * 05-Sep-2016 - Added method downloadAnnot, to allow user to download the
+ * annotation file from the input package.
  */
 
 public abstract class ConfigBean implements Serializable {
@@ -191,8 +194,8 @@ public abstract class ConfigBean implements Serializable {
     // name for future use.
     public void renameAnnotCtrlFiles() {
         // Rename sample annotation file.
-        sampleFile.renameFilename(Constants.getSAMPLE_ANNOT_FILE_NAME() + 
-                                  Constants.getSAMPLE_ANNOT_FILE_EXT());
+        sampleFile.renameFilename(Constants.getANNOT_FILE_NAME() + 
+                                  Constants.getANNOT_FILE_EXT());
     }
     
     // Read in all the filename listed in the annotation file.
@@ -480,6 +483,16 @@ public abstract class ConfigBean implements Serializable {
         }
     }
     
+    // Download the annotation file for user.
+    public void downloadAnnot(InputData input) {
+        String detail = "Annotation file of " + input.getStudy_id() 
+                      + " - Serial No. " + input.getSn();
+        ActivityLogDB.recordUserActivity(userName, Constants.DWL_FIL, detail);
+        FileHelper.download(input.getFilepath() + 
+                            Constants.getANNOT_FILE_NAME() + 
+                            Constants.getANNOT_FILE_EXT());
+    }
+    
     // Return the wording to be display at the link under the BreadCrumb in the 
     // pipeline configuration page.
     public String getBreadCrumbLink() {
@@ -552,7 +565,7 @@ public abstract class ConfigBean implements Serializable {
         this.selectedInput = selectedInput;
     }
     
-    // The setter for the following few fields will not be available for use.
+    // The setter for the following fields will not be provided.
     public String getPipelineTech() {
         return pipelineTech;
     }

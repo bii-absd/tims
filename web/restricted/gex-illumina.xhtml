@@ -55,6 +55,10 @@
                     <p:column headerText="Description" style="text-align: left">
                         <h:outputText value="#{reuseIP.description}"/>
                     </p:column>
+                    <p:column headerText="Annotation File" styleClass="col120">
+                        <p:commandLink ajax="false" value="Download" 
+                                       action="#{gexIlluBean.downloadAnnot(reuseIP)}"/>
+                    </p:column>
                     <p:column headerText="Select Data to Reuse" selectionMode="single" 
                               style="width: 120px; text-align: center"/>
                 </p:dataTable>

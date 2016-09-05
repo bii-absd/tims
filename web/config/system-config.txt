@@ -12,7 +12,7 @@ FINALIZE_PATH finalize_output
 TMP_PATH tmp
 CBIO_PATH cbio
 CBIO_CASE_DIR case_lists
-# All input files (i.e. input, ctrl and sample) will be stored in the /input
+# All input files (i.e. input, ctrl and annot) will be stored in the /input
 # directory.
 # All output files (i.e. output and report) will be stored in the /output dir
 # All the finalized output/report will be stored in the /finalize_output dir
@@ -29,10 +29,10 @@ SUMMARY_FILE_NAME _Summary_Report
 SUMMARY_FILE_EXT .pdf
 DETAIL_FILE_NAME _Detail
 FINALIZE_FILE_EXT .txt
-SAMPLE_ANNOT_FILE_NAME ANNOTATION
-SAMPLE_ANNOT_FILE_EXT .txt
-CONTROL_PROBE_FILE_NAME CONTROL_PROBE
-CONTROL_PROBE_FILE_EXT .txt
+ANNOT_FILE_NAME ANNOTATION
+ANNOT_FILE_EXT .txt
+CONTROL_FILE_NAME CONTROL_PROBE
+CONTROL_FILE_EXT .txt
 # The below defines the database name, database driver
 # Naming convention for the DB if using DriverManager to get the DB connection.
 # DATABASE_NAME jdbc:postgresql://localhost:5432/clinical

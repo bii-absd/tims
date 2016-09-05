@@ -71,6 +71,7 @@ import javax.naming.NamingException;
  * in InputData class.
  * 01-Sep-2016 - Changes due to the addition attribute (i.e. input_desc) in 
  * submitted_job table.
+ * 05-Sep-2016 - Changes due to change in constant name.
  */
 
 @ManagedBean (name="gexAffyBean")
@@ -184,14 +185,14 @@ public class GEXAffymetrixBean extends ConfigBean {
         if (haveNewData) {
             input = inputFile.getLocalDirectoryPath();
             sample = sampleFile.getLocalDirectoryPath() + 
-                     Constants.getSAMPLE_ANNOT_FILE_NAME() + 
-                     Constants.getSAMPLE_ANNOT_FILE_EXT();
+                     Constants.getANNOT_FILE_NAME() + 
+                     Constants.getANNOT_FILE_EXT();
         }
         else {
             input = selectedInput.getFilepath();
             sample = selectedInput.getFilepath() + 
-                     Constants.getSAMPLE_ANNOT_FILE_NAME() + 
-                     Constants.getSAMPLE_ANNOT_FILE_EXT();
+                     Constants.getANNOT_FILE_NAME() + 
+                     Constants.getANNOT_FILE_EXT();
         }
         // Call the base class method to create the Config File.        
         return super.createConfigFile();

@@ -64,10 +64,8 @@ import org.apache.logging.log4j.LogManager;
  * constants, INSERT_SUCCESS, INSERT_FAIL, SUCCESS, FAILURE, CHECK_VALID and 
  * CHECK_INVALID.
  * 14-Dec-2015 - Added one new constant, CLINICAL_DATA_MANAGEMENT.
- * 16-Dec-2015 - Added two new constants, SAMPLE_ANNOT_FILE_NAME and
- * SAMPLE_ANNOT_FILE_EXT.
- * 22-Dec-2015 - Added two new constants, CONTROL_PROBE_FILE_NAME and 
- * CONTROL_PROBE_FILE_EXT.
+ * 16-Dec-2015 - Added two new constants, ANNOT_FILE_NAME and ANNOT_FILE_EXT.
+ * 22-Dec-2015 - Added two new constants, CONTROL_FILE_NAME and CONTROL_FILE_EXT.
  * 24-Dec-2015 - Added 3 new constants, FINALIZE_PATH, FINALIZE_FILE_NAME and
  * FINALIZE_FILE_EXT.
  * 28-Dec-2015 - Added 2 new constants, FINALIZE_STUDY and COMPLETED_STUDY_OUTPUT.
@@ -101,6 +99,8 @@ import org.apache.logging.log4j.LogManager;
  * 25-Aug-2016 - Added one new constant, RAW_DATA_MANAGEMENT.
  * 30-Aug-2016 - Added one new constant CHG_RD, and one new method 
  * getDT_yyyyMMdd_HHmm(). Renamed method getDateTime() to getStandardDT().
+ * 05-Sep-2016 - Shorten the name of the constants for annotation file/ext and
+ * control file/ext.
  */
 
 @ManagedBean (name = "constants")
@@ -178,10 +178,10 @@ public class Constants {
     private static String SUMMARY_FILE_EXT = null;
     private static String DETAIL_FILE_NAME = null;
     private static String FINALIZE_FILE_EXT = null;
-    private static String SAMPLE_ANNOT_FILE_NAME = null;
-    private static String SAMPLE_ANNOT_FILE_EXT = null;
-    private static String CONTROL_PROBE_FILE_NAME = null;
-    private static String CONTROL_PROBE_FILE_EXT = null;
+    private static String ANNOT_FILE_NAME = null;
+    private static String ANNOT_FILE_EXT = null;
+    private static String CONTROL_FILE_NAME = null;
+    private static String CONTROL_FILE_EXT = null;
     // Constants used in database setup
     private static String DATABASE_NAME = null;
     private static String DATABASE_DRIVER = null;
@@ -248,10 +248,10 @@ public class Constants {
             SUMMARY_FILE_EXT = setup.get("SUMMARY_FILE_EXT");
             DETAIL_FILE_NAME = setup.get("DETAIL_FILE_NAME");
             FINALIZE_FILE_EXT = setup.get("FINALIZE_FILE_EXT");
-            SAMPLE_ANNOT_FILE_NAME = setup.get("SAMPLE_ANNOT_FILE_NAME");
-            SAMPLE_ANNOT_FILE_EXT = setup.get("SAMPLE_ANNOT_FILE_EXT");
-            CONTROL_PROBE_FILE_NAME = setup.get("CONTROL_PROBE_FILE_NAME");
-            CONTROL_PROBE_FILE_EXT = setup.get("CONTROL_PROBE_FILE_EXT");
+            ANNOT_FILE_NAME = setup.get("ANNOT_FILE_NAME");
+            ANNOT_FILE_EXT = setup.get("ANNOT_FILE_EXT");
+            CONTROL_FILE_NAME = setup.get("CONTROL_FILE_NAME");
+            CONTROL_FILE_EXT = setup.get("CONTROL_FILE_EXT");
             DATABASE_NAME = setup.get("DATABASE_NAME");
             DATABASE_DRIVER = setup.get("DATABASE_DRIVER");
             
@@ -306,14 +306,10 @@ public class Constants {
     public static String getSUMMARY_FILE_EXT() { return SUMMARY_FILE_EXT; }
     public static String getDETAIL_FILE_NAME() { return DETAIL_FILE_NAME; }
     public static String getFINALIZE_FILE_EXT() { return FINALIZE_FILE_EXT; }
-    public static String getSAMPLE_ANNOT_FILE_NAME() 
-    { return SAMPLE_ANNOT_FILE_NAME; }
-    public static String getSAMPLE_ANNOT_FILE_EXT() 
-    { return SAMPLE_ANNOT_FILE_EXT; }
-    public static String getCONTROL_PROBE_FILE_NAME() 
-    { return CONTROL_PROBE_FILE_NAME; }
-    public static String getCONTROL_PROBE_FILE_EXT() 
-    { return CONTROL_PROBE_FILE_EXT; }
+    public static String getANNOT_FILE_NAME() { return ANNOT_FILE_NAME; }
+    public static String getANNOT_FILE_EXT() { return ANNOT_FILE_EXT; }
+    public static String getCONTROL_FILE_NAME() { return CONTROL_FILE_NAME; }
+    public static String getCONTROL_FILE_EXT() { return CONTROL_FILE_EXT; }
     public static String getDATABASE_NAME() { return DATABASE_NAME; }
     public static String getDATABASE_DRIVER() { return DATABASE_DRIVER; }
 }

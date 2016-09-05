@@ -72,6 +72,7 @@ import javax.naming.NamingException;
  * in InputData class.
  * 01-Sep-2016 - Changes due to the addition attribute (i.e. input_desc) in 
  * submitted_job table.
+ * 05-Sep-2016 - Changes due to change in constant name.
  */
 
 @ManagedBean (name="gexIlluBean")
@@ -177,8 +178,8 @@ public class GEXIlluminaBean extends ConfigBean {
     @Override
     public void renameAnnotCtrlFiles() {
         // Rename control probe file.
-        ctrlFile.renameFilename(Constants.getCONTROL_PROBE_FILE_NAME() + 
-                                Constants.getCONTROL_PROBE_FILE_EXT());
+        ctrlFile.renameFilename(Constants.getCONTROL_FILE_NAME() + 
+                                Constants.getCONTROL_FILE_EXT());
         super.renameAnnotCtrlFiles();
     }
     
@@ -189,20 +190,20 @@ public class GEXIlluminaBean extends ConfigBean {
         if (haveNewData) {
             input = inputFile.getLocalDirectoryPath() + inputFile.getInputFilename();
             ctrl = ctrlFile.getLocalDirectoryPath() + 
-                   Constants.getCONTROL_PROBE_FILE_NAME() +
-                   Constants.getCONTROL_PROBE_FILE_EXT();
+                   Constants.getCONTROL_FILE_NAME() +
+                   Constants.getCONTROL_FILE_EXT();
             sample = sampleFile.getLocalDirectoryPath() + 
-                     Constants.getSAMPLE_ANNOT_FILE_NAME() + 
-                     Constants.getSAMPLE_ANNOT_FILE_EXT();
+                     Constants.getANNOT_FILE_NAME() + 
+                     Constants.getANNOT_FILE_EXT();
         }
         else {
             input = selectedInput.getFilepath() + selectedInput.getFilename();
             ctrl = selectedInput.getFilepath() + 
-                   Constants.getCONTROL_PROBE_FILE_NAME() +
-                   Constants.getCONTROL_PROBE_FILE_EXT();
+                   Constants.getCONTROL_FILE_NAME() +
+                   Constants.getCONTROL_FILE_EXT();
             sample = selectedInput.getFilepath() + 
-                     Constants.getSAMPLE_ANNOT_FILE_NAME() + 
-                     Constants.getSAMPLE_ANNOT_FILE_EXT();
+                     Constants.getANNOT_FILE_NAME() + 
+                     Constants.getANNOT_FILE_EXT();
         }
 
         // Call the base class method to create the Config File.

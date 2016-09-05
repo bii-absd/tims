@@ -36,6 +36,7 @@ import org.apache.logging.log4j.LogManager;
  * Revision History
  * 25-Aug-2016 - Implemented Raw Data Management Module Part I.
  * 30-Aug-2016 - Implemented Raw Data Management Module Part II.
+ * 05-Sep-2016 - Changes due to change in constant name.
  */
 
 @ManagedBean (name="RDMgntBean")
@@ -207,8 +208,8 @@ public class RawDataManagementBean implements Serializable {
         // directory.
         if (getControlFileStatus()) {
             if (!ctrlFile.isFilelistEmpty()) {
-                String ctrlFilename = Constants.getCONTROL_PROBE_FILE_NAME() 
-                                    + Constants.getCONTROL_PROBE_FILE_EXT();
+                String ctrlFilename = Constants.getCONTROL_FILE_NAME() 
+                                    + Constants.getCONTROL_FILE_EXT();
                 // Backup the original control file.
                 FileHelper.moveFile(destDir + ctrlFilename, 
                                     destDir + ctrlFilename + ext);
@@ -222,8 +223,8 @@ public class RawDataManagementBean implements Serializable {
         // annotation file, move and rename the new annotation file to the input
         // data directory.
         if (!annotFile.isFilelistEmpty()) {
-            String annotFilename = Constants.getSAMPLE_ANNOT_FILE_NAME()
-                                 + Constants.getSAMPLE_ANNOT_FILE_EXT();
+            String annotFilename = Constants.getANNOT_FILE_NAME()
+                                 + Constants.getANNOT_FILE_EXT();
             // Backup the original annotation file.
             FileHelper.moveFile(destDir + annotFilename,
                                 destDir + annotFilename + ext);
