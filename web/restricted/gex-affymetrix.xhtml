@@ -39,6 +39,9 @@
                              selection="#{gexAffyBean.selectedInput}" 
                              rowKey="#{reuseIP.sn}" 
                              styleClass="table-odd-row table-even-row">
+                    <p:ajax event="rowSelectRadio" 
+                            update="mainForm:custButton" 
+                            listener="#{gexAffyBean.inputSelectionChange}"/>
                     <p:column headerText="Creation Date" styleClass="jsmedcol">
                         <h:outputText value="#{reuseIP.createTimeString}"/>
                     </p:column>
@@ -86,12 +89,53 @@
                 </h:panelGrid>
             </p:panel>
             <p:separator styleClass="configsep"/>
-            <p:commandButton value="Submit" update=":revForm"
-                             oncomplete="PF('dlg').show()"
-                             icon="ui-icon-check" 
-                             action="#{gexAffyBean.updateJobSubmissionStatus()}"/>
+            <h:panelGrid columns="2" cellspacing="5" cellpadding="5">
+                <p:commandButton value="Submit" update=":revForm"
+                                 oncomplete="PF('dlg').show()"
+                                 icon="ui-icon-check" 
+                                 action="#{gexAffyBean.updateJobSubmissionStatus}"/>
+                <p:commandButton id="custButton" value="Customize Input Data" 
+                                 update=":rdExclForm" oncomplete="PF('rdDlg').show()"
+                                 action="#{gexAffyBean.retrieveRawDataFileList}" 
+                                 rendered="#{!gexAffyBean.haveNewData}" 
+                                 disabled="#{gexAffyBean.selectedInputStatus}"/>
+            </h:panelGrid>
         </h:form>
 
+        <p:dialog header="#{msg['rdexcl-header']}" widgetVar="rdDlg" 
+                  resizable="false" width="400px">
+            <h:form id="rdExclForm">
+                <h:panelGrid columns="2" id="rdExclPanel">
+                    <h:outputText value="Description" styleClass="configlabel"/>
+                    <h:inputText id="custdesc" value="#{gexAffyBean.custDesc}" size="200" 
+                                 styleClass="configinput"/>
+                </h:panelGrid>
+                <p:separator styleClass="configsep"/>
+                <p:dataTable id="exclCheckbox" var="rd" rows="10"
+                             paginator="true" paginatorTemplate="{FirstPageLink} 
+                             {PreviousPageLink} {CurrentPageReport} 
+                             {NextPageLink} {LastPageLink}"
+                             value="#{gexAffyBean.fileList}" 
+                             selection="#{gexAffyBean.exclList}" 
+                             rowKey="#{rd.index}" style="width: 100%">
+                    <p:column headerText="Filename">
+                        <h:outputText value="#{rd.filename}"/>
+                    </p:column>
+                    <p:column headerText="Exclude" selectionMode="multiple" 
+                              styleClass="colbutton"/>
+                </p:dataTable>
+                <p:separator styleClass="configsep"/>
+                <h:panelGrid columns="2" width="100%" cellspacing="2" cellpadding="2">
+                    <p:commandButton value="Cancel" style="width: 100%"
+                                     oncomplete="PF('rdDlg').hide()" 
+                                     action="#{gexAffyBean.cancelRawDataCust}"/>
+                    <p:commandButton value="Save" style="width: 100%"
+                                     oncomplete="PF('rdDlg').hide()" 
+                                     action="#{gexAffyBean.saveCust}"/>
+                </h:panelGrid>
+            </h:form>
+        </p:dialog>
+        
         <p:dialog header="#{msg['revcfg-head']}" widgetVar="dlg" resizable="false">
             <h:form id="revForm">
                 <p:panelGrid columns="2" id="display">
@@ -103,6 +147,22 @@
                                   value="#{msg['revcfg-reuse']}"/>
                     <h:outputText rendered="#{!gexAffyBean.haveNewData}" 
                                   value="#{gexAffyBean.reuseInputDate}"/>
+                    <h:outputText rendered="#{gexAffyBean.custStatus}" 
+                                  value="#{msg['revcfg-custdesc']}"/>
+                    <h:outputText rendered="#{gexAffyBean.custStatus}" 
+                                  value="#{gexAffyBean.custDesc}" 
+                                  styleClass="configinput"/>
+                    <h:outputText rendered="#{gexAffyBean.custStatus}" 
+                                  value="#{msg['revcfg-custexcl']}"/>
+                    <p:dataList itemType="square" rows="10"
+                        paginator="true" paginatorTemplate="{FirstPageLink} 
+                        {PreviousPageLink} {CurrentPageReport} 
+                        {NextPageLink} {LastPageLink}"
+                        rendered="#{gexAffyBean.custStatus}"
+                        value="#{gexAffyBean.exclFileList}"
+                        var="exlist" styleClass="datalist" type="none">
+                        <h:outputText value="#{exlist}"/><br/>
+                    </p:dataList>
                     <h:outputText rendered="#{gexAffyBean.haveNewData}" 
                                   value="#{gexAffyBean.inputFile.filesCount}"/>
                     <p:dataList itemType="square" rows="20"

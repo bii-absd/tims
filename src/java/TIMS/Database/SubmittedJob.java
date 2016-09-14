@@ -59,6 +59,9 @@ import java.text.SimpleDateFormat;
  * Constructor that takes in the ResultSet directly from the database query.
  * 01-Sep-2016 - Implementation for database 3.6 Part II. Removed unused code.
  * Removed method getInputDescrition().
+ * 14-Sep-2016 - To check the chip_type, normalization and summarization against
+ * null when testing whether is it available. Removed parameter job_id in the 
+ * full constructor for pipeline beans.
  */
 
 public class SubmittedJob implements Serializable {
@@ -101,13 +104,13 @@ public class SubmittedJob implements Serializable {
     }
     
     // Full constructor to be used by pipeline beans.
-    public SubmittedJob(int job_id, String study_id, String user_id,
+    public SubmittedJob(String study_id, String user_id,
             String pipeline_name, int status_id, Timestamp submit_time, 
             Timestamp complete_time, String chip_type, int input_sn, 
             String input_desc, String normalization, String summarization, 
             String output_file, String detail_output, String report) 
     {
-        this.job_id = job_id;
+        this.job_id = 0;
         this.study_id = study_id;
         this.user_id = user_id;
         this.pipeline_name = pipeline_name;
@@ -160,24 +163,17 @@ public class SubmittedJob implements Serializable {
         return ResourceRetriever.getMsg(pipeline_name);
     }
     
-    /* NOT IN USE ANYMORE.
-    // Return the description of the input data used in this job.
-    public String getInputDescrition() {
-        return InputDataDB.getInputDescription(study_id, input_sn);
-    }
-    */
-    
     // Return true if chip type info is available.
     public boolean isTypeAvail() {
-        return (chip_type.compareTo("NA") != 0);
+        return (chip_type != null);
     }
     // Return true if normalization info is available.
     public boolean isNormAvail() {
-        return (normalization.compareTo("NA") != 0);
+        return (normalization != null);
     }
     // Return true if summarization info is available.
     public boolean isSummAvail() {
-        return (summarization.compareTo("NA") != 0);
+        return (summarization != null);
     }
 
     // Return the submit_time and complete_time in format "dd-MMM-yyyy hh:mmaa"

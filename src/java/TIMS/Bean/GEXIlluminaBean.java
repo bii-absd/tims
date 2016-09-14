@@ -3,10 +3,9 @@
  */
 package TIMS.Bean;
 
+import static TIMS.Bean.ConfigBean.logger;
 import TIMS.Database.InputData;
 import TIMS.Database.InputDataDB;
-import TIMS.Database.SubmittedJob;
-import TIMS.Database.SubmittedJobDB;
 import TIMS.General.Constants;
 import java.io.File;
 import java.sql.SQLException;
@@ -73,6 +72,8 @@ import javax.naming.NamingException;
  * 01-Sep-2016 - Changes due to the addition attribute (i.e. input_desc) in 
  * submitted_job table.
  * 05-Sep-2016 - Changes due to change in constant name.
+ * 14-Sep-2016 - Implemented Raw Data Customization module. Removed method 
+ * insertJob().
  */
 
 @ManagedBean (name="gexIlluBean")
@@ -87,6 +88,9 @@ public class GEXIlluminaBean extends ConfigBean {
     @PostConstruct
     public void initFiles() {
         init();
+        // Set the raw data file extension for this pipeline.
+        rdFileExt = "txt";
+        
         if (haveNewData) {
             String dir = Constants.getSYSTEM_PATH() + Constants.getINPUT_PATH() 
                        + studyID + File.separator 
@@ -121,6 +125,7 @@ public class GEXIlluminaBean extends ConfigBean {
         }
     }
 
+    /* NOT IN USE ANYMORE!
     @Override
     public boolean insertJob() {
         boolean result = Constants.OK;
@@ -128,8 +133,16 @@ public class GEXIlluminaBean extends ConfigBean {
         // description that the user has entered.
         String input_desc = inputFileDesc;
         if (!haveNewData) {
-            input_desc = selectedInput.getDescription();
+            // Reusing raw data.
+            if (custStatus) {
+                // Customized raw data.
+                input_desc = custDesc;
+            }
+            else {
+                input_desc = selectedInput.getDescription();
+            }
         }
+        
         // job_id will not be used during insertion, just send in any value will
         // do e.g. 0
         // Insert the new job request into datbase; job status is 1 i.e. Waiting
@@ -157,7 +170,8 @@ public class GEXIlluminaBean extends ConfigBean {
 
         return result;
     }
-
+    */
+    
     @Override
     public void saveSampleFileDetail() {
         try {

@@ -4,19 +4,14 @@
 package TIMS.Bean;
 
 import static TIMS.Bean.ConfigBean.logger;
-import TIMS.Database.SubmittedJob;
-import TIMS.Database.SubmittedJobDB;
-import TIMS.General.Constants;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 // Libraries for Java Extension
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
-import javax.naming.NamingException;
 
 /**
  * METHPipelineBean is used as the backing bean for the meth-pipeline view.
@@ -53,6 +48,8 @@ import javax.naming.NamingException;
  * submitted_job table.
  * 01-Sep-2016 - Changes due to the addition attribute (i.e. input_desc) in 
  * submitted_job table.
+ * 14-Sep-2016 - Implemented Raw Data Customization module. Removed method 
+ * insertJob().
  */
 
 @ManagedBean (name="methPBean")
@@ -64,14 +61,30 @@ public class METHPipelineBean extends GEXAffymetrixBean {
     }
     
     @Override
+    public void initFiles() {
+        init();
+        // Set the raw data file extension for this pipeline.
+        rdFileExt = "idat";
+    }
+    
+    /* NOT IN USE ANYMORE!
+    @Override
     public boolean insertJob() {
         boolean result = Constants.OK;
         // If new raw data has been uploaded, input_desc will follow the 
         // description that the user has entered.
         String input_desc = inputFileDesc;
         if (!haveNewData) {
-            input_desc = selectedInput.getDescription();
+            // Reusing raw data.
+            if (custStatus) {
+                // Customized raw data.
+                input_desc = custDesc;
+            }
+            else {
+                input_desc = selectedInput.getDescription();
+            }
         }
+        
         // job_id will not be used during insertion, just send in any value will
         // do e.g. 0
         // Insert the new job request into datbase; job status is 1 i.e. Waiting
@@ -99,6 +112,7 @@ public class METHPipelineBean extends GEXAffymetrixBean {
 
         return result;
     }
+    */
     
     // Read in all the filename listed in the annotation file.
     @Override

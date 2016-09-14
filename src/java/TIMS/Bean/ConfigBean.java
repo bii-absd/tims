@@ -8,6 +8,7 @@ import TIMS.Database.InputData;
 import TIMS.Database.InputDataDB;
 import TIMS.Database.Pipeline;
 import TIMS.Database.PipelineDB;
+import TIMS.Database.SubmittedJob;
 import TIMS.Database.SubmittedJobDB;
 import TIMS.Database.UserAccountDB;
 import TIMS.Database.UserRoleDB;
@@ -110,6 +111,8 @@ import org.apache.logging.log4j.LogManager;
  * unused code.
  * 05-Sep-2016 - Added method downloadAnnot, to allow user to download the
  * annotation file from the input package.
+ * 14-Sep-2016 - Implemented Raw Data Customization module. Defined nested 
+ * class ExcludeFileName. Code refactoring for the method insertJob().
  */
 
 public abstract class ConfigBean implements Serializable {
@@ -145,15 +148,26 @@ public abstract class ConfigBean implements Serializable {
     protected InputData selectedInput;
     // Store the user ID and home directory of the current user.
     protected String userName, homeDir;
+    // Raw data file list.
+    protected List<ExcludeFileName> fileList = new ArrayList<>();
+    // Exclusion date file list.
+    protected List<ExcludeFileName> exclList;
+    // Excluded file list string builder.
+    protected StringBuilder exclFileSB = new StringBuilder();
+    // Excluded file list array.
+    protected List<String> exclFileList = new ArrayList<>();
+    // Raw data file extension.
+    protected String rdFileExt;
+    // Custom description.
+    protected String custDesc;
+    // Customization status i.e. true == saved.
+    protected boolean custStatus;
 
     // This method will only be trigger if all the inputs validation have 
     // passed after the user clicked on Submit. As a result of this behaviour 
     // (i.e. all the validations need to pass), we will check whether all the 
     // input files have been uploaded and update the jobSubmissionStatus here.
     abstract void updateJobSubmissionStatus();
-    // Insert the current job request into the submitted_job table. The status
-    // of the insertion operation will be return.
-    abstract boolean insertJob();
     // Save the input data detail into the database.
     abstract void saveSampleFileDetail();
     
@@ -174,6 +188,7 @@ public abstract class ConfigBean implements Serializable {
         homeDir = Constants.getSYSTEM_PATH() + Constants.getUSERS_PATH() + userName;
         jobSubmissionStatus = false;
         input_sn = Constants.DATABASE_INVALID_ID;
+        custStatus = false;
         // Create the time stamp for the pipeline job.
         createJobTimestamp();
         
@@ -429,7 +444,8 @@ public abstract class ConfigBean implements Serializable {
                      "\nTYPE\t=\t" + getType() +
                      "\nINPUT\t=\t" + input +
                      "\nCTRL_FILE\t=\t" + ctrl +
-                     "\nSAMPLES_ANNOT_FILE\t=\t" + sample + "\n\n");
+                     "\nSAMPLES_ANNOT_FILE\t=\t" + sample + 
+                     "\nEXCLUDE_FILES\t=\t" + exclFileSB.toString() + "\n\n");
 
             fw.write("### PROCESSING parameters\n" +
                      "NORMALIZATION\t=\t" + getNormalization() +
@@ -449,6 +465,106 @@ public abstract class ConfigBean implements Serializable {
         return result;
     }
 
+    // Insert the current job request into the submitted_job table. The status
+    // of the insertion operation will be return.
+    private boolean insertJob() {
+        boolean result = Constants.OK;
+        // If new raw data has been uploaded, input_desc will follow the 
+        // description that the user has entered.
+        String input_desc = inputFileDesc;
+        if (!haveNewData) {
+            // Reusing raw data.
+            if (custStatus) {
+                // Customized raw data.
+                input_desc = custDesc;
+            }
+            else {
+                input_desc = selectedInput.getDescription();
+            }
+        }
+        
+        // Insert the new job request into datbase; job status is 1 i.e. Waiting
+        // For complete_time, set to null for the start.
+        SubmittedJob newJob = 
+                new SubmittedJob(getStudyID(), userName, pipelineName, 1,
+                                 submitTimeInDB, null, getType(), input_sn, input_desc,
+                                 getNormalization(), getSummarization(), pipelineOutput, 
+                                 detailOutput, pipelineReport);
+        
+        try {
+            // Store the job_id of the inserted record
+            job_id = SubmittedJobDB.insertJob(newJob);
+        }
+        catch (SQLException|NamingException e) {
+            result = Constants.NOT_OK;
+            logger.error("FAIL to insert job!");
+            logger.error(e.getMessage());
+        }
+
+        return result;
+    }
+    
+    // User has selected a new input package, need to rebuild the variables.
+    public void inputSelectionChange() {
+        // Reset all the variables that are related to Raw Data Customization.
+        custStatus = false;
+        custDesc = selectedInput.getDescription();
+        exclFileList.clear();
+        if (exclList != null) {
+            // User has selected some raw data to exclude in the previously
+            // input package, need to reset the selection.
+            exclList.clear();
+        }
+        
+        if (exclFileSB.length() > 0) {
+            exclFileSB.delete(0, exclFileSB.length());
+        }
+        
+        logger.debug("Study " + selectedInput.getStudy_id() + 
+                     " Serial No " + selectedInput.getSn() + " Input Selected.");
+    }
+    
+    // Retrieve the raw data file list from directory.
+    public void retrieveRawDataFileList() {
+        File[] fList = FileHelper.getFilesWithExt(selectedInput.getFilepath(), rdFileExt);
+        // Clear the existing file list before building the new file list.
+        fileList.clear();
+        int index = 0;
+        
+        for (File rd : fList) {
+            fileList.add(new ExcludeFileName(index++, rd.getName()));
+        }
+        
+        logger.debug("Total number of files retrieved: " + index);
+    }
+
+    // In the Raw Data Customization dialog, the user click on cancel to return
+    // to pipeline config screen.
+    public void cancelRawDataCust() {
+        logger.debug(userName + " cancel Raw Data Customization.");
+    }
+    
+    // Save the customization the user has made to the raw data package.
+    public void saveCust() {
+        // Update customization status to true.
+        custStatus = true;
+        // Clear the exclusion file list and string builder, before rebuilding
+        // them.
+        exclFileList.clear();
+        if (exclFileSB.length() > 0) {
+            exclFileSB.delete(0, exclFileSB.length());
+        }
+        // Build the exclusion file list and string builder.
+        for (ExcludeFileName exclFile : exclList) {
+            exclFileSB.append(exclFile.getFilename()).append(",");
+            exclFileList.add(exclFile.getFilename());
+        }
+        // Remove the last ','
+        exclFileSB.deleteCharAt(exclFileSB.length()-1);
+        
+        logger.debug("Excluded files: " + exclFileSB.toString());
+    }
+    
     // Convert boolean (i.e. true/false) to yes/no
     protected String booleanToYesNo(boolean parameter) {
         return parameter?"yes":"no";
@@ -515,6 +631,11 @@ public abstract class ConfigBean implements Serializable {
         return jobSubmissionStatus && haveNewData && (roleID == UserRoleDB.admin());
     }
     
+    // Return true if no input package has been selected.
+    public boolean getSelectedInputStatus() {
+        return (selectedInput == null);
+    }
+    
     // Machine generated getters and setters
     public FileUploadBean getSampleFile() {
         return sampleFile;
@@ -564,7 +685,19 @@ public abstract class ConfigBean implements Serializable {
     public void setSelectedInput(InputData selectedInput) {
         this.selectedInput = selectedInput;
     }
-    
+    public List<ExcludeFileName> getExclList() {
+        return exclList;
+    }
+    public void setExclList(List<ExcludeFileName> exclList) {
+        this.exclList = exclList;
+    }
+    public String getCustDesc() {
+        return custDesc;
+    }
+    public void setCustDesc(String custDesc) {
+        this.custDesc = custDesc;
+    }
+
     // The setter for the following fields will not be provided.
     public String getPipelineTech() {
         return pipelineTech;
@@ -583,5 +716,37 @@ public abstract class ConfigBean implements Serializable {
     }
     public List<InputData> getInputDataList() {
         return inputDataList;
+    }
+    public List<ExcludeFileName> getFileList() {
+        return fileList;
+    }
+    public List<String> getExclFileList() {
+        return exclFileList;
+    }
+    public boolean isCustStatus() {
+        return custStatus;
+    }
+
+    // Nested class created to store the raw data exclusion file list.
+    public class ExcludeFileName {
+        private int index;
+        private String filename;
+        // Machine generated code.
+        public ExcludeFileName(int index, String filename) {
+            this.index = index;
+            this.filename = filename;
+        }
+        public int getIndex() {
+            return index;
+        }
+        public void setIndex(int index) {
+            this.index = index;
+        }
+        public String getFilename() {
+            return filename;
+        }
+        public void setFilename(String filename) {
+            this.filename = filename;
+        }
     }
 }
