@@ -8,6 +8,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 // Libraries for Java Extension
 import javax.faces.bean.ManagedBean;
@@ -50,6 +51,8 @@ import javax.faces.bean.ViewScoped;
  * submitted_job table.
  * 14-Sep-2016 - Implemented Raw Data Customization module. Removed method 
  * insertJob().
+ * 19-Sep-2016 - Updated method getAllFilenameFromAnnot() to read in multiple
+ * filename from the 2nd column of the annotation file. Removed unused code.
  */
 
 @ManagedBean (name="methPBean")
@@ -67,58 +70,11 @@ public class METHPipelineBean extends GEXAffymetrixBean {
         rdFileExt = "idat";
     }
     
-    /* NOT IN USE ANYMORE!
-    @Override
-    public boolean insertJob() {
-        boolean result = Constants.OK;
-        // If new raw data has been uploaded, input_desc will follow the 
-        // description that the user has entered.
-        String input_desc = inputFileDesc;
-        if (!haveNewData) {
-            // Reusing raw data.
-            if (custStatus) {
-                // Customized raw data.
-                input_desc = custDesc;
-            }
-            else {
-                input_desc = selectedInput.getDescription();
-            }
-        }
-        
-        // job_id will not be used during insertion, just send in any value will
-        // do e.g. 0
-        // Insert the new job request into datbase; job status is 1 i.e. Waiting
-        // For attributes type and summarization, set them to "NA".
-        // For complete_time, set to null for the start.
-        // 
-        // SubmittedJob(job_id, study_id, user_id, pipeline_name, status_id, 
-        // submit_time, complete_time, chip_type, input_sn, input_desc, 
-        // normalization, summarization, output_file, detail_output, report)
-        SubmittedJob newJob = 
-                new SubmittedJob(0, getStudyID(), userName, pipelineName, 1,
-                                 submitTimeInDB, null, "NA", input_sn, input_desc,
-                                 getNormalization(), "NA", pipelineOutput, 
-                                 detailOutput, pipelineReport);
-        
-        try {
-            // Store the job_id of the inserted record
-            job_id = SubmittedJobDB.insertJob(newJob);
-        }
-        catch (SQLException|NamingException e) {
-            result = Constants.NOT_OK;
-            logger.error("FAIL to insert job!");
-            logger.error(e.getMessage());
-        }
-
-        return result;
-    }
-    */
-    
     // Read in all the filename listed in the annotation file.
     @Override
     public List<String> getAllFilenameFromAnnot() {
         List<String> filenameList = new ArrayList<>();
-        String[] content;
+        String[] content, fn;
         
         try (BufferedReader br = new BufferedReader(
                                  new FileReader(sampleFile.getLocalDirectoryPath() + 
@@ -130,9 +86,12 @@ public class METHPipelineBean extends GEXAffymetrixBean {
             while ((lineRead = br.readLine()) != null) {
                 content = lineRead.split("\t");
                 // The second column contains the filename header; for
-                // Methylation pipeline, each header will have 2 filenames.
-                filenameList.add(content[1] + "_Grn.idat");
-                filenameList.add(content[1] + "_Red.idat");
+                // Methylation pipeline, each header will have 2 filenames 
+                // separated by ','.
+                fn = content[1].split(",");
+                // Add the filenames to the list; can handle more than 2 
+                // filenames.
+                filenameList.addAll(Arrays.asList(fn));
             }
             logger.debug("All filename read from annotation file.");
         }
