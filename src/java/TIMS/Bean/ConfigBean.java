@@ -30,6 +30,7 @@ import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 // Libraries for Java Extension
@@ -113,6 +114,8 @@ import org.apache.logging.log4j.LogManager;
  * annotation file from the input package.
  * 14-Sep-2016 - Implemented Raw Data Customization module. Defined nested 
  * class ExcludeFileName. Code refactoring for the method insertJob().
+ * 20-Sep-2016 - Enhanced method retrieveRawDataFileList() to make sure the 
+ * filename is sorted before storing them into the file list.
  */
 
 public abstract class ConfigBean implements Serializable {
@@ -527,12 +530,19 @@ public abstract class ConfigBean implements Serializable {
     // Retrieve the raw data file list from directory.
     public void retrieveRawDataFileList() {
         File[] fList = FileHelper.getFilesWithExt(selectedInput.getFilepath(), rdFileExt);
+        List<String> fNameList = new ArrayList<>();
         // Clear the existing file list before building the new file list.
         fileList.clear();
         int index = 0;
         
         for (File rd : fList) {
-            fileList.add(new ExcludeFileName(index++, rd.getName()));
+            fNameList.add(rd.getName());
+        }
+        // Sort the filename list first before storing them into fileList.
+        Collections.sort(fNameList);
+        
+        for (String filename : fNameList) {
+            fileList.add(new ExcludeFileName(index++, filename));
         }
         
         logger.debug("Total number of files retrieved: " + index);
