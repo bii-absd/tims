@@ -46,6 +46,8 @@ import org.apache.logging.log4j.LogManager;
  * for database 3.6 Part I.
  * 30-Aug-2016 - Enhanced method updateFieldsAfterEdit, to also update the 
  * filename field.
+ * 20-Sep-2016 - Split the method updateFieldsAfterEdit into 2 methods,
+ * updateDescAfterEdit and updateDescFilenameAfterEdit.
  */
 
 public abstract class InputDataDB {
@@ -122,9 +124,44 @@ public abstract class InputDataDB {
         return ipList;
     }
     
-    // Update 3 fields in the input_data table after making changes in the Raw 
-    // Data Management page.
-    public static boolean updateFieldsAfterEdit(String study_id, int sn, 
+    // Update description field in the input_data table after making changes in
+    // the Raw Data Management page.
+    public static boolean updateDescAfterEdit(String study_id, int sn, 
+            String desc, String update_uid, Timestamp update_time) 
+    {
+        Connection conn = null;
+        boolean result = Constants.OK;
+        String query = "UPDATE input_data SET update_uid = ?, update_time = ?, "
+                     + "description = ? WHERE study_id = ? AND sn = ?";
+        
+        try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            stm.setString(1, update_uid);
+            stm.setTimestamp(2, update_time);
+            stm.setString(3, desc);
+            stm.setString(4, study_id);
+            stm.setInt(5, sn);
+            stm.executeUpdate();
+            stm.close();
+            
+            logger.debug("Updated input data for study " + study_id + " serial no " + sn);
+        }
+        catch (SQLException|NamingException e) {
+            result = Constants.NOT_OK;
+            logger.error("FAIL to update input data for study " + study_id + " serial no " + sn);
+            logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
+        }
+
+        return result;
+    }
+    
+    // Update the description and filename fields in the input_data table after 
+    // making changes in the Raw Data Management page.
+    public static boolean updateDescFilenameAfterEdit(String study_id, int sn, 
             String desc, String update_uid, Timestamp update_time, String filename) 
     {
         Connection conn = null;

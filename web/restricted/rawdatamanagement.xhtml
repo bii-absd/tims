@@ -51,7 +51,7 @@
                               update="uploadStatus" sequential="true" 
                               allowTypes="#{RDMgntBean.allowTypes}" 
                               onstart="b4upload()" label="#{msg['config-selsam']}"
-                              fileUploadListener="#{RDMgntBean.inputFile.multipleFileUploadListener}"/>
+                              fileUploadListener="#{RDMgntBean.sampleFileUploadListener}"/>
                 <p:remoteCommand name="b4upload" partialSubmit="true" process="@this" 
                                  actionListener="#{RDMgntBean.inputFile.createInputDirectory}"/>
                 <p:separator styleClass="configsep" rendered="#{RDMgntBean.controlFileStatus}"/>

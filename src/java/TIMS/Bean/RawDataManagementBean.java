@@ -26,6 +26,7 @@ import javax.faces.context.FacesContext;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.primefaces.event.FileUploadEvent;
 
 /**
  * RawDataManagementBean is the backing bean for the rawdatamanagement view.
@@ -37,6 +38,8 @@ import org.apache.logging.log4j.LogManager;
  * 25-Aug-2016 - Implemented Raw Data Management Module Part I.
  * 30-Aug-2016 - Implemented Raw Data Management Module Part II.
  * 05-Sep-2016 - Changes due to change in constant name.
+ * 20-Sep-2016 - Fix the bug whereby the filename in input_data table get 
+ * corrupted when no sample data is being uploaded.
  */
 
 @ManagedBean (name="RDMgntBean")
@@ -184,12 +187,25 @@ public class RawDataManagementBean implements Serializable {
                             studyID + " - Input SN " + selectedInput.getSn());
         // Update entry in input_data table.
         if (plName.compareTo(PipelineDB.GEX_ILLUMINA) == 0) {
-            InputDataDB.updateFieldsAfterEdit(studyID, selectedInput.getSn(), 
-                    inputFileDesc, userName, update_time, inputFile.getInputFilename());
+            if (inputFile.isFilelistEmpty()) {
+                // No raw data has being uploaded.
+                InputDataDB.updateDescAfterEdit(studyID, selectedInput.getSn(), 
+                        inputFileDesc, userName, update_time);
+            }
+            else {
+                InputDataDB.updateDescFilenameAfterEdit(studyID, selectedInput.getSn(), 
+                        inputFileDesc, userName, update_time, inputFile.getInputFilename());
+                
+                if (replaceSampleFiles.isEmpty()) {
+                    // The uploaded raw data has a different filename.
+                    // Need to backup the original sample file manually here.
+                    replaceSampleFiles.add(selectedInput.getFilename());
+                }
+            }
         }
         else {
-            InputDataDB.updateFieldsAfterEdit(studyID, selectedInput.getSn(), 
-                    inputFileDesc, userName, update_time, "");
+            InputDataDB.updateDescAfterEdit(studyID, selectedInput.getSn(), 
+                    inputFileDesc, userName, update_time);
         }
         
         // For replacement sample file(s), backup the original sample file(s) 
@@ -258,6 +274,16 @@ public class RawDataManagementBean implements Serializable {
     public final boolean getControlFileStatus() {
         return (plName.compareTo(PipelineDB.CNV) == 0 ) || 
                (plName.compareTo(PipelineDB.GEX_ILLUMINA) == 0);
+    }
+    
+    // Called the respective listener based on the pipeline type.
+    public void sampleFileUploadListener(FileUploadEvent event) {
+        if (plName.compareTo(PipelineDB.GEX_ILLUMINA) == 0) {
+            inputFile.singleFileUploadListener(event);
+        }
+        else {
+            inputFile.multipleFileUploadListener(event);
+        }
     }
     
     // Machine generated code.
