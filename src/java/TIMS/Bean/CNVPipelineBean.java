@@ -7,6 +7,9 @@ import static TIMS.Bean.ConfigBean.logger;
 import TIMS.General.Constants;
 import TIMS.General.FileHelper;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 // Libraries for Java Extension
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
@@ -51,6 +54,9 @@ import javax.faces.bean.ViewScoped;
  * 05-Sep-2016 - Changes due to change in constant name.
  * 14-Sep-2016 - Implemented Raw Data Customization module. Removed method 
  * insertJob().
+ * 21-Sep-2016 - Enhanced method retrieveRawDataFileList() to make sure the 
+ * filename is sorted before storing them into the file list. Removed unused
+ * code.
  */
 
 @ManagedBean (name="cnvPBean")
@@ -112,53 +118,6 @@ public class CNVPipelineBean extends GEXAffymetrixBean {
         }
     }
 
-    /* NOT IN USE ANYMORE!
-    @Override
-    public boolean insertJob() {
-        boolean result = Constants.OK;
-        // If new raw data has been uploaded, input_desc will follow the 
-        // description that the user has entered.
-        String input_desc = inputFileDesc;
-        if (!haveNewData) {
-            // Reusing raw data.
-            if (custStatus) {
-                // Customized raw data.
-                input_desc = custDesc;
-            }
-            else {
-                input_desc = selectedInput.getDescription();
-            }
-        }
-        
-        // job_id will not be used during insertion, just send in any value will
-        // do e.g. 0
-        // Insert the new job request into datbase; job status is 1 i.e. Waiting
-        // For attributes type and normalization, set them to "NA". 
-        // For complete_time, set to null for the start.
-        // 
-        // SubmittedJob(job_id, study_id, user_id, pipeline_name, status_id, 
-        // submit_time, complete_time, chip_type, input_sn, input_desc, 
-        // normalization, summarization, output_file, detail_output, report)
-        SubmittedJob newJob = 
-                new SubmittedJob(0, getStudyID(), userName, pipelineName, 1,
-                                 submitTimeInDB, null, "NA", input_sn, input_desc,
-                                 "NA", getSummarization(), pipelineOutput, 
-                                 detailOutput, pipelineReport);
-        
-        try {
-            // Store the job_id of the inserted record
-            job_id = SubmittedJobDB.insertJob(newJob);
-        }
-        catch (SQLException|NamingException e) {
-            result = Constants.NOT_OK;
-            logger.error("FAIL to insert job!");
-            logger.error(e.getMessage());
-        }
-
-        return result;
-    }
-    */
-    
     @Override
     public void renameAnnotCtrlFiles() {
         // Rename control probe file.
@@ -190,17 +149,24 @@ public class CNVPipelineBean extends GEXAffymetrixBean {
     @Override
     public void retrieveRawDataFileList() {
         File[] fList = FileHelper.getFilesWithExt(selectedInput.getFilepath(), rdFileExt);
+        List<String> fNameList = new ArrayList<>();
         // Clear the existing file list before building the new file list.
         fileList.clear();
         int index = 0;
         
         for (File rd : fList) {
-            if ((rd.getName().compareTo(Constants.getANNOT_FILE_NAME() + 
-                                        Constants.getANNOT_FILE_EXT()) != 0) && 
-                (rd.getName().compareTo(Constants.getCONTROL_FILE_NAME() + 
-                                        Constants.getCONTROL_FILE_EXT()) != 0)) {
+            fNameList.add(rd.getName());
+        }
+        // Sort the filename list first before storing them into fileList.
+        Collections.sort(fNameList);
+        
+        for (String filename : fNameList) {
+            if ((filename.compareTo(Constants.getANNOT_FILE_NAME() + 
+                                    Constants.getANNOT_FILE_EXT()) != 0) && 
+                (filename.compareTo(Constants.getCONTROL_FILE_NAME() + 
+                                    Constants.getCONTROL_FILE_EXT()) != 0)) {
                 // Filter out the Annotation and Control files.
-                fileList.add(new ExcludeFileName(index++, rd.getName()));
+                fileList.add(new ExcludeFileName(index++, filename));
             }
         }
         
