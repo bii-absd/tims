@@ -558,8 +558,7 @@ public abstract class ConfigBean implements Serializable {
     
     // Save the customization the user has made to the raw data package.
     public void saveCust() {
-        String activity = studyID + " - " + pipelineName + ", excluded files: " 
-                        + exclFileSB.toString();
+        String activity = studyID + " - " + pipelineName;
         // Update customization status to true.
         custStatus = true;
         // Clear the exclusion file list and string builder, before rebuilding
@@ -573,10 +572,15 @@ public abstract class ConfigBean implements Serializable {
             exclFileSB.append(exclFile.getFilename()).append(",");
             exclFileList.add(exclFile.getFilename());
         }
+        
         // Make sure there are files excluded before removing the last character.
         if (exclFileSB.length() > 0) {
             // Remove the last ','
             exclFileSB.deleteCharAt(exclFileSB.length()-1);
+            activity += ", excluded files: " + exclFileSB.toString();
+        }
+        else {
+            activity += ", no file excluded.";
         }
         
         // Record this raw data customization activity into database.
