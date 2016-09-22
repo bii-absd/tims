@@ -101,6 +101,7 @@ import org.apache.logging.log4j.LogManager;
  * getDT_yyyyMMdd_HHmm(). Renamed method getDateTime() to getStandardDT().
  * 05-Sep-2016 - Shorten the name of the constants for annotation file/ext and
  * control file/ext.
+ * 22-Sep-2016 - Added one new constant CUS_RD for Raw Data Customization.
  */
 
 @ManagedBean (name = "constants")
@@ -120,7 +121,7 @@ public class Constants {
     public final static String FALSE = "false";
     public final static String NONE = "none";
     public final static String FAILED = "FAILED";
-    // Categories of activity (LOG, EXE, CRE, CHG, DWL, EXP, SET & VIS).
+    // Categories of activity (LOG, EXE, CRE, CHG, CUS, DWL, EXP, SET & VIS).
     public final static String LOG_IN = "Login";
     public final static String LOG_OFF = "Logoff";
     public final static String EXE_PL = "Run Pipeline";
@@ -131,6 +132,7 @@ public class Constants {
     public final static String CHG_PWD = "Change Password";
     public final static String CHG_ID = "Update ID";
     public final static String CHG_RD = "Update Raw Data";
+    public final static String CUS_RD = "Customize Raw Data";
     public final static String DWL_FIL = "Download File";
     public final static String EXP_DAT = "Export Data";
     public final static String SET_FTE = "Setup Feature";

@@ -116,6 +116,8 @@ import org.apache.logging.log4j.LogManager;
  * class ExcludeFileName. Code refactoring for the method insertJob().
  * 20-Sep-2016 - Enhanced method retrieveRawDataFileList() to make sure the 
  * filename is sorted before storing them into the file list.
+ * 22-Sep-2016 - To record the raw data customization activity into the 
+ * database.
  */
 
 public abstract class ConfigBean implements Serializable {
@@ -556,6 +558,8 @@ public abstract class ConfigBean implements Serializable {
     
     // Save the customization the user has made to the raw data package.
     public void saveCust() {
+        String activity = studyID + " - " + pipelineName + ", excluded files: " 
+                        + exclFileSB.toString();
         // Update customization status to true.
         custStatus = true;
         // Clear the exclusion file list and string builder, before rebuilding
@@ -569,10 +573,15 @@ public abstract class ConfigBean implements Serializable {
             exclFileSB.append(exclFile.getFilename()).append(",");
             exclFileList.add(exclFile.getFilename());
         }
-        // Remove the last ','
-        exclFileSB.deleteCharAt(exclFileSB.length()-1);
+        // Make sure there are files excluded before removing the last character.
+        if (exclFileSB.length() > 0) {
+            // Remove the last ','
+            exclFileSB.deleteCharAt(exclFileSB.length()-1);
+        }
         
-        logger.debug("Excluded files: " + exclFileSB.toString());
+        // Record this raw data customization activity into database.
+        ActivityLogDB.recordUserActivity(userName, Constants.CUS_RD, activity);
+        logger.debug("Raw Data Customization, excluded files: " + exclFileSB.toString());
     }
     
     // Convert boolean (i.e. true/false) to yes/no
