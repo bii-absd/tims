@@ -60,6 +60,8 @@ import org.mindrot.jbcrypt.BCrypt;
  * in Constants class.
  * 01-Sep-2016 - Changes due to change in method name in FinalizingJobEntry 
  * class.
+ * 27-Sep-2016 - Minor update to method createCbioUrl(), due to changes in the
+ * IP address of TIMS server.
  */
 
 public class cBioVisualizer extends Thread {
@@ -463,7 +465,7 @@ public class cBioVisualizer extends Thread {
             return "http://localhost:8080/cbioportal/?sid=" + target;
         }
         else {
-            return "http://172.20.134.19:8080/cbioportal/?sid=" + target;
+            return "http://172.20.134.23:8080/cbioportal/?sid=" + target;
         }
     }
     
