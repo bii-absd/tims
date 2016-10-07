@@ -62,6 +62,8 @@ import org.mindrot.jbcrypt.BCrypt;
  * class.
  * 27-Sep-2016 - Minor update to method createCbioUrl(), due to changes in the
  * IP address of TIMS server.
+ * 07-Oct-2016 - Minor update to method createCbioUrl(), due to changes in the
+ * IP address of TIMS server.
  */
 
 public class cBioVisualizer extends Thread {
@@ -465,7 +467,7 @@ public class cBioVisualizer extends Thread {
             return "http://localhost:8080/cbioportal/?sid=" + target;
         }
         else {
-            return "http://172.20.134.23:8080/cbioportal/?sid=" + target;
+            return "http://172.20.130.47:8080/cbioportal/?sid=" + target;
         }
     }
     
