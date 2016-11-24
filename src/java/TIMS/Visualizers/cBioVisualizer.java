@@ -64,11 +64,11 @@ import org.mindrot.jbcrypt.BCrypt;
  * IP address of TIMS server.
  * 07-Oct-2016 - Minor update to method createCbioUrl(), due to changes in the
  * IP address of TIMS server.
+ * 23-Nov-2016 - To read in the system environment variables for tomcat and 
+ * cbioportal. To retrieve the cbioportal url from system config file.
  */
 
 public class cBioVisualizer extends Thread {
-    // Setting for WindowS|Linux OS.
-    private final static boolean WINDOWS = Constants.NOT_OK;
     // Get the logger for Log4j
     private final static Logger logger = LogManager.
             getLogger(cBioVisualizer.class.getName());
@@ -120,18 +120,15 @@ public class cBioVisualizer extends Thread {
         // Save the visual time into database.
         StudyDB.updateStudyVisualTime(study_id, visual_time);
         // Build the cBioPortal import command.
-        // Window Version
-        if (WINDOWS) {
+        // Addition parameter needed for Window OS.
+        if (System.getProperty("os.name").startsWith("Windows")) {
             CMD.add("python");
-            CMD.add("C:\\NetBeansProjects\\cbioportal\\cbioportalImporter.py");
-            CMD.add("--command");
         }
-        // Linux Version
-        else {
-            CMD.add("/home/absd/tools/cbioportal/cbioportalImporter.py");
-            CMD.add("--command");
-        }
-
+        
+        CMD.add(System.getenv("PORTAL_HOME") + File.separator + "cbioportalImporter.py");
+        CMD.add("--command");
+        logger.debug("cBioPortal Import command: " + CMD.toString());
+        
         // Create tomcat commands.
         createTomcatCommands();
         logger.debug("cBioVisualizer created for study: " + study_id);
@@ -387,19 +384,22 @@ public class cBioVisualizer extends Thread {
     
     // Create the commands to stop and start tomcat server.
     private void createTomcatCommands() {
+        String tcCommand;
+        
         // Window Version
-        if (WINDOWS) {
-            TCSTOP.add("C:\\tomcat\\bin\\catalina.bat");
-            TCSTOP.add("stop");
-            TCSTART.add("C:\\tomcat\\bin\\catalina.bat");
-            TCSTART.add("start");
+        if (System.getProperty("os.name").startsWith("Windows")) {
+            tcCommand = System.getenv("CATALINA_HOME") + File.separator + "bin" + File.separator + "catalina.bat";
         }
         else {
-            TCSTOP.add("/home/absd/tools/apache-tomcat-8.0.35/bin/catalina.sh");
-            TCSTOP.add("stop");
-            TCSTART.add("/home/absd/tools/apache-tomcat-8.0.35/bin/catalina.sh");
-            TCSTART.add("start");
+            tcCommand = System.getenv("CATALINA_HOME") + File.separator + "bin" + File.separator + "catalina.sh";
         }
+        
+        TCSTOP.add(tcCommand);
+        TCSTOP.add("stop");
+        TCSTART.add(tcCommand);
+        TCSTART.add("start");
+        logger.debug("Tomcat START command: " + TCSTART.toString());
+        logger.debug("Tomcat STOP command: " + TCSTOP.toString());
     }
     
     // Construct and return the remove study command for cBioPortal.
@@ -463,11 +463,11 @@ public class cBioVisualizer extends Thread {
         String target = dummyStr.substring(0, 30) + studyID.substring(0, 5) 
                       + dummyStr.substring(30) + studyID.substring(5);
 
-        if (WINDOWS) {
+        if (System.getProperty("os.name").startsWith("Windows")) {
             return "http://localhost:8080/cbioportal/?sid=" + target;
         }
         else {
-            return "http://172.20.130.47:8080/cbioportal/?sid=" + target;
+            return Constants.getCBIOPORTAL_URL() + "?sid=" + target;
         }
     }
     
