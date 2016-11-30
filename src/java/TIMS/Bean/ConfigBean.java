@@ -8,6 +8,7 @@ import TIMS.Database.InputData;
 import TIMS.Database.InputDataDB;
 import TIMS.Database.Pipeline;
 import TIMS.Database.PipelineDB;
+import TIMS.Database.StudyDB;
 import TIMS.Database.SubmittedJob;
 import TIMS.Database.SubmittedJobDB;
 import TIMS.Database.UserAccountDB;
@@ -118,6 +119,7 @@ import org.apache.logging.log4j.LogManager;
  * filename is sorted before storing them into the file list.
  * 22-Sep-2016 - To record the raw data customization activity into the 
  * database.
+ * 29-Nov-2016 - To include the annotation version in the config file.
  */
 
 public abstract class ConfigBean implements Serializable {
@@ -446,6 +448,7 @@ public abstract class ConfigBean implements Serializable {
             // common name for all pipelines.
             fw.write("### INPUT parameters for " + pipelineName + "\n" +
                      "STUDY_ID\t=\t" + getStudyID() +
+                     "\nANNOTATION\t=\t" + StudyDB.getStudyAnnotVer(studyID) +
                      "\nTYPE\t=\t" + getType() +
                      "\nINPUT\t=\t" + input +
                      "\nCTRL_FILE\t=\t" + ctrl +
