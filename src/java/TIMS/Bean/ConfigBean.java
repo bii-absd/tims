@@ -31,6 +31,7 @@ import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -120,7 +121,8 @@ import org.apache.logging.log4j.LogManager;
  * 22-Sep-2016 - To record the raw data customization activity into the 
  * database.
  * 29-Nov-2016 - To include the annotation version in the config file.
- * 08-Dec-2016 - To record user activity after uploading of new raw data.
+ * 08-Dec-2016 - To record user activity after uploading of new raw data. To 
+ * check the correctness of the annotation file format.
  */
 
 public abstract class ConfigBean implements Serializable {
@@ -224,7 +226,7 @@ public abstract class ConfigBean implements Serializable {
     // Read in all the filename listed in the annotation file.
     public List<String> getAllFilenameFromAnnot() {
         List<String> filenameList = new ArrayList<>();
-        String[] content;
+        List<String> content = new ArrayList<>();
         
         try (BufferedReader br = new BufferedReader(
                                  new FileReader(sampleFile.getLocalDirectoryPath() + 
@@ -234,9 +236,20 @@ public abstract class ConfigBean implements Serializable {
             String lineRead = br.readLine();
             // Start processing from the second line.
             while ((lineRead = br.readLine()) != null) {
-                content = lineRead.split("\t");
-                // The second column is the filename, store it.
-                filenameList.add(content[1]);
+                content = Arrays.asList(lineRead.split("\t"));
+                // Check that the annotation file format is correct.
+                if (content.size() > 1) {
+                    // The second column is the filename, store it.
+                    filenameList.add(content.get(1));
+                }
+                else {
+                    // The format of the annotation file is incorrect.
+                    logger.error("Incorrect annotation file format detected in " + sampleFile.getInputFilename());
+                    // Return a error message in the filename list; to be displayed to the user.
+                    filenameList.clear();
+                    filenameList.add("INCORRECT ANNOTATION FILE FORMAT!");
+                    break;
+                }
             }
             logger.debug("All filename read from annotation file.");
         }
