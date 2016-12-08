@@ -104,6 +104,7 @@ import org.apache.logging.log4j.LogManager;
  * 22-Sep-2016 - Added one new constant CUS_RD for Raw Data Customization.
  * 23-Nov-2016 - Added one new constant CBIOPORTAL_URL for cBioPortal URL at
  * the UAT/PROD environment.
+ * 08-Dec-2016 - Added one new constant UPL_RD for Raw Data Upload.
  */
 
 @ManagedBean (name = "constants")
@@ -123,7 +124,7 @@ public class Constants {
     public final static String FALSE = "false";
     public final static String NONE = "none";
     public final static String FAILED = "FAILED";
-    // Categories of activity (LOG, EXE, CRE, CHG, CUS, DWL, EXP, SET & VIS).
+    // Categories of activity (LOG, EXE, CRE, CHG, CUS, DWL, UPL, EXP, SET & VIS).
     public final static String LOG_IN = "Login";
     public final static String LOG_OFF = "Logoff";
     public final static String EXE_PL = "Run Pipeline";
@@ -136,6 +137,7 @@ public class Constants {
     public final static String CHG_RD = "Update Raw Data";
     public final static String CUS_RD = "Customize Raw Data";
     public final static String DWL_FIL = "Download File";
+    public final static String UPL_RD = "Upload Raw Data";
     public final static String EXP_DAT = "Export Data";
     public final static String SET_FTE = "Setup Feature";
     public final static String VIS_DAT = "Visualize Study Data";

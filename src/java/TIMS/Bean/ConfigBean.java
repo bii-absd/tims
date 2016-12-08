@@ -120,6 +120,7 @@ import org.apache.logging.log4j.LogManager;
  * 22-Sep-2016 - To record the raw data customization activity into the 
  * database.
  * 29-Nov-2016 - To include the annotation version in the config file.
+ * 08-Dec-2016 - To record user activity after uploading of new raw data.
  */
 
 public abstract class ConfigBean implements Serializable {
@@ -259,6 +260,9 @@ public abstract class ConfigBean implements Serializable {
         // Send the input data path to the administrator.
         Postman.sendDataUploadedEmail(userName, studyID, pipelineName, 
                                       inputFile.getLocalDirectoryPath());
+        // Record user activity.
+        ActivityLogDB.recordUserActivity(userName, Constants.UPL_RD, 
+                                         studyID + " - " + pipelineName + " - " + input_sn);
 
         return Constants.MAIN_PAGE;
     }
@@ -313,7 +317,6 @@ public abstract class ConfigBean implements Serializable {
             logger.debug("Pipeline run and job status updated to in-progress. ID: " 
                         + job_id);
             if (haveNewData) {
-                // Only perform the following steps if these are new data.
                 // Save the Sample File detail into database
                 saveSampleFileDetail();
                 // Rename sample annotation file (and control probe file) to a
@@ -321,6 +324,9 @@ public abstract class ConfigBean implements Serializable {
                 renameAnnotCtrlFiles();
                 // Update the input SN for this job.
                 SubmittedJobDB.updateJobInputSN(job_id, input_sn);
+                // Record user activity for raw data upload.
+                ActivityLogDB.recordUserActivity(userName, Constants.UPL_RD, 
+                                                 studyID + " - " + pipelineName + " - " + input_sn);
             }
             // 4. Pipeline is ready to be run now
             result = executePipeline(logFilePath);
