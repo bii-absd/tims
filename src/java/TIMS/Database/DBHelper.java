@@ -5,6 +5,7 @@ package TIMS.Database;
 
 import TIMS.General.Constants;
 import java.sql.*;
+import java.util.concurrent.Semaphore;
 // Libraries for Java Extension
 import javax.faces.bean.ApplicationScoped;
 import javax.faces.context.FacesContext;
@@ -41,6 +42,8 @@ import org.postgresql.ds.PGPoolingDataSource;
  * 29-Feb-2016 - Implementation of Data Source pooling. To use DataSource to 
  * get the database connection instead of using DriverManager.
  * 25-Apr-2016 - Increased the maximum allowed database connections to 16.
+ * 12-Dec-2016 - Provide the token to proceed for finalization and closure of 
+ * study.
  */
 
 @ApplicationScoped
@@ -49,6 +52,9 @@ public abstract class DBHelper {
     private final static Logger logger = LogManager.
             getLogger(DBHelper.class.getName());
     private static PGPoolingDataSource ds;
+    // Token to allow finalization and closure of study to proceed.
+    private final static Semaphore finalizeToken = new Semaphore(1, true);
+    private final static Semaphore closureToken = new Semaphore(1, true);
     
     // Initialise the data source for TIMS.
     public static void initDataSource() {
@@ -76,7 +82,7 @@ public abstract class DBHelper {
             }
         }
     }
-    
+
     // Return the database connection to be use by the application.
     public static Connection getDSConn() 
             throws SQLException, NamingException 
@@ -133,22 +139,22 @@ public abstract class DBHelper {
             
             switch (txIso) {
                 case Connection.TRANSACTION_NONE:
-                    System.out.println("TRANSACTION_NONE");
+                    logger.debug("TRANSACTION_NONE");
                     break;
                 case Connection.TRANSACTION_READ_COMMITTED:
-                    System.out.println("TRANSACTION_READ_COMMITTED");
+                    logger.debug("TRANSACTION_READ_COMMITTED");
                     break;
                 case Connection.TRANSACTION_READ_UNCOMMITTED:
-                    System.out.println("TRANSACTION_READ_UNCOMMITTED");
+                    logger.debug("TRANSACTION_READ_UNCOMMITTED");
                     break;
                 case Connection.TRANSACTION_REPEATABLE_READ:
-                    System.out.println("TRANSACTION_REPEATABLE_READ");
+                    logger.debug("TRANSACTION_REPEATABLE_READ");
                     break;
                 case Connection.TRANSACTION_SERIALIZABLE:
-                    System.out.println("TRANSACTION_SERIALIZABLE");
+                    logger.debug("TRANSACTION_SERIALIZABLE");
                     break;
                 default:
-                    System.out.println("UNKNOWN TRANSACTION ISOLATION.");
+                    logger.debug("UNKNOWN TRANSACTION ISOLATION.");
             }
         }
         catch (SQLException|NamingException e) {
@@ -160,5 +166,28 @@ public abstract class DBHelper {
         }
 
         return txIso;
+    }
+    
+    // To acquire the token to perform finalization of study.
+    public static void acquireFinalizeToken(String uid) throws InterruptedException {
+        logger.debug(uid + " try to acquire the token for finalization.");
+        finalizeToken.acquire();
+        logger.debug(uid + " acquired the token for finalization.");
+    }
+    // To release the token after finalization.
+    public static void releaseFinalizeToken(String uid) {
+        finalizeToken.release();
+        logger.debug(uid + " released the token for finalization.");
+    }
+    // To acquire the token to perform closure of study.
+    public static void acquireClosureToken(String uid) throws InterruptedException {
+        logger.debug(uid + " try to acquire the token for closure.");
+        closureToken.acquire();
+        logger.debug(uid + " acquired the token for closure.");
+    }
+    // To release the token after closure.
+    public static void releaseClosureToken(String uid) {
+        closureToken.release();
+        logger.debug(uid + " released the token for closure.");
     }
 }

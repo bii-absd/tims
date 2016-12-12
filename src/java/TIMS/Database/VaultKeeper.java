@@ -42,6 +42,8 @@ import org.apache.logging.log4j.LogManager;
  * 10-Aug-2016 - In method storePlDataIntoVault(), use the try-with-resource
  * statement to create the BufferedReader object. Performed code refactoring on
  * method storePlDataIntoVault().
+ * 12-Dec-2016 - Add in the semaphore control during insertion of data into 
+ * vault_data table. Removed unused code.
  */
 
 public class VaultKeeper extends Thread {
@@ -76,6 +78,8 @@ public class VaultKeeper extends Thread {
         boolean closureStatus = Constants.OK;
         
         try {
+            // Need to acquire the closure token before proceeding.
+            DBHelper.acquireClosureToken(userName);
             // All the SQL statements executed here will be treated as one
             // big transaction.
             logger.debug("VaultKeeper start - Set auto-commit to OFF.");
@@ -114,12 +118,16 @@ public class VaultKeeper extends Thread {
             
             conn.setAutoCommit(true);
             logger.debug("VaultKeeper - Set auto-commit to ON.");
+            // Release the closure token.
+            DBHelper.releaseClosureToken(userName);
             // Send closure status email to the user.
             Postman.sendStudyClosureStatusEmail(study_id, userName, closureStatus);
         }
-        catch (SQLException e) {
+        catch (SQLException|InterruptedException e) {
             logger.error("FAIL to store data into the vault!");
             logger.error(e.getMessage());
+            // Closure failed, release the token.
+            DBHelper.releaseClosureToken(userName);
         }
         finally {
             DBHelper.closeDSConn(conn);
@@ -244,49 +252,6 @@ public class VaultKeeper extends Thread {
                 // Error occurred, return to caller.
                 return Constants.NOT_OK;
             }
-            
-            /* Moved to helper function.
-            // INSERT statement to insert a record into vault_record table.
-            String insertStr = "INSERT INTO vault_record(array_index,"
-                             + "annot_ver,job_id,subject_id,grp_id,study_id) "
-                             + "VALUES(?,?,?,?,?,?)";
-            
-            try (PreparedStatement insertStm = conn.prepareStatement(insertStr)) {
-                // Ignore the first two strings (i.e. geneID and EntrezID); 
-                // start at index 2. 
-                for (int i = 2; i < values.length; i++) {
-                    // Only store the pipeline data if the study subject meta 
-                    // data is available in the database.
-                    if (StudySubjectDB.isSSExist(values[i], grp_id, study_id)) {
-                        processedRecord++;
-                        vaultIndex[i] = getNextVaultInd();
-                        FinalizedOutput record = new FinalizedOutput
-                            (vaultIndex[i], annot_ver, values[i], grp_id, 
-                             job_id, study_id);
-                        // Create an vault record.
-                        createVaultRecord(insertStm, record);                            
-                    }
-                    else {
-                        subjectNotFound.append(values[i]).append(" ");
-                        vaultIndex[i] = Constants.DATABASE_INVALID_ID;
-                    }
-                }
-                logger.debug("Records processed: " + processedRecord + 
-                             " out of " + totalRecord);
-                // Some of the subject IDs are not found for this pipeline.
-                // Display the consolidated subject IDs that are not found.
-                if (totalRecord > processedRecord) {
-                    logger.debug("The following subject IDs are not found " + 
-                                 subjectNotFound);
-                }
-            }
-            catch (SQLException|NamingException e) {
-                logger.error("FAIL to create vault records!");
-                logger.error(e.getMessage());
-                // Error occurred, return to caller.
-                return Constants.NOT_OK;
-            }
-            */
 
             // Only proceed with gene data processing if subject ID is found in
             // the database.
@@ -303,48 +268,6 @@ public class VaultKeeper extends Thread {
                     // Error occurred, return to caller.
                     return Constants.NOT_OK;
                 }
-                
-                /* Moved to helper function.
-                // UPDATE statement to update the data array in vault_data table.
-                String updateStr = "UPDATE vault_data SET data[?] = ? WHERE " 
-                                 + "genename = ? AND annot_ver = \'" 
-                                 + annot_ver + "\'";
-                // SELECT statement to check the existence of gene in database.
-                String queryGene = "SELECT 1 FROM vault_data WHERE "
-                                 + "genename = ? AND annot_ver = \'" 
-                                 + annot_ver + "\'";
-                // This debug message serve as a check point.
-                logger.debug("Start gene data processing for job " + job_id);
-
-                try (PreparedStatement updateStm = conn.prepareStatement(updateStr);
-                     PreparedStatement queryGeneStm = conn.prepareStatement(queryGene)) 
-                {
-                    while ((lineRead = br.readLine()) != null) {
-                        totalGene++;
-                        values = lineRead.split("\t");
-                        // The first string is the gene symbol.
-                        genename = values[0];
-                        // Only store the data if the genename exist in vault_data.
-                        if (isGeneExistInVault(queryGeneStm,genename)) {
-                            processedGene++;
-                            // Start reading in the data from 3rd string; 
-                            for (int i = 2; i < values.length; i++) {
-                                // Only process those data with valid PID
-                                if (vaultIndex[i] != Constants.DATABASE_INVALID_ID) {
-                                    // Store gene data into vault.
-                                    storeGeneDataIntoVault(updateStm, vaultIndex[i],
-                                            values[i],genename);                                    
-                                }
-                            }
-                        }
-                    }
-                } catch (SQLException e) {
-                    logger.error("FAIL to store gene data into vault!");
-                    logger.error(e.getMessage());
-                    // Error occurred, return to caller.
-                    return Constants.NOT_OK;
-                }
-                */
             }
             else {
                 logger.debug("None of the subject ID for this pipeline output is found. "

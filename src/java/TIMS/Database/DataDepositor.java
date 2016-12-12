@@ -101,6 +101,8 @@ import org.apache.pdfbox.pdmodel.graphics.xobject.PDJpeg;
  * code refactoring on method insertFinalizedDataIntoDB().
  * 30-Aug-2016 - Changes due to change in method name in Constants class. 
  * Removed unused code.
+ * 12-Dec-2016 - Add in the semaphore control during insertion of data into
+ * data_depository table. Removed unused code.
  */
 
 public class DataDepositor extends Thread {
@@ -160,6 +162,8 @@ public class DataDepositor extends Thread {
         boolean finalizeStatus = Constants.OK;
         
         try {
+            // Need to acquire the finalization token before proceeding.
+            DBHelper.acquireFinalizeToken(userName);
             // All the SQL statements executed here will be treated as one 
             // big transaction.
             logger.debug("DataDepositor start - Set auto-commit to OFF.");
@@ -199,6 +203,8 @@ public class DataDepositor extends Thread {
             
             conn.setAutoCommit(true);
             logger.debug("DataDepositor completed - Set auto-commit to ON.");
+            // Release the finalization token.
+            DBHelper.releaseFinalizeToken(userName);
             
             if (finalizeStatus) {
                 String zipFile = Constants.getSYSTEM_PATH() + 
@@ -243,9 +249,11 @@ public class DataDepositor extends Thread {
                 Postman.sendFinalizationStatusEmail(study_id, userName, finalizeStatus);
             }
         }
-        catch (SQLException|NamingException e) {
+        catch (SQLException|NamingException|InterruptedException e) {
             logger.error("FAIL to insert finalized data!");
             logger.error(e.getMessage());
+            // Finalization failed, release the token.
+            DBHelper.releaseFinalizeToken(userName);
         }
         finally {
             DBHelper.closeDSConn(conn);
@@ -459,47 +467,6 @@ public class DataDepositor extends Thread {
             logger.error(ex.getMessage());
         }
     }
-    
-    /*
-    // NO LONGER IN USE!
-    // Generate the summary report (.txt) for the finalization of study.
-    private void genTxtSummaryReport() {
-        String[] subjects = subjectFound.toString().split("\\$");
-        StringBuilder summary = new StringBuilder("Summary Report for Finalization of ");
-        
-        // Start to generate the summary report content
-        summary.append(study_id).append("\n\n");
-        summary.append("1. Technology - Pipeline - Requestor - Date & Time").append("\n");
-        for (FinalizingJobEntry job : jobList) {
-            summary.append("\t").append(job.getTid()).append(" - ");
-            summary.append(job.getPipeline_name()).append(" - ");
-            summary.append(job.getUserName()).append(" - ");
-            summary.append(job.getSubmit_time()).append("\n");
-        }
-        summary.append("\n").append("2. Identified Subject ID").append("\n");
-        for (String sub : subjects) {
-            summary.append("\t").append(sub).append("\n");
-        }
-        summary.append("\n").append("3. Unidentified Subject ID").append("\n");
-        summary.append("\t").append(subjectNotFound).append("\n");
-        summary.append("\n").append("4. No of gene data available").append("\n");
-        summary.append("\t").append(totalGene).append("\n");
-        summary.append("\n").append("5. No of gene data stored").append("\n");
-        summary.append("\t").append(processedGene).append("\n\n");
-        summary.append("Author: ").append(UserAccountDB.getFullName(userName)).append("\n");
-        summary.append("From: ").append(UserAccountDB.getInstNameUnitID(userName)).append("\n");
-        summary.append("Date: ").append(Constants.getStandardDT());
-
-        // Start to produce the summary report.
-        try (PrintStream ps = new PrintStream(new File(summaryReportPath))) {
-            ps.print(summary);
-        }
-        catch (IOException ioe) {
-            logger.error("FAIL to create summary report!");
-            logger.error(ioe.getMessage());
-        }
-    }
-    */
     
     // Insert the gene value into the data array using the PreparedStatement
     // passed in.

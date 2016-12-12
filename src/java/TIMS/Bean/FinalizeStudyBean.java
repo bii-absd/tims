@@ -78,6 +78,7 @@ import org.apache.logging.log4j.LogManager;
  * 03-Jun-2016 - Enhanced method getStudySelectedStatus() to handle the case
  * whereby the study has been un-selected.
  * 22-Jun-2016 - Changes due to function name change in SubmittedJobDB class.
+ * 12-Dec-2016 - Removed one debug log from proceedForFinalization().
  */
 
 @ManagedBean (name="finalizedBean")
@@ -229,8 +230,6 @@ public class FinalizeStudyBean implements Serializable {
             depositThread.start();
             // Update study to finalized.
             StudyDB.updateStudyFinalizedStatus(study_id, true);
-            logger.info(userName + " begin finalization process for " 
-                        + study_id + ".");
         }
         catch (SQLException|NamingException e) {
             nextpage = Constants.ERROR;
