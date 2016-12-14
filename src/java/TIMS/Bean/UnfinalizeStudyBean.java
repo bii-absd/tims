@@ -7,6 +7,7 @@ import TIMS.Database.ActivityLogDB;
 import TIMS.Database.DataVoid;
 import TIMS.Database.Study;
 import TIMS.Database.StudyDB;
+import TIMS.Database.SubmittedJobDB;
 import TIMS.Database.UserAccountDB;
 import TIMS.General.Constants;
 import java.io.Serializable;
@@ -37,6 +38,7 @@ import org.apache.logging.log4j.LogManager;
  * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
  * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
  * (Institution - Department - Group).
+ * 14-Dec-2016 - Do nothing for ad-hoc study.
  */
 
 @ManagedBean (name="unfinBean")
@@ -71,17 +73,24 @@ public class UnfinalizeStudyBean implements Serializable {
         // Record this unfinalization of study into database.
         ActivityLogDB.recordUserActivity(userName, Constants.EXE_UNFIN, 
                 selectedStudy.getStudy_id());
-        try {
-            DataVoid unfinThread = new DataVoid(userName, selectedStudy.getStudy_id());
-            logger.info(userName + " begin unfinalization process for " + 
-                        selectedStudy.getStudy_id());
         
-            unfinThread.start();
+        if (SubmittedJobDB.getFinalizedJobIDs(selectedStudy.getStudy_id()).size() == 0) {
+            // This is an ad-hoc study, exit without doing anything.
+            logger.info(userName + " trying to unfinalize an ad-hoc study. Not allowed!");
         }
-        catch (SQLException|NamingException e) {
-            logger.error("FAIL to begin unfinalization process for " + 
-                    selectedStudy.getStudy_id());
-            logger.error(e.getMessage());
+        else {
+            try {
+                DataVoid unfinThread = new DataVoid(userName, selectedStudy.getStudy_id());
+                logger.info(userName + " begin unfinalization process for " + 
+                            selectedStudy.getStudy_id());
+        
+                unfinThread.start();
+            }
+            catch (SQLException|NamingException e) {
+                logger.error("FAIL to begin unfinalization process for " + 
+                             selectedStudy.getStudy_id());
+                logger.error(e.getMessage());
+            }
         }
         
         return Constants.MAIN_PAGE;
