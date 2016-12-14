@@ -133,7 +133,7 @@
                 <p:outputLabel value="Study: " styleClass="configlabel"/>
                 <p:selectOneMenu id="rdDlg-studyID" value="#{menuSelBean.study_id}">
                     <f:selectItem itemLabel="Select Study" itemValue=""/>
-                    <f:selectItems value="#{menuSelBean.openStudyList}"/>
+                    <f:selectItems value="#{menuSelBean.studyList}"/>
                     <p:ajax update="rdDlg-selPanel"/>
                 </p:selectOneMenu>
 

@@ -68,6 +68,8 @@ import org.apache.logging.log4j.LogManager;
  * Mode should be set to True.
  * 25-Aug-2016 - Added 2 new methods, setupRawDataMgnt() and 
  * proceedToRawDataMgnt() to support Raw Data Management module Part I.
+ * 13-Dec-2016 - Raw data management should be allowed for finalized study 
+ * (i.e. ad-hoc study).
  */
 
 @ManagedBean (name="menuSelBean")
@@ -115,7 +117,7 @@ public class MenuSelectionBean implements Serializable{
     
     // Setup the hash maps needed for raw data management.
     public void setupRawDataMgnt() {
-        setupOpenStudyList();
+        setupRawDataStudyList();
         pipelineList = PipelineDB.getEditablePlHash();
     }
 
@@ -127,6 +129,15 @@ public class MenuSelectionBean implements Serializable{
         else {
             openStudyList = StudyDB.getUserOpenStudyHash(userName);
         }
+    }
+    // Setup the Study ID list for user selection to manage raw data.
+    public void setupRawDataStudyList() {
+        if (UserRoleDB.isLead(roleID)) {
+            studyList = StudyDB.getPIStudyHash(userName);
+        }
+        else {
+            studyList = StudyDB.getUserStudyHash(userName);
+        }        
     }
     
     // User decided not to proceed to pipeline configuration page. Stay at the
