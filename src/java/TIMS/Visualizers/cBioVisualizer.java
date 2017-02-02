@@ -1,5 +1,5 @@
 /*
- * Copyright @2016
+ * Copyright @2016 - 2017
  */
 package TIMS.Visualizers;
 
@@ -66,6 +66,10 @@ import org.mindrot.jbcrypt.BCrypt;
  * IP address of TIMS server.
  * 23-Nov-2016 - To read in the system environment variables for tomcat and 
  * cbioportal. To retrieve the cbioportal url from system config file.
+ * 01-Feb-2017 - Update the study visual time only if the exporting of data 
+ * is successfully. Send the failed notification email to user if the system 
+ * failed to create the cBioPortal directory or the system failed to export 
+ * the study to cBioPortal.
  */
 
 public class cBioVisualizer extends Thread {
@@ -117,8 +121,6 @@ public class cBioVisualizer extends Thread {
         folder_name = recordVisualTime();
         dir += folder_name + File.separator;
         case_dir = dir + Constants.getCBIO_CASE_DIR();
-        // Save the visual time into database.
-        StudyDB.updateStudyVisualTime(study_id, visual_time);
         // Build the cBioPortal import command.
         // Addition parameter needed for Window OS.
         if (System.getProperty("os.name").startsWith("Windows")) {
@@ -145,6 +147,8 @@ public class cBioVisualizer extends Thread {
             // Fail to create system directory for cBioPortal, no point to continue.
             logger.error("FAIL to create system directory for cBioPortal!");
             logger.error("Aborting data export for study " + studyID);
+            // Send the failed notification email to user.
+            Postman.sendExportDataStatusEmail(studyID, userName, Constants.NOT_OK);
             return;
         }
         
@@ -178,6 +182,8 @@ public class cBioVisualizer extends Thread {
             // Failed to import the study, no point to continue.
             logger.error("FAIL to import study in cBioPortal!");
             logger.error("Aborting data export for study " + studyID);
+            // Send the failed notification email to user.
+            Postman.sendExportDataStatusEmail(studyID, userName, Constants.NOT_OK);
             return;
         }
         
@@ -291,6 +297,8 @@ public class cBioVisualizer extends Thread {
         if (status) {
             // Create and save the cBioPortal URL into database.
             StudyDB.updateStudyCbioUrl(studyID, createCbioUrl());
+            // Save the visual time into database.
+            StudyDB.updateStudyVisualTime(studyID, visual_time);
             // Export completed!
             logger.debug(studyID + " exported to cBioPortal.");
         }
@@ -319,7 +327,7 @@ public class cBioVisualizer extends Thread {
             tcCtrl.release();
         }
         
-        // Send notification email to usr.
+        // Send notification email to user.
         Postman.sendExportDataStatusEmail(studyID, userName, status);
     }
     
