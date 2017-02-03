@@ -1,5 +1,5 @@
 /*
- * Copyright @2015-2016
+ * Copyright @2015-2017
  */
 package TIMS.General;
 
@@ -105,6 +105,7 @@ import org.apache.logging.log4j.LogManager;
  * 23-Nov-2016 - Added one new constant CBIOPORTAL_URL for cBioPortal URL at
  * the UAT/PROD environment.
  * 08-Dec-2016 - Added one new constant UPL_RD for Raw Data Upload.
+ * 02-Feb-2017 - Removed constant CBIOPORTAL_URL.
  */
 
 @ManagedBean (name = "constants")
@@ -191,7 +192,6 @@ public class Constants {
     // Constants used in database setup
     private static String DATABASE_NAME = null;
     private static String DATABASE_DRIVER = null;
-    private static String CBIOPORTAL_URL = null;
     
     public Constants() {}
     
@@ -261,7 +261,6 @@ public class Constants {
             CONTROL_FILE_EXT = setup.get("CONTROL_FILE_EXT");
             DATABASE_NAME = setup.get("DATABASE_NAME");
             DATABASE_DRIVER = setup.get("DATABASE_DRIVER");
-            CBIOPORTAL_URL = setup.get("CBIOPORTAL_URL");
             
             // Create system directories.
             if (!FileUploadBean.createSystemDirectories(SYSTEM_PATH)) {
@@ -320,5 +319,4 @@ public class Constants {
     public static String getCONTROL_FILE_EXT() { return CONTROL_FILE_EXT; }
     public static String getDATABASE_NAME() { return DATABASE_NAME; }
     public static String getDATABASE_DRIVER() { return DATABASE_DRIVER; }
-    public static String getCBIOPORTAL_URL() { return CBIOPORTAL_URL; }
 }

@@ -9,6 +9,7 @@ import TIMS.Database.PipelineDB;
 import TIMS.Database.Study;
 import TIMS.Database.StudyDB;
 import TIMS.Database.SubmittedJobDB;
+import TIMS.Database.SystemParametersDB;
 import TIMS.General.Constants;
 import TIMS.General.FileHelper;
 import TIMS.General.Postman;
@@ -70,6 +71,7 @@ import org.mindrot.jbcrypt.BCrypt;
  * is successfully. Send the failed notification email to user if the system 
  * failed to create the cBioPortal directory or the system failed to export 
  * the study to cBioPortal.
+ * 02-Feb-2017 - cBioPortal url will be retrieve from database.
  */
 
 public class cBioVisualizer extends Thread {
@@ -459,7 +461,7 @@ public class cBioVisualizer extends Thread {
         return command;
     }
     
-    // Helper function to create the cBioPortal URL for this study.
+    // Create the cBioPortal URL for this study.
     private String createCbioUrl() {
         // Create a random 60 characters string.
         int dummyNum = ThreadLocalRandom.current().nextInt(Integer.MAX_VALUE/2, Integer.MAX_VALUE);
@@ -470,16 +472,11 @@ public class cBioVisualizer extends Thread {
         dummyStr = dummyStr.replace("/", "0");
         String target = dummyStr.substring(0, 30) + studyID.substring(0, 5) 
                       + dummyStr.substring(30) + studyID.substring(5);
-
-        if (System.getProperty("os.name").startsWith("Windows")) {
-            return "http://localhost:8080/cbioportal/?sid=" + target;
-        }
-        else {
-            return Constants.getCBIOPORTAL_URL() + "?sid=" + target;
-        }
+        
+        return SystemParametersDB.getcBioPortalUrl() + target;
     }
     
-    // Helper function to create the log file.
+    // Create the log file.
     private String createLogFile(String dir, String filename) {
         return dir + Constants.getLOGFILE_NAME() + 
                filename + Constants.getLOGFILE_EXT();

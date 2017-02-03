@@ -1,5 +1,5 @@
 /*
- * Copyright @2015-2016
+ * Copyright @2015-2017
  */
 package TIMS.Bean;
 
@@ -10,6 +10,7 @@ import TIMS.Database.GroupDB;
 import TIMS.Database.ICD10DB;
 import TIMS.Database.InstitutionDB;
 import TIMS.Database.JobStatusDB;
+import TIMS.Database.SystemParametersDB;
 import TIMS.Database.UserAccount;
 import TIMS.Database.UserAccountDB;
 import TIMS.Database.UserRoleDB;
@@ -113,6 +114,7 @@ import org.apache.logging.log4j.LogManager;
  * 25-Aug-2016 - Renamed the method isPI() to isAdminPILead(), and changed it's 
  * implementation.
  * 30-Aug-2016 - Changes due to change in method name in Constants class.
+ * 02-Feb-2017 - Load the system parameters from database after login.
  */
 
 @ManagedBean (name="authBean")
@@ -176,8 +178,10 @@ public class AuthenticationBean implements Serializable {
         }
 
         // Initialise the data source for TIMS.
-        DBHelper.initDataSource();        
-        // Retrieve the job status definition from database
+        DBHelper.initDataSource();
+        // Load the system parameters from database.
+        SystemParametersDB.loadSystemParameters();
+        // Retrieve the job status definition from database.
         JobStatusDB.buildJobStatusDef();
         // Build the role list.
         UserRoleDB.getRoleNameHash();

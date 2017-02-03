@@ -39,7 +39,4 @@ CONTROL_FILE_EXT .txt
 # Naming convention for the DB if using DataSource to get the DB connection.
 DATABASE_NAME clinical
 DATABASE_DRIVER org.postgresql.Driver
-# Define the cBioPortal URL for UAT/PROD enviroment.
-#CBIOPORTAL_URL http://172.20.130.47:8080/cbioportal/
-CBIOPORTAL_URL http://192.168.142.20:8080/cbioportal/
 # This is the end of the line. There should not be any blank line in-between.
