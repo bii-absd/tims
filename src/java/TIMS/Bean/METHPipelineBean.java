@@ -1,14 +1,9 @@
 /*
- * Copyright @2016
+ * Copyright @2016-2017
  */
 package TIMS.Bean;
 
 import static TIMS.Bean.ConfigBean.logger;
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 // Libraries for Java Extension
 import javax.faces.bean.ManagedBean;
@@ -53,6 +48,8 @@ import javax.faces.bean.ViewScoped;
  * insertJob().
  * 19-Sep-2016 - Updated method getAllFilenameFromAnnot() to read in multiple
  * filename from the 2nd column of the annotation file. Removed unused code.
+ * 06-Feb-2017 - Enhanced method getAllFilenameFromAnnot() to use the helper
+ * function getFilenamePairs().
  */
 
 @ManagedBean (name="methPBean")
@@ -66,40 +63,15 @@ public class METHPipelineBean extends GEXAffymetrixBean {
     @Override
     public void initFiles() {
         init();
-        // Set the raw data file extension for this pipeline.
+        // Raw data file extension for Methylation pipeline.
         rdFileExt = "idat";
     }
     
-    // Read in all the filename listed in the annotation file.
+    // For Methylation pipeline, there will be 2 filenames for each sample 
+    // input in the annotation file.
     @Override
     public List<String> getAllFilenameFromAnnot() {
-        List<String> filenameList = new ArrayList<>();
-        String[] content, fn;
-        
-        try (BufferedReader br = new BufferedReader(
-                                 new FileReader(sampleFile.getLocalDirectoryPath() + 
-                                                sampleFile.getInputFilename())))
-        {
-            // First line is the header; not needed here.
-            String lineRead = br.readLine();
-            // Start processing from the second line.
-            while ((lineRead = br.readLine()) != null) {
-                content = lineRead.split("\t");
-                // The second column contains the filename header; for
-                // Methylation pipeline, each header will have 2 filenames 
-                // separated by ','.
-                fn = content[1].split(",");
-                // Add the filenames to the list; can handle more than 2 
-                // filenames.
-                filenameList.addAll(Arrays.asList(fn));
-            }
-            logger.debug("All filename read from annotation file.");
-        }
-        catch (IOException e) {
-            logger.error("FAIL to read annotation file!");
-            logger.error(e.getMessage());
-        }
-        
-        return filenameList;
+        return getFilenamePairs(sampleFile.getLocalDirectoryPath() + 
+                                sampleFile.getInputFilename());
     }
 }

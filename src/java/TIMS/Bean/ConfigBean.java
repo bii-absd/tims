@@ -1,5 +1,5 @@
 /*
- * Copyright @2015-2016
+ * Copyright @2015-2017
  */
 package TIMS.Bean;
 
@@ -123,6 +123,8 @@ import org.apache.logging.log4j.LogManager;
  * 29-Nov-2016 - To include the annotation version in the config file.
  * 08-Dec-2016 - To record user activity after uploading of new raw data. To 
  * check the correctness of the annotation file format.
+ * 06-Feb-2017 - Added helper functions getFilenamePairs() and 
+ * filterRawDataFileList().
  */
 
 public abstract class ConfigBean implements Serializable {
@@ -679,6 +681,64 @@ public abstract class ConfigBean implements Serializable {
     // Return true if no input package has been selected.
     public boolean getSelectedInputStatus() {
         return (selectedInput == null);
+    }
+    
+    // Helper function to exclude the annotation and control files from the raw
+    // data file list.
+    protected void filterRawDataFileList() {
+        File[] fList = FileHelper.getFilesWithExt(selectedInput.getFilepath(), rdFileExt);
+        List<String> fNameList = new ArrayList<>();
+        // Clear the existing file list before building the new file list.
+        fileList.clear();
+        int index = 0;
+        
+        for (File rd : fList) {
+            fNameList.add(rd.getName());
+        }
+        // Sort the filename list first before storing them into fileList.
+        Collections.sort(fNameList);
+        
+        for (String filename : fNameList) {
+            if ((filename.compareTo(Constants.getANNOT_FILE_NAME() + 
+                                    Constants.getANNOT_FILE_EXT()) != 0) && 
+                (filename.compareTo(Constants.getCONTROL_FILE_NAME() + 
+                                    Constants.getCONTROL_FILE_EXT()) != 0)) {
+                // Filter out the Annotation and Control files.
+                fileList.add(new ExcludeFileName(index++, filename));
+            }
+        }
+        
+        logger.debug("Total number of files retrieved: " + index);
+    }
+    
+    // Helper function to retrieve the sample input filenames (separated by ',') 
+    // from the second column of the annotation file.
+    protected List<String> getFilenamePairs(String annotFile) {
+        List<String> filenameList = new ArrayList<>();
+        String[] content, fn;
+        
+        try (BufferedReader br = new BufferedReader(new FileReader(annotFile)))
+        {
+            // First line is the header; not needed here.
+            String lineRead = br.readLine();
+            // Start processing from the second line.
+            while ((lineRead = br.readLine()) != null) {
+                content = lineRead.split("\t");
+                // The second column contains the filename header; each header 
+                // will have 2 filenames separated by ','.
+                fn = content[1].split(",");
+                // Add the filenames to the list; can handle more than 2 
+                // filenames.
+                filenameList.addAll(Arrays.asList(fn));
+            }
+            logger.debug("Filename(s) read from annotation file.");
+        }
+        catch (IOException e) {
+            logger.error("FAIL to read annotation file!");
+            logger.error(e.getMessage());
+        }
+        
+        return filenameList;
     }
     
     // Machine generated getters and setters

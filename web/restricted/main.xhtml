@@ -43,12 +43,14 @@
             
         <p:tab id="ngs" title="NGS Data" titleStyleClass="tab-title">
             <h:panelGrid>
+                <p:commandLink action="#{menuSelBean.setupPlConfigPageURL}" 
+                               value="#{msg['seq-rna']}" update=":dlgForm" 
+                               styleClass="mainmenuitem" oncomplete="PF('dlg').show()">
+                    <f:setPropertyActionListener target="#{menuSelBean.plName}" 
+                                                 value="seq-rna"/>
+                </p:commandLink>
                 <h:commandLink action="#{menuSelBean.ngsPipeline}" 
-                               value="#{msg['rnaseq-pipeline']}" styleClass="mainmenuitem"/>
-                <h:commandLink action="#{menuSelBean.ngsPipeline}" 
-                               value="#{msg['dnaseq-pipeline']}" styleClass="mainmenuitem"/>
-                <h:commandLink action="#{menuSelBean.ngsPipeline}" 
-                               value="#{msg['chipseq-pipeline']}" styleClass="mainmenuitem"/>
+                               value="#{msg['seq-dna']}" styleClass="mainmenuitem"/>
             </h:panelGrid>
         </p:tab>
             

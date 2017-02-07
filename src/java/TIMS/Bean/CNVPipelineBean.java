@@ -1,15 +1,11 @@
 /*
- * Copyright @2016
+ * Copyright @2016-2017
  */
 package TIMS.Bean;
 
 import static TIMS.Bean.ConfigBean.logger;
 import TIMS.General.Constants;
-import TIMS.General.FileHelper;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 // Libraries for Java Extension
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
@@ -57,6 +53,8 @@ import javax.faces.bean.ViewScoped;
  * 21-Sep-2016 - Enhanced method retrieveRawDataFileList() to make sure the 
  * filename is sorted before storing them into the file list. Removed unused
  * code.
+ * 06-Feb-2017 - Enhanced method retrieveRawDataFileList() to use the helper
+ * function filterRawDataFileList().
  */
 
 @ManagedBean (name="cnvPBean")
@@ -144,33 +142,11 @@ public class CNVPipelineBean extends GEXAffymetrixBean {
         return super.createConfigFile();
     }
 
-    // Retrieve the raw data file list from directory but exclude the control
-    // and annotation files.
+    // Call filterRawDataFileList() to exclude the annotation and control files 
+    // from the raw data file list.
     @Override
     public void retrieveRawDataFileList() {
-        File[] fList = FileHelper.getFilesWithExt(selectedInput.getFilepath(), rdFileExt);
-        List<String> fNameList = new ArrayList<>();
-        // Clear the existing file list before building the new file list.
-        fileList.clear();
-        int index = 0;
-        
-        for (File rd : fList) {
-            fNameList.add(rd.getName());
-        }
-        // Sort the filename list first before storing them into fileList.
-        Collections.sort(fNameList);
-        
-        for (String filename : fNameList) {
-            if ((filename.compareTo(Constants.getANNOT_FILE_NAME() + 
-                                    Constants.getANNOT_FILE_EXT()) != 0) && 
-                (filename.compareTo(Constants.getCONTROL_FILE_NAME() + 
-                                    Constants.getCONTROL_FILE_EXT()) != 0)) {
-                // Filter out the Annotation and Control files.
-                fileList.add(new ExcludeFileName(index++, filename));
-            }
-        }
-        
-        logger.debug("Total number of files retrieved: " + index);
+        filterRawDataFileList();
     }
 
     // Machine generated getters and setters

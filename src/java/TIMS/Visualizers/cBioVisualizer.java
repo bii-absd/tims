@@ -1,5 +1,5 @@
 /*
- * Copyright @2016 - 2017
+ * Copyright @2016-2017
  */
 package TIMS.Visualizers;
 
@@ -72,6 +72,7 @@ import org.mindrot.jbcrypt.BCrypt;
  * failed to create the cBioPortal directory or the system failed to export 
  * the study to cBioPortal.
  * 02-Feb-2017 - cBioPortal url will be retrieve from database.
+ * 06-Feb-2017 - Add the handling for RNA Sequencing pipeline.
  */
 
 public class cBioVisualizer extends Thread {
@@ -203,6 +204,16 @@ public class cBioVisualizer extends Thread {
             
             // Setup the meta file parameters for each pipeline.
             switch (job.getPipeline_name()) {
+                case PipelineDB.SEQ_RNA:
+                    alteration_type = "MRNA_EXPRESSION";
+                    datatype = "Z-SCORE";
+                    profile_desc = "mRNA z-Scores (RNA Seq)";
+                    profile_name = "mRNA expression z-Scores (RNA Seq)";
+                    stableID_code = studyID + "_rna_seq_mrna_median_Zscores";
+                    case_list_ids = createSubjectsList(data_file, 2);
+                    // Convert pipeline output to z-score format.
+                    convert2zScoreFile(data_file, "seq_rna");
+                    break;
                 case PipelineDB.GEX_AFFYMETRIX:
                     alteration_type = "MRNA_EXPRESSION";
                     datatype = "Z-SCORE";

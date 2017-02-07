@@ -1,5 +1,5 @@
 /*
- * Copyright @2015-2016
+ * Copyright @2015-2017
  */
 package TIMS.Database;
 
@@ -45,6 +45,8 @@ import org.apache.logging.log4j.LogManager;
  * during creation of Pipeline object. Implementation for database 3.6 Part I.
  * Added 3 new methods getEditablePlHash, getPipelineDescription & 
  * getPlAttribute.
+ * 06-Feb-2017 - Added 2 new constants strings for RNA and DNA Sequencing 
+ * pipelines.
  */
 
 public abstract class PipelineDB {
@@ -56,6 +58,8 @@ public abstract class PipelineDB {
     public static final String GEX_AFFYMETRIX = "gex-affymetrix";
     public static final String GEX_ILLUMINA = "gex-illumina";
     public static final String CNV = "cnv-pipeline";
+    public static final String SEQ_RNA = "seq-rna";
+    public static final String SEQ_DNA = "seq-dna";
     
     // Return the editable pipeline hash map (pipeline name -> description).
     public static LinkedHashMap<String, String> getEditablePlHash() {
