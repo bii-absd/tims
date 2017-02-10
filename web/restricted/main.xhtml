@@ -14,11 +14,17 @@
     <p:accordionPanel>
         <p:tab id="array" title="Array Data" titleStyleClass="tab-title">
             <h:panelGrid cellpadding="1">
-                <p:commandLink action="#{menuSelBean.setupPlConfigPageURL}"
-                               value="#{msg['gex-illumina']}" update=":dlgForm" 
+                <p:commandLink action="#{menuSelBean.setupPlConfigPageURL}" 
+                               value="#{msg['cnv-affymetrix']}" update=":dlgForm" 
                                styleClass="mainmenuitem" oncomplete="PF('dlg').show()">
                     <f:setPropertyActionListener target="#{menuSelBean.plName}" 
-                                                 value="gex-illumina"/>
+                                                 value="cnv-affymetrix"/>
+                </p:commandLink>
+                <p:commandLink action="#{menuSelBean.setupPlConfigPageURL}" 
+                               value="#{msg['cnv-illumina']}" update=":dlgForm" 
+                               styleClass="mainmenuitem" oncomplete="PF('dlg').show()">
+                    <f:setPropertyActionListener target="#{menuSelBean.plName}" 
+                                                 value="cnv-illumina"/>
                 </p:commandLink>
                 <p:commandLink action="#{menuSelBean.setupPlConfigPageURL}" 
                                value="#{msg['gex-affymetrix']}" update=":dlgForm" 
@@ -26,31 +32,31 @@
                     <f:setPropertyActionListener target="#{menuSelBean.plName}" 
                                                  value="gex-affymetrix"/>
                 </p:commandLink>
+                <p:commandLink action="#{menuSelBean.setupPlConfigPageURL}"
+                               value="#{msg['gex-illumina']}" update=":dlgForm" 
+                               styleClass="mainmenuitem" oncomplete="PF('dlg').show()">
+                    <f:setPropertyActionListener target="#{menuSelBean.plName}" 
+                                                 value="gex-illumina"/>
+                </p:commandLink>
                 <p:commandLink action="#{menuSelBean.setupPlConfigPageURL}" 
                                value="#{msg['meth-pipeline']}" update=":dlgForm" 
                                styleClass="mainmenuitem" oncomplete="PF('dlg').show()">
                     <f:setPropertyActionListener target="#{menuSelBean.plName}" 
                                                  value="meth-pipeline"/>
                 </p:commandLink>
-                <p:commandLink action="#{menuSelBean.setupPlConfigPageURL}" 
-                               value="#{msg['cnv-pipeline']}" update=":dlgForm" 
-                               styleClass="mainmenuitem" oncomplete="PF('dlg').show()">
-                    <f:setPropertyActionListener target="#{menuSelBean.plName}" 
-                                                 value="cnv-pipeline"/>
-                </p:commandLink>
             </h:panelGrid>
         </p:tab>
             
         <p:tab id="ngs" title="NGS Data" titleStyleClass="tab-title">
             <h:panelGrid>
+                <h:commandLink action="#{menuSelBean.ngsPipeline}" 
+                               value="#{msg['seq-dna']}" styleClass="mainmenuitem"/>
                 <p:commandLink action="#{menuSelBean.setupPlConfigPageURL}" 
                                value="#{msg['seq-rna']}" update=":dlgForm" 
                                styleClass="mainmenuitem" oncomplete="PF('dlg').show()">
                     <f:setPropertyActionListener target="#{menuSelBean.plName}" 
                                                  value="seq-rna"/>
                 </p:commandLink>
-                <h:commandLink action="#{menuSelBean.ngsPipeline}" 
-                               value="#{msg['seq-dna']}" styleClass="mainmenuitem"/>
             </h:panelGrid>
         </p:tab>
             

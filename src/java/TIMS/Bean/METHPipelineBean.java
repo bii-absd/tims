@@ -50,6 +50,7 @@ import javax.faces.bean.ViewScoped;
  * filename from the 2nd column of the annotation file. Removed unused code.
  * 06-Feb-2017 - Enhanced method getAllFilenameFromAnnot() to use the helper
  * function getFilenamePairs().
+ * 08-Feb-2017 - Changes due to change in method name at ConfigBean.
  */
 
 @ManagedBean (name="methPBean")
@@ -71,7 +72,6 @@ public class METHPipelineBean extends GEXAffymetrixBean {
     // input in the annotation file.
     @Override
     public List<String> getAllFilenameFromAnnot() {
-        return getFilenamePairs(sampleFile.getLocalDirectoryPath() + 
-                                sampleFile.getInputFilename());
+        return getFilenamePairsFromAnnot();
     }
 }

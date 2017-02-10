@@ -47,6 +47,8 @@ import org.apache.logging.log4j.LogManager;
  * getPlAttribute.
  * 06-Feb-2017 - Added 2 new constants strings for RNA and DNA Sequencing 
  * pipelines.
+ * 08-Feb-2017 - Removed constant CNV. Added 2 new constants strings for CNV
+ * Illumina and CNV Affymetrix.
  */
 
 public abstract class PipelineDB {
@@ -57,7 +59,8 @@ public abstract class PipelineDB {
     public static final String METHYLATION = "meth-pipeline";
     public static final String GEX_AFFYMETRIX = "gex-affymetrix";
     public static final String GEX_ILLUMINA = "gex-illumina";
-    public static final String CNV = "cnv-pipeline";
+    public static final String CNV_ILLUMINA = "cnv-illumina";
+    public static final String CNV_AFFYMETRIX = "cnv-affymetrix";
     public static final String SEQ_RNA = "seq-rna";
     public static final String SEQ_DNA = "seq-dna";
     

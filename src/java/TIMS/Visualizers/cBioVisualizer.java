@@ -72,7 +72,8 @@ import org.mindrot.jbcrypt.BCrypt;
  * failed to create the cBioPortal directory or the system failed to export 
  * the study to cBioPortal.
  * 02-Feb-2017 - cBioPortal url will be retrieve from database.
- * 06-Feb-2017 - Add the handling for RNA Sequencing pipeline.
+ * 06-Feb-2017 - Added the handling for RNA Sequencing pipeline.
+ * 08-Feb-2017 - Added the handling for CNV Affymetrix pipeline.
  */
 
 public class cBioVisualizer extends Thread {
@@ -240,7 +241,8 @@ public class cBioVisualizer extends Thread {
                     stableID_code = studyID + "_methylation";
                     case_list_ids = createSubjectsList(data_file, 2);
                     break;
-                case PipelineDB.CNV:
+                case PipelineDB.CNV_ILLUMINA:
+                case PipelineDB.CNV_AFFYMETRIX:
                     alteration_type = "COPY_NUMBER_ALTERATION";
                     datatype = "DISCRETE";
                     profile_desc = "Putative copy-number from GISTIC 2.0. "
@@ -248,7 +250,13 @@ public class cBioVisualizer extends Thread {
                                  + "-1 = hemizygous deletion; "
                                  + "0 = neutral|no change; 1 = gain; "
                                  + "2 = high level amplification.";
-                    profile_name = "Putative copy-number alterations from GISTIC";
+                    if (job.getPipeline_name().compareTo
+                        (PipelineDB.CNV_ILLUMINA) == 0) {
+                        profile_name = "Putative copy-number (Illumina) alterations from GISTIC";
+                    }
+                    else {
+                        profile_name = "Putative copy-number (Affymetrix) alterations from GISTIC";
+                    }
                     stableID_code = studyID + "_gistic";
                     case_list_ids = createSubjectsList(data_file, 2);
                     break;

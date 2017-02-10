@@ -7,45 +7,45 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
     
-    <ui:define name="title">Copy Number Variation Pipeline</ui:define>
-    <ui:param name="link" value="#{cnvPBean.breadCrumbLink}"/>
+    <ui:define name="title">CNV Pipeline (Illumina)</ui:define>
+    <ui:param name="link" value="#{cnvIlluBean.breadCrumbLink}"/>
     <ui:define name="content">
         <h:form id="mainForm" enctype="multipart/form-data">
-            <p:panel id="inputcontrol" visible="#{cnvPBean.haveNewData}" 
+            <p:panel id="inputcontrol" visible="#{cnvIlluBean.haveNewData}" 
                      header="#{msg['config-ulsamctlpro']}">
                 <p:growl id="uploadStatus" sticky="true"/>
                 <p:fileUpload mode="advanced" multiple="true"
                               update="uploadStatus" sequential="true"
                               label="#{msg['config-selsam']}"
                               allowTypes="/(\.|\/)(txt)$/" onstart="b4upload()"
-                              fileUploadListener="#{cnvPBean.inputFile.multipleFileUploadListener}"/>
+                              fileUploadListener="#{cnvIlluBean.inputFile.multipleFileUploadListener}"/>
                 <p:inputText id="inputdescription" 
-                             value="#{cnvPBean.inputFileDesc}" 
+                             value="#{cnvIlluBean.inputFileDesc}" 
                              autocomplete="off" size="200" styleClass="configinput"/>
                 <p:watermark for="inputdescription" value="#{msg['config-ipdesc']}"/>
                 <p:remoteCommand name="b4upload" partialSubmit="true" process="@this" 
-                                 actionListener="#{cnvPBean.inputFile.createInputDirectory}"/>
+                                 actionListener="#{cnvIlluBean.inputFile.createInputDirectory}"/>
                 <p:separator styleClass="configsep"/>
                 <p:fileUpload mode="advanced" update="uploadStatus" 
                               label="#{msg['config-selctl']}"
-                              fileUploadListener="#{cnvPBean.ctrlFile.singleFileUploadListener}"/>
+                              fileUploadListener="#{cnvIlluBean.ctrlFile.singleFileUploadListener}"/>
             </p:panel>
 
-            <p:panel id="sample" visible="#{cnvPBean.haveNewData}" header="#{msg['config-ulannot']}">
+            <p:panel id="sample" visible="#{cnvIlluBean.haveNewData}" header="#{msg['config-ulannot']}">
                 <p:fileUpload mode="advanced" update="uploadStatus"
                               label="#{msg['config-selannot']}"
-                              fileUploadListener="#{cnvPBean.sampleFile.singleFileUploadListener}"/>
+                              fileUploadListener="#{cnvIlluBean.sampleFile.singleFileUploadListener}"/>
             </p:panel>
 
-            <p:panel id="reuseInput" visible="#{!cnvPBean.haveNewData}" header="#{msg['config-reuse']}">
+            <p:panel id="reuseInput" visible="#{!cnvIlluBean.haveNewData}" header="#{msg['config-reuse']}">
                 <p:dataTable id="inputTable" var="reuseIP" 
-                             value="#{cnvPBean.inputDataList}" 
-                             selection="#{cnvPBean.selectedInput}" 
+                             value="#{cnvIlluBean.inputDataList}" 
+                             selection="#{cnvIlluBean.selectedInput}" 
                              rowKey="#{reuseIP.sn}" 
                              styleClass="table-odd-row table-even-row">
                     <p:ajax event="rowSelectRadio" 
                             update="mainForm:custButton" 
-                            listener="#{cnvPBean.inputSelectionChange}"/>
+                            listener="#{cnvIlluBean.inputSelectionChange}"/>
                     <p:column headerText="Creation Date" styleClass="jsmedcol">
                         <h:outputText value="#{reuseIP.createTimeString}"/>
                     </p:column>
@@ -63,7 +63,7 @@
                     </p:column>
                     <p:column headerText="Annotation File" styleClass="col120">
                         <p:commandLink ajax="false" value="Download" 
-                                       action="#{cnvPBean.downloadAnnot(reuseIP)}"/>
+                                       action="#{cnvIlluBean.downloadAnnot(reuseIP)}"/>
                     </p:column>
                     <p:column headerText="Select Data to Reuse" selectionMode="single" 
                               style="width: 120px; text-align: center"/>
@@ -77,7 +77,7 @@
                         <h:panelGrid columns="1">
                             <p:outputLabel value="#{msg['config-sum']}" styleClass="configlabel"/>
                             <p:selectOneMenu id="summarization" required="true"
-                                             value="#{cnvPBean.summarization}">
+                                             value="#{cnvIlluBean.summarization}">
                                 <f:selectItem itemLabel="Average" itemValue="Average"/>
                                 <f:selectItem itemLabel="GISTIC" itemValue="GISTIC"/>
                             </p:selectOneMenu>
@@ -90,12 +90,12 @@
                 <p:commandButton value="Submit" update=":revForm"
                                  oncomplete="PF('dlg').show()" 
                                  icon="ui-icon-check" 
-                                 action="#{cnvPBean.updateJobSubmissionStatus}"/>
+                                 action="#{cnvIlluBean.updateJobSubmissionStatus}"/>
                 <p:commandButton id="custButton" value="Customize Input Data" 
                                  update=":rdExclForm" oncomplete="PF('rdDlg').show()"
-                                 action="#{cnvPBean.retrieveRawDataFileList}" 
-                                 rendered="#{!cnvPBean.haveNewData}" 
-                                 disabled="#{cnvPBean.selectedInputStatus}"/>
+                                 action="#{cnvIlluBean.retrieveRawDataFileList}" 
+                                 rendered="#{!cnvIlluBean.haveNewData}" 
+                                 disabled="#{cnvIlluBean.selectedInputStatus}"/>
             </h:panelGrid>
         </h:form>
 
@@ -104,7 +104,7 @@
             <h:form id="rdExclForm">
                 <h:panelGrid columns="2" id="rdExclPanel">
                     <h:outputText value="Description" styleClass="configlabel"/>
-                    <h:inputText id="custdesc" value="#{cnvPBean.custDesc}" size="200" 
+                    <h:inputText id="custdesc" value="#{cnvIlluBean.custDesc}" size="200" 
                                  styleClass="configinput"/>
                 </h:panelGrid>
                 <p:separator styleClass="configsep"/>
@@ -112,8 +112,8 @@
                              paginator="true" paginatorTemplate="{FirstPageLink} 
                              {PreviousPageLink} {CurrentPageReport} 
                              {NextPageLink} {LastPageLink}"
-                             value="#{cnvPBean.fileList}" 
-                             selection="#{cnvPBean.exclList}" 
+                             value="#{cnvIlluBean.fileList}" 
+                             selection="#{cnvIlluBean.exclList}" 
                              rowKey="#{rd.index}" style="width: 100%">
                     <p:column headerText="Filename">
                         <h:outputText value="#{rd.filename}"/>
@@ -125,10 +125,10 @@
                 <h:panelGrid columns="2" width="100%" cellspacing="2" cellpadding="2">
                     <p:commandButton value="Cancel" style="width: 100%"
                                      oncomplete="PF('rdDlg').hide()" 
-                                     action="#{cnvPBean.cancelRawDataCust}"/>
+                                     action="#{cnvIlluBean.cancelRawDataCust}"/>
                     <p:commandButton value="Save" style="width: 100%"
                                      oncomplete="PF('rdDlg').hide()" 
-                                     action="#{cnvPBean.saveCust}"/>
+                                     action="#{cnvIlluBean.saveCust}"/>
                 </h:panelGrid>
             </h:form>
         </p:dialog>
@@ -137,74 +137,74 @@
             <h:form id="revForm">
                 <p:panelGrid columns="2" id="display">
                     <h:outputText value="#{msg['config-study']}"/>
-                    <h:outputText value="#{cnvPBean.studyID}"/>
-                    <h:outputText rendered="#{!cnvPBean.haveNewData}" 
+                    <h:outputText value="#{cnvIlluBean.studyID}"/>
+                    <h:outputText rendered="#{!cnvIlluBean.haveNewData}" 
                                   value="#{msg['revcfg-reuse']}"/>
-                    <h:outputText rendered="#{!cnvPBean.haveNewData}" 
-                                  value="#{cnvPBean.reuseInputDate}"/>
-                    <h:outputText rendered="#{cnvPBean.custStatus}" 
+                    <h:outputText rendered="#{!cnvIlluBean.haveNewData}" 
+                                  value="#{cnvIlluBean.reuseInputDate}"/>
+                    <h:outputText rendered="#{cnvIlluBean.custStatus}" 
                                   value="#{msg['revcfg-custdesc']}"/>
-                    <h:outputText rendered="#{cnvPBean.custStatus}" 
-                                  value="#{cnvPBean.custDesc}" 
+                    <h:outputText rendered="#{cnvIlluBean.custStatus}" 
+                                  value="#{cnvIlluBean.custDesc}" 
                                   styleClass="configinput"/>
-                    <h:outputText rendered="#{cnvPBean.custStatus}" 
+                    <h:outputText rendered="#{cnvIlluBean.custStatus}" 
                                   value="#{msg['revcfg-custexcl']}"/>
                     <p:dataList itemType="square" rows="10"
                         paginator="true" paginatorTemplate="{FirstPageLink} 
                         {PreviousPageLink} {CurrentPageReport} 
                         {NextPageLink} {LastPageLink}"
-                        rendered="#{cnvPBean.custStatus}"
-                        value="#{cnvPBean.exclFileList}"
+                        rendered="#{cnvIlluBean.custStatus}"
+                        value="#{cnvIlluBean.exclFileList}"
                         var="exlist" styleClass="datalist" type="none">
                         <h:outputText value="#{exlist}"/><br/>
                     </p:dataList>
-                    <h:outputText rendered="#{cnvPBean.haveNewData}" 
-                                  value="#{cnvPBean.inputFile.filesCount}"/>
+                    <h:outputText rendered="#{cnvIlluBean.haveNewData}" 
+                                  value="#{cnvIlluBean.inputFile.filesCount}"/>
                     <p:dataList itemType="square" rows="20"
                         paginator="true" paginatorTemplate="{FirstPageLink} 
                         {PreviousPageLink} {CurrentPageReport} 
                         {NextPageLink} {LastPageLink}"
-                        rendered="#{cnvPBean.haveNewData}"
-                        value="#{cnvPBean.inputFile.inputFileList}"
+                        rendered="#{cnvIlluBean.haveNewData}"
+                        value="#{cnvIlluBean.inputFile.inputFileList}"
                         var="filelist" styleClass="datalist" type="none">
                         <h:outputText value="#{filelist}"/><br/>
                     </p:dataList>
-                    <h:outputText rendered="#{cnvPBean.missingFilesStatus}" 
+                    <h:outputText rendered="#{cnvIlluBean.missingFilesStatus}" 
                                   value="#{msg['revcfg-misfiles']}" 
                                   style="color: red; font-weight: bold"/>
                     <p:dataList itemType="square" rows="10"
                                 paginator="true" paginatorTemplate="{FirstPageLink} 
                                 {PreviousPageLink} {CurrentPageReport} 
                                 {NextPageLink} {LastPageLink}"
-                                rendered="#{cnvPBean.missingFilesStatus}" 
-                                value="#{cnvPBean.missingFiles}" 
+                                rendered="#{cnvIlluBean.missingFilesStatus}" 
+                                value="#{cnvIlluBean.missingFiles}" 
                                 var="missfile" styleClass="datalist" 
                                 type="none">
                         <h:outputText value="#{missfile}"/><br/>
                     </p:dataList>
-                    <h:outputText rendered="#{cnvPBean.haveNewData}" 
+                    <h:outputText rendered="#{cnvIlluBean.haveNewData}" 
                                   value="#{msg['revcfg-ctl']}"/>
-                    <h:outputText rendered="#{cnvPBean.haveNewData}" 
-                                  value="#{cnvPBean.ctrlFile.inputFilename}"/>
-                    <h:outputText rendered="#{cnvPBean.haveNewData}" 
+                    <h:outputText rendered="#{cnvIlluBean.haveNewData}" 
+                                  value="#{cnvIlluBean.ctrlFile.inputFilename}"/>
+                    <h:outputText rendered="#{cnvIlluBean.haveNewData}" 
                                   value="#{msg['revcfg-annot']}"/>
-                    <h:outputText rendered="#{cnvPBean.haveNewData}" 
-                                  value="#{cnvPBean.sampleFile.inputFilename}"/>
+                    <h:outputText rendered="#{cnvIlluBean.haveNewData}" 
+                                  value="#{cnvIlluBean.sampleFile.inputFilename}"/>
                     <h:outputText value="#{msg['config-sum']}"/>
-                    <h:outputText value="#{cnvPBean.summarization}"/>
+                    <h:outputText value="#{cnvIlluBean.summarization}"/>
                 </p:panelGrid>
                 <p:separator styleClass="configsep"/>
                 <h:panelGrid columns="3" cellspacing="2" cellpadding="2">
                     <p:commandButton value="Cancel" title="#{msg['revcfg-cantit']}"
                                      style="width: 120px" oncomplete="PF('dlg').hide()"
-                                     action="#{cnvPBean.cancelJob}"/>
+                                     action="#{cnvIlluBean.cancelJob}"/>
                     <p:commandButton value="Confirm" title="#{msg['revcfg-cfmtit']}"
                                      style="width: 120px"
-                                     action="#{cnvPBean.submitJob}" 
-                                     rendered="#{cnvPBean.jobSubmissionStatus}"/>
+                                     action="#{cnvIlluBean.submitJob}" 
+                                     rendered="#{cnvIlluBean.jobSubmissionStatus}"/>
                     <p:commandButton value="Upload Data" title="#{msg['revcfg-upload']}" 
-                                     style="width: 120px" action="#{cnvPBean.uploadRawData}" 
-                                     rendered="#{cnvPBean.uploadDataOnly}"/>
+                                     style="width: 120px" action="#{cnvIlluBean.uploadRawData}" 
+                                     rendered="#{cnvIlluBean.uploadDataOnly}"/>
                 </h:panelGrid>
             </h:form>
         </p:dialog>

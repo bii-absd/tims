@@ -19,6 +19,7 @@ import javax.faces.bean.ViewScoped;
  * Revision History
  * 06-Feb-2017 - Initial creation by extending GEXAffymetrixBean. Override the
  * initFiles(), getAllFilenameFromAnnot() and retrieveRawDataFileList() methods.
+ * 08-Feb-2017 - Changes due to change in method name at ConfigBean.
  */
 
 @ManagedBean (name="seqrnaBean")
@@ -40,8 +41,7 @@ public class SeqRNABean extends GEXAffymetrixBean {
     // input in the annotation file.
     @Override
     public List<String> getAllFilenameFromAnnot() {
-        return getFilenamePairs(sampleFile.getLocalDirectoryPath() + 
-                                sampleFile.getInputFilename());
+        return getFilenamePairsFromAnnot();
     }
     
     // Call filterRawDataFileList() to exclude the annotation file from the raw

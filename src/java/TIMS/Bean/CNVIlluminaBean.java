@@ -11,7 +11,7 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
 
 /**
- * CNVPipelineBean is used as the backing bean for the cnv-pipeline view.
+ * CNVIlluminaBean is used as the backing bean for the cnv-pipeline view.
  * 
  * Author: Tay Wei Hong
  * Date: 19-Jan-2016
@@ -55,15 +55,16 @@ import javax.faces.bean.ViewScoped;
  * code.
  * 06-Feb-2017 - Enhanced method retrieveRawDataFileList() to use the helper
  * function filterRawDataFileList().
+ * 08-Feb-2017 - Renamed from CNVPipelineBean to CNVIlluminaBean.
  */
 
-@ManagedBean (name="cnvPBean")
+@ManagedBean (name="cnvIlluBean")
 @ViewScoped
-public class CNVPipelineBean extends GEXAffymetrixBean {
+public class CNVIlluminaBean extends GEXAffymetrixBean {
     private FileUploadBean ctrlFile;
 
-    public CNVPipelineBean() {
-        logger.debug("CNVPipelineBean created.");
+    public CNVIlluminaBean() {
+        logger.debug("CNVIlluminaBean created.");
     }
 
     @Override

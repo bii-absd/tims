@@ -125,6 +125,9 @@ import org.apache.logging.log4j.LogManager;
  * check the correctness of the annotation file format.
  * 06-Feb-2017 - Added helper functions getFilenamePairs() and 
  * filterRawDataFileList().
+ * 08-Feb-2017 - Enhanced getAllFilenameFromAnnot(), so that it could handle
+ * empty line in annotation file. Renamed method getFilenamePairs() to 
+ * getFilenamePairsFromAnnot().
  */
 
 public abstract class ConfigBean implements Serializable {
@@ -225,7 +228,7 @@ public abstract class ConfigBean implements Serializable {
                                   Constants.getANNOT_FILE_EXT());
     }
     
-    // Read in all the filename listed in the annotation file.
+    // Read in all the sample input filename listed in the annotation file.
     public List<String> getAllFilenameFromAnnot() {
         List<String> filenameList = new ArrayList<>();
         List<String> content = new ArrayList<>();
@@ -244,16 +247,18 @@ public abstract class ConfigBean implements Serializable {
                     // The second column is the filename, store it.
                     filenameList.add(content.get(1));
                 }
-                else {
-                    // The format of the annotation file is incorrect.
-                    logger.error("Incorrect annotation file format detected in " + sampleFile.getInputFilename());
-                    // Return a error message in the filename list; to be displayed to the user.
-                    filenameList.clear();
-                    filenameList.add("INCORRECT ANNOTATION FILE FORMAT!");
-                    break;
-                }
             }
-            logger.debug("All filename read from annotation file.");
+            
+            // Check to make sure the filename list has been retrieved.
+            if (filenameList.size() > 0) {
+                logger.debug("All filename read from annotation file.");
+            }
+            else {
+                // The format of the annotation file is incorrect.
+                logger.error("Incorrect annotation file format detected in " + sampleFile.getInputFilename());
+                // Return a error message in the filename list; to be displayed to the user.
+                filenameList.add("INCORRECT ANNOTATION FILE FORMAT!");
+            }
         }
         catch (IOException e) {
             logger.error("FAIL to read annotation file!");
@@ -711,27 +716,43 @@ public abstract class ConfigBean implements Serializable {
         logger.debug("Total number of files retrieved: " + index);
     }
     
-    // Helper function to retrieve the sample input filenames (separated by ',') 
-    // from the second column of the annotation file.
-    protected List<String> getFilenamePairs(String annotFile) {
+    // Read in all the sample input filename pair (separated by ',') listed in
+    // the annotation file.
+    protected List<String> getFilenamePairsFromAnnot() {
         List<String> filenameList = new ArrayList<>();
-        String[] content, fn;
+        List<String> content = new ArrayList<>();
+        String[] fn;
         
-        try (BufferedReader br = new BufferedReader(new FileReader(annotFile)))
+        try (BufferedReader br = new BufferedReader(
+                                 new FileReader(sampleFile.getLocalDirectoryPath() + 
+                                                sampleFile.getInputFilename())))
         {
             // First line is the header; not needed here.
             String lineRead = br.readLine();
             // Start processing from the second line.
             while ((lineRead = br.readLine()) != null) {
-                content = lineRead.split("\t");
-                // The second column contains the filename header; each header 
-                // will have 2 filenames separated by ','.
-                fn = content[1].split(",");
-                // Add the filenames to the list; can handle more than 2 
-                // filenames.
-                filenameList.addAll(Arrays.asList(fn));
+                content = Arrays.asList(lineRead.split("\t"));
+                // Check that the annotation file format is correct.
+                if (content.size() > 1) {
+                    // The second column contains the filename header; each header 
+                    // will have 2 filenames separated by ','.
+                    fn = content.get(1).split(",");
+                    // Add the filenames to the list; can handle more than 2 
+                    // filenames.
+                    filenameList.addAll(Arrays.asList(fn));
+                }
             }
-            logger.debug("Filename(s) read from annotation file.");
+            
+            // Check to make sure the filename list has been retrieved.
+            if (filenameList.size() > 0) {
+                logger.debug("All filename read from annotation file.");
+            }
+            else {
+                // The format of the annotation file is incorrect.
+                logger.error("Incorrect annotation file format detected in " + sampleFile.getInputFilename());
+                // Return a error message in the filename list; to be displayed to the user.
+                filenameList.add("INCORRECT ANNOTATION FILE FORMAT!");
+            }
         }
         catch (IOException e) {
             logger.error("FAIL to read annotation file!");

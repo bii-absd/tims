@@ -1,5 +1,5 @@
 /*
- * Copyright @2016
+ * Copyright @2016-2017
  */
 package TIMS.Bean;
 
@@ -26,6 +26,7 @@ import javax.faces.context.FacesContext;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+// Library for PrimeFaces
 import org.primefaces.event.FileUploadEvent;
 
 /**
@@ -40,6 +41,7 @@ import org.primefaces.event.FileUploadEvent;
  * 05-Sep-2016 - Changes due to change in constant name.
  * 20-Sep-2016 - Fix the bug whereby the filename in input_data table get 
  * corrupted when no sample data is being uploaded.
+ * 08-Feb-2017 - Changes due to change in PipelineDB constant name.
  */
 
 @ManagedBean (name="RDMgntBean")
@@ -272,7 +274,7 @@ public class RawDataManagementBean implements Serializable {
     
     // Return true if this pipeline has control file, else return false.
     public final boolean getControlFileStatus() {
-        return (plName.compareTo(PipelineDB.CNV) == 0 ) || 
+        return (plName.compareTo(PipelineDB.CNV_ILLUMINA) == 0 ) || 
                (plName.compareTo(PipelineDB.GEX_ILLUMINA) == 0);
     }
     
