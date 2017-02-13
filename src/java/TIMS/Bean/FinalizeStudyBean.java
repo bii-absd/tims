@@ -1,5 +1,5 @@
 /*
- * Copyright @2015-2016
+ * Copyright @2015-2017
  */
 package TIMS.Bean;
 
@@ -79,6 +79,8 @@ import org.apache.logging.log4j.LogManager;
  * whereby the study has been un-selected.
  * 22-Jun-2016 - Changes due to function name change in SubmittedJobDB class.
  * 12-Dec-2016 - Removed one debug log from proceedForFinalization().
+ * 10-Feb-2017 - To allow jobs from up to 5 pipelines to be selected for 
+ * finalization.
  */
 
 @ManagedBean (name="finalizedBean")
@@ -93,7 +95,7 @@ public class FinalizeStudyBean implements Serializable {
     private String subMDAvailableStatus = null;
     private List<String> plList = new ArrayList<>();
     private FinalizingJobEntry selectedJob0, selectedJob1, selectedJob2, 
-                               selectedJob3;
+                               selectedJob3, selectedJob4;
     // Store the list of selected jobs.
     private List<FinalizingJobEntry> selectedJobs = new ArrayList<>();
     private List<List<FinalizingJobEntry>> jobEntryLists = 
@@ -134,7 +136,8 @@ public class FinalizeStudyBean implements Serializable {
         logger.debug("Preparing for Study finalization.");
         // Check whether the user select any of the job.
         if ((selectedJob0==null) && (selectedJob1==null) && 
-            (selectedJob2==null) && (selectedJob3==null)) {
+            (selectedJob2==null) && (selectedJob3==null) && 
+            (selectedJob4==null)) {
             // None of the job has been selected, display error message and
             // return to the same page.
             allowToProceed = false;
@@ -152,6 +155,7 @@ public class FinalizeStudyBean implements Serializable {
             selectedJobs.add(1, selectedJob1);
             selectedJobs.add(2, selectedJob2);
             selectedJobs.add(3, selectedJob3);
+            selectedJobs.add(4, selectedJob4);
         
             // Check for subject meta data availability, and prepare the 
             // status update string.
@@ -387,6 +391,23 @@ public class FinalizeStudyBean implements Serializable {
     }
     public FinalizingJobEntry getSelectedJob3() {
         return selectedJob3;
+    }
+    
+    // Do the same for the fifth data table.
+    public Boolean getJobList4Status() {
+        return jobEntryLists.size()>4;
+    }
+    public List<FinalizingJobEntry> getJobList4() {
+        return jobEntryLists.get(4);
+    }
+    public String getPl4() {
+        return ResourceRetriever.getMsg(plList.get(4));
+    }
+    public void setSelectedJob4(FinalizingJobEntry job) {
+        selectedJob4 = job;
+    }
+    public FinalizingJobEntry getSelectedJob4() {
+        return selectedJob4;
     }
     
     // Retrieve the servlet context

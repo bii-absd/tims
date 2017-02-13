@@ -181,6 +181,44 @@
                 </p:column>
                 <p:column headerText="Export" selectionMode="single" styleClass="colbutton"/>
             </p:dataTable>
+            <p:separator style="height: 12px" rendered="#{js4vBean.jobList3Status}"/>
+            
+            <p:dataTable id="pl4" rendered="#{js4vBean.jobList4Status}" 
+                         var="jobL4" value="#{js4vBean.jobList4}" 
+                         selection="#{js4vBean.selectedJob4}" 
+                         rowKey="#{jobL4.job_id}"
+                         styleClass="table-odd-row table-even-row">
+                <f:facet name="header">
+                    <h:outputText value="#{js4vBean.pl4}"/>
+                </f:facet>
+                <p:column headerText="#{msg['fstudy-header1']}" styleClass="jsmedcol">
+                    <h:outputText value="#{jobL4.tid}"/>
+                </p:column>
+                <p:column headerText="#{msg['fstudy-header2']}" styleClass="jsmedcol">
+                    <h:outputText value="#{jobL4.userName}"/>
+                </p:column>
+                <p:column headerText="#{msg['fstudy-header3']}" styleClass="jsmedcol">
+                    <h:outputText value="#{jobL4.submitTimeString}"/>
+                </p:column>
+                <p:column headerText="#{msg['fstudy-header4']}" styleClass="jsmedcol">
+                    <h:outputText value="#{jobL4.chip_type}"/>
+                </p:column>
+                <p:column headerText="#{msg['fstudy-header5']}" styleClass="jsmedcol">
+                    <h:outputText value="#{jobL4.normalization}"/>
+                </p:column>
+                <p:column headerText="#{msg['fstudy-header6']}" styleClass="jsmedcol">
+                    <h:outputText value="#{jobL4.summarization}"/>
+                </p:column>
+                <p:column headerText="#{msg['fstudy-header7']}" style="text-align: left">
+                    <h:outputText value="#{jobL4.input_desc}"/>
+                </p:column>
+                <p:column rendered="#{authBean.CBioPortalON}" 
+                          headerText="#{msg['js4v-header8']}" styleClass="colbutton">
+                    <p:button rendered="#{jobL4.cbio_target}" disabled="true" 
+                              style="background-color: deepskyblue" icon="ui-icon-check"/>
+                </p:column>
+                <p:column headerText="Export" selectionMode="single" styleClass="colbutton"/>
+            </p:dataTable>
         </p:panel>
     </h:form>
 
