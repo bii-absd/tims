@@ -128,6 +128,9 @@ import org.apache.logging.log4j.LogManager;
  * 08-Feb-2017 - Enhanced getAllFilenameFromAnnot(), so that it could handle
  * empty line in annotation file. Renamed method getFilenamePairs() to 
  * getFilenamePairsFromAnnot().
+ * 13-Feb-2017 - To consolidate all the pipeline parameters (i.e. chip_type, 
+ * normalization and summarization) into one field (i.e. parameters) in the 
+ * database.
  */
 
 public abstract class ConfigBean implements Serializable {
@@ -521,8 +524,8 @@ public abstract class ConfigBean implements Serializable {
         // For complete_time, set to null for the start.
         SubmittedJob newJob = 
                 new SubmittedJob(getStudyID(), userName, pipelineName, 1,
-                                 submitTimeInDB, null, getType(), input_sn, input_desc,
-                                 getNormalization(), getSummarization(), pipelineOutput, 
+                                 submitTimeInDB, null, input_sn, input_desc,
+                                 buildParametersStr(), pipelineOutput, 
                                  detailOutput, pipelineReport);
         
         try {
@@ -536,6 +539,26 @@ public abstract class ConfigBean implements Serializable {
         }
 
         return result;
+    }
+    
+    // Build the pipeline parameters string based on the value of chip_type,
+    // normalization and summarization.
+    private String buildParametersStr() {
+        String parameters = "";
+        
+        if (getType() != null) {
+            parameters = "Type:" + getType() + " ";
+        }
+        
+        if (getNormalization() != null) {
+            parameters += "Norm:" + getNormalization() + " ";
+        }
+        
+        if (getSummarization() != null) {
+            parameters += "Sum:" + getSummarization() + " ";
+        }
+        
+        return parameters;
     }
     
     // User has selected a new input package, need to rebuild the variables.

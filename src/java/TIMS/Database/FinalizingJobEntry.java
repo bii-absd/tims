@@ -1,5 +1,5 @@
 /*
- * Copyright @2015-2016
+ * Copyright @2015-2017
  */
 package TIMS.Database;
 
@@ -31,12 +31,15 @@ import java.text.SimpleDateFormat;
  * 22-Jun-2016 - Removed unused code. Added one attribute cbio_target; to 
  * indicate whether this job had been selected for export to cBioPortal.
  * 01-Sep-2016 - Added one attribute input_desc. Removed method getInputDesc().
+ * 13-Feb-2017 - To consolidate all the pipeline parameters (i.e. chip_type, 
+ * normalization and summarization) into one field (i.e. parameters) in the 
+ * database.
  */
 
 public class FinalizingJobEntry {
     private int job_id, input_sn;
-    private String study_id, tid, pipeline_name, user_id, chip_type, input_desc, 
-                   normalization, summarization, detail_output;
+    private String study_id, tid, pipeline_name, user_id, input_desc, 
+                   parameters, detail_output;
     private Timestamp submit_time;
     private boolean cbio_target;
     private final static DateFormat df = new SimpleDateFormat("dd-MMM-yyyy hh:mmaa");
@@ -52,10 +55,8 @@ public class FinalizingJobEntry {
         this.pipeline_name = pipeline_name;
         this.submit_time = rs.getTimestamp("submit_time");
         this.user_id = rs.getString("user_id");
-        this.chip_type = rs.getString("chip_type");
         this.input_desc = rs.getString("input_desc");
-        this.normalization = rs.getString("normalization");
-        this.summarization = rs.getString("summarization");
+        this.parameters = rs.getString("parameters");
         this.detail_output = rs.getString("detail_output");
         this.cbio_target = rs.getBoolean("cbio_target");
     }
@@ -71,13 +72,6 @@ public class FinalizingJobEntry {
     public String getUserName() {
         return UserAccountDB.getFullName(user_id);
     }
-    
-    /* NOT IN USE ANYMORE.
-    // Return the input data description.
-    public String getInputDesc() {
-        return InputDataDB.getInputDescription(study_id, input_sn);
-    }
-    */
     
     // Return the submit_time in format "dd-MMM-yyyy hh:mmaa" for showing in
     // the finalization summary report.
@@ -114,22 +108,14 @@ public class FinalizingJobEntry {
     { return user_id; }
     public void setUser_id(String user_id) 
     { this.user_id = user_id; }
-    public String getChip_type() 
-    { return chip_type; }
-    public void setChip_type(String chip_type) 
-    { this.chip_type = chip_type; }
     public String getInput_desc() 
     { return input_desc; }
     public void setInput_desc(String input_desc) 
     { this.input_desc = input_desc; }
-    public String getNormalization() 
-    { return normalization; }
-    public void setNormalization(String normalization) 
-    { this.normalization = normalization; }
-    public String getSummarization() 
-    { return summarization; }
-    public void setSummarization(String summarization) 
-    { this.summarization = summarization; }
+    public String getParameters() 
+    { return parameters; }
+    public void setParameters(String parameters) 
+    { this.parameters = parameters; }
     public String getDetail_output() 
     { return detail_output; }
     public void setDetail_output(String detail_output) 

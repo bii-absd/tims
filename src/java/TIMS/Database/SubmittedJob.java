@@ -1,5 +1,5 @@
 /*
- * Copyright @2015-2016
+ * Copyright @2015-2017
  */
 package TIMS.Database;
 
@@ -62,21 +62,15 @@ import java.text.SimpleDateFormat;
  * 14-Sep-2016 - To check the chip_type, normalization and summarization against
  * null when testing whether is it available. Removed parameter job_id in the 
  * full constructor for pipeline beans.
+ * 13-Feb-2017 - To consolidate all the pipeline parameters (i.e. chip_type, 
+ * normalization and summarization) into one field (i.e. parameters) in the 
+ * database.
  */
 
 public class SubmittedJob implements Serializable {
-    // Additional attributes (study_id, pipeline_name, chip_type, 
-    // ctrl_file, normalization, probe_filtering, probe_select, 
-    // phenotype_column, summarization, sample_average, standardization & 
-    // region) added for DB 2.0
-    // For DB 3.0, removed input_path and added input_sn.
-    // For DB 3.3, removed sample_average, standardization, region, probe_select,
-    // probe_filtering and phenotype_column.
-    // For DB 3.6, added input_desc.
     private int job_id, status_id, input_sn;
-    private String study_id, user_id, pipeline_name, chip_type, input_desc, 
-                   normalization, summarization, output_file, detail_output, 
-                   report;
+    private String study_id, user_id, pipeline_name, input_desc, 
+                   parameters, output_file, detail_output, report;
     private Timestamp submit_time, complete_time;
     private boolean cbio_target;
     // status_name will be used by the job status page
@@ -92,11 +86,9 @@ public class SubmittedJob implements Serializable {
         this.status_id = rs.getInt("status_id");
         this.submit_time = rs.getTimestamp("submit_time");
         this.complete_time = rs.getTimestamp("complete_time");
-        this.chip_type = rs.getString("chip_type");
         this.input_sn = rs.getInt("input_sn");
         this.input_desc = rs.getString("input_desc");
-        this.normalization = rs.getString("normalization");
-        this.summarization = rs.getString("summarization");
+        this.parameters = rs.getString("parameters");
         this.output_file = rs.getString("output_file");
         this.detail_output = rs.getString("detail_output");
         this.report = rs.getString("report");
@@ -106,9 +98,9 @@ public class SubmittedJob implements Serializable {
     // Full constructor to be used by pipeline beans.
     public SubmittedJob(String study_id, String user_id,
             String pipeline_name, int status_id, Timestamp submit_time, 
-            Timestamp complete_time, String chip_type, int input_sn, 
-            String input_desc, String normalization, String summarization, 
-            String output_file, String detail_output, String report) 
+            Timestamp complete_time, int input_sn, String input_desc, 
+            String parameters, String output_file, String detail_output, 
+            String report) 
     {
         this.job_id = 0;
         this.study_id = study_id;
@@ -117,11 +109,9 @@ public class SubmittedJob implements Serializable {
         this.status_id = status_id;
         this.submit_time = submit_time;
         this.complete_time = complete_time;
-        this.chip_type = chip_type;
         this.input_sn = input_sn;
         this.input_desc = input_desc;
-        this.normalization = normalization;
-        this.summarization = summarization;
+        this.parameters = parameters;
         this.output_file = output_file;
         this.detail_output = detail_output;
         this.report = report;
@@ -163,19 +153,6 @@ public class SubmittedJob implements Serializable {
         return ResourceRetriever.getMsg(pipeline_name);
     }
     
-    // Return true if chip type info is available.
-    public boolean isTypeAvail() {
-        return (chip_type != null);
-    }
-    // Return true if normalization info is available.
-    public boolean isNormAvail() {
-        return (normalization != null);
-    }
-    // Return true if summarization info is available.
-    public boolean isSummAvail() {
-        return (summarization != null);
-    }
-
     // Return the submit_time and complete_time in format "dd-MMM-yyyy hh:mmaa"
     // for showing in pipeline job status page.
     public String getSubmitTimeString() {
@@ -233,12 +210,6 @@ public class SubmittedJob implements Serializable {
     public void setComplete_time(Timestamp complete_time) {
         this.complete_time = complete_time;
     }
-    public String getChip_type() {
-        return chip_type;
-    }
-    public void setChip_type(String chip_type) {
-        this.chip_type = chip_type;
-    }
     public int getInput_sn() {
         return input_sn;
     }
@@ -251,17 +222,11 @@ public class SubmittedJob implements Serializable {
     public void setInput_desc(String input_desc) {
         this.input_desc = input_desc;
     }
-    public String getNormalization() {
-        return normalization;
+    public String getParameters() {
+        return parameters;
     }
-    public void setNormalization(String normalization) {
-        this.normalization = normalization;
-    }
-    public String getSummarization() {
-        return summarization;
-    }
-    public void setSummarization(String summarization) {
-        this.summarization = summarization;
+    public void setParameters(String parameters) {
+        this.parameters = parameters;
     }
     public String getOutput_file() {
         return output_file;

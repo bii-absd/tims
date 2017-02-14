@@ -1,5 +1,5 @@
 /*
- * Copyright @2015-2016
+ * Copyright @2015-2017
  */
 package TIMS.Database;
 
@@ -103,6 +103,8 @@ import org.apache.pdfbox.pdmodel.graphics.xobject.PDJpeg;
  * Removed unused code.
  * 12-Dec-2016 - Add in the semaphore control during insertion of data into
  * data_depository table. Removed unused code.
+ * 13-Feb-2017 - To include the parameters setup during pipeline execution into
+ * the summary report.
  */
 
 public class DataDepositor extends Thread {
@@ -360,16 +362,21 @@ public class DataDepositor extends Thread {
                 StringBuilder l1 = new StringBuilder
                                 (String.valueOf(index)).append(". ");
                 l1.append(ResourceRetriever.getMsg(job.getPipeline_name()));
-                StringBuilder l2 = new StringBuilder
+                String l2 = "Parameters: " + job.getParameters();
+                StringBuilder l3 = new StringBuilder
                                 ("(Submitted by ").append(job.getUserName());
-                l2.append(" @").append(job.getSubmitTimeString()).append(")");
+                l3.append(" @").append(job.getSubmitTimeString()).append(")");
                 cs.beginText();
                 cs.moveTextPositionByAmount(lineX, getNextLineYaxis());
                 cs.drawString(l1.toString());
                 cs.endText();
                 cs.beginText();
                 cs.moveTextPositionByAmount(lineX, getNextLineYaxis());
-                cs.drawString(l2.toString());
+                cs.drawString(l2);
+                cs.endText();
+                cs.beginText();
+                cs.moveTextPositionByAmount(lineX, getNextLineYaxis());
+                cs.drawString(l3.toString());
                 cs.endText();
                 cs.beginText();
                 cs.moveTextPositionByAmount(lineX, getNextLineYaxis());

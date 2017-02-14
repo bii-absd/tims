@@ -83,18 +83,8 @@
                       resizable="false">
                 <p:outputPanel id="jobDetail">
                     <p:panelGrid columns="2">
-                        <h:outputText rendered="#{jsBean.selectedJob.typeAvail}" 
-                                      value="Chip Type: "/>
-                        <h:outputText rendered="#{jsBean.selectedJob.typeAvail}" 
-                                      value="#{jsBean.selectedJob.chip_type}"/>
-                        <h:outputText rendered="#{jsBean.selectedJob.normAvail}" 
-                                      value="Normalization Method: "/>
-                        <h:outputText rendered="#{jsBean.selectedJob.normAvail}" 
-                                      value="#{jsBean.selectedJob.normalization}"/>
-                        <h:outputText rendered="#{jsBean.selectedJob.summAvail}" 
-                                      value="Summarization: "/>
-                        <h:outputText rendered="#{jsBean.selectedJob.summAvail}" 
-                                      value="#{jsBean.selectedJob.summarization}"/>
+                        <h:outputText value="Parameters: "/>
+                        <h:outputText value="#{jsBean.selectedJob.parameters}"/>
                     </p:panelGrid>
                 </p:outputPanel>
             </p:dialog>
