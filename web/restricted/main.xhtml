@@ -49,7 +49,7 @@
             
         <p:tab id="ngs" title="NGS Data" titleStyleClass="tab-title">
             <h:panelGrid>
-                <h:commandLink action="#{menuSelBean.ngsPipeline}" 
+                <h:commandLink action="#{menuSelBean.ngsPipeline}" rendered="false"
                                value="#{msg['seq-dna']}" styleClass="mainmenuitem"/>
                 <p:commandLink action="#{menuSelBean.setupPlConfigPageURL}" 
                                value="#{msg['seq-rna']}" update=":dlgForm" 
