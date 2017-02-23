@@ -105,6 +105,11 @@ import org.apache.pdfbox.pdmodel.graphics.xobject.PDJpeg;
  * data_depository table. Removed unused code.
  * 13-Feb-2017 - To include the parameters setup during pipeline execution into
  * the summary report.
+ * 20-Feb-2017 - To revert all the submitted jobs and study status if during
+ * finalization, exception occurred. Re-index the annotation index on data 
+ * depositor table after successful finalization. To include the subject record
+ * stored information in the summary report. Added 2 private methods 
+ * revertStudyStatus() and reindexDataDepositoryIndex().
  */
 
 public class DataDepositor extends Thread {
@@ -124,7 +129,8 @@ public class DataDepositor extends Thread {
     private float pageCursorYaxis;
     // Categories of subject ID based on whether their meta data is found 
     // in the database or not.
-    private StringBuilder subjectNotFound, subjectFound, geneAvailableVsStored;
+    private StringBuilder subjectNotFound, subjectFound, geneAvailableVsStored, 
+                          subjectAvailableVsStored;
     private List<FinalizingJobEntry> jobList = new ArrayList<>();
     // Store the user ID of the current user.
     private final String userName;
@@ -144,6 +150,7 @@ public class DataDepositor extends Thread {
         subjectNotFound = new StringBuilder();
         subjectFound = new StringBuilder();
         geneAvailableVsStored = new StringBuilder();
+        subjectAvailableVsStored = new StringBuilder();
         numSubjectNotFound = numSubjectFound = 0;
         this.userName = userName;
         this.study_id = study_id;
@@ -196,6 +203,14 @@ public class DataDepositor extends Thread {
                 // All the SQL statements executed successfully, commit the changes.
                 logger.debug("DataDepositor - Commit transaction.");
                 conn.commit();
+                // Re-index the deposit_annot_ind.
+                if (reindexDataDepositoryIndex()) {
+                    logger.debug("Re-index of annotation index on data depository table passed.");
+                }
+                else {
+                    logger.error("FAIL to re-index the annotation index on data depository table!");
+                }
+                conn.commit();
             }
             else {
                 // Error occurred during data insertion, rollback the transaction.
@@ -240,26 +255,52 @@ public class DataDepositor extends Thread {
                 }
             }
             else {
-                // Finalization failed.
-                // Revert job status back to completed.
-                for (FinalizingJobEntry job : jobList) {
-                    SubmittedJobDB.updateJobStatusToCompleted(job.getJob_id());
-                }
-                // Revert study back to unfinalized.
-                StudyDB.updateStudyFinalizedStatus(study_id, false);
-                // Send finalization status (i.e. failed) email to the user.
-                Postman.sendFinalizationStatusEmail(study_id, userName, finalizeStatus);
+                // Finalization failed. Revert all the submitted jobs and study
+                // status.
+                revertStudyStatus();
             }
         }
         catch (SQLException|NamingException|InterruptedException e) {
             logger.error("FAIL to insert finalized data!");
             logger.error(e.getMessage());
-            // Finalization failed, release the token.
+            // Finalization failed, release the token and revert all the
+            // submitted jobs and study status.
             DBHelper.releaseFinalizeToken(userName);
+            revertStudyStatus();
         }
         finally {
             DBHelper.closeDSConn(conn);
         }
+    }
+    
+    // Reindex the annotation index on data depository table after finalization.
+    private boolean reindexDataDepositoryIndex() {
+        boolean result = Constants.OK;
+        String reindStr = "REINDEX INDEX deposit_annot_ind";
+        
+        try (PreparedStatement reindStm = conn.prepareStatement(reindStr)) {
+            reindStm.execute();
+        }
+        catch (SQLException e) {
+            logger.error("FAIL to reindex data depository table!");
+            logger.error(e.getMessage());
+            result = Constants.NOT_OK;
+        }
+        
+        return result;
+    }
+    
+    // Revert submitted job(s) status back to completed, and study status back
+    // to un-finalized if during finalization, some errors occurred. Send the
+    // finalization status email to user.
+    private void revertStudyStatus() {
+        for (FinalizingJobEntry job : jobList) {
+            SubmittedJobDB.updateJobStatusToCompleted(job.getJob_id());
+        }
+        // Revert study back to unfinalized.
+        StudyDB.updateStudyFinalizedStatus(study_id, false);
+        // Send finalization status (i.e. failed) email to the user.
+        Postman.sendFinalizationStatusEmail(study_id, userName, Constants.NOT_OK);
     }
     
     // Call by FinalizeStudyBean to setup the filepath of the Astar and Bii 
@@ -320,6 +361,7 @@ public class DataDepositor extends Thread {
         String[] foundSubjects = subjectFound.toString().split("\\$");
         String[] missingSubjects = subjectNotFound.toString().split("\\$");
         String[] geneInfo = geneAvailableVsStored.toString().split("\\$");
+        String[] subjectInfo = subjectAvailableVsStored.toString().split("\\$");
         // x-axis position for each new subheader.
         float subheadX = 40;
         // x-axis position for each new content line.
@@ -377,6 +419,10 @@ public class DataDepositor extends Thread {
                 cs.beginText();
                 cs.moveTextPositionByAmount(lineX, getNextLineYaxis());
                 cs.drawString(l3.toString());
+                cs.endText();
+                cs.beginText();
+                cs.moveTextPositionByAmount(lineX, getNextLineYaxis());
+                cs.drawString(subjectInfo[index-1]);
                 cs.endText();
                 cs.beginText();
                 cs.moveTextPositionByAmount(lineX, getNextLineYaxis());
@@ -665,7 +711,10 @@ public class DataDepositor extends Thread {
             if (!procSubjectLine(values)) {
                 // Error occurred, return to caller.
                 return Constants.NOT_OK;
-            }            
+            }
+            // Record the subject record available versus stored information.
+            subjectAvailableVsStored.append("Subject record available: ").append(totalRecord);
+            subjectAvailableVsStored.append(", Subject record stored: ").append(processedRecord).append("$");
             // Only proceed with gene data processing if subject ID is found in
             // the database.
             if (processedRecord > 0) {

@@ -74,6 +74,8 @@ import org.mindrot.jbcrypt.BCrypt;
  * 02-Feb-2017 - cBioPortal url will be retrieve from database.
  * 06-Feb-2017 - Added the handling for RNA Sequencing pipeline.
  * 08-Feb-2017 - Added the handling for CNV Affymetrix pipeline.
+ * 21-Feb-2017 - Bug fix: In order to export both the CNV Illumina and 
+ * Affymetrix to cBioPortal, the stable ID code for them need to be unique.
  */
 
 public class cBioVisualizer extends Thread {
@@ -253,11 +255,12 @@ public class cBioVisualizer extends Thread {
                     if (job.getPipeline_name().compareTo
                         (PipelineDB.CNV_ILLUMINA) == 0) {
                         profile_name = "Putative copy-number (Illumina) alterations from GISTIC";
+                        stableID_code = studyID + "_illu_gistic";
                     }
                     else {
                         profile_name = "Putative copy-number (Affymetrix) alterations from GISTIC";
+                        stableID_code = studyID + "_affy_gistic";
                     }
-                    stableID_code = studyID + "_gistic";
                     case_list_ids = createSubjectsList(data_file, 2);
                     break;
                 default:
