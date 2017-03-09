@@ -1,5 +1,5 @@
 /*
- * Copyright @2016-2017
+ * Copyright @2016-2018
  */
 package TIMS.Bean;
 
@@ -42,6 +42,7 @@ import org.primefaces.event.FileUploadEvent;
  * 20-Sep-2016 - Fix the bug whereby the filename in input_data table get 
  * corrupted when no sample data is being uploaded.
  * 08-Feb-2017 - Changes due to change in PipelineDB constant name.
+ * 08-Mar-2017 - Added the filter type (i.e. CEL) for CNV Affymetrix pipeline.
  */
 
 @ManagedBean (name="RDMgntBean")
@@ -262,6 +263,7 @@ public class RawDataManagementBean implements Serializable {
 
         switch (plName) {
             case PipelineDB.GEX_AFFYMETRIX:
+            case PipelineDB.CNV_AFFYMETRIX:
                 filter = "/(\\.|\\/)(CEL)$/";
                 break;
             case PipelineDB.METHYLATION:
