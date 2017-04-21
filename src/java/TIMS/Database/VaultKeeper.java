@@ -1,5 +1,5 @@
 /*
- * Copyright @2016
+ * Copyright @2016-2017
  */
 package TIMS.Database;
 
@@ -35,7 +35,7 @@ import org.apache.logging.log4j.LogManager;
  * vault_record table.
  * 04-Apr-2016 - When checking for subject Meta data availability, the system
  * will now check against the new study_subject table. The system will now store
- * the study ID (instead of icd_code) into the finalized_output record.
+ * the study ID (instead of icd_code) into the finalized_record.
  * 13-May-2016 - Minor changes as the pipeline output file will now be zipped.
  * 19-May-2016 - To delete those temporary files generated during closure
  * of study.
@@ -44,6 +44,9 @@ import org.apache.logging.log4j.LogManager;
  * method storePlDataIntoVault().
  * 12-Dec-2016 - Add in the semaphore control during insertion of data into 
  * vault_data table. Removed unused code.
+ * 19-Apr-2017 - Subject's meta data will now be own by study, and the study 
+ * will be own by group i.e. the direct link between group and subject's meta 
+ * data will be break off.
  */
 
 public class VaultKeeper extends Thread {
@@ -141,19 +144,19 @@ public class VaultKeeper extends Thread {
         StringBuilder subjectNotFound = new StringBuilder();
         // INSERT statement to insert a record into vault_record table.
         String insertStr = "INSERT INTO vault_record(array_index,"
-                         + "annot_ver,job_id,subject_id,grp_id,study_id) "
-                         + "VALUES(?,?,?,?,?,?)";
+                         + "annot_ver,job_id,subject_id,study_id) "
+                         + "VALUES(?,?,?,?,?)";
 
         try (PreparedStatement insertStm = conn.prepareStatement(insertStr)) {
             // Ignore the first two strings (i.e. geneID and EntrezID).
             for (int i = 2; i < values.length; i++) {
-                // Only store the pipeline data if the study subject meta 
-                // data is available in the database.
-                if (StudySubjectDB.isSSExist(values[i], grp_id, study_id)) {
+                // Only store the pipeline data if the subject record is 
+                // available in the database.
+                if (SubjectRecordDB.isSRExist(values[i], study_id)) {
                     processedRecord++;
                     vaultIndex[i] = getNextVaultInd();
-                    FinalizedOutput record = new FinalizedOutput
-                        (vaultIndex[i], annot_ver, values[i], grp_id, job_id, study_id);
+                    FinalizedRecord record = new FinalizedRecord
+                        (vaultIndex[i], annot_ver, values[i], job_id, study_id);
                     // Create an vault record.
                     createVaultRecord(insertStm, record);
                 }
@@ -305,14 +308,13 @@ public class VaultKeeper extends Thread {
     
     // Create an vault record which serve as a key to link the subject with
     // the gene data stored in the vault.
-    private void createVaultRecord(PreparedStatement stm, FinalizedOutput record) 
+    private void createVaultRecord(PreparedStatement stm, FinalizedRecord record) 
             throws SQLException {
         stm.setInt(1, record.getArray_index());
         stm.setString(2, record.getAnnot_ver());
         stm.setInt(3, record.getJob_id());
         stm.setString(4, record.getSubject_id());
-        stm.setString(5, record.getGrp_id());
-        stm.setString(6, record.getStudy_id());
+        stm.setString(5, record.getStudy_id());
         stm.executeUpdate();
 
         logger.debug("Vault record for " + record.getSubject_id() + 

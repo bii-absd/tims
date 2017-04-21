@@ -1,5 +1,5 @@
 /*
- * Copyright @2016
+ * Copyright @2016-2017
  */
 package TIMS.Database;
 
@@ -39,6 +39,8 @@ import org.apache.logging.log4j.LogManager;
  * process has completed.
  * 10-Aug-2016 - In method getArrayIndexes(), use the try-with-resource 
  * statement to create the ResultSet object.
+ * 19-Apr-2017 - Changes due to change of table name in database (i.e. from
+ * finalized_output to finalized_record.)
  */
 
 public class DataVoid extends Thread {
@@ -139,7 +141,7 @@ public class DataVoid extends Thread {
     // Retrieve all the array indexes that belong to this job ID.
     private List<Integer> getArrayIndexes(int job_id) {
         List<Integer> indexList = new ArrayList<>();
-        String query = "SELECT array_index FROM finalized_output WHERE "
+        String query = "SELECT array_index FROM finalized_record WHERE "
                      + "annot_ver = \'" + annot_ver + "\' AND job_id = " 
                      + job_id;
         
@@ -196,7 +198,7 @@ public class DataVoid extends Thread {
     // job_id to 0 and subject_id to VOID.
     private boolean voidAllFinalizedRecords() {
         boolean result = Constants.OK;
-        String query = "UPDATE finalized_output SET job_id = 0, "
+        String query = "UPDATE finalized_record SET job_id = 0, "
                      + "subject_id = \'VOID\' WHERE annot_ver = \'" 
                      + annot_ver + "\' AND job_id = ?";
         

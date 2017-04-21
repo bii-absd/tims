@@ -106,6 +106,7 @@ import org.apache.logging.log4j.LogManager;
  * the UAT/PROD environment.
  * 08-Dec-2016 - Added one new constant UPL_RD for Raw Data Upload.
  * 02-Feb-2017 - Removed constant CBIOPORTAL_URL.
+ * 20-Apr-2017 - Added one new constant SERVER_NAME.
  */
 
 @ManagedBean (name = "constants")
@@ -189,7 +190,8 @@ public class Constants {
     private static String ANNOT_FILE_EXT = null;
     private static String CONTROL_FILE_NAME = null;
     private static String CONTROL_FILE_EXT = null;
-    // Constants used in database setup
+    // Constants used in server and database setup
+    private static String SERVER_NAME = null;
     private static String DATABASE_NAME = null;
     private static String DATABASE_DRIVER = null;
     
@@ -259,6 +261,7 @@ public class Constants {
             ANNOT_FILE_EXT = setup.get("ANNOT_FILE_EXT");
             CONTROL_FILE_NAME = setup.get("CONTROL_FILE_NAME");
             CONTROL_FILE_EXT = setup.get("CONTROL_FILE_EXT");
+            SERVER_NAME = setup.get("SERVER_NAME");
             DATABASE_NAME = setup.get("DATABASE_NAME");
             DATABASE_DRIVER = setup.get("DATABASE_DRIVER");
             
@@ -317,6 +320,7 @@ public class Constants {
     public static String getANNOT_FILE_EXT() { return ANNOT_FILE_EXT; }
     public static String getCONTROL_FILE_NAME() { return CONTROL_FILE_NAME; }
     public static String getCONTROL_FILE_EXT() { return CONTROL_FILE_EXT; }
+    public static String getSERVER_NAME() { return SERVER_NAME; }
     public static String getDATABASE_NAME() { return DATABASE_NAME; }
     public static String getDATABASE_DRIVER() { return DATABASE_DRIVER; }
 }

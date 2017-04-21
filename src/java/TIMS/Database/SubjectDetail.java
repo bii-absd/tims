@@ -1,9 +1,9 @@
 /*
- * Copyright @2016
+ * Copyright @2016-2017
  */
 package TIMS.Database;
 
-import java.sql.Date;
+import java.time.LocalDate;
 
 /**
  * SubjectDetail is used to represent the subject_detail view in the database.
@@ -15,27 +15,28 @@ import java.sql.Date;
  * 
  * Revision History
  * 31-Mar-2016 - Created with all the standard getters and setters.
- * 
+ * 18-Apr-2017 - Removed grp_id, and added record_date.
  */
 
 public class SubjectDetail {
     // subject_detail view attributes
-    private String grp_id, study_id, subject_id, country_code, race, 
-            subtype_code, remarks, event;
+    private String study_id, subject_id, country_code, race, subtype_code, 
+                   remarks, event;
     private int age_at_diagnosis;
     private float height, weight;
-    private Date event_date;
+    private LocalDate event_date, record_date;
     private char gender;
 
     // Machine generated constructor.
-    public SubjectDetail(String grp_id, String study_id, String subject_id, 
+    
+    public SubjectDetail(String study_id, String subject_id, LocalDate record_date,
                          String country_code, String race, String subtype_code, 
                          String remarks, String event, int age_at_diagnosis, 
-                         float height, float weight, Date event_date, char gender) 
+                         float height, float weight, LocalDate event_date, char gender) 
     {
-        this.grp_id = grp_id;
         this.study_id = study_id;
         this.subject_id = subject_id;
+        this.record_date = record_date;
         this.country_code = country_code;
         this.race = race;
         this.subtype_code = subtype_code;
@@ -54,12 +55,6 @@ public class SubjectDetail {
     }
     
     // Machine generated getters and setters.
-    public String getGrp_id() {
-        return grp_id;
-    }
-    public void setGrp_id(String grp_id) {
-        this.grp_id = grp_id;
-    }
     public String getStudy_id() {
         return study_id;
     }
@@ -71,6 +66,12 @@ public class SubjectDetail {
     }
     public void setSubject_id(String subject_id) {
         this.subject_id = subject_id;
+    }
+    public LocalDate getRecord_date() {
+        return record_date;
+    }
+    public void setRecord_date(LocalDate record_date) {
+        this.record_date = record_date;
     }
     public String getCountry_code() {
         return country_code;
@@ -120,10 +121,10 @@ public class SubjectDetail {
     public void setWeight(float weight) {
         this.weight = weight;
     }
-    public Date getEvent_date() {
+    public LocalDate getEvent_date() {
         return event_date;
     }
-    public void setEvent_date(Date event_date) {
+    public void setEvent_date(LocalDate event_date) {
         this.event_date = event_date;
     }
     public char getGender() {

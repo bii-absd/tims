@@ -1,10 +1,10 @@
 /*
- * Copyright @2015-2016
+ * Copyright @2015-2017
  */
 package TIMS.Database;
 
 /**
- * FinalizedOutput is used to represent the finalized_output table in the 
+ * FinalizedRecord is used to represent the finalized_record table in the 
  * database.
  * 
  * Author: Tay Wei Hong
@@ -19,21 +19,21 @@ package TIMS.Database;
  * (Institution - Department - Group).
  * 22-Mar-2016 - Added in one new attribute icd_code, to identify the disease 
  * under study.
- * 04-Apr-2016 - Instead of storing the icd_code, the finalized_output table
+ * 04-Apr-2016 - Instead of storing the icd_code, the finalized_record table
  * will store the study_id.
+ * 19-Apr-2017 - Removed grp_id. Rename to FinalizedRecord.
  */
 
-public class FinalizedOutput {
-    String annot_ver, subject_id, grp_id, study_id;
+public class FinalizedRecord {
+    String annot_ver, subject_id, study_id;
     int array_index, job_id;
 
     // Machine generated code
-    public FinalizedOutput(int array_index, String annot_ver, String subject_id, 
-            String grp_id, int job_id, String study_id) {
+    public FinalizedRecord(int array_index, String annot_ver, String subject_id, 
+                           int job_id, String study_id) {
         this.array_index = array_index;
         this.annot_ver = annot_ver;
         this.subject_id = subject_id;
-        this.grp_id = grp_id;
         this.job_id = job_id;
         this.study_id = study_id;
     }
@@ -54,12 +54,6 @@ public class FinalizedOutput {
     }
     public void setSubject_id(String subject_id) {
         this.subject_id = subject_id;
-    }
-    public String getGrp_id() {
-        return grp_id;
-    }
-    public void setGrp_id(String grp_id) {
-        this.grp_id = grp_id;
     }
     public int getJob_id() {
         return job_id;

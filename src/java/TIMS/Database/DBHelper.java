@@ -1,5 +1,5 @@
 /*
- * Copyright @2015-2016
+ * Copyright @2015-2017
  */
 package TIMS.Database;
 
@@ -9,14 +9,12 @@ import java.util.concurrent.Semaphore;
 // Libraries for Java Extension
 import javax.faces.bean.ApplicationScoped;
 import javax.faces.context.FacesContext;
-import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.servlet.ServletContext;
-import javax.sql.DataSource;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-import org.postgresql.ds.PGPoolingDataSource;
+import org.postgresql.ds.PGConnectionPoolDataSource;
 
 /**
  * DBHelper is a helper class that provide the postgresSQL database connection 
@@ -44,6 +42,7 @@ import org.postgresql.ds.PGPoolingDataSource;
  * 25-Apr-2016 - Increased the maximum allowed database connections to 16.
  * 12-Dec-2016 - Provide the token to proceed for finalization and closure of 
  * study.
+ * 19-Apr-2017 - Changes due to PostgreSQL JDBC driver upgrade.
  */
 
 @ApplicationScoped
@@ -51,7 +50,7 @@ public abstract class DBHelper {
     // Get the logger for Log4j
     private final static Logger logger = LogManager.
             getLogger(DBHelper.class.getName());
-    private static PGPoolingDataSource ds;
+    private static PGConnectionPoolDataSource ds;
     // Token to allow finalization and closure of study to proceed.
     private final static Semaphore finalizeToken = new Semaphore(1, true);
     private final static Semaphore closureToken = new Semaphore(1, true);
@@ -61,25 +60,16 @@ public abstract class DBHelper {
         // Only load this once when the application first started.
         if (ds == null) {
             logger.debug("Init data source for TIMS.");
-            ds = new PGPoolingDataSource();
+            ds = new PGConnectionPoolDataSource();
             ServletContext context = getServletContext();
             // Loading the DB username and password
             String uname = context.getInitParameter("uname");
             String pword = context.getInitParameter("pword");
             
-            ds.setDataSourceName("TIMS Data Source");
-            ds.setServerName("localhost");
+            ds.setServerName(Constants.getSERVER_NAME());
             ds.setDatabaseName(Constants.getDATABASE_NAME());
             ds.setUser(uname);
             ds.setPassword(pword);
-            ds.setMaxConnections(16);
-            
-            try {
-                new InitialContext().rebind("TIMS-DS", ds);
-            } catch (NamingException ne) {
-                logger.error("FAIL to rebind datasource!");
-                logger.error(ne.getMessage());
-            }
         }
     }
 
@@ -87,9 +77,7 @@ public abstract class DBHelper {
     public static Connection getDSConn() 
             throws SQLException, NamingException 
     {
-        DataSource source = (DataSource) new InitialContext().lookup("TIMS-DS");
-        
-        return source.getConnection();
+        return ds.getConnection();
     }
     
     // Close the database connection after use by the individual modules.

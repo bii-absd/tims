@@ -33,10 +33,9 @@ ANNOT_FILE_NAME ANNOTATION
 ANNOT_FILE_EXT .txt
 CONTROL_FILE_NAME CONTROL_PROBE
 CONTROL_FILE_EXT .txt
-# The below defines the database name, database driver
-# Naming convention for the DB if using DriverManager to get the DB connection.
-# DATABASE_NAME jdbc:postgresql://localhost:5432/clinical
+# The below defines the server name, database name and database driver.
 # Naming convention for the DB if using DataSource to get the DB connection.
+SERVER_NAME localhost
 DATABASE_NAME clinical
 DATABASE_DRIVER org.postgresql.Driver
 # This is the end of the line. There should not be any blank line in-between.

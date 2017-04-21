@@ -1,37 +1,36 @@
 /*
- * Copyright @2016
+ * Copyright @2016-2017
  */
 package TIMS.Database;
 
-import java.sql.Date;
+import java.time.LocalDate;
 
 /**
- * StudySubject is used to represent the study_subject table in the database.
+ * SubjectRecord is used to represent the subject_record table in the database.
  * 
  * Author: Tay Wei Hong
  * Date: 31-Mar-2016
  * 
  * Revision History
  * 31-Mar-2016 - Created with all the standard getters and setters.
- * 
+ * 19-Apr-2017 - Rename to SubjectRecord. Removed grp_id and subtype_code, 
+ * added record_date.
  */
 
-public class StudySubject {
+public class SubjectRecord {
     // study_subject table attributes
-    private String subject_id, grp_id, study_id, subtype_code, remarks, event;
+    private String subject_id, study_id, remarks, event;
     private int age_at_diagnosis;
     private float height, weight;
-    private Date event_date;
+    private LocalDate event_date, record_date;
     
     // Machine generated constructor
-    public StudySubject(String subject_id, String grp_id, String study_id, 
-                        String subtype_code, String remarks, String event, 
-                        int age_at_diagnosis, float height, float weight, 
-                        Date event_date) {
+    public SubjectRecord(String subject_id, String study_id, LocalDate record_date,
+                        String remarks, String event, int age_at_diagnosis, 
+                        float height, float weight, LocalDate event_date) {
         this.subject_id = subject_id;
-        this.grp_id = grp_id;
         this.study_id = study_id;
-        this.subtype_code = subtype_code;
+        this.record_date = record_date;
         this.remarks = remarks;
         this.event = event;
         this.age_at_diagnosis = age_at_diagnosis;
@@ -47,23 +46,17 @@ public class StudySubject {
     public void setSubject_id(String subject_id) {
         this.subject_id = subject_id;
     }
-    public String getGrp_id() {
-        return grp_id;
-    }
-    public void setGrp_id(String grp_id) {
-        this.grp_id = grp_id;
-    }
     public String getStudy_id() {
         return study_id;
     }
     public void setStudy_id(String study_id) {
         this.study_id = study_id;
     }
-    public String getSubtype_code() {
-        return subtype_code;
+    public LocalDate getRecord_date() {
+        return record_date;
     }
-    public void setSubtype_code(String subtype_code) {
-        this.subtype_code = subtype_code;
+    public void setRecord_date(LocalDate record_date) {
+        this.record_date = record_date;
     }
     public String getRemarks() {
         return remarks;
@@ -95,10 +88,10 @@ public class StudySubject {
     public void setWeight(float weight) {
         this.weight = weight;
     }
-    public Date getEvent_date() {
+    public LocalDate getEvent_date() {
         return event_date;
     }
-    public void setEvent_date(Date event_date) {
+    public void setEvent_date(LocalDate event_date) {
         this.event_date = event_date;
     }
 }

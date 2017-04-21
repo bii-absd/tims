@@ -73,7 +73,7 @@ import org.apache.pdfbox.pdmodel.graphics.xobject.PDJpeg;
  * (Institution - Department - Group).
  * 14-Mar-2016 - Minor changes to the summary report.
  * 22-Mar-2016 - Changes due to the addition field (i.e. icd_code) in the 
- * finalized_output table.
+ * finalized_record table.
  * 24-Mar-2016 - To improve on the generation of summary report i.e. the ability
  * to generate multiple pages, have a set of gene available versus stored 
  * information for each pipeline, etc.
@@ -81,7 +81,7 @@ import org.apache.pdfbox.pdmodel.graphics.xobject.PDJpeg;
  * data processing; to make sure the thread is still alive.
  * 04-Apr-2016 - When checking for subject Meta data availability, the system
  * will now check against the new study_subject table. The system will now store
- * the study ID (instead of icd_code) into the finalized_output record.
+ * the study ID (instead of icd_code) into the finalized_record.
  * 13-Apr-2016 - Only send out the finalization status email here if the 
  * finalization has failed, else let DataRetriever send out the status email
  * after all the pipeline output have been consolidated.
@@ -110,6 +110,9 @@ import org.apache.pdfbox.pdmodel.graphics.xobject.PDJpeg;
  * depositor table after successful finalization. To include the subject record
  * stored information in the summary report. Added 2 private methods 
  * revertStudyStatus() and reindexDataDepositoryIndex().
+ * 19-Apr-2017 - Subject's meta data will now be own by study, and the study 
+ * will be own by group i.e. the direct link between group and subject's meta 
+ * data will be break off.
  */
 
 public class DataDepositor extends Thread {
@@ -531,26 +534,25 @@ public class DataDepositor extends Thread {
         stm.executeUpdate();
     }
     
-    // Insert a record into finalized_output table using the PreparedStatement
+    // Insert a record into finalized_record table using the PreparedStatement
     // passed in.
     private void insertToFinalizedOutput(PreparedStatement stm, 
-            FinalizedOutput record) throws SQLException {
+            FinalizedRecord record) throws SQLException {
         stm.setInt(1, record.getArray_index());
         stm.setString(2, record.getAnnot_ver());
         stm.setInt(3, record.getJob_id());
         stm.setString(4, record.getSubject_id());
-        stm.setString(5, record.getGrp_id());
-        stm.setString(6, record.getStudy_id());
+        stm.setString(5, record.getStudy_id());
         stm.executeUpdate();
             
         logger.debug("Output for " + record.getSubject_id() + 
                      " stored at index: " + record.getArray_index());        
     }
     
-    // Return the next array index to be use in finalized_output table.
+    // Return the next array index to be use in finalized_record table.
     private int getNextArrayInd() {
         int count = Constants.DATABASE_INVALID_ID;
-        String query = "SELECT MAX(array_index) FROM finalized_output "
+        String query = "SELECT MAX(array_index) FROM finalized_record "
                      + "WHERE annot_ver = \'" + annot_ver + "\'";
         
         try (PreparedStatement stm = conn.prepareStatement(query);
@@ -580,17 +582,17 @@ public class DataDepositor extends Thread {
     // the processing status.
     private boolean procSubjectLine(String[] values) {
         boolean result = Constants.OK;
-        // INSERT statement to insert a record into finalized_output table.
-        String insertStr = "INSERT INTO finalized_output(array_index,"
-                         + "annot_ver,job_id,subject_id,grp_id,study_id) "
-                         + "VALUES(?,?,?,?,?,?)";
+        // INSERT statement to insert a record into finalized_record table.
+        String insertStr = "INSERT INTO finalized_record(array_index,"
+                         + "annot_ver,job_id,subject_id,study_id) "
+                         + "VALUES(?,?,?,?,?)";
             
         try (PreparedStatement insertStm = conn.prepareStatement(insertStr)) {
             // Ignore the first two strings (i.e. geneID and EntrezID).
             for (int i = 2; i < values.length; i++) {
-                // Only store the pipeline data if the study subject meta 
-                // data is available in the database.
-                if (StudySubjectDB.isSSExist(values[i], grp_id, study_id)) {
+                // Only store the pipeline data if the study record is 
+                // available in the database.
+                if (SubjectRecordDB.isSRExist(values[i], study_id)) {
                     if (!subjectFound.toString().contains(values[i])) {
                         // Only want to store the unqiue subject ID that
                         // have meta data in database.
@@ -603,8 +605,8 @@ public class DataDepositor extends Thread {
                     }
                     processedRecord++;
                     arrayIndex[i] = getNextArrayInd();
-                    FinalizedOutput record = new FinalizedOutput
-                        (arrayIndex[i], annot_ver, values[i], grp_id, job_id, study_id);
+                    FinalizedRecord record = new FinalizedRecord
+                        (arrayIndex[i], annot_ver, values[i], job_id, study_id);
                     // Insert the finalized output record.
                     insertToFinalizedOutput(insertStm, record);
                 }

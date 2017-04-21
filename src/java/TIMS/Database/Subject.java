@@ -1,5 +1,5 @@
 /*
- * Copyright @2015-2016
+ * Copyright @2015-2017
  */
 package TIMS.Database;
 
@@ -20,30 +20,32 @@ package TIMS.Database;
  * 30-Mar-2016 - Added 3 new attributes i.e. remarks, event and event_date.
  * 31-Mar-2016 - Only keep attributes subject_id, grp_id, country_code, race
  * and gender in this class. Move the rest to StudySubject Class.
+ * 18-Apr-2017 - Removed grp_id, and added study_id and subtype_code.
  */
 
 public class Subject {
     // subject table attributes
-    private String subject_id, grp_id, country_code, race;
+    private String subject_id, study_id, country_code, race, subtype_code;
     private char gender;
 
     // Machine generated constructor
-    public Subject(String subject_id, char gender, String country_code, 
-            String race, String grp_id) {
+    public Subject(String subject_id, String study_id, char gender, String country_code, 
+            String race, String subtype_code) {
         this.subject_id = subject_id;
+        this.study_id = study_id;
         this.gender = gender;
         this.country_code = country_code;
         this.race = race;
-        this.grp_id = grp_id;
+        this.subtype_code = subtype_code;
     }
     
     
     // Return the string representation of this subject in the format of:
-    // Subject_ID|Gender|Nationality|Race|GroupID
+    // Study_ID|Subject_ID|Gender|Nationality|Race
     @Override
     public String toString() {
-        return subject_id + "|" + gender + "|" + country_code + "|" 
-                + race +  "|" + grp_id;
+        return study_id + "|" + subject_id + "|" + gender + "|" + country_code 
+                + "|" + race;
     }
     
     // Return the country name for this user nationality.
@@ -58,11 +60,11 @@ public class Subject {
     public void setSubject_id(String subject_id) {
         this.subject_id = subject_id;
     }
-    public String getGrp_id() {
-        return grp_id;
+    public String getStudy_id() {
+        return study_id;
     }
-    public void setGrp_id(String grp_id) {
-        this.grp_id = grp_id;
+    public void setStudy_id(String study_id) {
+        this.study_id = study_id;
     }
     public String getCountry_code() {
         return country_code;
@@ -81,5 +83,11 @@ public class Subject {
     }
     public void setGender(char gender) {
         this.gender = gender;
+    }
+    public String getSubtype_code() {
+        return subtype_code;
+    }
+    public void setSubtype_code(String subtype_code) {
+        this.subtype_code = subtype_code;
     }
 }

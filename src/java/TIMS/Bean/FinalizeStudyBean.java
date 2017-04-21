@@ -7,7 +7,7 @@ import TIMS.Database.ActivityLogDB;
 import TIMS.Database.DataDepositor;
 import TIMS.Database.FinalizingJobEntry;
 import TIMS.Database.StudyDB;
-import TIMS.Database.StudySubjectDB;
+import TIMS.Database.SubjectRecordDB;
 import TIMS.Database.SubmittedJobDB;
 import TIMS.General.Constants;
 import TIMS.General.ResourceRetriever;
@@ -81,6 +81,9 @@ import org.apache.logging.log4j.LogManager;
  * 12-Dec-2016 - Removed one debug log from proceedForFinalization().
  * 10-Feb-2017 - To allow jobs from up to 5 pipelines to be selected for 
  * finalization.
+ * 19-Apr-2017 - Subject's meta data will now be own by study, and the study 
+ * will be own by group i.e. the direct link between group and subject's meta 
+ * data will be break off.
  */
 
 @ManagedBean (name="finalizedBean")
@@ -89,7 +92,7 @@ public class FinalizeStudyBean implements Serializable {
     // Get the logger for Log4j
     private final static Logger logger = LogManager.
             getLogger(FinalizeStudyBean.class.getName());
-    private String study_id, grp_id;
+    private String study_id;
     private LinkedHashMap<String, String> studyHash;
     // Store the status of the availability of subject meta data in the database.
     private String subMDAvailableStatus = null;
@@ -107,7 +110,6 @@ public class FinalizeStudyBean implements Serializable {
     public FinalizeStudyBean() {
         userName = (String) FacesContext.getCurrentInstance().
                 getExternalContext().getSessionMap().get("User");
-        logger.debug("FinalizeStudyBean created.");
         logger.info(userName + ": access Finalize Study page.");
     }
     
@@ -131,8 +133,6 @@ public class FinalizeStudyBean implements Serializable {
     public String prepareForFinalization() {
         FacesContext fc = FacesContext.getCurrentInstance();
         allowToProceed = true;
-        // Setup the group ID based on the Study's grp_id.
-        grp_id = StudyDB.getStudyGrpID(study_id);
         logger.debug("Preparing for Study finalization.");
         // Check whether the user select any of the job.
         if ((selectedJob0==null) && (selectedJob1==null) && 
@@ -169,7 +169,7 @@ public class FinalizeStudyBean implements Serializable {
                 catch (SQLException|IOException|NamingException e) {
                     // Error when checking for subject meta data. 
                     // Stop the finalization process and go to error page.
-                    logger.error("FAIL to check for subject meta data availability!");
+                    logger.error("FAIL to check for subject record availability!");
                     logger.error(e.getMessage());
                     return Constants.ERROR;
                 }
@@ -259,8 +259,8 @@ public class FinalizeStudyBean implements Serializable {
             String[] subjectID = subjectLine.split("\t");
             // Ignore the first 2 strings (i.e. geneID and EntrezID); start at ndex 2.
             for (int i = 2; i < subjectID.length; i++) {
-                // Check is subject meta data found in the database.
-                if (!StudySubjectDB.isSSExist(subjectID[i], grp_id, study_id)) {
+                // Check is subject record found in the database.
+                if (!SubjectRecordDB.isSRExist(subjectID[i], study_id)) {
                     // Only want to store the unqiue subject ID that doesn't
                     // have meta data in the database.
                     if (!metaDataNotFound.toString().contains(subjectID[i])) {

@@ -1,5 +1,5 @@
 /*
- * Copyright @2015-2016
+ * Copyright @2015-2017
  */
 package TIMS.Database;
 
@@ -51,6 +51,9 @@ import org.apache.logging.log4j.LogManager;
  * To delete the original output file after it has been zipped.
  * 10-Aug-2016 - In method consolidateFinalizedData(), use the try-with-resource
  * statement to create the PrintStream object. Removed unused code.
+ * 19-Apr-2017 - Subject's meta data will now be own by study, and the study 
+ * will be own by group i.e. the direct link between group and subject's meta 
+ * data will be break off.
  */
 
 public class DataRetriever extends Thread {
@@ -116,8 +119,7 @@ public class DataRetriever extends Thread {
         long startTime = System.nanoTime();
         StringBuilder data = new StringBuilder();
         data.append(SubjectDB.buildStudySubjectMD
-                (item.getSubject_id(), item.getGrp_id(), study_id))
-                .append(item.getPipeline());
+                (item.getSubject_id(), study_id)).append(item.getPipeline());
         String query = "SELECT data[?] FROM data_depository " 
                      + "WHERE annot_ver = ? ORDER BY genename";
         
@@ -206,7 +208,7 @@ public class DataRetriever extends Thread {
                 "SELECT y.subject_id, y.grp_id, x.pipeline_name, y.array_index "
                 + "FROM (SELECT job_id, pipeline_name FROM submitted_job WHERE "
                 + "study_id = ? AND status_id = 5) x NATURAL JOIN " +
-                "(SELECT * FROM finalized_output) y WHERE job_id = x.job_id " +
+                "(SELECT * FROM finalized_record) y WHERE job_id = x.job_id " +
                 "ORDER BY y.subject_id, y.array_index";
         
         try (PreparedStatement stm = conn.prepareStatement(query)) {

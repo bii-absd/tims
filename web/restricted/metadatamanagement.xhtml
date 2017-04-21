@@ -19,10 +19,12 @@
                              paginatorTemplate="{FirstPageLink} {PreviousPageLink}
                              {CurrentPageReport} {NextPageLink} {LastPageLink}"
                              styleClass="table-odd-row table-even-row" 
-                             editable="true">
+                             editable="true" 
+                             filteredValue="#{MDMgntBean.filteredSubtDetailList}">
                     <p:ajax event="rowEdit" listener="#{MDMgntBean.onRowEdit}" 
                             update="MDMsg"/>
-                    <p:column headerText="Subject ID" styleClass="jsmedcol">
+                    <p:column filterBy="#{mddata.subject_id}" filterMatchMode="contains"  
+                              headerText="Subject ID" style="width: 200px">
                         <h:outputText value="#{mddata.subject_id}"/>
                     </p:column>
                     <p:column headerText="Gender" styleClass="jssmallcol">
@@ -65,6 +67,17 @@
                                     <f:selectItem itemLabel="Eurasian" itemValue="ERA"/>
                                     <f:selectItem itemLabel="Others" itemValue="OTH"/>
                                 </p:selectOneMenu>
+                            </f:facet>
+                        </p:cellEditor>
+                    </p:column>
+                    <p:column headerText="Record Date" styleClass="jssmallcol">
+                        <p:cellEditor>
+                            <f:facet name="output">
+                                <h:outputText value="#{mddata.record_date}"/>
+                            </f:facet>
+                            <f:facet name="input">
+                                <p:calendar value="#{MDMgntBean.util_record_date}" 
+                                            pattern="yyyy-MM-dd"/>
                             </f:facet>
                         </p:cellEditor>
                     </p:column>
@@ -147,7 +160,7 @@
         </p:tab>
         
         <p:tab id="uploadData" title="Upload New Meta Data (Format of Meta Data: 
-               Subject_ID|Age_at_diagnosis|Gender|Nationality|Race|Height|Weight|Remarks)" 
+               Subject_ID|Age_at_diagnosis|Gender|Nationality|Race|Height|Weight|Record_Date|Remarks)" 
                titleStyleClass="tab-title">
             <h:form id="uploadDataForm" enctype="multipart/form-data">
                 <p:fileUpload id="uploadDataFile" mode="advanced" 
@@ -195,6 +208,11 @@
                         <f:selectItem itemLabel="Others" itemValue="OTH"/>
                     </p:selectOneMenu>
                     <h:message for="race" styleClass="errors"/>
+                    
+                    <h:outputText value="Record Date" styleClass="inputlabel"/>
+                    <p:calendar id="record" value="#{MDMgntBean.util_record_date}" 
+                                required="true" pattern="yyyy-MM-dd"/>
+                    <h:message for="record" styleClass="errors"/>
                     
                     <h:outputText value="Age at Diagnosis" styleClass="inputlabel"/>
                     <p:inputText id="agediagnosis" size="20" maxlength="3" 
