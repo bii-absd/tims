@@ -112,7 +112,8 @@ import org.apache.pdfbox.pdmodel.graphics.xobject.PDJpeg;
  * revertStudyStatus() and reindexDataDepositoryIndex().
  * 19-Apr-2017 - Subject's meta data will now be own by study, and the study 
  * will be own by group i.e. the direct link between group and subject's meta 
- * data will be break off.
+ * data will be break off. Changes due to table name change in database (i.e.
+ * from finalized_output to finalized_record.)
  */
 
 public class DataDepositor extends Thread {
@@ -120,7 +121,7 @@ public class DataDepositor extends Thread {
     private final static Logger logger = LogManager.
             getLogger(DataDepositor.class.getName());
     private Connection conn = null;
-    private final String study_id, grp_id, annot_ver, summaryReportPath;
+    private final String study_id, annot_ver, summaryReportPath;
     private String fileUri;
     private int job_id, numSubjectNotFound, numSubjectFound;
     // Variables to be used during processing of pipeline output.
@@ -158,9 +159,8 @@ public class DataDepositor extends Thread {
         this.userName = userName;
         this.study_id = study_id;
         this.jobList = jobList;
-        // Retrieve the value of grp_id, annot_ver and icd_code from database.
+        // Retrieve the value of annot_ver from study table.
         Study study = StudyDB.getStudyObject(study_id);
-        grp_id = study.getGrp_id();
         annot_ver = study.getAnnot_ver();
         summaryReportPath = Constants.getSYSTEM_PATH() + 
                             Constants.getFINALIZE_PATH() + study_id + 

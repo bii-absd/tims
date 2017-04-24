@@ -4,6 +4,7 @@
 package TIMS.Database;
 
 import TIMS.General.Constants;
+import TIMS.General.FileHelper;
 import TIMS.General.Postman;
 import java.io.File;
 import java.io.IOException;
@@ -53,7 +54,8 @@ import org.apache.logging.log4j.LogManager;
  * statement to create the PrintStream object. Removed unused code.
  * 19-Apr-2017 - Subject's meta data will now be own by study, and the study 
  * will be own by group i.e. the direct link between group and subject's meta 
- * data will be break off.
+ * data will be break off. The subject record and pipeline output will be 
+ * separated into 2 files.
  */
 
 public class DataRetriever extends Thread {
@@ -61,7 +63,8 @@ public class DataRetriever extends Thread {
     private final static Logger logger = LogManager.
             getLogger(DataRetriever.class.getName());
     private Connection conn = null;
-    private final String study_id, annot_ver, finalize_file, userName;
+    private final String study_id, annot_ver, finalize_file, 
+                         finalize_meta, userName;
     private final List<OutputItems> opItemsList;
     private final List<String> geneList;
     private StringBuilder opHeader = new StringBuilder();
@@ -76,14 +79,17 @@ public class DataRetriever extends Thread {
         finalize_file = Constants.getSYSTEM_PATH() + 
                         Constants.getFINALIZE_PATH() + 
                         study_id + Constants.getFINALIZE_FILE_EXT();
+        finalize_meta = Constants.getSYSTEM_PATH() + 
+                        Constants.getFINALIZE_PATH() + 
+                        study_id + "_meta" + Constants.getFINALIZE_FILE_EXT();
         annot_ver = StudyDB.getStudyAnnotVer(study_id);
         // Get a data source connection for this thread.
         conn = DBHelper.getDSConn();
         
-        opHeader.append("Subject|Age|Gender|Race|Height|Weight|SubjectClass|"
-                      + "Remarks|Event|EventDate|Pipeline");
+        // Subject ID|Pipeline Name|Pipeline output
+        opHeader.append("Subject|Pipeline");
         geneList = getGeneList();
-        // Retrieve the list of OutputItems (i.e. Subject|Technology|Index)
+        // Retrieve the list of OutputItems (i.e. Subject ID|Pipeline Name|Index)
         opItemsList = getOpItemsList();
         logger.debug("DataRetriever created for study_id: " + study_id);
     }
@@ -92,22 +98,28 @@ public class DataRetriever extends Thread {
     public void run() {
         logger.debug("DataRetriever start running.");
         consolidateFinalizedData();
+        consolidateMetaData();
         // Close the data source connection after use.
         DBHelper.closeDSConn(conn);
-        // Update the study with the finalized file path.
-        StudyDB.updateStudyFinalizedFile(study_id, finalize_file);
-        // Zip the finalized output file.
-        String foPath = StudyDB.zipFinalizedOutput(study_id);
-        if (foPath != null) {
-            // Delete the original finalized output file to free up memory space.
-            File foFile = new File(foPath);
-            if (foFile.delete()) {
-                logger.debug("Original finalized output file for Study ID " + study_id + " deleted.");
-            }
-            else {
-                logger.error("FAIL to delete original finalized output file!");
-            }
+        // Zip the finalized output file and meta data file into one package.
+        String[] srcFiles = {finalize_file, finalize_meta};
+        String zipFile = Constants.getSYSTEM_PATH() + 
+                         Constants.getFINALIZE_PATH() + study_id + 
+                         Constants.getZIPFILE_EXT();
+        try {
+            FileHelper.zipFiles(zipFile, srcFiles);
+            logger.debug("Output and Meta data files for Study " + study_id + " zipped.");
+            // Update the study with the zipped file path.
+            StudyDB.updateStudyFinalizedFile(study_id, zipFile);
+            // Delete the original output and Meta data files to free up memory space.
+            FileHelper.delete(finalize_file);
+            FileHelper.delete(finalize_meta);
         }
+        catch (IOException e) {
+            logger.error("FAIL to zip output and Meta data files for Study " + study_id);
+            logger.error(e.getMessage());
+        }
+
         // Send success finalization status email to the user.
         Postman.sendFinalizationStatusEmail(study_id, userName, Constants.OK);
     }
@@ -118,10 +130,10 @@ public class DataRetriever extends Thread {
         long elapsedTime;
         long startTime = System.nanoTime();
         StringBuilder data = new StringBuilder();
-        data.append(SubjectDB.buildStudySubjectMD
-                (item.getSubject_id(), study_id)).append(item.getPipeline());
         String query = "SELECT data[?] FROM data_depository " 
                      + "WHERE annot_ver = ? ORDER BY genename";
+        
+        data.append(item.getSubject_id()).append("|").append(item.getPipeline());
         
         try (PreparedStatement stm = conn.prepareStatement(query)) {
             stm.setInt(1, item.getArray_index());
@@ -169,6 +181,43 @@ public class DataRetriever extends Thread {
         }
     }
     
+    // Retrieve all the subject records for this study, consolidate and output
+    // them to a text file.
+    private void consolidateMetaData() {
+        StringBuilder subjectLine = new StringBuilder();
+        
+        try {
+            List<SubjectDetail> subjectDetailList = 
+                                    SubjectDB.getSubtDetailList(study_id);
+            PrintStream ps = new PrintStream(new File (finalize_meta));
+            // Write the header line first.
+            ps.println("Subject|Age|Gender|Race|Record Date|Height|Weight|"
+                     + "Subject Class|Remarks|Event|Event Date");
+            for (SubjectDetail subj : subjectDetailList) {
+                subjectLine.append(subj.getSubject_id()).append("|").
+                        append(subj.getAge_at_diagnosis()).append("|").
+                        append(subj.getGender()).append("|").
+                        append(subj.getRace()).append("|").
+                        append(subj.getRecord_date()).append("|").
+                        append(subj.getHeight()).append("|").
+                        append(subj.getWeight()).append("|").
+                        append(subj.getSubtype_code()).append("|").
+                        append(subj.getRemarks()).append("|").
+                        append(subj.getEvent()).append("|").
+                        append(subj.getEvent_date());
+                ps.println(subjectLine.toString());
+                // Empty the string after each subject Meta data.
+                subjectLine.delete(0, subjectLine.length()-1);
+            }
+            
+            ps.close();
+        }
+        catch (SQLException|NamingException|IOException ioe) {
+            logger.error("FAIl to write meta data to file!");
+            logger.error(ioe.getMessage());
+        }
+    }
+    
     // Retrieve the list of genename that is relevant to the annotation 
     // version used in the study.
     private List<String> getGeneList() {
@@ -200,12 +249,12 @@ public class DataRetriever extends Thread {
         return gene;
     }
     
-    // Retrieve the output row information (i.e. subject_id|grp_id|pipeline|
-    // array_index where gene's values are stored) from the database.
+    // Retrieve the output row information (i.e. subject_id|pipeline|array_index 
+    // where gene's values are stored) from the database.
     private List<OutputItems> getOpItemsList() {
         List<OutputItems> opList = new ArrayList<>();
         String query = 
-                "SELECT y.subject_id, y.grp_id, x.pipeline_name, y.array_index "
+                "SELECT y.subject_id, x.pipeline_name, y.array_index "
                 + "FROM (SELECT job_id, pipeline_name FROM submitted_job WHERE "
                 + "study_id = ? AND status_id = 5) x NATURAL JOIN " +
                 "(SELECT * FROM finalized_record) y WHERE job_id = x.job_id " +
@@ -218,7 +267,6 @@ public class DataRetriever extends Thread {
             while (rs.next()) {
                 OutputItems item = new OutputItems(
                                     rs.getString("subject_id"),
-                                    rs.getString("grp_id"),
                                     rs.getString("pipeline_name"),
                                     rs.getInt("array_index"));
                 opList.add(item);                

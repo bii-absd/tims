@@ -197,10 +197,10 @@ public abstract class SubjectDB {
 
         return isSubjectExist;
     }
-        
-    // To retrieve and build the study subject Meta data (i.e. subject_id|age|
-    // gender|race|height|weight|subjectclass|remarks|event|event_date) for 
-    // this subject under this study.
+    
+    // To retrieve and build the subject Meta data (i.e. subject_id|age|gender|
+    // race|height|weight|subjectclass|remarks|event|event_date) for this
+    // subject under this study.
     public static String buildStudySubjectMD(String subject_id, String study_id) 
     {
         Connection conn = null;

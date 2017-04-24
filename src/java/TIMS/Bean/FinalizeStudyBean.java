@@ -167,7 +167,7 @@ public class FinalizeStudyBean implements Serializable {
                     }
                 }
                 catch (SQLException|IOException|NamingException e) {
-                    // Error when checking for subject meta data. 
+                    // Error when checking for subject record.
                     // Stop the finalization process and go to error page.
                     logger.error("FAIL to check for subject record availability!");
                     logger.error(e.getMessage());
