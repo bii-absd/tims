@@ -85,7 +85,7 @@
         <p:tab id="clData" title="Clinical Subject Data" titleStyleClass="tab-title">
             <h:panelGrid cellpadding="1">
                 <p:commandLink value="#{msg['md-mgnt']}" 
-                               action="#{menuSelBean.setupOpenStudyList}"
+                               action="#{menuSelBean.setupStudyList}"
                                styleClass="mainmenuitem" update=":mdDlgForm"
                                title="Upload or edit subject meta data"
                                oncomplete="PF('mdDlg').show()"/>
@@ -172,7 +172,7 @@
                 <h:panelGroup>
                     <p:selectOneMenu id="mdDlg-studyID" value="#{menuSelBean.study_id}">
                         <f:selectItem itemLabel="Select Study" itemValue=""/>
-                        <f:selectItems value="#{menuSelBean.openStudyList}"/>
+                        <f:selectItems value="#{menuSelBean.studyList}"/>
                         <p:ajax update="mdDlg-selPanel"/>
                     </p:selectOneMenu>
                 </h:panelGroup>

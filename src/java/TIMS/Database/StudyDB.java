@@ -1,5 +1,5 @@
 /*
- * Copyright @2015-2016
+ * Copyright @2015-2017
  */
 package TIMS.Database;
 
@@ -85,6 +85,8 @@ import org.apache.logging.log4j.LogManager;
  * 25-Aug-2016 - Changed the access level modifier for the helper functions 
  * (i.e. getStudyHash, queryFinalizedStudies & getStudyPropValue) from public
  * to private. Removed unused code. Changed all Boolean variables to boolean.
+ * 24-Apr-2017 - Meta data management will be allowed for all studies that are
+ * not closed.
  */
 
 public abstract class StudyDB {
@@ -328,6 +330,9 @@ public abstract class StudyDB {
         }
     }
     
+    /* NO LONGER IN USE!
+    // For subject Meta data management, the method getPIStudyHash() will be
+    // used instead.
     // Return the list of 'opened' (i.e. not finalized yet) Study ID setup under
     // the group(s) that this lead is heading. The list of Study ID will be
     // available for the lead to select for subject Meta data management.
@@ -338,7 +343,8 @@ public abstract class StudyDB {
 
         logger.debug("Retrieving open study list for PI " + piID);
         return getStudyHash(query);
-    }    
+    }
+    */
     // Return the list of unclosed Study ID under the group(s) that this lead is
     // heading. The list of Study ID will be available for the lead to select
     // for pipeline execution.
@@ -350,6 +356,9 @@ public abstract class StudyDB {
         logger.debug("Retrieving study list for PI " + piID);
         return getStudyHash(query);
     }
+    /* NO LONGER IN USE!
+    // For subject Meta data management, the method getUserStudyHash() will be
+    // used instead.
     // Return the list of 'opened' (i.e. not finalized yet) Study ID setup under
     // the group that this user ID belongs to. The list of Study ID will be
     // available for user to select for subject Meta data management.
@@ -360,7 +369,8 @@ public abstract class StudyDB {
 
         logger.debug("Retrieving open study list for user " + userID);
         return getStudyHash(query);
-    }    
+    }
+    */
     // Return the list of unclosed Study ID setup under the group that this 
     // user ID belongs to. The list of Study ID will be available for user to
     // select for pipeline execution.

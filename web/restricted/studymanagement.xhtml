@@ -43,7 +43,6 @@
                         </f:facet>
                         <f:facet name="input">
                             <p:selectOneMenu value="#{study.grp_id}" 
-                                             rendered="#{!study.finalized}" 
                                              style="width: 100%">
                                 <f:selectItems value="#{studyMgntBean.grpHash}"/>
                             </p:selectOneMenu>
@@ -65,7 +64,6 @@
                         </f:facet>
                         <f:facet name="input">
                             <p:selectOneMenu value="#{study.icd_code}" 
-                                             rendered="#{!study.finalized}" 
                                              filter="true" 
                                              filterMatchMode="contains"
                                              style="width: 100%">

@@ -1,5 +1,5 @@
 /*
- * Copyright @2015-2016
+ * Copyright @2015-2017
  */
 package TIMS.Bean;
 
@@ -70,6 +70,8 @@ import org.apache.logging.log4j.LogManager;
  * proceedToRawDataMgnt() to support Raw Data Management module Part I.
  * 13-Dec-2016 - Raw data management should be allowed for finalized study 
  * (i.e. ad-hoc study).
+ * 24-Apr-2017 - Meta data management will be allowed for all studies that are
+ * not closed.
  */
 
 @ManagedBean (name="menuSelBean")
@@ -80,7 +82,7 @@ public class MenuSelectionBean implements Serializable{
             getLogger(MenuSelectionBean.class.getName());
     private String study_id, plConfigPageURL, plName;
     private Boolean haveNewData;
-    private LinkedHashMap<String, String> studyList, openStudyList, pipelineList;
+    private LinkedHashMap<String, String> studyList, pipelineList;
     // Store the user ID of the current user.
     private final String userName;
     private final int roleID;
@@ -117,21 +119,12 @@ public class MenuSelectionBean implements Serializable{
     
     // Setup the hash maps needed for raw data management.
     public void setupRawDataMgnt() {
-        setupRawDataStudyList();
+        setupStudyList();
         pipelineList = PipelineDB.getEditablePlHash();
     }
 
-    // Setup the Study ID list for user selection to manage subject data.
-    public void setupOpenStudyList() {
-        if (UserRoleDB.isLead(roleID)) {
-            openStudyList = StudyDB.getPIOpenStudyHash(userName);
-        }
-        else {
-            openStudyList = StudyDB.getUserOpenStudyHash(userName);
-        }
-    }
-    // Setup the Study ID list for user selection to manage raw data.
-    public void setupRawDataStudyList() {
+    // Setup the Study ID list for user selection to manage Meta and raw data.
+    public void setupStudyList() {
         if (UserRoleDB.isLead(roleID)) {
             studyList = StudyDB.getPIStudyHash(userName);
         }
@@ -204,11 +197,6 @@ public class MenuSelectionBean implements Serializable{
     // execute pipeline.
     public LinkedHashMap<String, String> getStudyList() {
         return studyList;
-    }
-    // Return the list of 'opened' Study ID setup under the group that this
-    // user belongs to.
-    public LinkedHashMap<String, String> getOpenStudyList() {
-        return openStudyList;
     }
     
     // Setup the NGSConfigBean according to the specific pipeline selected.
