@@ -1,14 +1,17 @@
 /*
- * Copyright @2016
+ * Copyright @2016-2017
  */
 package TIMS.General;
 
+import TIMS.Database.SubjectDB;
+import TIMS.Database.SubjectDetail;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.PrintStream;
 import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -17,11 +20,14 @@ import java.nio.file.Paths;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.sql.SQLException;
+import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 // Libraries for Java Extension
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
+import javax.naming.NamingException;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -41,6 +47,7 @@ import org.apache.logging.log4j.LogManager;
  * methods, delete and zipFiles.
  * 25-Aug-2016 - Added 2 static methods, fileExist and deleteDirectory.
  * 30-Aug-2016 - Added 2 static methods, moveFile and getFilesWithExt.
+ * 25-Apr-2017 - Added 1 static method, generateMetaDataList.
  */
 
 public abstract class FileHelper {
@@ -180,5 +187,46 @@ public abstract class FileHelper {
         }
         
         return result;
+    }
+    
+    // Helper function to consolidate and generate the Meta data list for the
+    // study ID passed in.
+    public static boolean generateMetaDataList(String study_id, String filepath) {
+        boolean status = Constants.OK;
+        StringBuilder subjectLine = new StringBuilder();
+        
+        try {
+            List<SubjectDetail> subjectDetailList = 
+                                    SubjectDB.getSubtDetailList(study_id);
+            PrintStream ps = new PrintStream(new File (filepath));
+            // Write the header line first.
+            ps.println("Subject|Age|Gender|Race|Record Date|Height|Weight|"
+                     + "Subject Class|Remarks|Event|Event Date");
+            for (SubjectDetail subj : subjectDetailList) {
+                subjectLine.append(subj.getSubject_id()).append("|").
+                        append(subj.getAge_at_diagnosis()).append("|").
+                        append(subj.getGender()).append("|").
+                        append(subj.getRace()).append("|").
+                        append(subj.getRecord_date()).append("|").
+                        append(subj.getHeight()).append("|").
+                        append(subj.getWeight()).append("|").
+                        append(subj.getSubtype_code()).append("|").
+                        append(subj.getRemarks()).append("|").
+                        append(subj.getEvent()).append("|").
+                        append(subj.getEvent_date());
+                ps.println(subjectLine.toString());
+                // Empty the string after each subject Meta data.
+                subjectLine.delete(0, subjectLine.length()-1);
+            }
+            
+            ps.close();
+        }
+        catch (SQLException|NamingException|IOException ioe) {
+            logger.error("FAIl to generate meta data list for study " + study_id);
+            logger.error(ioe.getMessage());
+            status = Constants.NOT_OK;
+        }
+        
+        return status;
     }
 }

@@ -56,7 +56,7 @@ public class VaultKeeper extends Thread {
     private Connection conn = null;
     private List<Integer> jobList = new ArrayList<>();
     private String fileUri;
-    private final String study_id, grp_id, annot_ver, userName;
+    private final String study_id, annot_ver, userName;
     // Variables to be used during processing of pipeline output.
     private int totalRecord, processedRecord, totalGene, processedGene;
     private int[] vaultIndex;
@@ -68,9 +68,8 @@ public class VaultKeeper extends Thread {
         this.userName = userName;
         this.study_id = study_id;
         jobList = SubmittedJobDB.getFinalizedJobIDs(study_id);
-        // Retrieve the value of grp_id, annot_ver and icd_code from database.
+        // Retrieve the value of annot_ver and icd_code from database.
         Study study = StudyDB.getStudyObject(study_id);
-        grp_id = study.getGrp_id();
         annot_ver = study.getAnnot_ver();
         
         logger.debug("VaultKeeper created for study " + study_id);

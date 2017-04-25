@@ -98,7 +98,7 @@ public class DataRetriever extends Thread {
     public void run() {
         logger.debug("DataRetriever start running.");
         consolidateFinalizedData();
-        consolidateMetaData();
+        FileHelper.generateMetaDataList(study_id, finalize_meta);
         // Close the data source connection after use.
         DBHelper.closeDSConn(conn);
         // Zip the finalized output file and meta data file into one package.
@@ -177,43 +177,6 @@ public class DataRetriever extends Thread {
         }
         catch (IOException ioe) {
             logger.error("FAIl to write output to file!");
-            logger.error(ioe.getMessage());
-        }
-    }
-    
-    // Retrieve all the subject records for this study, consolidate and output
-    // them to a text file.
-    private void consolidateMetaData() {
-        StringBuilder subjectLine = new StringBuilder();
-        
-        try {
-            List<SubjectDetail> subjectDetailList = 
-                                    SubjectDB.getSubtDetailList(study_id);
-            PrintStream ps = new PrintStream(new File (finalize_meta));
-            // Write the header line first.
-            ps.println("Subject|Age|Gender|Race|Record Date|Height|Weight|"
-                     + "Subject Class|Remarks|Event|Event Date");
-            for (SubjectDetail subj : subjectDetailList) {
-                subjectLine.append(subj.getSubject_id()).append("|").
-                        append(subj.getAge_at_diagnosis()).append("|").
-                        append(subj.getGender()).append("|").
-                        append(subj.getRace()).append("|").
-                        append(subj.getRecord_date()).append("|").
-                        append(subj.getHeight()).append("|").
-                        append(subj.getWeight()).append("|").
-                        append(subj.getSubtype_code()).append("|").
-                        append(subj.getRemarks()).append("|").
-                        append(subj.getEvent()).append("|").
-                        append(subj.getEvent_date());
-                ps.println(subjectLine.toString());
-                // Empty the string after each subject Meta data.
-                subjectLine.delete(0, subjectLine.length()-1);
-            }
-            
-            ps.close();
-        }
-        catch (SQLException|NamingException|IOException ioe) {
-            logger.error("FAIl to write meta data to file!");
             logger.error(ioe.getMessage());
         }
     }

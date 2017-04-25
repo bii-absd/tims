@@ -11,7 +11,16 @@
     <ui:param name="link" value="#{MDMgntBean.breadCrumbLink}"/>
     <ui:define name="content">
     <p:growl id="MDMsg"/>
-    <p:accordionPanel id="accPanel">
+    <h:form id="genMetaList">
+        <p:panel style="height: 40px">
+            <p:commandButton value="Download Meta Data List" 
+                             icon="ui-icon-document" ajax="false"
+                             action="#{MDMgntBean.downloadMetaDataList}"
+                             rendered="#{!MDMgntBean.metaListEmpty}" 
+                             style="font-size: 12px"/>
+        </p:panel>
+    </h:form>
+    <p:accordionPanel id="accPanel" activeIndex="null">
         <p:tab id="editData" title="Edit Meta Data" titleStyleClass="tab-title">
             <h:form id="editDataForm">
                 <p:dataTable var="mddata" rows="10" id="MDTable" 

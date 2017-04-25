@@ -11,6 +11,7 @@ import TIMS.Database.Subject;
 import TIMS.Database.SubjectDB;
 import TIMS.Database.SubjectDetail;
 import TIMS.General.Constants;
+import TIMS.General.FileHelper;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -82,6 +83,8 @@ import org.primefaces.model.UploadedFile;
  * user who change the fixed attributes. Subject's meta data will now be own 
  * by study, and the study will be own by group i.e. the direct link between 
  * group and subject's meta data will be break off.
+ * 25-Apr-2017 - Added the functionality for user to download the Meta data list
+ * for the respective study.
  */
 
 @ManagedBean (name="MDMgntBean")
@@ -389,6 +392,23 @@ public class MetaDataManagementBean implements Serializable {
         buildSubtDetailList();
     }
     
+    // Build the meta data list for the study; for user to download.
+    public void downloadMetaDataList() {
+        String meta_file = Constants.getSYSTEM_PATH() + 
+                           Constants.getTMP_PATH() + 
+                           study_id + "_meta_" + 
+                           Constants.getDT_yyyyMMdd_HHmm() + 
+                           Constants.getOUTPUTFILE_EXT();
+        
+        if (FileHelper.generateMetaDataList(study_id, meta_file)) {
+            ActivityLogDB.recordUserActivity(userName, Constants.DWL_FIL, 
+                                    "Meta Data List for Study " + study_id);
+            FileHelper.download(meta_file);
+            // Delete the Meta Data List after download.
+            FileHelper.delete(meta_file);
+        }
+    }
+    
     // Retrieve the faces context
     private FacesContext getFacesContext() {
 	return FacesContext.getCurrentInstance();
@@ -420,6 +440,12 @@ public class MetaDataManagementBean implements Serializable {
     // Clinical Data Management page.
     public String getBreadCrumbLink() {
         return "Meta Data Management for " + study_id;
+    }
+    
+    // Check whether the subject detail list is empty; use to control the 
+    // rendering of the Generate Meta Data List button.
+    public boolean isMetaListEmpty() {
+        return subtDetailList.isEmpty();
     }
     
     // Machine generated getters and setters.
