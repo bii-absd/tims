@@ -12,7 +12,7 @@
     <ui:define name="content">
     <p:growl id="MDMsg"/>
     <h:form id="genMetaList">
-        <p:panel style="height: 40px">
+        <p:panel style="height: 40px" rendered="#{!MDMgntBean.metaListEmpty}">
             <p:commandButton value="Download Meta Data List" 
                              icon="ui-icon-document" ajax="false"
                              action="#{MDMgntBean.downloadMetaDataList}"
