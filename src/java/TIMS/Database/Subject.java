@@ -20,23 +20,26 @@ package TIMS.Database;
  * 30-Mar-2016 - Added 3 new attributes i.e. remarks, event and event_date.
  * 31-Mar-2016 - Only keep attributes subject_id, grp_id, country_code, race
  * and gender in this class. Move the rest to StudySubject Class.
- * 18-Apr-2017 - Removed grp_id, and added study_id and subtype_code.
+ * 18-Apr-2017 - Removed grp_id, and added study_id, subtype_code and
+ * age_at_baseline.
  */
 
 public class Subject {
     // subject table attributes
     private String subject_id, study_id, country_code, race, subtype_code;
     private char gender;
+    private int age_at_baseline;
 
     // Machine generated constructor
     public Subject(String subject_id, String study_id, char gender, String country_code, 
-            String race, String subtype_code) {
+            String race, String subtype_code, int age_at_baseline) {
         this.subject_id = subject_id;
         this.study_id = study_id;
         this.gender = gender;
         this.country_code = country_code;
         this.race = race;
         this.subtype_code = subtype_code;
+        this.age_at_baseline = age_at_baseline;
     }
     
     
@@ -89,5 +92,11 @@ public class Subject {
     }
     public void setSubtype_code(String subtype_code) {
         this.subtype_code = subtype_code;
+    }
+    public int getAge_at_baseline() {
+        return age_at_baseline;
+    }
+    public void setAge_at_baseline(int age_at_baseline) {
+        this.age_at_baseline = age_at_baseline;
     }
 }

@@ -13,27 +13,25 @@ import java.time.LocalDate;
  * 
  * Revision History
  * 31-Mar-2016 - Created with all the standard getters and setters.
- * 19-Apr-2017 - Rename to SubjectRecord. Removed grp_id and subtype_code, 
- * added record_date.
+ * 19-Apr-2017 - Rename to SubjectRecord. Removed grp_id, age_at_diagnosis and 
+ * subtype_code, added record_date.
  */
 
 public class SubjectRecord {
     // study_subject table attributes
     private String subject_id, study_id, remarks, event;
-    private int age_at_diagnosis;
     private float height, weight;
     private LocalDate event_date, record_date;
     
     // Machine generated constructor
     public SubjectRecord(String subject_id, String study_id, LocalDate record_date,
-                        String remarks, String event, int age_at_diagnosis, 
-                        float height, float weight, LocalDate event_date) {
+                        String remarks, String event, float height, 
+                        float weight, LocalDate event_date) {
         this.subject_id = subject_id;
         this.study_id = study_id;
         this.record_date = record_date;
         this.remarks = remarks;
         this.event = event;
-        this.age_at_diagnosis = age_at_diagnosis;
         this.height = height;
         this.weight = weight;
         this.event_date = event_date;
@@ -69,12 +67,6 @@ public class SubjectRecord {
     }
     public void setEvent(String event) {
         this.event = event;
-    }
-    public int getAge_at_diagnosis() {
-        return age_at_diagnosis;
-    }
-    public void setAge_at_diagnosis(int age_at_diagnosis) {
-        this.age_at_diagnosis = age_at_diagnosis;
     }
     public float getHeight() {
         return height;

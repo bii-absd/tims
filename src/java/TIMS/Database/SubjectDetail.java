@@ -3,6 +3,8 @@
  */
 package TIMS.Database;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.LocalDate;
 
 /**
@@ -16,22 +18,44 @@ import java.time.LocalDate;
  * Revision History
  * 31-Mar-2016 - Created with all the standard getters and setters.
  * 18-Apr-2017 - Removed grp_id, and added record_date.
+ * 28-Apr-2017 - Change of attribute name from age_at_diagnosis to 
+ * age_at_baseline. Add new constructor that build the object directly from
+ * the result set returned from database query.
  */
 
 public class SubjectDetail {
     // subject_detail view attributes
     private String study_id, subject_id, country_code, race, subtype_code, 
                    remarks, event;
-    private int age_at_diagnosis;
+    private int age_at_baseline;
     private float height, weight;
     private LocalDate event_date, record_date;
     private char gender;
 
-    // Machine generated constructor.
+    // Construct the SubjectDetail object directly using the result set returned
+    // from the database query.
+    public SubjectDetail(ResultSet rs) throws SQLException {
+        this.study_id = rs.getString("study_id");
+        this.subject_id = rs.getString("subject_id");
+        this.record_date = (rs.getDate("record_date") != null)?
+                            rs.getDate("record_date").toLocalDate():null;
+        this.country_code = rs.getString("country_code");
+        this.race = rs.getString("race");
+        this.subtype_code = rs.getString("subtype_code");
+        this.remarks = rs.getString("remarks");
+        this.event = rs.getString("event");
+        this.age_at_baseline = rs.getInt("age_at_baseline");
+        this.height = rs.getFloat("height");
+        this.weight = rs.getFloat("weight");
+        this.event_date = (rs.getDate("event_date") != null)?
+                           rs.getDate("event_date").toLocalDate():null;
+        this.gender = rs.getString("gender").charAt(0);
+    }
     
+    // Machine generated constructor.
     public SubjectDetail(String study_id, String subject_id, LocalDate record_date,
                          String country_code, String race, String subtype_code, 
-                         String remarks, String event, int age_at_diagnosis, 
+                         String remarks, String event, int age_at_baseline, 
                          float height, float weight, LocalDate event_date, char gender) 
     {
         this.study_id = study_id;
@@ -42,7 +66,7 @@ public class SubjectDetail {
         this.subtype_code = subtype_code;
         this.remarks = remarks;
         this.event = event;
-        this.age_at_diagnosis = age_at_diagnosis;
+        this.age_at_baseline = age_at_baseline;
         this.height = height;
         this.weight = weight;
         this.event_date = event_date;
@@ -103,11 +127,11 @@ public class SubjectDetail {
     public void setEvent(String event) {
         this.event = event;
     }
-    public int getAge_at_diagnosis() {
-        return age_at_diagnosis;
+    public int getAge_at_baseline() {
+        return age_at_baseline;
     }
-    public void setAge_at_diagnosis(int age_at_diagnosis) {
-        this.age_at_diagnosis = age_at_diagnosis;
+    public void setAge_at_baseline(int age_at_baseline) {
+        this.age_at_baseline = age_at_baseline;
     }
     public float getHeight() {
         return height;

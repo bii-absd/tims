@@ -34,8 +34,7 @@ import org.apache.logging.log4j.LogManager;
 
 /**
  * FileHelper is an abstract class and not mean to be instantiate, its main job
- * is to perform file uploading/downloading operations for the user at the 
- * client side.
+ * is to perform general file operations.
  * 
  * Author: Tay Wei Hong
  * Date: 06-Jan-2016
@@ -200,23 +199,23 @@ public abstract class FileHelper {
                                     SubjectDB.getSubtDetailList(study_id);
             PrintStream ps = new PrintStream(new File (filepath));
             // Write the header line first.
-            ps.println("Subject|Age|Gender|Race|Record Date|Height|Weight|"
-                     + "Subject Class|Remarks|Event|Event Date");
+            ps.println("Subject ID|Age at Baseline|Gender|Nationality|Race|"
+                     + "Height|Weight|Record Date|Remarks|Event|Event Date");            
             for (SubjectDetail subj : subjectDetailList) {
                 subjectLine.append(subj.getSubject_id()).append("|").
-                        append(subj.getAge_at_diagnosis()).append("|").
+                        append(subj.getAge_at_baseline()).append("|").
                         append(subj.getGender()).append("|").
+                        append(subj.getCountry_code()).append("|").
                         append(subj.getRace()).append("|").
-                        append(subj.getRecord_date()).append("|").
                         append(subj.getHeight()).append("|").
                         append(subj.getWeight()).append("|").
-                        append(subj.getSubtype_code()).append("|").
+                        append(subj.getRecord_date()).append("|").
                         append(subj.getRemarks()).append("|").
                         append(subj.getEvent()).append("|").
                         append(subj.getEvent_date());
                 ps.println(subjectLine.toString());
                 // Empty the string after each subject Meta data.
-                subjectLine.delete(0, subjectLine.length()-1);
+                subjectLine.delete(0, subjectLine.length());
             }
             
             ps.close();

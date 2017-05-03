@@ -21,6 +21,7 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -85,6 +86,8 @@ import org.primefaces.model.UploadedFile;
  * group and subject's meta data will be break off.
  * 25-Apr-2017 - Added the functionality for user to download the Meta data list
  * for the respective study.
+ * 28-Apr-2017 - Renamed method insertMetaData() to insertNewMeasurement().
+ * Fixed the bugs found during demo.
  */
 
 @ManagedBean (name="MDMgntBean")
@@ -95,13 +98,13 @@ public class MetaDataManagementBean implements Serializable {
             getLogger(MetaDataManagementBean.class.getName());
     private String subject_id, country_code, race, remarks, event;
     private char gender;
-    private int age_at_diagnosis;
+    private int age_at_baseline;
     private float height, weight;
     private java.util.Date util_event_date, util_record_date;
     // Store the study's subject record that we are managing.
     private List<SubjectDetail> subtDetailList, filteredSubtDetailList;
     private final String userName, study_id;
-    private LinkedHashMap<String, String> nationalityCodeHash;
+    private LinkedHashMap<String, String> nationalityCodeHash, subtIDHash;
     
     public MetaDataManagementBean() {
         userName = (String) getFacesContext().getExternalContext().
@@ -123,9 +126,10 @@ public class MetaDataManagementBean implements Serializable {
     private void buildSubtDetailList() {
         try {
             subtDetailList = SubjectDB.getSubtDetailList(study_id);
+            subtIDHash = SubjectDB.getSubjectIDHashMap(study_id);
         }
         catch (SQLException|NamingException e) {
-            logger.error("FAIL to retrieve subject record for study: " + study_id);
+            logger.error("FAIL to retrieve subject records for study: " + study_id);
             logger.error(e.getMessage());
             getFacesContext().addMessage(null, new FacesMessage(
                 FacesMessage.SEVERITY_ERROR,
@@ -133,74 +137,41 @@ public class MetaDataManagementBean implements Serializable {
         }
     }
 
-    // Insert subject record into database.
-    public String insertMetaData() {
+    // Insert new measurement (i.e. new subject record) into database.
+    public String insertNewMeasurement() {
         FacesContext fc = getFacesContext();
-        boolean dbInsertStatus = Constants.NOT_OK;
-        String activity = Constants.CRE_ID;
+        LocalDate record_date = util_record_date.toInstant().
+                                atZone(ZoneId.systemDefault()).toLocalDate();
         LocalDate event_date = null;
-        LocalDate record_date = null;
-        
+        // Event date can be empty.
         if (util_event_date != null) {
             event_date = util_event_date.toInstant().
                          atZone(ZoneId.systemDefault()).toLocalDate();
         }
-        if (util_record_date != null) {
-            record_date = util_record_date.toInstant().
-                          atZone(ZoneId.systemDefault()).toLocalDate();
-        }
-        
-        // For now, set the subtype_code to "SUS" first.
-        Subject subt = new Subject(subject_id, study_id, gender, country_code, 
-                                   race, "SUS");
-        SubjectRecord ss = new SubjectRecord(subject_id, study_id, record_date,
-                                             remarks, event, age_at_diagnosis, 
-                                             height, weight, event_date);
-        
-        // Update/insert subject record.
-        try {
-            if (SubjectDB.isSubjectExistInStudy(subject_id, study_id)) {
-                // This Subject ID already exist in this group; update.
-                dbInsertStatus = SubjectDB.updateSubject(subt);
-                activity = Constants.CHG_ID;
-            }
-            else {
-                // Subject ID not found in this group; insert.
-                dbInsertStatus = SubjectDB.insertSubject(subt);
-            }
-        }
-        catch (SQLException|NamingException e) {
-            logger.error(e.getMessage());
-        }
 
-        // Continue to insert the study subject record only if the insertion to 
-        // subject table is ok.
-        if (dbInsertStatus) {
-            // For study subject record, we will only perform insertion. 
-            // Updating should be performed using the Edit UI.
-            dbInsertStatus = SubjectRecordDB.insertSR(ss);
-        }
+        SubjectRecord ss = new SubjectRecord(subject_id, study_id, record_date,
+                                             remarks, event, height, weight, 
+                                             event_date);
         
-        // Display the status message to the user according to the insertion
-        // status.
-        if (dbInsertStatus) {
-            // Record this subject meta data creation into database.
-            String detail = "Subject " + subt.getSubject_id() 
+        // We will only perform insertion. Updating should be performed using 
+        // the Edit UI. Display the status message to the user according to the 
+        // insertion status.
+        if (SubjectRecordDB.insertSR(ss)) {
+            // Record this subject record creation into database.
+            String detail = "Subject " + ss.getSubject_id() 
                           + " in Study " + study_id 
-                          + ". Gender: " + subt.getGender() 
-                          + " Race: " + subt.getRace()
-                          + " Country: " + subt.getCountry_name();
-            ActivityLogDB.recordUserActivity(userName, activity, detail);
-            logger.info(userName + " " + activity + ": "+ detail); 
+                          + ". Record Date: " + ss.getRecord_date();
+            ActivityLogDB.recordUserActivity(userName, Constants.CRE_ID, detail);
+            logger.info(userName + " " + Constants.CRE_ID + ": "+ detail); 
             fc.addMessage(null, new FacesMessage(
                     FacesMessage.SEVERITY_INFO,
-                    "Subject meta data inserted into database.", ""));
+                    "Subject record inserted into database.", ""));
         }
         else {
-            logger.error("FAIL to insert subject meta data!");
+            logger.error("FAIL to insert subject record!");
             fc.addMessage(null, new FacesMessage(
                     FacesMessage.SEVERITY_ERROR,
-                    "Failed to insert subject meta data!", ""));
+                    "Failed to insert subject record!", ""));
         }
         
         return Constants.META_DATA_MANAGEMENT;
@@ -225,10 +196,10 @@ public class MetaDataManagementBean implements Serializable {
             boolean dbUpdateStatus = Constants.NOT_OK;
 
             while ((lineRead = br.readLine()) != null) {
-            // Subject_ID|Age_at_diagnosis|gender|nationality|race|height|weight|record_date|remarks
+            // Subject_ID|Age_at_baseline|gender|nationality|race|height|weight|record_date|remarks
                 data = lineRead.split("\\|");
                 // The system will only insert the complete meta data into database.
-                if (data.length == 9 || data.length == 8) {
+                if (data.length >= 8) {
                     // By default, the nationality of all the subjects will be Singapore i.e. SGP.
                     String cc = "SGP";
                     if (!data[3].isEmpty()) {
@@ -240,7 +211,17 @@ public class MetaDataManagementBean implements Serializable {
                         rmk = data[8];
                     }
 
-                    LocalDate rec_date = LocalDate.parse(data[7], dtFormatter);
+                    LocalDate rec_date;
+                    
+                    try {
+                        rec_date = LocalDate.parse(data[7], dtFormatter);
+                    }
+                    catch (DateTimeParseException e) {
+                        logger.error("FAIL to parse the record date!");
+                        logger.error(e.getMessage());
+                        // Continue to process the remaining enteries.
+                        continue;
+                    }
                     // Need to make sure the strings represent valid integer and
                     // float values.
                     if (isInteger(data[1]) && isFloat(data[5]) && isFloat(data[6])) {
@@ -248,12 +229,12 @@ public class MetaDataManagementBean implements Serializable {
                         // For now, set the subtype_code to "SUS" first.
                         Subject subt = new Subject(data[0], study_id, 
                                                    data[2].charAt(0), 
-                                                   cc, data[4], "SUS");
+                                                   cc, data[4], "SUS", 
+                                                   Integer.parseInt(data[1]));
                         // Event and event_date will be null for now.
                         SubjectRecord ss = new SubjectRecord
                                             (data[0], study_id, rec_date,
-                                            rmk, null, Integer.parseInt(data[1]), 
-                                            Float.parseFloat(data[5]), 
+                                            rmk, null, Float.parseFloat(data[5]), 
                                             Float.parseFloat(data[6]), null);
 
                         try {
@@ -360,13 +341,13 @@ public class MetaDataManagementBean implements Serializable {
                                    subtDetail.getGender(),
                                    subtDetail.getCountry_code(),
                                    subtDetail.getRace(),
-                                   subtDetail.getSubtype_code());
+                                   subtDetail.getSubtype_code(),
+                                   subtDetail.getAge_at_baseline());
         SubjectRecord sr = new SubjectRecord(subtDetail.getSubject_id(),
                                            subtDetail.getStudy_id(),
                                            subtDetail.getRecord_date(),
                                            subtDetail.getRemarks(),
                                            subtDetail.getEvent(),
-                                           subtDetail.getAge_at_diagnosis(),
                                            subtDetail.getHeight(),
                                            subtDetail.getWeight(),
                                            subtDetail.getEvent_date());
@@ -376,6 +357,7 @@ public class MetaDataManagementBean implements Serializable {
             String detail = "Subject " + subt.getSubject_id() 
                           + " in Study " + study_id 
                           + ". Gender: " + subt.getGender() 
+                          + " Age at Baseline: " + subt.getAge_at_baseline()
                           + " Race: " + subt.getRace()
                           + " Country: " + subt.getCountry_name();
             ActivityLogDB.recordUserActivity(userName, Constants.CHG_ID, detail);
@@ -455,11 +437,11 @@ public class MetaDataManagementBean implements Serializable {
     public void setSubject_id(String subject_id) {
         this.subject_id = subject_id;
     }
-    public int getAge_at_diagnosis() {
-        return age_at_diagnosis;
+    public int getAge_at_baseline() {
+        return age_at_baseline;
     }
-    public void setAge_at_diagnosis(int age_at_diagnosis) {
-        this.age_at_diagnosis = age_at_diagnosis;
+    public void setAge_at_baseline(int age_at_baseline) {
+        this.age_at_baseline = age_at_baseline;
     }
     public char getGender() {
         return gender;
@@ -527,8 +509,12 @@ public class MetaDataManagementBean implements Serializable {
     public List<SubjectDetail> getSubtDetailList() {
         return subtDetailList;
     }
-    // Return the list of nationality code setup in the system.
+    // Return the HashMap of nationality code setup in the system.
     public LinkedHashMap<String, String> getNationalityCodeHash() {
         return nationalityCodeHash;
+    }
+    // Return the HashMap of subject IDs that belong to the study.
+    public LinkedHashMap<String, String> getSubtIDHash() {
+        return subtIDHash;
     }
 }

@@ -34,6 +34,8 @@ import org.apache.logging.log4j.LogManager;
  * 17-Apr-2017 - Subject's meta data will now be own by study, and the study
  * will be own by group i.e. the direct link between group and subject's meta
  * data will be break off. Rename to SubjectRecordDB.
+ * 28-Apr-2017 - Changes due to removal of age_at_diagnosis from subject_record 
+ * database table.
  */
 
 public abstract class SubjectRecordDB {
@@ -48,8 +50,8 @@ public abstract class SubjectRecordDB {
                       + " - " + sr.getRecord_date();
         Connection conn = null;
         String query = "INSERT INTO subject_record(subject_id,study_id,"
-                     + "record_date,age_at_diagnosis,height,weight,remarks,"
-                     + "event,event_date) VALUES (?,?,?,?,?,?,?,?,?)";
+                     + "record_date,height,weight,remarks,event,event_date) "
+                     + "VALUES (?,?,?,?,?,?,?,?)";
         
         try {
             conn = DBHelper.getDSConn();
@@ -57,12 +59,11 @@ public abstract class SubjectRecordDB {
             stm.setString(1, sr.getSubject_id());
             stm.setString(2, sr.getStudy_id());
             stm.setObject(3, sr.getRecord_date(), Types.DATE);
-            stm.setInt(4, sr.getAge_at_diagnosis());
-            stm.setFloat(5, sr.getHeight());
-            stm.setFloat(6, sr.getWeight());
-            stm.setString(7, sr.getRemarks());
-            stm.setString(8, sr.getEvent());
-            stm.setObject(9, sr.getEvent_date(), Types.DATE);
+            stm.setFloat(4, sr.getHeight());
+            stm.setFloat(5, sr.getWeight());
+            stm.setString(6, sr.getRemarks());
+            stm.setString(7, sr.getEvent());
+            stm.setObject(8, sr.getEvent_date(), Types.DATE);
             stm.executeUpdate();
             stm.close();
             
@@ -100,7 +101,6 @@ public abstract class SubjectRecordDB {
                                     rs.getObject("record_date", LocalDate.class),
                                     rs.getString("remarks"),
                                     rs.getString("event"),
-                                    rs.getInt("age_at_diagnosis"),
                                     rs.getFloat("height"),
                                     rs.getFloat("weight"),
                                     rs.getObject("event_date", LocalDate.class));
@@ -122,26 +122,25 @@ public abstract class SubjectRecordDB {
     
     // Update subject record from this study in database. To be called 
     // during Meta data upload by batch.
-    // Only allow changes to age_at_diagnosis, height, weight and remarks.
+    // Only allow changes to height, weight and remarks.
     public static boolean updatePartialSR(SubjectRecord sr) {
         boolean result = Constants.OK;
         String detail = sr.getStudy_id() + " - " + sr.getSubject_id() 
                       + " - " + sr.getRecord_date();
         Connection conn = null;
-        String query = "UPDATE subject_record SET age_at_diagnosis = ?, "
-                     + "height = ?, weight = ?, remarks = ? WHERE "
-                     + "subject_id = ? AND record_date = ? AND study_id = ?";
+        String query = "UPDATE subject_record SET height = ?, weight = ?, "
+                     + "remarks = ? WHERE subject_id = ? AND record_date = ? "
+                     + "AND study_id = ?";
         
         try {
             conn = DBHelper.getDSConn();
             PreparedStatement stm = conn.prepareStatement(query);
-            stm.setInt(1, sr.getAge_at_diagnosis());
-            stm.setFloat(2, sr.getHeight());
-            stm.setFloat(3, sr.getWeight());
-            stm.setString(4, sr.getRemarks());
-            stm.setString(5, sr.getSubject_id());
-            stm.setObject(6, sr.getRecord_date(), Types.DATE);
-            stm.setString(7, sr.getStudy_id());
+            stm.setFloat(1, sr.getHeight());
+            stm.setFloat(2, sr.getWeight());
+            stm.setString(3, sr.getRemarks());
+            stm.setString(4, sr.getSubject_id());
+            stm.setObject(5, sr.getRecord_date(), Types.DATE);
+            stm.setString(6, sr.getStudy_id());
             stm.executeUpdate();
             stm.close();
             
@@ -160,8 +159,8 @@ public abstract class SubjectRecordDB {
     }
     
     // Update subject record from this study in database.
-    // Only allow changes to age_at_diagnosis, height, weight, remarks, 
-    // record _date, event and event_date.
+    // Only allow changes to height, weight, remarks, record _date, event and 
+    // event_date.
     public static boolean updateSR(SubjectRecord sr, LocalDate new_record_date) {
         boolean result = Constants.OK;
         Date rec_date = null;
@@ -170,10 +169,9 @@ public abstract class SubjectRecordDB {
         String detail = sr.getStudy_id() + " - " + sr.getSubject_id() 
                       + " - " + new_record_date;
         Connection conn = null;
-        String query = "UPDATE subject_record SET age_at_diagnosis = ?, "
-                     + "height = ?, weight = ?, remarks = ?, event = ?, "
-                     + "event_date = ?, record_date = ? WHERE subject_id = ? "
-                     + "AND record_date = ? AND study_id = ?";
+        String query = "UPDATE subject_record SET height = ?, weight = ?, "
+                     + "remarks = ?, event = ?, event_date = ?, record_date = ? "
+                     + "WHERE subject_id = ? AND record_date = ? AND study_id = ?";
         
         rec_date = java.sql.Date.valueOf(sr.getRecord_date());
         new_rec_date = java.sql.Date.valueOf(new_record_date);
@@ -184,16 +182,15 @@ public abstract class SubjectRecordDB {
         try {
             conn = DBHelper.getDSConn();
             PreparedStatement stm = conn.prepareStatement(query);
-            stm.setInt(1, sr.getAge_at_diagnosis());
-            stm.setFloat(2, sr.getHeight());
-            stm.setFloat(3, sr.getWeight());
-            stm.setString(4, sr.getRemarks());
-            stm.setString(5, sr.getEvent());
-            stm.setDate(6, eve_date);
-            stm.setDate(7, new_rec_date);
-            stm.setString(8, sr.getSubject_id());
-            stm.setDate(9, rec_date);
-            stm.setString(10, sr.getStudy_id());
+            stm.setFloat(1, sr.getHeight());
+            stm.setFloat(2, sr.getWeight());
+            stm.setString(3, sr.getRemarks());
+            stm.setString(4, sr.getEvent());
+            stm.setDate(5, eve_date);
+            stm.setDate(6, new_rec_date);
+            stm.setString(7, sr.getSubject_id());
+            stm.setDate(8, rec_date);
+            stm.setString(9, sr.getStudy_id());
             stm.executeUpdate();
             stm.close();
             

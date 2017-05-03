@@ -8,8 +8,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 // Libraries for Java Extension
 import javax.naming.NamingException;
@@ -51,6 +51,8 @@ import org.apache.logging.log4j.LogManager;
  * will be own by group i.e. the direct link between group and subject's meta
  * data will be break off. Removed grp_id, and added study_id and subtype_code
  * in subject DB table.
+ * 28-Apr-2017 - Added new method getSubjectIDHashMap() to retrieve the hashmap
+ * of subject IDs that belong to a study.
  */
 
 public abstract class SubjectDB {
@@ -63,7 +65,8 @@ public abstract class SubjectDB {
         Connection conn = null;
         Boolean result = Constants.OK;
         String query = "INSERT INTO subject(subject_id,study_id,"
-                + "gender,country_code,race,subtype_code) VALUES(?,?,?,?,?,?)";
+                + "gender,country_code,race,subtype_code,age_at_baseline) "
+                + "VALUES(?,?,?,?,?,?,?)";
         
         try {
             conn = DBHelper.getDSConn();
@@ -74,6 +77,7 @@ public abstract class SubjectDB {
             stm.setString(4, subject.getCountry_code());
             stm.setString(5, subject.getRace());
             stm.setString(6, subject.getSubtype_code());
+            stm.setInt(7, subject.getAge_at_baseline());
             stm.executeUpdate();
             stm.close();
             
@@ -98,7 +102,8 @@ public abstract class SubjectDB {
         Connection conn = null;
         Boolean result = Constants.OK;
         String query = "UPDATE subject SET gender = ?, country_code = ?, "
-                     + "race = ? WHERE subject_id = ? and study_id = ?";
+                     + "race = ?, age_at_baseline = ? WHERE subject_id = ? "
+                     + "and study_id = ?";
         
         try {
             conn = DBHelper.getDSConn();
@@ -106,8 +111,9 @@ public abstract class SubjectDB {
             stm.setString(1, String.valueOf(subject.getGender()));
             stm.setString(2, subject.getCountry_code());
             stm.setString(3, subject.getRace());
-            stm.setString(4, subject.getSubject_id());
-            stm.setString(5, subject.getStudy_id());
+            stm.setInt(4, subject.getAge_at_baseline());
+            stm.setString(5, subject.getSubject_id());
+            stm.setString(6, subject.getStudy_id());
             stm.executeUpdate();
             stm.close();
             
@@ -129,13 +135,38 @@ public abstract class SubjectDB {
         return result;
     }
     
+    // Return the hashmap of subject ID belonging to this study. Exception
+    // thrown here need to be handle by the caller.
+    public static LinkedHashMap<String, String> 
+        getSubjectIDHashMap(String study_id) 
+        throws SQLException, NamingException 
+    {
+        Connection conn = null;
+        LinkedHashMap<String, String> subtIDHash = new LinkedHashMap<>();
+        String query = "SELECT * from subject WHERE study_id = ? ORDER BY subject_id";
+        
+        conn = DBHelper.getDSConn();
+        PreparedStatement stm = conn.prepareStatement(query);
+        stm.setString(1, study_id);
+        ResultSet rs = stm.executeQuery();
+
+        while (rs.next()) {
+            subtIDHash.put(rs.getString("subject_id"), rs.getString("subject_id"));
+        }
+        logger.debug("Query subject IDs completed.");
+        
+        stm.close();
+        DBHelper.closeDSConn(conn);
+        
+        return subtIDHash;
+    }
+    
     // Return the list of subject details belonging to this study.
     // Exception thrown here need to be handle by the caller.
     public static List<SubjectDetail> getSubtDetailList(String study_id) 
             throws SQLException, NamingException 
     {
         Connection conn = null;
-        LocalDate rec_date, eve_date;
         List<SubjectDetail> subtDetailList = new ArrayList<>();
         String query = "SELECT * from subject_detail WHERE study_id = ? "
                      + "ORDER BY subject_id, record_date";
@@ -146,26 +177,7 @@ public abstract class SubjectDB {
         ResultSet rs = stm.executeQuery();
 
         while (rs.next()) {
-            rec_date = (rs.getDate("record_date") != null)?
-                    rs.getDate("record_date").toLocalDate():null;
-            eve_date = (rs.getDate("event_date") != null)?
-                    rs.getDate("event_date").toLocalDate():null;
-            SubjectDetail tmp = new SubjectDetail(
-                            rs.getString("study_id"),
-                            rs.getString("subject_id"),
-                            rec_date,
-                            rs.getString("country_code"),
-                            rs.getString("race"),
-                            rs.getString("subtype_code"),
-                            rs.getString("remarks"),
-                            rs.getString("event"),
-                            rs.getInt("age_at_diagnosis"),
-                            rs.getFloat("height"),
-                            rs.getFloat("weight"),
-                            eve_date,
-                            rs.getString("gender").charAt(0));
-
-            subtDetailList.add(tmp);
+            subtDetailList.add(new SubjectDetail(rs));
         }
         logger.debug("Query subject detail completed.");
         
@@ -197,6 +209,7 @@ public abstract class SubjectDB {
         return isSubjectExist;
     }
     
+    // NOT IN USE ANYMORE!
     // To retrieve and build the subject Meta data (i.e. subject_id|age|gender|
     // race|height|weight|subjectclass|remarks|event|event_date) for this
     // subject under this study.
@@ -216,7 +229,7 @@ public abstract class SubjectDB {
 
             if (rs.next()) {
                 metadata.append(subject_id).append("|").
-                        append(rs.getInt("age_at_diagnosis")).append("|").
+                        append(rs.getInt("age_at_baseline")).append("|").
                         append(rs.getString("gender").charAt(0)).append("|").
                         append(rs.getString("race")).append("|").
                         append(rs.getFloat("height")).append("|").

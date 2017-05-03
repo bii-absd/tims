@@ -90,13 +90,13 @@
                             </f:facet>
                         </p:cellEditor>
                     </p:column>
-                    <p:column headerText="Age at Diagnosis" styleClass="col120">
+                    <p:column headerText="Age at Baseline" styleClass="col120">
                         <p:cellEditor>
                             <f:facet name="output">
-                                <h:outputText value="#{mddata.age_at_diagnosis}"/>
+                                <h:outputText value="#{mddata.age_at_baseline}"/>
                             </f:facet>
                             <f:facet name="input">
-                                <h:inputText value="#{mddata.age_at_diagnosis}" style="width: 100%"/>
+                                <h:inputText value="#{mddata.age_at_baseline}" style="width: 100%"/>
                             </f:facet>
                         </p:cellEditor>
                     </p:column>
@@ -169,7 +169,7 @@
         </p:tab>
         
         <p:tab id="uploadData" title="Upload New Meta Data (Format of Meta Data: 
-               Subject_ID|Age_at_diagnosis|Gender|Nationality|Race|Height|Weight|Record_Date|Remarks)" 
+               Subject_ID|Age_at_Baseline|Gender|Nationality|Race|Height|Weight|Record_Date|Remarks)" 
                titleStyleClass="tab-title">
             <h:form id="uploadDataForm" enctype="multipart/form-data">
                 <p:fileUpload id="uploadDataFile" mode="advanced" 
@@ -180,56 +180,21 @@
             </h:form>
         </p:tab>
         
-        <p:tab id="addData" title="Input New Meta Data" titleStyleClass="tab-title">
+        <p:tab id="addData" title="Input New Measurement" titleStyleClass="tab-title">
             <h:form id="addDataForm">
                 <h:panelGrid columns="3" border="0" cellpadding="4" cellspacing="2">
                     <h:outputText value="Subject ID" styleClass="inputlabel"/>
-                    <p:inputText id="subjectid" size="20" autocomplete="off" 
-                                 required="true" value="#{MDMgntBean.subject_id}"/>
+                    <p:selectOneMenu id="subjectid" value="#{MDMgntBean.subject_id}" required="true" 
+                                     filter="true" filterMatchMode="startsWith">
+                        <f:selectItems value="#{MDMgntBean.subtIDHash}"/>
+                    </p:selectOneMenu>
                     <h:message id="subjectid-status" for="subjectid" styleClass="errors"/>
                 
-                    <h:outputText value="Gender" styleClass="inputlabel"/>
-                    <p:selectOneRadio id="gender" required="true" 
-                                      value="#{MDMgntBean.gender}">
-                        <f:selectItem itemLabel="Male" itemValue="M"/>
-                        <f:selectItem itemLabel="Female" itemValue="F"/>
-                    </p:selectOneRadio>
-                    <h:message for="gender" styleClass="errors"/>
-
-                    <h:outputText value="Nationality" styleClass="inputlabel"/>
-                    <p:selectOneMenu id="nationality" required="true" 
-                                     style="width: 95px"
-                                     value="#{MDMgntBean.country_code}" 
-                                     filter="true" filterMatchMode="startsWith">
-                        <f:selectItem itemLabel="Select Nationality" itemValue=""/>
-                        <f:selectItems value="#{MDMgntBean.nationalityCodeHash}"/>
-                    </p:selectOneMenu>
-                    <h:message for="nationality" styleClass="errors"/>
-                    
-                    <h:outputText value="Race" styleClass="inputlabel"/>
-                    <p:selectOneMenu id="race" required="true" 
-                                     style="width: 95px" value="#{MDMgntBean.race}">
-                        <f:selectItem itemLabel="Select Race" itemValue=""/>
-                        <f:selectItem itemLabel="Chinese" itemValue="CHN"/>
-                        <f:selectItem itemLabel="Malay" itemValue="MAL"/>
-                        <f:selectItem itemLabel="Indian" itemValue="IND"/>
-                        <f:selectItem itemLabel="Eurasian" itemValue="ERA"/>
-                        <f:selectItem itemLabel="Others" itemValue="OTH"/>
-                    </p:selectOneMenu>
-                    <h:message for="race" styleClass="errors"/>
-                    
                     <h:outputText value="Record Date" styleClass="inputlabel"/>
                     <p:calendar id="record" value="#{MDMgntBean.util_record_date}" 
                                 required="true" pattern="yyyy-MM-dd"/>
                     <h:message for="record" styleClass="errors"/>
                     
-                    <h:outputText value="Age at Diagnosis" styleClass="inputlabel"/>
-                    <p:inputText id="agediagnosis" size="20" maxlength="3" 
-                                 autocomplete="off" 
-                                 value="#{MDMgntBean.age_at_diagnosis}"/>                    
-                    <h:message id="agediagnosis-status" for="agediagnosis" 
-                               styleClass="errors"/>
-                
                     <h:outputText value="Height (Meter)" styleClass="inputlabel"/>
                     <p:inputText id="height" size="20" autocomplete="off" 
                                  value="#{MDMgntBean.height}">
@@ -266,8 +231,8 @@
                 </h:panelGrid>
 
                 <p:spacer height="40" width="2"/>
-                <h:commandButton action="#{MDMgntBean.insertMetaData}" 
-                                 value="Insert Meta Data" 
+                <h:commandButton action="#{MDMgntBean.insertNewMeasurement}" 
+                                 value="Insert Measurement" 
                                  style="font-size: 12px"/>
             </h:form>
         </p:tab>
