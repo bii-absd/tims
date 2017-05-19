@@ -220,6 +220,13 @@
     text-align: left !important;
 }
 
+/* Style defined for p:column with width equal to 50px, and text align left.
+*/
+.col50 {
+    width: 50px;
+    text-align: left !important;
+}
+
 /* Style defined for p:column with width equal to 120px, and text align left.
 */
 .col120 {

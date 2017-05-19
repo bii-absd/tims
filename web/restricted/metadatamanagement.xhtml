@@ -36,7 +36,17 @@
                               headerText="Subject ID" style="width: 200px">
                         <h:outputText value="#{mddata.subject_id}"/>
                     </p:column>
-                    <p:column headerText="Gender" styleClass="jssmallcol">
+                    <p:column headerText="Age at Baseline" styleClass="jssmallcol">
+                        <p:cellEditor>
+                            <f:facet name="output">
+                                <h:outputText value="#{mddata.age_at_baseline}"/>
+                            </f:facet>
+                            <f:facet name="input">
+                                <h:inputText value="#{mddata.age_at_baseline}" style="width: 100%"/>
+                            </f:facet>
+                        </p:cellEditor>
+                    </p:column>
+                    <p:column headerText="Gender" styleClass="col50">
                         <p:cellEditor>
                             <f:facet name="output">
                                 <h:outputText value="#{mddata.gender}"/>
@@ -49,7 +59,7 @@
                             </f:facet>
                         </p:cellEditor>
                     </p:column>
-                    <p:column headerText="Nationality" styleClass="jsmedcol">
+                    <p:column headerText="Nationality" styleClass="col140">
                         <p:cellEditor>
                             <f:facet name="output">
                                 <h:outputText value="#{mddata.country_name}"/>
@@ -63,7 +73,7 @@
                             </f:facet>
                         </p:cellEditor>
                     </p:column>
-                    <p:column headerText="Race" styleClass="jssmallcol">
+                    <p:column headerText="Race" styleClass="col50">
                         <p:cellEditor>
                             <f:facet name="output">
                                 <h:outputText value="#{mddata.race}"/>
@@ -79,28 +89,7 @@
                             </f:facet>
                         </p:cellEditor>
                     </p:column>
-                    <p:column headerText="Record Date" styleClass="jssmallcol">
-                        <p:cellEditor>
-                            <f:facet name="output">
-                                <h:outputText value="#{mddata.record_date}"/>
-                            </f:facet>
-                            <f:facet name="input">
-                                <p:calendar value="#{MDMgntBean.util_record_date}" 
-                                            pattern="yyyy-MM-dd"/>
-                            </f:facet>
-                        </p:cellEditor>
-                    </p:column>
-                    <p:column headerText="Age at Baseline" styleClass="col120">
-                        <p:cellEditor>
-                            <f:facet name="output">
-                                <h:outputText value="#{mddata.age_at_baseline}"/>
-                            </f:facet>
-                            <f:facet name="input">
-                                <h:inputText value="#{mddata.age_at_baseline}" style="width: 100%"/>
-                            </f:facet>
-                        </p:cellEditor>
-                    </p:column>
-                    <p:column headerText="Height" styleClass="jssmallcol">
+                    <p:column headerText="Height" styleClass="col50">
                         <p:cellEditor>
                             <f:facet name="output">
                                 <h:outputText value="#{mddata.height}"/>
@@ -111,7 +100,7 @@
                             </f:facet>
                         </p:cellEditor>
                     </p:column>
-                    <p:column headerText="Weight" styleClass="jssmallcol">
+                    <p:column headerText="Weight" styleClass="col50">
                         <p:cellEditor>
                             <f:facet name="output">
                                 <h:outputText value="#{mddata.weight}"/>
@@ -119,6 +108,17 @@
                             <f:facet name="input">
                                 <h:inputText value="#{mddata.weight}" 
                                              style="width: 100%"/>
+                            </f:facet>
+                        </p:cellEditor>
+                    </p:column>
+                    <p:column headerText="Record Date" styleClass="jssmallcol">
+                        <p:cellEditor>
+                            <f:facet name="output">
+                                <h:outputText value="#{mddata.record_date}"/>
+                            </f:facet>
+                            <f:facet name="input">
+                                <p:calendar value="#{MDMgntBean.util_record_date}" 
+                                            pattern="yyyy-MM-dd"/>
                             </f:facet>
                         </p:cellEditor>
                     </p:column>
@@ -131,12 +131,12 @@
                                 <h:inputText value="#{mddata.remarks}" 
                                              validatorMessage="#{msg['error-remarks']}"
                                              style="width: 100%">
-                                    <f:validateRegex pattern="^[a-zA-Z0-9:;,. ]*$"/>
+                                    <f:validateRegex pattern="^[^|]*$"/>
                                 </h:inputText>
                             </f:facet>
                         </p:cellEditor>
                     </p:column>
-                    <p:column headerText="Event" styleClass="col140">
+                    <p:column headerText="Event" styleClass="col300">
                         <p:cellEditor>
                             <f:facet name="output">
                                 <h:outputText value="#{mddata.event}"/>
@@ -145,7 +145,7 @@
                                 <h:inputText value="#{mddata.event}" 
                                              validatorMessage="#{msg['error-event']}"
                                              style="width: 100%">
-                                    <f:validateRegex pattern="^[a-zA-Z0-9:;,. ]*$"/>
+                                    <f:validateRegex pattern="^[^|]*$"/>
                                 </h:inputText>
                             </f:facet>
                         </p:cellEditor>
@@ -213,7 +213,7 @@
                     <p:inputText id="remarks" autocomplete="off" 
                                  validatorMessage="#{msg['error-remarks']}"
                                  value="#{MDMgntBean.remarks}">
-                        <f:validateRegex pattern="^[a-zA-Z0-9:;,. ]*$"/>
+                        <f:validateRegex pattern="^[^|]*$"/>
                     </p:inputText>
                     <h:message for="remarks" styleClass="errors"/>
                     
@@ -221,7 +221,7 @@
                     <p:inputText id="event" autocomplete="off" 
                                  validatorMessage="#{msg['error-event']}"
                                  value="#{MDMgntBean.event}">
-                        <f:validateRegex pattern="^[a-zA-Z0-9:;,. ]*$"/>
+                        <f:validateRegex pattern="^[^|]*$"/>
                     </p:inputText>
                     <h:message for="event" styleClass="errors"/>
                     

@@ -12,6 +12,7 @@ import TIMS.Database.SubjectDB;
 import TIMS.Database.SubjectDetail;
 import TIMS.General.Constants;
 import TIMS.General.FileHelper;
+// Libraries for Java
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -88,6 +89,10 @@ import org.primefaces.model.UploadedFile;
  * for the respective study.
  * 28-Apr-2017 - Renamed method insertMetaData() to insertNewMeasurement().
  * Fixed the bugs found during demo.
+ * 19-May-2017 - To display error message if the date format is incorrect
+ * during Meta data file upload. During Meta data file upload or insert new
+ * measurement, only check for the special character '|' in the event and 
+ * remark fields.
  */
 
 @ManagedBean (name="MDMgntBean")
@@ -193,25 +198,26 @@ public class MetaDataManagementBean implements Serializable {
             String[] data;
             int lineNum = 1;
             int incompleteLine = 0;
-            boolean dbUpdateStatus = Constants.NOT_OK;
+            boolean dbUpdateStatus = Constants.OK;
 
             while ((lineRead = br.readLine()) != null) {
             // Subject_ID|Age_at_baseline|gender|nationality|race|height|weight|record_date|remarks
                 data = lineRead.split("\\|");
                 // The system will only insert the complete meta data into database.
                 if (data.length >= 8) {
-                    // By default, the nationality of all the subjects will be Singapore i.e. SGP.
+                    // By default, the nationality of all the subjects will be 
+                    // Singapore i.e. SGP.
                     String cc = "SGP";
                     if (!data[3].isEmpty()) {
                         cc = data[3];
                     }
                     String rmk = null;
                     // Update remarks with the value uploaded if available.
-                    if (data.length == 9) {
+                    if (data.length >= 9) {
                         rmk = data[8];
                     }
-
-                    LocalDate rec_date;
+                    // Initalisize rec_date to now.
+                    LocalDate rec_date = LocalDate.now();
                     
                     try {
                         rec_date = LocalDate.parse(data[7], dtFormatter);
@@ -219,12 +225,16 @@ public class MetaDataManagementBean implements Serializable {
                     catch (DateTimeParseException e) {
                         logger.error("FAIL to parse the record date!");
                         logger.error(e.getMessage());
-                        // Continue to process the remaining enteries.
-                        continue;
+                        // Mark this entry as failed and continue to process 
+                        // the next entry.
+                        dbUpdateStatus = Constants.NOT_OK;
                     }
+                    
                     // Need to make sure the strings represent valid integer and
                     // float values.
-                    if (isInteger(data[1]) && isFloat(data[5]) && isFloat(data[6])) {
+                    if (dbUpdateStatus && isInteger(data[1]) && 
+                        isFloat(data[5]) && isFloat(data[6])) 
+                    {
                         // Create subject record for this study.
                         // For now, set the subtype_code to "SUS" first.
                         Subject subt = new Subject(data[0], study_id, 
@@ -238,25 +248,22 @@ public class MetaDataManagementBean implements Serializable {
                                             Float.parseFloat(data[6]), null);
 
                         try {
-                            if (SubjectDB.isSubjectExistInStudy(data[0], study_id)) {
-                                // Subject data already exist in DB, do nothing.
-                                dbUpdateStatus = Constants.OK;
-                            }
-                            else {
+                            if (!SubjectDB.isSubjectExistInStudy(data[0], study_id)) {
                                 // Subject data not found in DB; insert.
-                                dbUpdateStatus = SubjectDB.insertSubject(subt);
+                                dbUpdateStatus = SubjectDB.insertSubject(subt);                                
                             }
+                            // Subject data already exist in DB, do nothing.
                         }
                         catch (SQLException|NamingException e) {
                             logger.error(e.getMessage());
                         }
-                        // Continue to update/insert the subject record table 
-                        // only if the update/insert to subject table is ok.
+                        // Continue to update|insert the subject record table 
+                        // only if the update|insert to subject table is ok.
                         if (dbUpdateStatus) {
                             try {
                                 if (SubjectRecordDB.isSRExist(data[0], study_id, rec_date)) {
-                                    // Subject record exist; update 
-                                    // partial data (i.e. exclude event and event date).
+                                    // Subject record exist; update partial 
+                                    // data (i.e. exclude event and event date).
                                     dbUpdateStatus = SubjectRecordDB.updatePartialSR(ss);
                                 }
                                 else {
@@ -277,10 +284,8 @@ public class MetaDataManagementBean implements Serializable {
                     uploadStatus.append(lineNum).append(" ");
                     incompleteLine++;                    
                 }
-                else {
-                    // Need to reset the status flag.
-                    dbUpdateStatus = Constants.NOT_OK;
-                }
+                // Need to reset the status flag before the next iteration.
+                dbUpdateStatus = Constants.OK;
                 
                 lineNum++;
             }
