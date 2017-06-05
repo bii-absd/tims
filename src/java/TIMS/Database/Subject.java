@@ -22,17 +22,18 @@ package TIMS.Database;
  * and gender in this class. Move the rest to StudySubject Class.
  * 18-Apr-2017 - Removed grp_id, and added study_id, subtype_code and
  * age_at_baseline.
+ * 29-May-2017 - Variable age_at_baseline changed from integer to float type.
  */
 
 public class Subject {
     // subject table attributes
     private String subject_id, study_id, country_code, race, subtype_code;
     private char gender;
-    private int age_at_baseline;
+    private float age_at_baseline;
 
     // Machine generated constructor
     public Subject(String subject_id, String study_id, char gender, String country_code, 
-            String race, String subtype_code, int age_at_baseline) {
+            String race, String subtype_code, float age_at_baseline) {
         this.subject_id = subject_id;
         this.study_id = study_id;
         this.gender = gender;
@@ -93,10 +94,10 @@ public class Subject {
     public void setSubtype_code(String subtype_code) {
         this.subtype_code = subtype_code;
     }
-    public int getAge_at_baseline() {
+    public float getAge_at_baseline() {
         return age_at_baseline;
     }
-    public void setAge_at_baseline(int age_at_baseline) {
+    public void setAge_at_baseline(float age_at_baseline) {
         this.age_at_baseline = age_at_baseline;
     }
 }

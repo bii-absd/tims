@@ -93,6 +93,8 @@ import org.primefaces.model.UploadedFile;
  * during Meta data file upload. During Meta data file upload or insert new
  * measurement, only check for the special character '|' in the event and 
  * remark fields.
+ * 29-May-2017 - Changes due to change in Subject table (i.e. age_at_baseline
+ * changed to float type.)
  */
 
 @ManagedBean (name="MDMgntBean")
@@ -103,8 +105,7 @@ public class MetaDataManagementBean implements Serializable {
             getLogger(MetaDataManagementBean.class.getName());
     private String subject_id, country_code, race, remarks, event;
     private char gender;
-    private int age_at_baseline;
-    private float height, weight;
+    private float height, weight, age_at_baseline;
     private java.util.Date util_event_date, util_record_date;
     // Store the study's subject record that we are managing.
     private List<SubjectDetail> subtDetailList, filteredSubtDetailList;
@@ -230,9 +231,8 @@ public class MetaDataManagementBean implements Serializable {
                         dbUpdateStatus = Constants.NOT_OK;
                     }
                     
-                    // Need to make sure the strings represent valid integer and
-                    // float values.
-                    if (dbUpdateStatus && isInteger(data[1]) && 
+                    // Need to make sure the strings represent valid float values.
+                    if (dbUpdateStatus && isFloat(data[1]) && 
                         isFloat(data[5]) && isFloat(data[6])) 
                     {
                         // Create subject record for this study.
@@ -240,7 +240,7 @@ public class MetaDataManagementBean implements Serializable {
                         Subject subt = new Subject(data[0], study_id, 
                                                    data[2].charAt(0), 
                                                    cc, data[4], "SUS", 
-                                                   Integer.parseInt(data[1]));
+                                                   Float.parseFloat(data[1]));
                         // Event and event_date will be null for now.
                         SubjectRecord ss = new SubjectRecord
                                             (data[0], study_id, rec_date,
@@ -442,10 +442,10 @@ public class MetaDataManagementBean implements Serializable {
     public void setSubject_id(String subject_id) {
         this.subject_id = subject_id;
     }
-    public int getAge_at_baseline() {
+    public float getAge_at_baseline() {
         return age_at_baseline;
     }
-    public void setAge_at_baseline(int age_at_baseline) {
+    public void setAge_at_baseline(float age_at_baseline) {
         this.age_at_baseline = age_at_baseline;
     }
     public char getGender() {

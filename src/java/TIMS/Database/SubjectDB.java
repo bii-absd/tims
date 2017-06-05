@@ -53,6 +53,8 @@ import org.apache.logging.log4j.LogManager;
  * in subject DB table.
  * 28-Apr-2017 - Added new method getSubjectIDHashMap() to retrieve the hashmap
  * of subject IDs that belong to a study.
+ * 29-May-2017 - Changes due to change in Subject table (i.e. age_at_baseline
+ * changed to float type.)
  */
 
 public abstract class SubjectDB {
@@ -77,7 +79,7 @@ public abstract class SubjectDB {
             stm.setString(4, subject.getCountry_code());
             stm.setString(5, subject.getRace());
             stm.setString(6, subject.getSubtype_code());
-            stm.setInt(7, subject.getAge_at_baseline());
+            stm.setFloat(7, subject.getAge_at_baseline());
             stm.executeUpdate();
             stm.close();
             
@@ -111,7 +113,7 @@ public abstract class SubjectDB {
             stm.setString(1, String.valueOf(subject.getGender()));
             stm.setString(2, subject.getCountry_code());
             stm.setString(3, subject.getRace());
-            stm.setInt(4, subject.getAge_at_baseline());
+            stm.setFloat(4, subject.getAge_at_baseline());
             stm.setString(5, subject.getSubject_id());
             stm.setString(6, subject.getStudy_id());
             stm.executeUpdate();
@@ -141,12 +143,11 @@ public abstract class SubjectDB {
         getSubjectIDHashMap(String study_id) 
         throws SQLException, NamingException 
     {
-        Connection conn = null;
+        Connection conn = DBHelper.getDSConn();
         LinkedHashMap<String, String> subtIDHash = new LinkedHashMap<>();
         String query = "SELECT * from subject WHERE study_id = ? ORDER BY subject_id";
-        
-        conn = DBHelper.getDSConn();
         PreparedStatement stm = conn.prepareStatement(query);
+        
         stm.setString(1, study_id);
         ResultSet rs = stm.executeQuery();
 
@@ -166,13 +167,12 @@ public abstract class SubjectDB {
     public static List<SubjectDetail> getSubtDetailList(String study_id) 
             throws SQLException, NamingException 
     {
-        Connection conn = null;
+        Connection conn = DBHelper.getDSConn();
         List<SubjectDetail> subtDetailList = new ArrayList<>();
         String query = "SELECT * from subject_detail WHERE study_id = ? "
                      + "ORDER BY subject_id, record_date";
-        
-        conn = DBHelper.getDSConn();
         PreparedStatement stm = conn.prepareStatement(query);
+        
         stm.setString(1, study_id);
         ResultSet rs = stm.executeQuery();
 
@@ -192,12 +192,11 @@ public abstract class SubjectDB {
     public static boolean isSubjectExistInStudy
         (String subject_id, String study_id) throws SQLException, NamingException 
     {
-        Connection conn = null;
+        Connection conn = DBHelper.getDSConn();
         String query = "SELECT * FROM subject WHERE subject_id = ? AND "
                      + "study_id = ?";
-        
-        conn = DBHelper.getDSConn();
         PreparedStatement stm = conn.prepareStatement(query);
+        
         stm.setString(1, subject_id);
         stm.setString(2, study_id);
         ResultSet rs = stm.executeQuery();
@@ -229,7 +228,7 @@ public abstract class SubjectDB {
 
             if (rs.next()) {
                 metadata.append(subject_id).append("|").
-                        append(rs.getInt("age_at_baseline")).append("|").
+                        append(rs.getFloat("age_at_baseline")).append("|").
                         append(rs.getString("gender").charAt(0)).append("|").
                         append(rs.getString("race")).append("|").
                         append(rs.getFloat("height")).append("|").

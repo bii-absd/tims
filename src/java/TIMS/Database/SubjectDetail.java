@@ -21,14 +21,15 @@ import java.time.LocalDate;
  * 28-Apr-2017 - Change of attribute name from age_at_diagnosis to 
  * age_at_baseline. Add new constructor that build the object directly from
  * the result set returned from database query.
+ * 29-May-2017 - Changes due to change in Subject table (i.e. age_at_baseline
+ * changed to float type.)
  */
 
 public class SubjectDetail {
     // subject_detail view attributes
     private String study_id, subject_id, country_code, race, subtype_code, 
                    remarks, event;
-    private int age_at_baseline;
-    private float height, weight;
+    private float height, weight, age_at_baseline;
     private LocalDate event_date, record_date;
     private char gender;
 
@@ -44,7 +45,7 @@ public class SubjectDetail {
         this.subtype_code = rs.getString("subtype_code");
         this.remarks = rs.getString("remarks");
         this.event = rs.getString("event");
-        this.age_at_baseline = rs.getInt("age_at_baseline");
+        this.age_at_baseline = rs.getFloat("age_at_baseline");
         this.height = rs.getFloat("height");
         this.weight = rs.getFloat("weight");
         this.event_date = (rs.getDate("event_date") != null)?
@@ -55,7 +56,7 @@ public class SubjectDetail {
     // Machine generated constructor.
     public SubjectDetail(String study_id, String subject_id, LocalDate record_date,
                          String country_code, String race, String subtype_code, 
-                         String remarks, String event, int age_at_baseline, 
+                         String remarks, String event, float age_at_baseline, 
                          float height, float weight, LocalDate event_date, char gender) 
     {
         this.study_id = study_id;
@@ -127,10 +128,10 @@ public class SubjectDetail {
     public void setEvent(String event) {
         this.event = event;
     }
-    public int getAge_at_baseline() {
+    public float getAge_at_baseline() {
         return age_at_baseline;
     }
-    public void setAge_at_baseline(int age_at_baseline) {
+    public void setAge_at_baseline(float age_at_baseline) {
         this.age_at_baseline = age_at_baseline;
     }
     public float getHeight() {
