@@ -218,7 +218,6 @@ public class Constants {
                         }
                     }
                 }
-                logger.debug(uri + " loaded.");
             } catch (IOException|NullPointerException e) {
                 logger.error("FAIL to load " + uri);
                 logger.error(e.getMessage());

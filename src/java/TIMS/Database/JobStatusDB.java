@@ -95,7 +95,6 @@ public abstract class JobStatusDB {
                 }
 
                 stm.close();
-                logger.debug("Job Status Definition: " + jsNameHash.toString());                
             }
             catch (SQLException|NamingException e) {
                 logger.error("FAIL to retrieve job status!");

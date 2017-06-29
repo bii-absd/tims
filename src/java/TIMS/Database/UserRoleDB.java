@@ -74,7 +74,6 @@ public abstract class UserRoleDB implements Serializable {
                                    rs.getString("role_name"));
                 }
                 stm.close();
-                logger.debug("Role List: " + roleNameHash.toString());
             } 
             catch (SQLException|NamingException e) {
                 logger.error("FAIL to query user role!");

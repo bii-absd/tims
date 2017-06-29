@@ -20,10 +20,6 @@
         <param-value>/config/log4j2l.xml</param-value>
     </context-param>
     <context-param>
-        <param-name>itemlist</param-name>
-        <param-value>/config/itemlistconfig.txt</param-value>
-    </context-param>
-    <context-param>
         <param-name>uname</param-name>
         <param-value>postgres</param-value>
     </context-param>

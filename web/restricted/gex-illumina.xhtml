@@ -72,7 +72,10 @@
                             <p:outputLabel value="#{msg['config-type']}" styleClass="configlabel"/>
                             <p:selectOneMenu id="type" required="true" 
                                              value="#{gexIlluBean.type}">
-                                <f:selectItems value="#{menuBean.illuminaType}"/>
+                                <f:selectItem itemLabel="HumanHT12v3" itemValue="HumanHT12v3"/>
+                                <f:selectItem itemLabel="HumanHT12v4" itemValue="HumanHT12v4"/>
+                                <f:selectItem itemLabel="HumanWG6v1" itemValue="HumanWG6v1"/>
+                                <f:selectItem itemLabel="HumanWG6v2" itemValue="HumanWG6v2"/>
                             </p:selectOneMenu>
                         </h:panelGrid>
                     </p:column>

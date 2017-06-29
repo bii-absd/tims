@@ -73,7 +73,10 @@
                         <h:panelGrid columns="1">
                             <p:outputLabel value="#{msg['config-type']}" styleClass="configlabel"/>
                             <p:selectOneMenu id="type" required="true" value="#{gexAffyBean.type}">
-                                <f:selectItems value="#{menuBean.affymetrixType}"/>
+                                <f:selectItem itemLabel="HG-U133-Plus2.0" itemValue="HG-U133-Plus2.0"/>
+                                <f:selectItem itemLabel="HG-U133A" itemValue="HG-U133A"/>
+                                <f:selectItem itemLabel="HUGENE-1_0" itemValue="HUGENE-1_0"/>
+                                <f:selectItem itemLabel="HUGENE-2_0" itemValue="HUGENE-2_0"/>
                             </p:selectOneMenu>
                         </h:panelGrid>
                     </p:column>

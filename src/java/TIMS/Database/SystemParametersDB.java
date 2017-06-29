@@ -49,7 +49,6 @@ public abstract class SystemParametersDB {
                     spHash.put(rs.getString("sys_para_name"), rs.getString("sys_para_value"));
                 }
                 stm.close();
-                logger.debug("System parameters loaded: " + spHash.toString());
             }
             catch (SQLException|NamingException e) {
                 logger.error("FAIL to load system parameters!");
