@@ -174,10 +174,11 @@ public class FileUploadBean implements Serializable {
         return uFile.getFileName();
     }
     
-    // Create TIMS system directories i.e. .../TIMS/users .../TIMS/images
-    // .../TIMS/input .../TIMS/finalize_output etc.
+    // Create TIMS system directories i.e. /var/TIMS/ .../TIMS/users 
+    // .../TIMS/images .../TIMS/input .../TIMS/finalize_output etc.
     public static boolean createSystemDirectories(String systemDir) {
         boolean result = 
+                createSystemDirectory(systemDir + File.separator) &&
                 createSystemDirectory(systemDir + Constants.getUSERS_PATH()) &&
                 createSystemDirectory(systemDir + Constants.getPIC_PATH()) &&
                 createSystemDirectory(systemDir + Constants.getINPUT_PATH()) &&
