@@ -1,5 +1,5 @@
 /*
- * Copyright @2016-2018
+ * Copyright @2016-2017
  */
 package TIMS.Bean;
 
@@ -43,6 +43,7 @@ import org.primefaces.event.FileUploadEvent;
  * corrupted when no sample data is being uploaded.
  * 08-Feb-2017 - Changes due to change in PipelineDB constant name.
  * 08-Mar-2017 - Added the filter type (i.e. CEL) for CNV Affymetrix pipeline.
+ * 14-Jul-2017 - Changes due to the addition of GATK Sequencing Pipelines.
  */
 
 @ManagedBean (name="RDMgntBean")
@@ -56,7 +57,7 @@ public class RawDataManagementBean implements Serializable {
     private List<InputData> inputDataList = new ArrayList<>();
     private InputData selectedInput = null;
     // Input files that will be uploaded by the users.
-    private final FileUploadBean inputFile, ctrlFile, annotFile;
+    private final FileUploadBean inputFile, ctrlFile, intFile, annotFile;
     // Input file description.
     private String inputFileDesc;
     // Sample file(s) list for new and replace.
@@ -85,7 +86,12 @@ public class RawDataManagementBean implements Serializable {
         else {
             ctrlFile = null;
         }
-        
+        if (getIntervalFileStatus()) {
+            intFile = new FileUploadBean(tmpDir);
+        }
+        else {
+            intFile = null;
+        }
         logger.debug(userName + ": access Raw Data Management page.");
     }
     
@@ -147,6 +153,9 @@ public class RawDataManagementBean implements Serializable {
         annotFile.resetFileBean();
         if (getControlFileStatus()) {
             ctrlFile.resetFileBean();
+        }
+        if (getIntervalFileStatus()) {
+            intFile.resetFileBean();
         }
         // Delete all the uploaded files.
         deleteTempDir();
@@ -238,6 +247,22 @@ public class RawDataManagementBean implements Serializable {
                 logger.debug("New control file saved.");
             }
         }
+        // if a new interval file has been uploaded, backup the original 
+        // interval file, move and rename the new interval file to the input
+        // data directory.
+        if (getIntervalFileStatus()) {
+            if (!intFile.isFilelistEmpty()) {
+                String intFilename = Constants.getINTERVAL_FILE_NAME()
+                                   + Constants.getINTERVAL_FILE_EXT();
+                // Backup the original interval file.
+                FileHelper.moveFile(destDir + intFilename, 
+                                    destDir + intFilename + ext);
+                // Move and rename the new interval file.
+                FileHelper.moveFile(tmpDir + intFile.getInputFilename(), 
+                                    destDir + intFilename);
+                logger.debug("New interval file saved.");
+            }
+        }
         // If a new annotation file has been uploaded, backup the original 
         // annotation file, move and rename the new annotation file to the input
         // data directory.
@@ -269,20 +294,32 @@ public class RawDataManagementBean implements Serializable {
             case PipelineDB.METHYLATION:
                 filter = "/(\\.|\\/)(idat)$/";
                 break;
+            case PipelineDB.GATK_TAR_GERM:
+            case PipelineDB.GATK_TAR_SOMA:
+            case PipelineDB.GATK_WG_GERM:
+            case PipelineDB.GATK_WG_SOMA:
+                filter = "/(\\.|\\/)(bam)$/";
+                break;
         }
 
         return filter;
     }
     
+    // Return true if this pipeline has interval file, else return false.
+    public final boolean getIntervalFileStatus() {
+        return (plName.equals(PipelineDB.GATK_TAR_GERM) ||
+                plName.equals(PipelineDB.GATK_TAR_SOMA));
+    }
+    
     // Return true if this pipeline has control file, else return false.
     public final boolean getControlFileStatus() {
-        return (plName.compareTo(PipelineDB.CNV_ILLUMINA) == 0 ) || 
-               (plName.compareTo(PipelineDB.GEX_ILLUMINA) == 0);
+        return (plName.equals(PipelineDB.CNV_ILLUMINA) || 
+                plName.equals(PipelineDB.GEX_ILLUMINA));
     }
     
     // Called the respective listener based on the pipeline type.
     public void sampleFileUploadListener(FileUploadEvent event) {
-        if (plName.compareTo(PipelineDB.GEX_ILLUMINA) == 0) {
+        if (plName.equals(PipelineDB.GEX_ILLUMINA)) {
             inputFile.singleFileUploadListener(event);
         }
         else {
@@ -311,6 +348,9 @@ public class RawDataManagementBean implements Serializable {
     }
     public FileUploadBean getCtrlFile() {
         return ctrlFile;
+    }
+    public FileUploadBean getIntFile() {
+        return intFile;
     }
     public FileUploadBean getAnnotFile() {
         return annotFile;

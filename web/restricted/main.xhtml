@@ -49,8 +49,30 @@
             
         <p:tab id="ngs" title="NGS Data" titleStyleClass="tab-title">
             <h:panelGrid>
-                <h:commandLink action="#{menuSelBean.ngsPipeline}" rendered="false"
-                               value="#{msg['seq-dna']}" styleClass="mainmenuitem"/>
+                <p:commandLink action="#{menuSelBean.setupPlConfigPageURL}"
+                               value="#{msg['gatk-wg-germ']}" update=":dlgForm"
+                               styleClass="mainmenuitem" oncomplete="PF('dlg').show()">
+                    <f:setPropertyActionListener target="#{menuSelBean.plName}" 
+                                                 value="gatk-wg-germ"/>
+                </p:commandLink>
+                <p:commandLink action="#{menuSelBean.setupPlConfigPageURL}"
+                               value="#{msg['gatk-wg-soma']}"  update=":dlgForm"
+                               styleClass="mainmenuitem" oncomplete="PF('dlg').show()">
+                    <f:setPropertyActionListener target="#{menuSelBean.plName}" 
+                                                 value="gatk-wg-soma"/>
+                </p:commandLink>
+                <p:commandLink action="#{menuSelBean.setupPlConfigPageURL}"
+                               value="#{msg['gatk-tar-germ']}" update=":dlgForm"
+                               styleClass="mainmenuitem" oncomplete="PF('dlg').show()">
+                    <f:setPropertyActionListener target="#{menuSelBean.plName}" 
+                                                 value="gatk-tar-germ"/>
+                </p:commandLink>
+                <p:commandLink action="#{menuSelBean.setupPlConfigPageURL}"
+                               value="#{msg['gatk-tar-soma']}"  update=":dlgForm"
+                               styleClass="mainmenuitem" oncomplete="PF('dlg').show()">
+                    <f:setPropertyActionListener target="#{menuSelBean.plName}" 
+                                                 value="gatk-tar-soma"/>
+                </p:commandLink>
                 <p:commandLink action="#{menuSelBean.setupPlConfigPageURL}" 
                                value="#{msg['seq-rna']}" update=":dlgForm" 
                                styleClass="mainmenuitem" oncomplete="PF('dlg').show()">

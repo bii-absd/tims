@@ -131,6 +131,7 @@ import org.apache.logging.log4j.LogManager;
  * 13-Feb-2017 - To consolidate all the pipeline parameters (i.e. chip_type, 
  * normalization and summarization) into one field (i.e. parameters) in the 
  * database.
+ * 13-Jul-2017 - Changes due to the addition of GATK Sequencing Pipelines.
  */
 
 public abstract class ConfigBean implements Serializable {
@@ -140,6 +141,8 @@ public abstract class ConfigBean implements Serializable {
     protected String studyID, commandLink;
     // Common Processing Parameters. 
     protected String type, normalization, summarization;
+    protected Integer readDepth, variantDepth;
+    protected boolean excludeDB;
     // Indicator of whether user have new data to upload or not.
     protected boolean haveNewData;
     // Pipeline name and technology
@@ -159,8 +162,8 @@ public abstract class ConfigBean implements Serializable {
     private boolean jobSubmissionStatus;
     // Pipeline output, report and config filename
     protected String pipelineOutput, detailOutput, pipelineReport, pipelineConfig;
-    // Pipeline input, control and sample annotation filename
-    protected String input, ctrl, sample;
+    // Pipeline input, control, interval and sample annotation filename
+    protected String input, ctrl, interval, sample;
     // List of input data belonging to the study, that are available for reuse.
     private List<InputData> inputDataList = new ArrayList<>();
     protected InputData selectedInput;
@@ -223,8 +226,8 @@ public abstract class ConfigBean implements Serializable {
         logger.debug(studyID + " ConfigBean - init().");
     }
     
-    // Rename the sample annotation file (and control probe file) to a common 
-    // name for future use.
+    // Rename the sample annotation file (and control probe or interval file) to 
+    // a common name for future use.
     public void renameAnnotCtrlFiles() {
         // Rename sample annotation file.
         sampleFile.renameFilename(Constants.getANNOT_FILE_NAME() + 
@@ -461,6 +464,11 @@ public abstract class ConfigBean implements Serializable {
     protected boolean createConfigFile() {
         boolean result = Constants.OK;
         String configDir = homeDir + Constants.getCONFIG_PATH();
+        String exDB = null;
+        // Parameter EXCLUDE_DB only apply for GATK pipelines.
+        if (PipelineDB.isGATKPipeline(pipelineName)) {
+            exDB = isExcludeDB()?"YES":"NO";
+        }
         // Config File will be send to the pipeline during execution
         File configFile = new File(configDir + 
                 Constants.getCONFIG_FILE_NAME() + getStudyID() + "_" + 
@@ -482,11 +490,15 @@ public abstract class ConfigBean implements Serializable {
                      "\nINPUT\t=\t" + input +
                      "\nCTRL_FILE\t=\t" + ctrl +
                      "\nSAMPLES_ANNOT_FILE\t=\t" + sample + 
+                     "\nINTERVAL_FILE\t=\t" + interval +
                      "\nEXCLUDE_FILES\t=\t" + exclFileSB.toString() + "\n\n");
 
             fw.write("### PROCESSING parameters\n" +
                      "NORMALIZATION\t=\t" + getNormalization() +
-                     "\nSUMMARIZATION\t=\t" + getSummarization() + "\n\n");
+                     "\nSUMMARIZATION\t=\t" + getSummarization() + 
+                     "\nREAD_DEPTH\t=\t" + getReadDepth() +
+                     "\nVARIANT_DEPTH\t=\t" + getVariantDepth() +
+                     "\nEXCLUDE_DB\t=\t" + exDB + "\n\n");
 
             fw.write("### Output file after normalization and processing\n" +
                      "OUTPUT\t=\t" + pipelineOutput + "\n\n");
@@ -541,8 +553,8 @@ public abstract class ConfigBean implements Serializable {
         return result;
     }
     
-    // Build the pipeline parameters string based on the value of chip_type,
-    // normalization and summarization.
+    // Build the pipeline parameters string based on the value of common 
+    // processing parameters.
     private String buildParametersStr() {
         String parameters = "";
         
@@ -556,6 +568,15 @@ public abstract class ConfigBean implements Serializable {
         
         if (getSummarization() != null) {
             parameters += "Sum:" + getSummarization() + " ";
+        }
+        
+        // The processing parameters (Read depth, variant depth and exclude DB)
+        // are introduced by the GATK Sequencing pipelines.
+        if (PipelineDB.isGATKPipeline(pipelineName)) {
+            String exDB = isExcludeDB()?"YES":"NO";
+            parameters += "RD:" + getReadDepth() + " ";
+            parameters += "VD:" + getVariantDepth() + " ";
+            parameters += "ExDB:" + exDB + " ";
         }
         
         return parameters;
@@ -711,8 +732,8 @@ public abstract class ConfigBean implements Serializable {
         return (selectedInput == null);
     }
     
-    // Helper function to exclude the annotation and control files from the raw
-    // data file list.
+    // Helper function to exclude the annotation, control and interval files 
+    // from the raw data file list.
     protected void filterRawDataFileList() {
         File[] fList = FileHelper.getFilesWithExt(selectedInput.getFilepath(), rdFileExt);
         List<String> fNameList = new ArrayList<>();
@@ -727,11 +748,14 @@ public abstract class ConfigBean implements Serializable {
         Collections.sort(fNameList);
         
         for (String filename : fNameList) {
-            if ((filename.compareTo(Constants.getANNOT_FILE_NAME() + 
-                                    Constants.getANNOT_FILE_EXT()) != 0) && 
-                (filename.compareTo(Constants.getCONTROL_FILE_NAME() + 
-                                    Constants.getCONTROL_FILE_EXT()) != 0)) {
-                // Filter out the Annotation and Control files.
+            // As long as the file belongs to Annotation, Control or interval 
+            // files, we don't add them.
+            if (!(filename.equals(Constants.getANNOT_FILE_NAME() + 
+                                  Constants.getANNOT_FILE_EXT()) || 
+                filename.equals(Constants.getCONTROL_FILE_NAME() + 
+                                Constants.getCONTROL_FILE_EXT()) ||
+                filename.equals(Constants.getINTERVAL_FILE_NAME() +
+                                Constants.getINTERVAL_FILE_EXT())) ) {
                 fileList.add(new ExcludeFileName(index++, filename));
             }
         }
@@ -821,6 +845,24 @@ public abstract class ConfigBean implements Serializable {
     }
     public void setSummarization(String summarization) {
         this.summarization = summarization;
+    }
+    public Integer getReadDepth() {
+        return readDepth;
+    }
+    public void setReadDepth(Integer readDepth) {
+        this.readDepth = readDepth;
+    }
+    public Integer getVariantDepth() {
+        return variantDepth;
+    }
+    public void setVariantDepth(Integer variantDepth) {
+        this.variantDepth = variantDepth;
+    }
+    public boolean isExcludeDB() {
+        return excludeDB;
+    }
+    public void setExcludeDB(boolean excludeDB) {
+        this.excludeDB = excludeDB;
     }
     public boolean getJobSubmissionStatus() {
         return jobSubmissionStatus;

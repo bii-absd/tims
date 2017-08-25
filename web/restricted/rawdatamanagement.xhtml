@@ -59,6 +59,12 @@
                               rendered="#{RDMgntBean.controlFileStatus}"
                               label="#{msg['config-selctl']}" 
                               fileUploadListener="#{RDMgntBean.ctrlFile.singleFileUploadListener}"/>
+                <p:separator styleClass="configsep" rendered="#{RDMgntBean.intervalFileStatus}"/>
+                <p:fileUpload mode="advanced" update="uploadStatus" 
+                              rendered="#{RDMgntBean.intervalFileStatus}"
+                              allowTypes="/(\.|\/)(bed)$/" 
+                              label="#{msg['config-selint']}" 
+                              fileUploadListener="#{RDMgntBean.intFile.singleFileUploadListener}"/>
                 <p:separator styleClass="configsep" rendered="#{RDMgntBean.inputSelectedStatus}"/>
                 <p:fileUpload mode="advanced" update="uploadStatus" label="#{msg['config-selannot']}" 
                               fileUploadListener="#{RDMgntBean.annotFile.singleFileUploadListener}"/>
@@ -99,6 +105,10 @@
                                   value="Replacing Control File"/>
                     <h:outputText rendered="#{RDMgntBean.controlFileStatus}" 
                                   value="#{RDMgntBean.ctrlFile.inputFilenameForRDM}"/>
+                    <h:outputText rendered="#{RDMgntBean.intervalFileStatus}" 
+                                  value="Replacing Interval File"/>
+                    <h:outputText rendered="#{RDMgntBean.intervalFileStatus}" 
+                                  value="#{RDMgntBean.intFile.inputFilenameForRDM}"/>                    
                     <h:outputText value="Replacing Annotation File"/>
                     <h:outputText value="#{RDMgntBean.annotFile.inputFilenameForRDM}"/>
                 </p:panelGrid>

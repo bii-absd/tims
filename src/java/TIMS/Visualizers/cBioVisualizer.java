@@ -30,6 +30,7 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadLocalRandom;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
@@ -76,6 +77,7 @@ import org.mindrot.jbcrypt.BCrypt;
  * 08-Feb-2017 - Added the handling for CNV Affymetrix pipeline.
  * 21-Feb-2017 - Bug fix: In order to export both the CNV Illumina and 
  * Affymetrix to cBioPortal, the stable ID code for them need to be unique.
+ * 17-Jul-2017 - Changes due to the addition of GATK Sequencing Pipelines.
  */
 
 public class cBioVisualizer extends Thread {
@@ -193,6 +195,8 @@ public class cBioVisualizer extends Thread {
             return;
         }
         
+        // To create the unique stableID header code using the studyID as input.
+        String stableID_header = createStableIDHeaderFromStudyID();
         // For each job, need to create the meta_data and case list files, 
         // unzip the pipeline data to the tmp directory, and run the cBioPortal 
         // script to import pipeline data.
@@ -207,12 +211,41 @@ public class cBioVisualizer extends Thread {
             
             // Setup the meta file parameters for each pipeline.
             switch (job.getPipeline_name()) {
+                // For mutation pipelines, the stableID needs to end in 
+                // "_mutations" or else the mutation tab will be missing at
+                // cBioPortal.
+                case PipelineDB.GATK_TAR_GERM:
+                case PipelineDB.GATK_TAR_SOMA:
+                case PipelineDB.GATK_WG_GERM:
+                case PipelineDB.GATK_WG_SOMA:
+                    alteration_type = "MUTATION_EXTENDED";
+                    datatype = "MAF";
+                    profile_name = "Mutations";
+                    // The subject ID is at the 10th columns.
+                    case_list_ids = createSubjectsListForMAF(data_file, 9);
+                    if (job.getPipeline_name().equals(PipelineDB.GATK_TAR_GERM)) {
+                        profile_desc = "Mutation data from GATK Targeted Germline Sequencing";
+                        stableID_code = stableID_header + "_tg_mutations";
+                    }
+                    else if (job.getPipeline_name().equals(PipelineDB.GATK_TAR_SOMA)) {
+                        profile_desc = "Mutation data from GATK Targeted Somatic Sequencing";
+                        stableID_code = stableID_header + "_ts_mutations";
+                    }
+                    else if (job.getPipeline_name().equals(PipelineDB.GATK_WG_GERM)) {
+                        profile_desc = "Mutation data from GATK Whole-Genome Germline Sequencing";
+                        stableID_code = stableID_header + "_wg_mutations";
+                    }
+                    else {
+                        profile_desc = "Mutation data from GATK Whole-Genome Somatic Sequencing";
+                        stableID_code = stableID_header + "_ws_mutations";
+                    }
+                    break;
                 case PipelineDB.SEQ_RNA:
                     alteration_type = "MRNA_EXPRESSION";
                     datatype = "Z-SCORE";
                     profile_desc = "mRNA z-Scores (RNA Seq)";
                     profile_name = "mRNA expression z-Scores (RNA Seq)";
-                    stableID_code = studyID + "_rna_seq_mrna_median_Zscores";
+                    stableID_code = stableID_header + "_rna_seq_mrna_median_Zscores";
                     case_list_ids = createSubjectsList(data_file, 2);
                     // Convert pipeline output to z-score format.
                     convert2zScoreFile(data_file, "seq_rna");
@@ -222,7 +255,7 @@ public class cBioVisualizer extends Thread {
                     datatype = "Z-SCORE";
                     profile_desc = "Expression levels (Affymetrix microarray)";
                     profile_name = "mRNA expression (Affymetrix microarray)";
-                    stableID_code = studyID + "_affy_mrna";
+                    stableID_code = stableID_header + "_affy_mrna";
                     case_list_ids = createSubjectsList(data_file, 2);
                     // Convert pipeline output to z-score format.
                     convert2zScoreFile(data_file, "affymetrix");
@@ -232,7 +265,7 @@ public class cBioVisualizer extends Thread {
                     datatype = "Z-SCORE";
                     profile_desc = "Expression levels (Illumina microarray)";
                     profile_name = "mRNA expression (Illumina microarray)";
-                    stableID_code = studyID + "_illu_mrna";
+                    stableID_code = stableID_header + "_illu_mrna";
                     case_list_ids = createSubjectsList(data_file, 2);
                     break;
                 case PipelineDB.METHYLATION:
@@ -240,7 +273,7 @@ public class cBioVisualizer extends Thread {
                     datatype = "CONTINUOUS";
                     profile_desc = "Methylation beta-values";
                     profile_name = "Methylation";
-                    stableID_code = studyID + "_methylation";
+                    stableID_code = stableID_header + "_methylation";
                     case_list_ids = createSubjectsList(data_file, 2);
                     break;
                 case PipelineDB.CNV_ILLUMINA:
@@ -252,14 +285,13 @@ public class cBioVisualizer extends Thread {
                                  + "-1 = hemizygous deletion; "
                                  + "0 = neutral|no change; 1 = gain; "
                                  + "2 = high level amplification.";
-                    if (job.getPipeline_name().compareTo
-                        (PipelineDB.CNV_ILLUMINA) == 0) {
+                    if (job.getPipeline_name().equals(PipelineDB.CNV_ILLUMINA)) {
                         profile_name = "Putative copy-number (Illumina) alterations from GISTIC";
-                        stableID_code = studyID + "_illu_gistic";
+                        stableID_code = stableID_header + "_illu_gistic";
                     }
                     else {
                         profile_name = "Putative copy-number (Affymetrix) alterations from GISTIC";
-                        stableID_code = studyID + "_affy_gistic";
+                        stableID_code = stableID_header + "_affy_gistic";
                     }
                     case_list_ids = createSubjectsList(data_file, 2);
                     break;
@@ -353,6 +385,22 @@ public class cBioVisualizer extends Thread {
         
         // Send notification email to user.
         Postman.sendExportDataStatusEmail(studyID, userName, status);
+    }
+    
+    // Create the stableID header code from the studyID.
+    private String createStableIDHeaderFromStudyID() {
+        String[] parts = studyID.split("-");
+        StringBuilder stableID = new StringBuilder();
+        Random rg = new Random();
+        
+        for (String part : parts) {
+            // Randomly select a character from each study's string, and add
+            // them to the stableID header under construction.
+            int ind = rg.nextInt(part.length());
+            stableID.append(part.charAt(ind));
+        }
+        
+        return stableID.toString();
     }
     
     // Convert the content of the datafile to z-score value.
@@ -605,6 +653,9 @@ public class cBioVisualizer extends Thread {
             fw.write("show_profile_in_analysis_tab: true\n");
             fw.write("profile_description: " + profile_desc + "\n");
             fw.write("profile_name: " + profile_name + "\n");
+            if (PipelineDB.isGATKPipeline(pipeline)) {
+                fw.write("swissprot_identifier: accession\n");
+            }
             // Update the result with the absolute path of the meta file.
             result = meta_file.getAbsolutePath();
         }
@@ -686,6 +737,45 @@ public class cBioVisualizer extends Thread {
         }
         catch (IOException e) {
             logger.error("FAIL to create subject list!");
+            logger.error(e.getMessage());
+        }
+        
+        return subjectsList;
+    }
+    
+    // Create the list of subject IDs from the xth column of the pipeline
+    // output; to be use in the case_list. Parameter offset will tell us which
+    // column contains the subject ID.
+    private StringBuilder createSubjectsListForMAF(String filename, int offset) {
+        StringBuilder subjectsList = new StringBuilder();
+        String lineRead;
+        String[] columns;
+        
+        try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
+            // Skip the first 2 lines.
+            for (int i = 0; i <= 1; i++)
+                br.readLine();
+            
+            while ((lineRead = br.readLine()) != null) {
+                columns = lineRead.split("\t");
+                if (columns.length <= offset) {
+                    // Invalid data file has been passed in, break out of the 
+                    // while loop.
+                    subjectsList.append("INVALID_DATAFILE");
+                    break;
+                } else {
+                    // Only store those unique subjects ID in the case lists.
+                    if (!subjectsList.toString().contains(columns[offset])) {
+                        subjectsList.append(columns[offset]).append("\t");
+                    }
+                    if (!casesAllList.toString().contains(columns[offset])) {
+                        casesAllList.append(columns[offset]).append("\t");
+                    }
+                }
+            }
+        }
+        catch (IOException e) {
+            logger.error("FAIL to create subject list for MAF!");
             logger.error(e.getMessage());
         }
         

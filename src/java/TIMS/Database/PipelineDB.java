@@ -49,6 +49,8 @@ import org.apache.logging.log4j.LogManager;
  * pipelines.
  * 08-Feb-2017 - Removed constant CNV. Added 2 new constants strings for CNV
  * Illumina and CNV Affymetrix.
+ * 13-Jul-2017 - Added new method isGATKPipeline() to check whether the pipeline
+ * passed in belongs to GATK Sequencing Pipeline family or not.
  */
 
 public abstract class PipelineDB {
@@ -63,6 +65,21 @@ public abstract class PipelineDB {
     public static final String CNV_AFFYMETRIX = "cnv-affymetrix";
     public static final String SEQ_RNA = "seq-rna";
     public static final String SEQ_DNA = "seq-dna";
+    public static final String GATK_WG_GERM = "gatk-wg-germ";
+    public static final String GATK_WG_SOMA = "gatk-wg-soma";
+    public static final String GATK_TAR_GERM = "gatk-tar-germ";
+    public static final String GATK_TAR_SOMA = "gatk-tar-soma";
+    
+    // Return true if this pipeline belongs to the GATK Sequencing Pipeline 
+    // family.
+    public static boolean isGATKPipeline(String pipeline_name) {
+        if (pipeline_name.equals(GATK_WG_GERM) || 
+            pipeline_name.equals(GATK_TAR_GERM) ||
+            pipeline_name.equals(GATK_WG_SOMA) || 
+            pipeline_name.equals(GATK_TAR_SOMA) )
+            return true;
+        return false;
+    }
     
     // Return the editable pipeline hash map (pipeline name -> description).
     public static LinkedHashMap<String, String> getEditablePlHash() {

@@ -1,0 +1,216 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition template="/WEB-INF/pageTemplate.xhtml"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    
+    <ui:define name="title">GATK Whole-Genome Sequencing Pipeline</ui:define>
+    <ui:param name="link" value="#{GatkWGBean.breadCrumbLink}"/>
+    <ui:define name="content">
+        <h:form id="mainForm" enctype="multipart/form-data">
+            <p:panel id="inputfile" visible="#{GatkWGBean.haveNewData}" 
+                     header="#{msg['config-ulsampro']}">
+                <p:growl id="uploadStatus" sticky="true"/>
+                <p:fileUpload mode="advanced" multiple="true"
+                              update="uploadStatus" sequential="true"
+                              label="#{msg['config-selsam']}"
+                              allowTypes="/(\.|\/)(bam)$/" onstart="b4upload()"
+                              fileUploadListener="#{GatkWGBean.inputFile.multipleFileUploadListener}"/>
+                <p:inputText id="inputdescription" 
+                             value="#{GatkWGBean.inputFileDesc}" 
+                             autocomplete="off" size="200" styleClass="configinput"/>
+                <p:watermark for="inputdescription" value="#{msg['config-ipdesc']}"/>
+                <p:remoteCommand name="b4upload" partialSubmit="true" process="@this" 
+                                 actionListener="#{GatkWGBean.inputFile.createInputDirectory}"/>
+            </p:panel>
+            <p:separator styleClass="configsep"/>
+
+            <p:panel id="annotfile" visible="#{GatkWGBean.haveNewData}" header="#{msg['config-ulannot']}">
+                <p:fileUpload mode="advanced" update="uploadStatus"
+                              label="#{msg['config-selannot']}"
+                              fileUploadListener="#{GatkWGBean.sampleFile.singleFileUploadListener}"/>
+            </p:panel>
+
+            <p:panel id="reuseInput" visible="#{!GatkWGBean.haveNewData}" header="#{msg['config-reuse']}">
+                <p:dataTable id="inputTable" var="reuseIP" 
+                             value="#{GatkWGBean.inputDataList}" 
+                             selection="#{GatkWGBean.selectedInput}" 
+                             rowKey="#{reuseIP.sn}" 
+                             styleClass="table-odd-row table-even-row">
+                    <p:ajax event="rowSelectRadio" 
+                            update="mainForm:custButton" 
+                            listener="#{GatkWGBean.inputSelectionChange}"/>
+                    <p:column headerText="Creation Date" styleClass="jsmedcol">
+                        <h:outputText value="#{reuseIP.createTimeString}"/>
+                    </p:column>
+                    <p:column headerText="Create By" styleClass="col120">
+                        <h:outputText value="#{reuseIP.create_uid}"/>
+                    </p:column>
+                    <p:column headerText="Last Update" styleClass="jsmedcol">
+                        <h:outputText value="#{reuseIP.updateTimeString}"/>
+                    </p:column>
+                    <p:column headerText="Update By" styleClass="col120">
+                        <h:outputText value="#{reuseIP.update_uid}"/>
+                    </p:column>
+                    <p:column headerText="Description" style="text-align: left">
+                        <h:outputText value="#{reuseIP.description}"/>
+                    </p:column>
+                    <p:column headerText="Annotation File" styleClass="col120">
+                        <p:commandLink ajax="false" value="Download" 
+                                       action="#{GatkWGBean.downloadAnnot(reuseIP)}"/>
+                    </p:column>
+                    <p:column headerText="Select Data to Reuse" selectionMode="single" 
+                              style="width: 120px; text-align: center"/>
+                </p:dataTable>
+            </p:panel>
+            <p:separator styleClass="configsep"/>
+
+            <p:panel id="required" header="#{msg['config-para1']}">
+                <h:panelGrid columns="3" cellpadding="5" cellspacing="7" styleClass="configcolumn">
+                    <p:outputLabel value="#{msg['config-rddepth']}" styleClass="configlabel"/>
+                    <p:inputText id="readdepth" required="true" autocomplete="off"
+                                 value="#{GatkWGBean.readDepth}" 
+                                 converterMessage="#{msg['error-number-only']}"/>
+                    <h:message for="readdepth" styleClass="errors"/>
+
+                    <p:outputLabel value="#{msg['config-vardepth']}" styleClass="configlabel"/>
+                    <p:inputText id="vardepth" required="true" autocomplete="off"
+                                 value="#{GatkWGBean.variantDepth}" 
+                                 converterMessage="#{msg['error-number-only']}"/>
+                    <h:message for="vardepth" styleClass="errors"/>
+                            
+                    <p:outputLabel value="#{msg['config-exdb']}" styleClass="configlabel"/>
+                    <p:selectBooleanButton id="exdb" value="#{GatkWGBean.excludeDB}" 
+                                           onLabel="YES" offLabel="NO"/>
+                    <h:panelGroup/>
+                </h:panelGrid>
+            </p:panel>
+            <p:separator styleClass="configsep"/>
+
+            <h:panelGrid columns="2" cellspacing="5" cellpadding="5">
+                <p:commandButton value="Submit" update=":revForm required"
+                                 oncomplete="if(!args.validationFailed)PF('dlg').show()"
+                                 icon="ui-icon-check" 
+                                 action="#{GatkWGBean.updateJobSubmissionStatus}"/>
+                <p:commandButton id="custButton" value="Customize Input Data" 
+                                 update=":rdExclForm" oncomplete="PF('rdDlg').show()"
+                                 action="#{GatkWGBean.retrieveRawDataFileList}" 
+                                 rendered="#{!GatkWGBean.haveNewData}" 
+                                 disabled="#{GatkWGBean.selectedInputStatus}"/>
+            </h:panelGrid>
+        </h:form>
+        
+        <p:dialog header="#{msg['rdexcl-header']}" widgetVar="rdDlg" 
+                  resizable="false" width="400px">
+            <h:form id="rdExclForm">
+                <h:panelGrid columns="2" id="rdExclPanel">
+                    <h:outputText value="Description" styleClass="configlabel"/>
+                    <h:inputText id="custdesc" value="#{GatkWGBean.custDesc}" size="200" 
+                                 styleClass="configinput"/>
+                </h:panelGrid>
+                <p:separator styleClass="configsep"/>
+                <p:dataTable id="exclCheckbox" var="rd" rows="10"
+                             paginator="true" paginatorTemplate="{FirstPageLink} 
+                             {PreviousPageLink} {CurrentPageReport} 
+                             {NextPageLink} {LastPageLink}"
+                             value="#{GatkWGBean.fileList}" 
+                             selection="#{GatkWGBean.exclList}" 
+                             rowKey="#{rd.index}" style="width: 100%">
+                    <p:column headerText="Filename">
+                        <h:outputText value="#{rd.filename}"/>
+                    </p:column>
+                    <p:column headerText="Exclude" selectionMode="multiple" 
+                              styleClass="colbutton"/>
+                </p:dataTable>
+                <p:separator styleClass="configsep"/>
+                <h:panelGrid columns="2" width="100%" cellspacing="2" cellpadding="2">
+                    <p:commandButton value="Cancel" style="width: 100%"
+                                     oncomplete="PF('rdDlg').hide()" 
+                                     action="#{GatkWGBean.cancelRawDataCust}"/>
+                    <p:commandButton value="Save" style="width: 100%"
+                                     oncomplete="PF('rdDlg').hide()" 
+                                     action="#{GatkWGBean.saveCust}"/>
+                </h:panelGrid>
+            </h:form>
+        </p:dialog>
+        
+        <p:dialog header="#{msg['revcfg-head']}" widgetVar="dlg" resizable="false">
+            <h:form id="revForm">
+                <p:panelGrid columns="2" id="display">
+                    <h:outputText value="#{msg['config-study']}"/>
+                    <h:outputText value="#{GatkWGBean.studyID}"/>
+                    <h:outputText rendered="#{!GatkWGBean.haveNewData}" 
+                                  value="#{msg['revcfg-reuse']}"/>
+                    <h:outputText rendered="#{!GatkWGBean.haveNewData}" 
+                                  value="#{GatkWGBean.reuseInputDate}"/>
+                    <h:outputText rendered="#{GatkWGBean.custStatus}" 
+                                  value="#{msg['revcfg-custdesc']}"/>
+                    <h:outputText rendered="#{GatkWGBean.custStatus}" 
+                                  value="#{GatkWGBean.custDesc}" 
+                                  styleClass="configinput"/>
+                    <h:outputText rendered="#{GatkWGBean.custStatus}" 
+                                  value="#{msg['revcfg-custexcl']}"/>
+                    <p:dataList itemType="square" rows="10"
+                        paginator="true" paginatorTemplate="{FirstPageLink} 
+                        {PreviousPageLink} {CurrentPageReport} 
+                        {NextPageLink} {LastPageLink}"
+                        rendered="#{GatkWGBean.custStatus}"
+                        value="#{GatkWGBean.exclFileList}"
+                        var="exlist" styleClass="datalist" type="none">
+                        <h:outputText value="#{exlist}"/><br/>
+                    </p:dataList>
+                    <h:outputText rendered="#{GatkWGBean.haveNewData}" 
+                                  value="#{GatkWGBean.inputFile.filesCount}"/>
+                    <p:dataList itemType="square" rows="20"
+                        paginator="true" paginatorTemplate="{FirstPageLink} 
+                        {PreviousPageLink} {CurrentPageReport} 
+                        {NextPageLink} {LastPageLink}"
+                        rendered="#{GatkWGBean.haveNewData}"
+                        value="#{GatkWGBean.inputFile.inputFileList}"
+                        var="filelist" styleClass="datalist" type="none">
+                        <h:outputText value="#{filelist}"/><br/>
+                    </p:dataList>
+                    <h:outputText rendered="#{GatkWGBean.missingFilesStatus}" 
+                                  value="#{msg['revcfg-misfiles']}" 
+                                  style="color: red; font-weight: bold"/>
+                    <p:dataList itemType="square" rows="10"
+                                paginator="true" paginatorTemplate="{FirstPageLink} 
+                                {PreviousPageLink} {CurrentPageReport} 
+                                {NextPageLink} {LastPageLink}"
+                                rendered="#{GatkWGBean.missingFilesStatus}" 
+                                value="#{GatkWGBean.missingFiles}" 
+                                var="missfile" styleClass="datalist" 
+                                type="none">
+                        <h:outputText value="#{missfile}"/><br/>
+                    </p:dataList>
+                    <h:outputText rendered="#{GatkWGBean.haveNewData}" 
+                                  value="#{msg['revcfg-annot']}"/>
+                    <h:outputText rendered="#{GatkWGBean.haveNewData}" 
+                                  value="#{GatkWGBean.sampleFile.inputFilename}"/>
+                    <h:outputText value="#{msg['config-rddepth']}"/>
+                    <h:outputText value="#{GatkWGBean.readDepth}"/>
+                    <h:outputText value="#{msg['config-vardepth']}"/>
+                    <h:outputText value="#{GatkWGBean.variantDepth}"/>
+                    <h:outputText value="#{msg['config-exdb']}"/>
+                    <h:outputText value="#{GatkWGBean.excludeDB}"/>
+                </p:panelGrid>
+                <p:separator styleClass="configsep"/>
+                <h:panelGrid columns="3" cellspacing="2" cellpadding="2">
+                    <p:commandButton value="Cancel" title="#{msg['revcfg-cantit']}"
+                                     style="width: 120px" oncomplete="PF('dlg').hide()"
+                                     action="#{GatkWGBean.cancelJob}"/>
+                    <p:commandButton value="Confirm" title="#{msg['revcfg-cfmtit']}"
+                                     style="width: 120px"
+                                     action="#{GatkWGBean.submitJob}" 
+                                     rendered="#{GatkWGBean.jobSubmissionStatus}"/>
+                    <p:commandButton value="Upload Data" title="#{msg['revcfg-upload']}" 
+                                     style="width: 120px" action="#{GatkWGBean.uploadRawData}" 
+                                     rendered="#{GatkWGBean.uploadDataOnly}"/>
+                </h:panelGrid>
+            </h:form>
+        </p:dialog>
+    </ui:define>
+</ui:composition>

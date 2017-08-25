@@ -72,6 +72,7 @@ import org.apache.logging.log4j.LogManager;
  * (i.e. ad-hoc study).
  * 24-Apr-2017 - Meta data management will be allowed for all studies that are
  * not closed.
+ * 13-Jul-2017 - Changes due to the addition of GATK Sequencing Pipelines.
  */
 
 @ManagedBean (name="menuSelBean")
@@ -105,6 +106,8 @@ public class MenuSelectionBean implements Serializable{
     // Setup the URL for pipeline config page, and the Study ID list for user 
     // selection.
     public void setupPlConfigPageURL() {
+        String nextPage = plName;
+        
         if (UserRoleDB.isLead(roleID)) {
             studyList = StudyDB.getPIStudyHash(userName);
         }
@@ -114,7 +117,18 @@ public class MenuSelectionBean implements Serializable{
         else {
             studyList = StudyDB.getUserStudyHash(userName);
         }
-        plConfigPageURL = plName + "?faces-redirect=true";
+        // For GATK Sequencing pipelines, whole-genome pipelines will share
+        // the same bean and xhtml (the same goes for targeted pipelines.)
+        if (plName.equals(PipelineDB.GATK_WG_GERM) || 
+            plName.equals(PipelineDB.GATK_WG_SOMA)) {
+            nextPage = "gatk-whole-genome-seq";
+        }
+        else if (plName.equals(PipelineDB.GATK_TAR_GERM) || 
+                plName.equals(PipelineDB.GATK_TAR_SOMA)) {
+            nextPage = "gatk-targeted-seq";
+        }
+        
+        plConfigPageURL = nextPage + "?faces-redirect=true";
     }
     
     // Setup the hash maps needed for raw data management.

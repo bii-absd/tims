@@ -33,6 +33,8 @@ ANNOT_FILE_NAME ANNOTATION
 ANNOT_FILE_EXT .txt
 CONTROL_FILE_NAME CONTROL_PROBE
 CONTROL_FILE_EXT .txt
+INTERVAL_FILE_NAME INTERVAL
+INTERVAL_FILE_EXT .bed
 # The below defines the server name, database name and database driver.
 # Naming convention for the DB if using DataSource to get the DB connection.
 SERVER_NAME localhost
