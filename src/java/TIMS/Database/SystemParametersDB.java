@@ -24,6 +24,7 @@ import org.apache.logging.log4j.LogManager;
  * Revision History
  * 02-Feb-2017 - Initial creation with two static methods (loadSystemParameters
  * and getcBioPortalUrl) created.
+ * 08-Sep-2017 - Added 2 static methods getTomcatUID() and getTomcatPWD().
  */
 
 public abstract class SystemParametersDB {
@@ -63,5 +64,15 @@ public abstract class SystemParametersDB {
     // Return the cBioPortal URL setup in the system.
     public static String getcBioPortalUrl() {
         return spHash.get("CBIOPORTAL_URL");
+    }
+    
+    // Return the Tomcat user id setup in the system.
+    public static String getTomcatUID() {
+        return spHash.get("TOMCAT_UID");
+    }
+    
+    // Return the Tomcat password setup in the system.
+    public static String getTomcatPWD() {
+        return spHash.get("TOMCAT_PWD");
     }
 }

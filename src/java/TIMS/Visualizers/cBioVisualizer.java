@@ -13,6 +13,7 @@ import TIMS.Database.SystemParametersDB;
 import TIMS.General.Constants;
 import TIMS.General.FileHelper;
 import TIMS.General.Postman;
+import TIMS.General.ResourceRetriever;
 import TIMS.General.Statistics;
 import java.io.BufferedReader;
 import java.io.File;
@@ -30,7 +31,6 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadLocalRandom;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
@@ -78,6 +78,9 @@ import org.mindrot.jbcrypt.BCrypt;
  * 21-Feb-2017 - Bug fix: In order to export both the CNV Illumina and 
  * Affymetrix to cBioPortal, the stable ID code for them need to be unique.
  * 17-Jul-2017 - Changes due to the addition of GATK Sequencing Pipelines.
+ * 29-Aug-2017 - Updated with a newer version of cBioPortal (1.4.0). To restart
+ * the cBioPortal application instead of the Tomcat server after each data 
+ * import. To import the icd code to cBioPortal only when it is being used.
  */
 
 public class cBioVisualizer extends Thread {
@@ -88,27 +91,26 @@ public class cBioVisualizer extends Thread {
     private static Semaphore tcCtrl = new Semaphore(1);
     // Use for formating the z-score to 2 decimals.
     private static DecimalFormat df = new DecimalFormat("0.00");
-    // Commands for cBioPortal.
-    private final static String IMPORT_STUDY = "import-study";
-    private final static String REMOVE_STUDY = "remove-study";
-    private final static String IMPORT_CASE_LIST = "import-case-list";
-    private final static String IMPORT_DATA = "import-study-data";
-    private final static String META_FILENAME = "--meta-filename";
-    private final static String DATA_FILENAME = "--data-filename";
     // These strings are used to store the meta data parameters.
     private String alteration_type, datatype, profile_desc, profile_name;
     private final List<FinalizingJobEntry> selectedJobs;
     private final String userName, studyID;
     private final Study study;
-    private String folder_name, dir, case_dir, meta_study_txt;
+    private String folder_name, dir, case_dir, meta_study_txt, 
+                   meta_clinical_samples, meta_cancer_type, 
+                   data_clinical_samples, cancer_type;
+    // Color code for the different cancer type in cBioPortal.
+    public final String[] color_code = new String[] 
+        {"White","PeachPuff","Red","Gray","Green","LightSkyBlue","HotPink",
+         "SaddleBrown","MediumSeaGreen","LightBlue","Black","Yellow",
+         "LightYellow","LimeGreen","Purple","LightSalmon","Teal","Cyan",
+         "Gainsboro","DarkRed","Orange","Blue"};
     private Timestamp visual_time;
     // cBioPortal import command.
     private List<String> CMD = new ArrayList<>();
     // To store the subjects ID from all the pipeline output.
     StringBuilder casesAllList = new StringBuilder();
-    
-    // Commands to stop and start tomcat server.
-    // To be moved later!
+    // Commands to stop and start the cBioPortal application.
     private List<String> TCSTOP = new ArrayList<>();
     private List<String> TCSTART = new ArrayList<>();
 
@@ -120,99 +122,80 @@ public class cBioVisualizer extends Thread {
         this.userName = userName;
         this.selectedJobs = selectedJobs;
         this.study = StudyDB.getStudyObject(study_id);
-        dir = Constants.getSYSTEM_PATH() + Constants.getCBIO_PATH()
-            + study_id + File.separator;
-        // Define the file path of the meta_study.txt file
-        meta_study_txt = dir + "meta_study.txt";
         // Record the time this export job is requested, and used the return
         // string as the name of the folder used for storing the meta files.
         folder_name = recordVisualTime();
-        dir += folder_name + File.separator;
+        dir = Constants.getSYSTEM_PATH() + Constants.getCBIO_PATH()
+            + study_id + File.separator + folder_name + File.separator;
+        // Define the file path for all the meta and data files.
+        meta_study_txt = dir + "meta_study.txt";
+        meta_clinical_samples = dir + "meta_clinical_samples.txt";
+        data_clinical_samples = dir + "data_clinical_samples.txt";
+        meta_cancer_type = dir + "meta_cancer_type.txt";
+        cancer_type = dir + "cancer_type.txt";
         case_dir = dir + Constants.getCBIO_CASE_DIR();
         // Build the cBioPortal import command.
         // Addition parameter needed for Window OS.
         if (System.getProperty("os.name").startsWith("Windows")) {
             CMD.add("python");
         }
+        CMD.add(System.getenv("PORTAL_HOME") + File.separator + "metaImport.py");
+        CMD.add("-s");
+        logger.debug("cBioPortal Meta Import command: " + CMD.toString());
         
-        CMD.add(System.getenv("PORTAL_HOME") + File.separator + "cbioportalImporter.py");
-        CMD.add("--command");
-        logger.debug("cBioPortal Import command: " + CMD.toString());
-        
-        // Create tomcat commands.
+        // Create tomcat commands to stop and start the cBioPortal application.
+        TCSTOP.add("curl");
+        TCSTOP.add("--user");
+        // Retrieve the Tomcat user id and password.
+        String tomcat = SystemParametersDB.getTomcatUID() + ":" 
+                      + SystemParametersDB.getTomcatPWD();
+        TCSTOP.add(tomcat);
+        TCSTART.add("curl");
+        TCSTART.add("--user");
+        TCSTART.add(tomcat);
         createTomcatCommands();
         logger.debug("cBioVisualizer created for study: " + study_id);
     }
     
     @Override
     public void run() {
-        boolean status = Constants.OK;
-        String logFileName;
+        // To store the list of pipeline data files; files to be deleted after 
+        // export.
+        StringBuilder datafiles = new StringBuilder();
         // Create the directory and sub-directory for storing the meta files
         // and the case files.
         if (!(FileUploadBean.createSystemDirectory(dir) && 
               FileUploadBean.createSystemDirectory(case_dir))) {
-            // Fail to create system directory for cBioPortal, no point to continue.
-            logger.error("FAIL to create system directory for cBioPortal!");
+            // Fail to create system directories for cBioPortal, no point 
+            // to continue.
+            logger.error("FAIL to create system directories for cBioPortal!");
             logger.error("Aborting data export for study " + studyID);
             // Send the failed notification email to user.
-            Postman.sendExportDataStatusEmail(studyID, userName, Constants.NOT_OK);
+            Postman.sendExportDataStatusEmail(studyID, userName, 
+                                              Constants.NOT_OK);
             return;
         }
-        
-        // Check whether has this study been exported for visualization before.
-        if (StudyDB.getCbioURL(studyID) == null) {
-            // Create the meta_study file.
-            createMetaStudyFile();
-        }
-        else {
-            List<String> removeStudyCMD = remStudyCommand();
-            // Prepare log file.
-            logFileName = createLogFile(dir, "rem_" + studyID);
-            // Remove the study.
-            if (executeImportScript(removeStudyCMD, logFileName)) {
-                logger.debug("Study from last import removed.");
-            }
-            else {
-                // Failed to remove previous study.
-                status = Constants.NOT_OK;
-            }
-        }
-        
-        List<String> addStudyCMD = addStudyCommand();
-        // Prepare log file.
-        logFileName = createLogFile(dir, "add_" + studyID);
-        // Import the study.
-        if (executeImportScript(addStudyCMD, logFileName)) {
-            logger.debug("Imported study.");
-        }
-        else {
-            // Failed to import the study, no point to continue.
-            logger.error("FAIL to import study in cBioPortal!");
-            logger.error("Aborting data export for study " + studyID);
-            // Send the failed notification email to user.
-            Postman.sendExportDataStatusEmail(studyID, userName, Constants.NOT_OK);
-            return;
-        }
-        
-        // To create the unique stableID header code using the studyID as input.
-        String stableID_header = createStableIDHeaderFromStudyID();
-        // For each job, need to create the meta_data and case list files, 
-        // unzip the pipeline data to the tmp directory, and run the cBioPortal 
-        // script to import pipeline data.
+
+        // Create the meta files for study, cancer type, and clinical samples.
+        createMetaStudyFile();
+        createMetaCancerTypeFile();
+        createMetaClinicalSamplesFile();
+        // For each job, need to create the meta and case list files, unzip the
+        // pipeline data to the tmp directory, and store it's absolute path in
+        // the meta file.
         for (FinalizingJobEntry job : selectedJobs) {
             // Unzip the pipeline data file to the tmp directory; this file 
             // will be deleted after use.
             String data_file = SubmittedJobDB.unzipOutputFile(job.getJob_id());
             // Store the list of subject IDs; to be use in the case_list.
             StringBuilder case_list_ids = new StringBuilder();
-            // To store the code needed at the end of each stable ID.
-            String stableID_code = null;
+            // To store the stable ID.
+            String stable_id = null;
             
-            // Setup the meta file parameters for each pipeline.
+            // Fill in the meta file parameters for each pipeline.
             switch (job.getPipeline_name()) {
-                // For mutation pipelines, the stableID needs to end in 
-                // "_mutations" or else the mutation tab will be missing at
+                // For mutation pipelines, the stable ID needs to end in 
+                // "mutations" or else the mutation tab will be missing at
                 // cBioPortal.
                 case PipelineDB.GATK_TAR_GERM:
                 case PipelineDB.GATK_TAR_SOMA:
@@ -221,31 +204,29 @@ public class cBioVisualizer extends Thread {
                     alteration_type = "MUTATION_EXTENDED";
                     datatype = "MAF";
                     profile_name = "Mutations";
-                    // The subject ID is at the 10th columns.
+                    // The subject ID is at the 10th columns for mutation 
+                    // pipeline output.
                     case_list_ids = createSubjectsListForMAF(data_file, 9);
+                    stable_id = "mutations";
                     if (job.getPipeline_name().equals(PipelineDB.GATK_TAR_GERM)) {
                         profile_desc = "Mutation data from GATK Targeted Germline Sequencing";
-                        stableID_code = stableID_header + "_tg_mutations";
                     }
                     else if (job.getPipeline_name().equals(PipelineDB.GATK_TAR_SOMA)) {
                         profile_desc = "Mutation data from GATK Targeted Somatic Sequencing";
-                        stableID_code = stableID_header + "_ts_mutations";
                     }
                     else if (job.getPipeline_name().equals(PipelineDB.GATK_WG_GERM)) {
                         profile_desc = "Mutation data from GATK Whole-Genome Germline Sequencing";
-                        stableID_code = stableID_header + "_wg_mutations";
                     }
                     else {
                         profile_desc = "Mutation data from GATK Whole-Genome Somatic Sequencing";
-                        stableID_code = stableID_header + "_ws_mutations";
                     }
                     break;
                 case PipelineDB.SEQ_RNA:
                     alteration_type = "MRNA_EXPRESSION";
                     datatype = "Z-SCORE";
-                    profile_desc = "mRNA z-Scores (RNA Seq)";
+                    profile_desc = "RNA-seq data";
                     profile_name = "mRNA expression z-Scores (RNA Seq)";
-                    stableID_code = stableID_header + "_rna_seq_mrna_median_Zscores";
+                    stable_id = "rna_seq_mrna_median_Zscores";
                     case_list_ids = createSubjectsList(data_file, 2);
                     // Convert pipeline output to z-score format.
                     convert2zScoreFile(data_file, "seq_rna");
@@ -253,9 +234,9 @@ public class cBioVisualizer extends Thread {
                 case PipelineDB.GEX_AFFYMETRIX:
                     alteration_type = "MRNA_EXPRESSION";
                     datatype = "Z-SCORE";
-                    profile_desc = "Expression levels (Affymetrix microarray)";
+                    profile_desc = "mRNA data";
                     profile_name = "mRNA expression (Affymetrix microarray)";
-                    stableID_code = stableID_header + "_affy_mrna";
+                    stable_id = "mrna_median_Zscores";
                     case_list_ids = createSubjectsList(data_file, 2);
                     // Convert pipeline output to z-score format.
                     convert2zScoreFile(data_file, "affymetrix");
@@ -263,17 +244,19 @@ public class cBioVisualizer extends Thread {
                 case PipelineDB.GEX_ILLUMINA:
                     alteration_type = "MRNA_EXPRESSION";
                     datatype = "Z-SCORE";
-                    profile_desc = "Expression levels (Illumina microarray)";
+                    profile_desc = "mRNA data";
                     profile_name = "mRNA expression (Illumina microarray)";
-                    stableID_code = stableID_header + "_illu_mrna";
+                    stable_id = "mrna_median_Zscores";
                     case_list_ids = createSubjectsList(data_file, 2);
+                    // Convert pipeline output to z-score format.
+                    convert2zScoreFile(data_file, "illumina");
                     break;
                 case PipelineDB.METHYLATION:
                     alteration_type = "METHYLATION";
                     datatype = "CONTINUOUS";
                     profile_desc = "Methylation beta-values";
-                    profile_name = "Methylation";
-                    stableID_code = stableID_header + "_methylation";
+                    profile_name = "Methylation (HM450)";
+                    stable_id = "methylation_hm450";
                     case_list_ids = createSubjectsList(data_file, 2);
                     break;
                 case PipelineDB.CNV_ILLUMINA:
@@ -285,13 +268,12 @@ public class cBioVisualizer extends Thread {
                                  + "-1 = hemizygous deletion; "
                                  + "0 = neutral|no change; 1 = gain; "
                                  + "2 = high level amplification.";
+                    stable_id = "gistic";
                     if (job.getPipeline_name().equals(PipelineDB.CNV_ILLUMINA)) {
                         profile_name = "Putative copy-number (Illumina) alterations from GISTIC";
-                        stableID_code = stableID_header + "_illu_gistic";
                     }
                     else {
                         profile_name = "Putative copy-number (Affymetrix) alterations from GISTIC";
-                        stableID_code = stableID_header + "_affy_gistic";
                     }
                     case_list_ids = createSubjectsList(data_file, 2);
                     break;
@@ -302,77 +284,58 @@ public class cBioVisualizer extends Thread {
                     break;
             }
             // Create the meta file and case list file for each pipeline.
-            String meta_file = createMetaPLFile(job.getPipeline_name(), stableID_code);
-            String case_file = createCaseListFile(job.getPipeline_name(), 
-                                job.getInput_desc(), case_list_ids, stableID_code);
-            
-            logger.debug("Meta file created: " + meta_file);
-            logger.debug("Case list file created: " + case_file);
-            List<String> importDataCMD = importDataCommand(meta_file, data_file);
-            // Prepare log file.
-            logFileName = createLogFile(dir, job.getPipeline_name());
-            // Import pipeline data.
-            if (executeImportScript(importDataCMD, logFileName)) {
-                logger.debug("Data imported for pipeline " + job.getPipeline_name());
-            }
-            else {
-                status = Constants.NOT_OK;
-                logger.error("FAIL to import data for pipeline " + job.getPipeline_name());
-            }
-            
-            try {
-                // Added the below statement due to a bug in Java that prevent the
-                // temporary output file for being deleted.
-                System.gc();
-                // Sleep for 1 sec before deleting the temporary file.
-                sleep(1000);
-                // Delete the temporary file here.
-                if (!FileHelper.delete(data_file)) {
-                    logger.error("FAIL to delete the temporary data file!");
-                }
-            }
-            catch (InterruptedException ie) {
-                logger.error("FAIL to sleep before deleting temp working file!");
-                logger.error(ie.getMessage());
-            }
-        }
-        // Create the case_all file for this study.
-        createCasesAllFile();
-        List<String> importCaseListCMD = importCaseListCommand();
-        // Prepare log file.
-        logFileName = createLogFile(dir, "case_lists");
-        // Import the case list for all pipeline.
-        if (executeImportScript(importCaseListCMD, logFileName)) {
-            logger.debug("Imported case list.");
-        }
-        else {
-            status = Constants.NOT_OK;
-            logger.error("FAIL to import case list for study " + studyID);
-        }
-
-        if (status) {
-            // Create and save the cBioPortal URL into database.
-            StudyDB.updateStudyCbioUrl(studyID, createCbioUrl());
-            // Save the visual time into database.
-            StudyDB.updateStudyVisualTime(studyID, visual_time);
-            // Export completed!
-            logger.debug(studyID + " exported to cBioPortal.");
-        }
-        else {
-            logger.error("FAIL to export " + studyID + " to cBioPortal!");
+            logger.debug("Meta file created: " + createMetaPLFile
+                        (job.getPipeline_name(), stable_id, data_file));
+            logger.debug("Case list file created: " + createCaseListFile
+                        (job.getPipeline_name(), job.getInput_desc(), 
+                        case_list_ids, stable_id));
+            // Store the path of this pipeline data file; to be deleted after
+            // export.
+            datafiles.append(data_file).append("\t");            
         }
         
+        createDataCancerType();
+        createDataClinicalSamplesFile();
+        // Import the study into cBioPortal.
+        List<String> importStudyCMD = importStudyCommand();
+        // Prepare log file.
+        String logFileName = createLogFile(dir, "import_" + studyID);
+        // Import the study.
+        if (executeImportScript(importStudyCMD, logFileName)) {
+            logger.debug("Study exported.");
+        }
+        else {
+            // Failed to import the study, no point to continue.
+            logger.error("FAIL to export study!");
+            logger.error("Aborting data export for study " + studyID);
+            // Send the failed notification email to user.
+            Postman.sendExportDataStatusEmail(studyID, userName, Constants.NOT_OK);
+            return;
+        }
+        
+        // Create and save the cBioPortal URL into database.
+        StudyDB.updateStudyCbioUrl(studyID, createCbioUrl());
+        // Save the visual time into database.
+        StudyDB.updateStudyVisualTime(studyID, visual_time);
+        // Export completed!
+        logger.debug(studyID + " exported to cBioPortal.");
+        // Delete all the temporary pipeline data files.
+        for (String tmp_file : datafiles.toString().split("\t")) {
+            if (!FileHelper.delete(tmp_file)) {
+                logger.error("FAIL to delete temporary data file: " + tmp_file);
+            }
+        }
         // Used the executeImportScript to run the commands to restart the 
-        // tomcat server.
+        // cBioPortal application.
         try {
             logger.debug(userName + ": trying to acquire tomcat control.");
             tcCtrl.acquire();
-            logger.debug(userName + ": restarting tomcat application server.");
-            executeImportScript(TCSTOP, createLogFile(dir, "stop_tomcat"));
-            executeImportScript(TCSTART, createLogFile(dir, "start_tomcat"));
-            logger.debug(userName + ": tomcat application server restarted.");
+            logger.debug(userName + ": restarting cBioPortal.");
+            executeImportScript(TCSTOP, createLogFile(dir, "stop_cBioPortal"));
+            executeImportScript(TCSTART, createLogFile(dir, "start_cBioPortal"));
+            logger.debug(userName + ": cBioPortal restarted.");
             // Wait a minute before releasing the control key i.e. giving
-            // the tomcat time to complete it's reset cycle.
+            // the application time to complete it's reset cycle.
             sleep(60000);
         }
         catch (InterruptedException ie) {
@@ -382,25 +345,8 @@ public class cBioVisualizer extends Thread {
         finally {
             tcCtrl.release();
         }
-        
         // Send notification email to user.
-        Postman.sendExportDataStatusEmail(studyID, userName, status);
-    }
-    
-    // Create the stableID header code from the studyID.
-    private String createStableIDHeaderFromStudyID() {
-        String[] parts = studyID.split("-");
-        StringBuilder stableID = new StringBuilder();
-        Random rg = new Random();
-        
-        for (String part : parts) {
-            // Randomly select a character from each study's string, and add
-            // them to the stableID header under construction.
-            int ind = rg.nextInt(part.length());
-            stableID.append(part.charAt(ind));
-        }
-        
-        return stableID.toString();
+        Postman.sendExportDataStatusEmail(studyID, userName, Constants.OK);
     }
     
     // Convert the content of the datafile to z-score value.
@@ -436,6 +382,8 @@ public class cBioVisualizer extends Thread {
                         zsLine.append(df.format(zs)).append("\t");                        
                     }
                 }
+                // Remove the last tab.
+                zsLine.setLength(zsLine.length() - 1);
                 // Write the converted data into the z-score file.
                 ps.println(zsLine);
             }
@@ -446,12 +394,13 @@ public class cBioVisualizer extends Thread {
             logger.error(ioe.getMessage());
         }
 
-        // Copy and replace the datafile with the converted z-score file.
+        // Move and replace the datafile with the converted z-score file.
         try {
             Path from = FileSystems.getDefault().getPath(zScoreFile);
             Path to = FileSystems.getDefault().getPath(datafile);
-            Files.copy(from, to, REPLACE_EXISTING);
-            logger.debug("z-score file copied to temp directory.");
+//            Files.copy(from, to, REPLACE_EXISTING);
+            Files.move(from, to, REPLACE_EXISTING);
+            logger.debug("z-score file moved to temp directory.");
         }
         catch (IOException ioe) {
             logger.error("FAIl to copy z-score file to temp directory!");
@@ -464,79 +413,28 @@ public class cBioVisualizer extends Thread {
     
     // Create the commands to stop and start tomcat server.
     private void createTomcatCommands() {
-        String tcCommand;
-        
-        // Window Version
-        if (System.getProperty("os.name").startsWith("Windows")) {
-            tcCommand = System.getenv("CATALINA_HOME") + File.separator + "bin" + File.separator + "catalina.bat";
-        }
-        else {
-            tcCommand = System.getenv("CATALINA_HOME") + File.separator + "bin" + File.separator + "catalina.sh";
-        }
-        
-        TCSTOP.add(tcCommand);
-        TCSTOP.add("stop");
-        TCSTART.add(tcCommand);
-        TCSTART.add("start");
+        TCSTOP.add("http://localhost:8080/manager/text/stop?path=/cbioportal");
+        TCSTART.add("http://localhost:8080/manager/text/start?path=/cbioportal");
         logger.debug("Tomcat START command: " + TCSTART.toString());
         logger.debug("Tomcat STOP command: " + TCSTOP.toString());
     }
     
-    // Construct and return the remove study command for cBioPortal.
-    private List<String> remStudyCommand() {
-        // In order to have a new copy of the List object, we need to perform 
-        // a 'deep-copy' of the List object here i.e. purely assignment will 
-        // not work.
+    // Construct and return the import study command for cBioPortal.
+    private List<String> importStudyCommand() {
         List<String> command = new ArrayList<>(CMD);
-        // Build the command to remove the study from last import.
-        command.add(REMOVE_STUDY);
-        command.add(META_FILENAME);
-        command.add(meta_study_txt);
-    
-        return command;
-    }
-    
-    // Construct and return the add study command for cBioPortal.
-    private List<String> addStudyCommand() {
-        List<String> command = new ArrayList<>(CMD);
-        // Build the command to import the study for this import.
-        command.add(IMPORT_STUDY);
-        command.add(META_FILENAME);
-        command.add(meta_study_txt);
+        // Build the command to import the study.
+        command.add(dir);
+        command.add("-n");
+        command.add("-o");
         
         return command;
     }
 
-    // Construct and return the import data command for cBioPortal.
-    private List<String> importDataCommand(String meta_file, String data_file) {
-        List<String> command = new ArrayList<>(CMD);
-        // Build the command to import pipeline data.
-        command.add(IMPORT_DATA);
-        command.add(META_FILENAME);
-        command.add(meta_file);
-        command.add(DATA_FILENAME);
-        command.add(data_file);
-
-        return command;
-    }
-    
-    // Construct and return the import case lists command for cBioportal.
-    private List<String> importCaseListCommand() {
-        List<String> command = new ArrayList<>(CMD);
-        // Build the command to import the case list for all the pipeline.
-        command.add(IMPORT_CASE_LIST);
-        command.add(META_FILENAME);
-        command.add(case_dir);
-
-        return command;
-    }
-    
     // Create the cBioPortal URL for this study.
     private String createCbioUrl() {
         // Create a random 60 characters string.
         int dummyNum = ThreadLocalRandom.current().nextInt(Integer.MAX_VALUE/2, Integer.MAX_VALUE);
         String dummyStr = BCrypt.hashpw(String.valueOf(dummyNum), BCrypt.gensalt());
-
         // Need to replace the special character '/' as this string will form
         // part of an url.
         dummyStr = dummyStr.replace("/", "0");
@@ -552,37 +450,34 @@ public class cBioVisualizer extends Thread {
                filename + Constants.getLOGFILE_EXT();
     }
     
-    // Execute the cBioPortal Python script to import study meta data into
-    // cBioPortal database.
+    // Execute the command and write the output to the log file.
     private boolean executeImportScript(List<String> command, String logFileName) {
         boolean status = Constants.NOT_OK;
         ProcessBuilder pb = new ProcessBuilder(command);
-        // The execution log from the cBioPortal script will be written to 
-        // the log file.
+        // The execution log will be written to the log file.
         File logFile = new File(logFileName);
         // Merge the standard error and output stream, and always sent to the
         // same destination.
         pb.redirectErrorStream(true);
         pb.redirectOutput(ProcessBuilder.Redirect.to(logFile));
-        logger.debug("Executing cBioPortal command: " + command);
+        logger.debug("Executing command: " + command);
         
         try {
-            // Start the import.
             Process process = pb.start();
-            // Wait for the import to finish.
+            // Wait for the command to complete.
             int result = process.waitFor();
             if (result == 0) {
                 // Any result other than 0 is considered not ok.
                 status = Constants.OK;
             }
-            logger.debug("cBioPortal import completed with status: " + result);
+            logger.debug("Command completed with status: " + result);
         }
         catch (IOException ioe) {
-            logger.error("FAIL to start the CBioPortal import script!");
+            logger.error("FAIL to execute command!");
             logger.error(ioe.getMessage());
         }
         catch (InterruptedException ie) {
-            logger.error("FAIL to complete the import of data into cBioPortal!");
+            logger.error("FAIL to complete execution of command!");
             logger.error(ie.getMessage());            
         }
         
@@ -606,8 +501,8 @@ public class cBioVisualizer extends Thread {
         return target.substring(0, Math.min(target.length(), len-1));
     }
     
-    // Create the meta_study file for this study; only need to create once per
-    // study. Return the absolute path of the meta_study file.
+    // Create the meta_study file for this study. Return the absolute path of 
+    // the meta_study file.
     private String createMetaStudyFile() {
         String result = Constants.FAILED;
         File meta_study = new File(meta_study_txt);
@@ -616,7 +511,7 @@ public class cBioVisualizer extends Thread {
             // Create meta_study file.
             meta_study.createNewFile();
             // Write to the meta_study file according to the format needed by
-            // cbioportalImporter Python script.
+            // metaImport Python script.
             fw.write("type_of_cancer: " + study.getIcd_code() + "\n");
             fw.write("cancer_study_identifier: " + studyID + "\n");
             // Need to trim the title to be less than or equal to 255 characters.
@@ -624,35 +519,86 @@ public class cBioVisualizer extends Thread {
             fw.write("short_name: " + studyID + "\n");
             // Need to trim the description to less than or equal to 1024 characters.
             fw.write("description: " + trimString(study.getDescription(), 1024) + "\n");
-            fw.write("groups: ");
+            fw.write("add_global_case_list: true");
             // Update the result with the absolute path of the meta_study file.
             result = meta_study.getAbsolutePath();
         }
         catch (IOException ioe) {
-            logger.error("FAIL to create meta_study file!");
+            logger.error("FAIL to create meta file for study!");
             logger.error(ioe.getMessage());
         }
 
         return result;
     }
     
+    // Create the meta file for the cancer type mentioned in this study. Return
+    // the absolute path of the meta file.
+    private String createMetaCancerTypeFile() {
+        String result = Constants.FAILED;
+        File meta_file = new File(meta_cancer_type);
+        
+        try (FileWriter fw = new FileWriter(meta_file)) {
+            meta_file.createNewFile();
+            // Write to the meta file according to the format needed by
+            // metaImport Python script.
+            fw.write("genetic_alteration_type: CANCER_TYPE\n");
+            fw.write("datatype: CANCER_TYPE\n");
+            fw.write("data_filename: " + cancer_type);
+            // Update the result with the absolute path of the meta file.
+            result = meta_file.getAbsolutePath();
+        }
+        catch (IOException ioe) {
+            logger.error("FAIL to create meta file for cancer type!");
+            logger.error(ioe.getMessage());
+        }
+        
+        return result;
+    }
+    
+    // Create the meta file for the clinical samples used in this study. Return
+    // absolute path of the meta file.
+    private String createMetaClinicalSamplesFile() {
+        String result = Constants.FAILED;
+        File meta_file = new File(meta_clinical_samples);
+        
+        try (FileWriter fw = new FileWriter(meta_file)) {
+            meta_file.createNewFile();
+            // Write to the meta file according to the format needed by
+            // metaImport Python script.
+            fw.write("cancer_study_identifier: " + studyID + "\n");
+            fw.write("genetic_alteration_type: CLINICAL\n");
+            fw.write("datatype: SAMPLE_ATTRIBUTES\n");
+            fw.write("data_filename: " + data_clinical_samples);
+            // Update the result with the absolute path of the meta file.
+            result = meta_file.getAbsolutePath();
+        }
+        catch (IOException ioe) {
+            logger.error("FAIL to create meta file for clinical samples!");
+            logger.error(ioe.getMessage());
+        }
+        
+        return result;
+    }
+    
     // Create the meta file for each pipeline. Return the absolute path of the
     // meta file.
-    private String createMetaPLFile(String pipeline, String stableIDCode) {
+    private String createMetaPLFile(String pipeline, String stable_id, 
+            String data_file) {
         String result = Constants.FAILED;
         File meta_file = new File(dir + "meta_" + pipeline + ".txt");
         
         try (FileWriter fw = new FileWriter(meta_file)) {
             meta_file.createNewFile();
             // Write to the meta file according to the format needed by
-            // cbioportalImporter Python script.
+            // metaImport Python script.
             fw.write("cancer_study_identifier: " + studyID + "\n");
             fw.write("genetic_alteration_type: " + alteration_type + "\n");
             fw.write("datatype: " + datatype + "\n");
-            fw.write("stable_id: " + stableIDCode + "\n");
+            fw.write("stable_id: " + stable_id + "\n");
             fw.write("show_profile_in_analysis_tab: true\n");
             fw.write("profile_description: " + profile_desc + "\n");
             fw.write("profile_name: " + profile_name + "\n");
+            fw.write("data_filename: " + data_file + "\n");
             if (PipelineDB.isGATKPipeline(pipeline)) {
                 fw.write("swissprot_identifier: accession\n");
             }
@@ -667,45 +613,20 @@ public class cBioVisualizer extends Thread {
         return result;
     }
     
-    // Create the cases_all file. Return the absolute path of the cases_all file.
-    private String createCasesAllFile() {
-        String result = Constants.FAILED;
-        File casesAllFile = new File(case_dir + "cases_all.txt");
-        
-        try (FileWriter fw = new FileWriter(casesAllFile)) {
-            casesAllFile.createNewFile();
-            // Write to the all case list file according to the format needed by
-            // cbioportalImporter Python script.
-            fw.write("cancer_study_identifier: " + studyID + "\n");
-            fw.write("stable_id: " + studyID + "_all\n");
-            fw.write("case_list_name: All Cases\n");
-            fw.write("case_list_description: All Cases\n");
-            fw.write("case_list_ids: " + casesAllList.toString() + "\n");
-            // Update the result with the absolute path of the case list file.
-            result = casesAllFile.getAbsolutePath();
-        }
-        catch (IOException ioe) {
-            logger.error("FAIL to create cases_all file!");
-            logger.error(ioe.getMessage());
-        }
-        
-        return result;
-    }
-    
     // Create the case list file for each pipeline. Return the absolute path
     // of the case list file.
     private String createCaseListFile(String pipeline, String description, 
-            StringBuilder case_list, String stableIDCode) {
+            StringBuilder case_list, String stable_id) {
         String result = Constants.FAILED;
         File case_file = new File(case_dir + "cases_" + pipeline + ".txt");
         
         try (FileWriter fw = new FileWriter(case_file)) {
             case_file.createNewFile();
             // Write to the case list file according to the format needed by
-            // cbioportalImporter Python script.
+            // metaImport Python script.
             fw.write("cancer_study_identifier: " + studyID + "\n");
-            fw.write("stable_id: " + stableIDCode + "\n");
-            fw.write("case_list_name: " + studyID + " " + pipeline + " Cases\n");
+            fw.write("stable_id: " + studyID + "_" + stable_id + "\n");
+            fw.write("case_list_name: " + ResourceRetriever.getMsg(pipeline) + " Cases\n");
             fw.write("case_list_description: " + description + "\n");
             fw.write("case_list_ids: " + case_list.toString() + "\n");
             // Update the result with the absolute path of the case list file.
@@ -716,6 +637,52 @@ public class cBioVisualizer extends Thread {
         }
         
         return result;
+    }
+    
+    // Create the data file for cancer type.
+    private void createDataCancerType() {
+        // Select a random color code to be use for this cancer type.
+        String color = color_code
+                [ThreadLocalRandom.current().nextInt(0, color_code.length)];
+        File data_file = new File(cancer_type);
+        
+        try (FileWriter fw = new FileWriter(data_file)) {
+            data_file.createNewFile();
+            // Create the data file for cancer type according to the format
+            // needed by metaImport Python script.
+            fw.write(study.getIcd_code() + "\t");
+            fw.write(study.getICDName() + "\t");
+            fw.write(study.getICDName() + "\t");
+            fw.write(color + "\t");
+            // All newly created cancer type will fall under 'other' for now.
+            fw.write("other\n");
+        }
+        catch (IOException e) {
+            logger.error("FAIL to create the data file for cancer type!");
+        }        
+    }
+    
+    // Create the data file for the clinical samples.
+    private void createDataClinicalSamplesFile() {
+        File data_file = new File(data_clinical_samples);
+        
+        try (FileWriter fw = new FileWriter(data_file)) {
+            data_file.createNewFile();
+            // Create the data file for clinical samples according to the format 
+            // needed by metaImport Python script.
+            fw.write("#Patient Identifier\tSample Identifier\n");
+            fw.write("#Patient Identifier\tSample Identifier\n");
+            fw.write("#STRING\tSTRING\n");
+            fw.write("#1\t1\n");
+            fw.write("PATIENT_ID\tSAMPLE_ID\n");
+            // Write all the unique subject ID into this data file.
+            for (String subject : casesAllList.toString().split("\t")) {
+                fw.write(subject + "\t" + subject + "\n");
+            }
+        }
+        catch (IOException e) {
+            logger.error("FAIL to create the data file for clinical samples!");
+        }
     }
     
     // Create the list of subject IDs from the first line of pipeline output; 
