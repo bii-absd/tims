@@ -25,7 +25,7 @@
                 <p:column headerText="Study ID" styleClass="jsmedcol">
                     <h:outputText value="#{study.study_id}"/>
                 </p:column>
-                <p:column headerText="Study Titile" style="text-align: left">
+                <p:column headerText="Study Title" styleClass="col300">
                     <p:cellEditor>
                         <f:facet name="output">
                             <h:outputText value="#{study.title}"/>
@@ -50,11 +50,10 @@
                     </p:cellEditor>
                 </p:column>
                 <p:column headerText="Principal Investigator" 
-                          style="width: 130px; text-align: left">
+                          styleClass="col120">
                     <h:outputText value="#{study.ownerFullName}"/>
                 </p:column>
-                <p:column headerText="Annotation Version" 
-                          style="width: 110px; text-align: left">
+                <p:column headerText="Annotation Version" styleClass="col120">
                     <h:outputText value="#{study.annot_ver}"/>
                 </p:column>
                 <p:column headerText="Disease" styleClass="col300">

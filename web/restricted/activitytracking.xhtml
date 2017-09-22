@@ -50,18 +50,18 @@
                         <h:outputText value="Activity Log"/>
                     </f:facet>
                     <p:column headerText="Date and Time" sortBy="#{actlog.now}" 
-                              style="width: 200px">
+                              styleClass="jsmedcol">
                         <h:outputText value="#{actlog.timeString}"/>
                     </p:column>
                     <p:column headerText="User ID" sortBy="#{actlog.user_id}" 
-                              style="width: 90px">
+                              styleClass="jssmallcol">
                         <h:outputText value="#{actlog.user_id}"/>
                     </p:column>
                     <p:column headerText="Action" sortBy="#{actlog.activity}" 
-                              style="width: 150px">
+                              styleClass="col140">
                         <h:outputText value="#{actlog.activity}"/>
                     </p:column>
-                    <p:column headerText="Result or Target">
+                    <p:column headerText="Result or Target" styleClass="col300">
                         <h:outputText value="#{actlog.detail}"/>
                     </p:column>
                 </p:dataTable>

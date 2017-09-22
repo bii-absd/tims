@@ -24,10 +24,10 @@
                                 update="grpMgntMsg"/>
                         <p:ajax event="rowEditInit" 
                                 listener="#{grpMgntBean.onGrpRowEditInit}"/>
-                        <p:column headerText="Institution" style="text-align: left">
+                        <p:column headerText="Institution" styleClass="col300">
                             <h:outputText value="#{grp.inst_name}"/>
                         </p:column>
-                        <p:column headerText="Department" style="text-align: left">
+                        <p:column headerText="Department" styleClass="col300">
                             <p:cellEditor>
                                 <f:facet name="output">
                                     <h:outputText value="#{grp.dept_name}"/>
@@ -43,7 +43,7 @@
                         <p:column headerText="Group ID" styleClass="jssmallcol">
                             <h:outputText value="#{grp.grp_id}"/>
                         </p:column>
-                        <p:column headerText="Group Name" style="text-align: left">
+                        <p:column headerText="Group Name" styleClass="col300">
                             <p:cellEditor>
                                 <f:facet name="output">
                                     <h:outputText value="#{grp.grp_name}"/>
@@ -54,7 +54,7 @@
                                 </f:facet>
                             </p:cellEditor>
                         </p:column>
-                        <p:column headerText="PI Incharge" styleClass="jsmedcol">
+                        <p:column headerText="PI Incharge" styleClass="col120">
                             <p:cellEditor>
                                 <f:facet name="output">
                                     <h:outputText value="#{grp.pi_name}"/>
@@ -156,7 +156,7 @@
                     <p:column headerText="Department ID" styleClass="studytitlecol">
                         <h:outputText value="#{dept.dept_id}"/>
                     </p:column>
-                    <p:column headerText="Department Name" style="text-align: left">
+                    <p:column headerText="Department Name" styleClass="col130">
                         <p:cellEditor>
                             <f:facet name="output">
                                 <h:outputText value="#{dept.dept_name}"/>
@@ -212,10 +212,10 @@
                          editable="true">
                 <p:ajax event="rowEdit" listener="#{grpMgntBean.onInstRowEdit}"
                         update="grpMgntMsg"/>
-                <p:column headerText="Institution ID" style="text-align: left">
+                <p:column headerText="Institution ID" styleClass="col300">
                     <h:outputText value="#{inst.inst_id}"/>                            
                 </p:column>
-                <p:column headerText="Institution Name" style="text-align: left">
+                <p:column headerText="Institution Name" styleClass="col300">
                     <p:cellEditor>
                         <f:facet name="output">
                             <h:outputText value="#{inst.inst_name}"/>

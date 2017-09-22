@@ -25,7 +25,7 @@
                 <p:column headerText="Pipeline" styleClass="jsmedcol">
                     <h:outputText value="#{cmd.name}"/>
                 </p:column>
-                <p:column headerText="Description" style="width: 400px; text-align: left">
+                <p:column headerText="Description" styleClass="col300">
                     <p:cellEditor>
                         <f:facet name="output">
                             <h:outputText value="#{cmd.description}"/>
@@ -48,7 +48,7 @@
                         </f:facet>
                     </p:cellEditor>
                 </p:column>
-                <p:column headerText="Command" style="text-align: left">
+                <p:column headerText="Command" styleClass="col300">
                     <p:cellEditor>
                         <f:facet name="output">
                             <h:outputText value="#{cmd.command}"/>
@@ -58,7 +58,7 @@
                         </f:facet>
                     </p:cellEditor>
                 </p:column>
-                <p:column headerText="Parameter" style="text-align: left">
+                <p:column headerText="Parameter" styleClass="col140">
                     <p:cellEditor>
                         <f:facet name="output">
                             <h:outputText value="#{cmd.parameter}"/>

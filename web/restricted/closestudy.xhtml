@@ -23,11 +23,10 @@
             <p:column headerText="Study Title" styleClass="col300">
                 <h:outputText value="#{studies.title}"/>
             </p:column>
-            <p:column headerText="Group" styleClass="col120">
+            <p:column headerText="Group" styleClass="col140">
                 <h:outputText value="#{studies.groupName}"/>
             </p:column>
-            <p:column headerText="Principal Investigator" 
-                      style="width: 130px; text-align: left">
+            <p:column headerText="Principal Investigator" styleClass="col120">
                 <h:outputText value="#{studies.ownerFullName}"/>
             </p:column>
             <p:column headerText="Start Date" styleClass="jssmallcol">
@@ -37,7 +36,7 @@
                 <h:outputText value="#{studies.end_date}"/>
             </p:column>
             <p:column headerText="Close Study" selectionMode="single" 
-                      style="width: 80px; text-align: center"/>
+                      style="width: 60px; text-align: center"/>
         </p:dataTable>
         <p:separator styleClass="configsep"/>
         <p:commandButton value="Close Study" icon="ui-icon-check"
