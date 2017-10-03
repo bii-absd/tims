@@ -413,8 +413,10 @@ public class cBioVisualizer extends Thread {
     
     // Create the commands to stop and start tomcat server.
     private void createTomcatCommands() {
-        TCSTOP.add("http://localhost:8080/manager/text/stop?path=/cbioportal");
-        TCSTART.add("http://localhost:8080/manager/text/start?path=/cbioportal");
+//        TCSTOP.add("http://localhost:8080/manager/text/stop?path=/cbioportal");
+//        TCSTART.add("http://localhost:8080/manager/text/start?path=/cbioportal");
+        TCSTOP.add("http://192.168.142.20:8080/manager/text/stop?path=/cbioportal");
+        TCSTART.add("http://192.168.142.20:8080/manager/text/start?path=/cbioportal");
         logger.debug("Tomcat START command: " + TCSTART.toString());
         logger.debug("Tomcat STOP command: " + TCSTOP.toString());
     }
