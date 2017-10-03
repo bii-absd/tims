@@ -132,6 +132,8 @@ import org.apache.logging.log4j.LogManager;
  * normalization and summarization) into one field (i.e. parameters) in the 
  * database.
  * 13-Jul-2017 - Changes due to the addition of GATK Sequencing Pipelines.
+ * 25-Sep-2017 - If the pipeline process failed to start, need to update the
+ * job status to failed.
  */
 
 public abstract class ConfigBean implements Serializable {
@@ -368,6 +370,11 @@ public abstract class ConfigBean implements Serializable {
             result = Constants.ERROR;
         }
         
+        if (result.equals(Constants.ERROR)) {
+            // Job has failed, update status accordingly.
+            SubmittedJobDB.updateJobStatusToFailed(job_id);
+        }
+        
         return result;
     }
     
@@ -451,10 +458,7 @@ public abstract class ConfigBean implements Serializable {
             }
             catch (IllegalArgumentException e) {
                 logger.error("Pipeline completed before detector is create!");
-            }            
-        } else {
-            logger.error("FAIL to start Pipeline process!");
-            result = Constants.ERROR;
+            }
         }
         
         return result;
