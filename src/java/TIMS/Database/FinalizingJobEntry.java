@@ -34,6 +34,8 @@ import java.text.SimpleDateFormat;
  * 13-Feb-2017 - To consolidate all the pipeline parameters (i.e. chip_type, 
  * normalization and summarization) into one field (i.e. parameters) in the 
  * database.
+ * 10-Oct-2017 - Added one new method getPipelineText(). Enhanced the 
+ * constructor to just take in the ResultSet parameter.
  */
 
 public class FinalizingJobEntry {
@@ -46,13 +48,13 @@ public class FinalizingJobEntry {
 
     // Construct the FinalizingJobEntry object directly using the result set
     // returned from the database query.
-    public FinalizingJobEntry(ResultSet rs, String pipeline_name) 
+    public FinalizingJobEntry(ResultSet rs) 
             throws SQLException {
         this.job_id = rs.getInt("job_id");
         this.input_sn = rs.getInt("input_sn");
         this.study_id = rs.getString("study_id");
         this.tid = rs.getString("tid");
-        this.pipeline_name = pipeline_name;
+        this.pipeline_name = rs.getString("pipeline_name");
         this.submit_time = rs.getTimestamp("submit_time");
         this.user_id = rs.getString("user_id");
         this.input_desc = rs.getString("input_desc");
@@ -77,6 +79,11 @@ public class FinalizingJobEntry {
     // the finalization summary report.
     public String getSubmitTimeString() {
         return df.format(submit_time);
+    }
+    
+    // Return the text description of pipeline.
+    public String getPipelineText() {
+        return PipelineDB.getPipelineDescription(pipeline_name);
     }
     
     // Machine generated getters and setters.

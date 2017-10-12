@@ -73,6 +73,8 @@ import org.apache.logging.log4j.LogManager;
  * 24-Apr-2017 - Meta data management will be allowed for all studies that are
  * not closed.
  * 13-Jul-2017 - Changes due to the addition of GATK Sequencing Pipelines.
+ * 06-Oct-2017 - Remove unused code. Added a dialog for user to select the
+ * visualiser to use when viewing their pipeline output.
  */
 
 @ManagedBean (name="menuSelBean")
@@ -81,7 +83,7 @@ public class MenuSelectionBean implements Serializable{
     // Get the logger for Log4j
     private final static Logger logger = LogManager.
             getLogger(MenuSelectionBean.class.getName());
-    private String study_id, plConfigPageURL, plName;
+    private String study_id, plConfigPageURL, plName, visualiser;
     private Boolean haveNewData;
     private LinkedHashMap<String, String> studyList, pipelineList;
     // Store the user ID of the current user.
@@ -154,6 +156,18 @@ public class MenuSelectionBean implements Serializable{
         plConfigPageURL = null;
     }
     
+    // Save the visualiser selection in the session map, and proceed to job
+    // selection for visualisation page.
+    public String proceedToJobSelection4v() {
+        FacesContext.getCurrentInstance().getExternalContext().
+                getSessionMap().put("visualiser", visualiser);
+
+        logger.debug(userName + ": selected " + visualiser + 
+                     " to view it's pipeline data.");
+        // Proceed to job selection for visualisation page.
+        return Constants.JOB_SELECTION_4V + "?faces-redirect=true";
+    }
+    
     // Save the study selection in the session map, and proceed to meta data
     // management page.
     public String proceedToMetaDataMgnt() {
@@ -203,8 +217,14 @@ public class MenuSelectionBean implements Serializable{
     
     // Only allow user to proceed to pipeline configuration page if a Study ID
     // has been selected.
-    public Boolean getStudySelectedStatus() {
+    public boolean getStudySelectedStatus() {
         return study_id != null;
+    }
+    
+    // Only allow user to proceed to job selection for visualiser page if a 
+    // visualiser has been selected.
+    public boolean getVisualiserSelectedStatus() {
+        return visualiser != null;
     }
     
     // Return the list of Study ID setup that are available for this user to
@@ -213,17 +233,14 @@ public class MenuSelectionBean implements Serializable{
         return studyList;
     }
     
-    // Setup the NGSConfigBean according to the specific pipeline selected.
-    public String ngsPipeline() {
-        return Constants.NGS_PAGE;
-    }
-    
     // Machine generated getters and setters
     public LinkedHashMap<String, String> getPipelineList() { return pipelineList; }
     public String getStudy_id() { return study_id; }
     public void setStudy_id(String study_id) { this.study_id = study_id; }
     public String getPlName() { return plName; }
     public void setPlName(String plName) { this.plName = plName; }
+    public String getVisualiser() { return visualiser;  }
+    public void setVisualiser(String visualiser) {  this.visualiser = visualiser;   }
     public Boolean getHaveNewData() { return haveNewData; }
     public void setHaveNewData(Boolean haveNewData) { this.haveNewData = haveNewData; }
 }

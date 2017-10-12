@@ -109,6 +109,8 @@ import org.apache.logging.log4j.LogManager;
  * 20-Apr-2017 - Added one new constant SERVER_NAME.
  * 17-Jul-2017 - Added two new constants INTERVAL_FILE_NAME and 
  * INTERVAL_FILE_EXT.
+ * 06-Oct-2017 - Removed constant NGS_PAGE. Added one new constant
+ * JOB_SELECTION_4V.
  */
 
 @ManagedBean (name = "constants")
@@ -161,7 +163,7 @@ public class Constants {
     public final static String FINALIZE_STUDY = "finalizestudy";
     public final static String COMPLETED_STUDY_OUTPUT = "completedstudyoutput";
     public final static String STUDIES_REVIEW = "studiesreview?faces-redirect=true";
-    public final static String NGS_PAGE = "ngs?faces-redirect=true";
+    public final static String JOB_SELECTION_4V = "jobselection4v";
     public final static String ERROR = "error?faces-redirect=true";
     // Constants read in from setup file.
     private static String SYSTEM_PATH = null;

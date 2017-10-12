@@ -93,7 +93,7 @@
                title="Visualization" titleStyleClass="tab-title">
             <h:panelGrid cellpadding="1">
                 <h:outputLink title="Select the job(s) to export for visualization" 
-                              value="jobselection4v.xhtml" 
+                              onclick="PF('visDlg').show(); return false;"
                               styleClass="mainmenuitem">
                     Setup Study for Visualization
                 </h:outputLink>
@@ -182,6 +182,34 @@
                 <p:commandButton value="Proceed" 
                                  rendered="#{menuSelBean.studySelectedStatus}" 
                                  action="#{menuSelBean.proceedToRawDataMgnt}" 
+                                 style="width: 100%"/>
+            </h:panelGrid>
+        </h:form>
+    </p:dialog>
+
+    <p:dialog modal="true" header="Select visualiser to work with" 
+              widgetVar="visDlg" resizable="false">
+        <h:form id="visDlgForm">
+            <h:panelGrid columns="1">
+                <h:panelGroup>
+                    <p:selectOneMenu id="visDlg-visualiser" 
+                                     value="#{menuSelBean.visualiser}">
+                        <f:selectItem itemLabel="Select Visualiser" itemValue=""/>
+                        <f:selectItem itemLabel="CbioPortal" itemValue="CBIO"/>
+                        <p:ajax update="visDlg-selPanel"/>
+                    </p:selectOneMenu>
+                </h:panelGroup>
+            </h:panelGrid>
+            <p:separator styleClass="configsep"/>
+            
+            <h:panelGrid id="visDlg-selPanel" width="100%" columns="2" 
+                         cellspacing="2" cellpadding="2">
+                <p:commandButton value="Cancel" oncomplete="PF('visDlg').hide()" 
+                                 action="#{menuSelBean.backToMainMenu}" 
+                                 style="width: 100%"/>
+                <p:commandButton value="Proceed" 
+                                 rendered="#{menuSelBean.visualiserSelectedStatus}" 
+                                 action="#{menuSelBean.proceedToJobSelection4v}" 
                                  style="width: 100%"/>
             </h:panelGrid>
         </h:form>

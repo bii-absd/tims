@@ -20,7 +20,7 @@
                     <p:ajax update="jobsPanel exportButton" listener="#{js4vBean.studyChange}"/>
                 </p:selectOneMenu>
                 <p:separator style="width: 40px; height: 25px; background: transparent; border-width: 0px"/>
-                <p:commandButton value="Export Data to cBioPortal" icon="ui-icon-check" id="exportButton"
+                <p:commandButton value="#{js4vBean.exportMessage}" icon="ui-icon-check" id="exportButton"
                                  oncomplete="PF('dlg').show()" style="height: 25px"
                                  update=":js4vForm:exportStatus :js4vForm:procButton" 
                                  disabled="#{!js4vBean.studySelectedStatus}" 
@@ -30,7 +30,7 @@
         </p:panel>
 
         <p:panel id="jobsPanel" visible="#{js4vBean.studySelectedStatus}" 
-                 header="Select the job to visualize for each pipeline">
+                 header="Select the job to visualize for each profile">
             <p:dataTable id="pl0" rendered="#{js4vBean.studySelectedStatus}" 
                          var="jobL0" value="#{js4vBean.jobList0}" 
                          selection="#{js4vBean.selectedJob0}" 
@@ -39,8 +39,8 @@
                 <f:facet name="header">
                     <h:outputText value="#{js4vBean.pl0}"/>
                 </f:facet>
-                <p:column headerText="#{msg['fstudy-header1']}" styleClass="jsmedcol">
-                    <h:outputText value="#{jobL0.tid}"/>
+                <p:column headerText="#{msg['js4v-header1']}" styleClass="jsmedcol">
+                    <h:outputText value="#{jobL0.pipelineText}"/>
                 </p:column>
                 <p:column headerText="#{msg['fstudy-header2']}" styleClass="jsmedcol">
                     <h:outputText value="#{jobL0.userName}"/>
@@ -71,8 +71,8 @@
                 <f:facet name="header">
                     <h:outputText value="#{js4vBean.pl1}"/>
                 </f:facet>
-                <p:column headerText="#{msg['fstudy-header1']}" styleClass="jsmedcol">
-                    <h:outputText value="#{jobL1.tid}"/>
+                <p:column headerText="#{msg['js4v-header1']}" styleClass="jsmedcol">
+                    <h:outputText value="#{jobL1.pipelineText}"/>
                 </p:column>
                 <p:column headerText="#{msg['fstudy-header2']}" styleClass="jsmedcol">
                     <h:outputText value="#{jobL1.userName}"/>
@@ -103,8 +103,8 @@
                 <f:facet name="header">
                     <h:outputText value="#{js4vBean.pl2}"/>
                 </f:facet>
-                <p:column headerText="#{msg['fstudy-header1']}" styleClass="jsmedcol">
-                    <h:outputText value="#{jobL2.tid}"/>
+                <p:column headerText="#{msg['js4v-header1']}" styleClass="jsmedcol">
+                    <h:outputText value="#{jobL2.pipelineText}"/>
                 </p:column>
                 <p:column headerText="#{msg['fstudy-header2']}" styleClass="jsmedcol">
                     <h:outputText value="#{jobL2.userName}"/>
@@ -135,8 +135,8 @@
                 <f:facet name="header">
                     <h:outputText value="#{js4vBean.pl3}"/>
                 </f:facet>
-                <p:column headerText="#{msg['fstudy-header1']}" styleClass="jsmedcol">
-                    <h:outputText value="#{jobL3.tid}"/>
+                <p:column headerText="#{msg['js4v-header1']}" styleClass="jsmedcol">
+                    <h:outputText value="#{jobL3.pipelineText}"/>
                 </p:column>
                 <p:column headerText="#{msg['fstudy-header2']}" styleClass="jsmedcol">
                     <h:outputText value="#{jobL3.userName}"/>
@@ -167,8 +167,8 @@
                 <f:facet name="header">
                     <h:outputText value="#{js4vBean.pl4}"/>
                 </f:facet>
-                <p:column headerText="#{msg['fstudy-header1']}" styleClass="jsmedcol">
-                    <h:outputText value="#{jobL4.tid}"/>
+                <p:column headerText="#{msg['js4v-header1']}" styleClass="jsmedcol">
+                    <h:outputText value="#{jobL4.pipelineText}"/>
                 </p:column>
                 <p:column headerText="#{msg['fstudy-header2']}" styleClass="jsmedcol">
                     <h:outputText value="#{jobL4.userName}"/>
@@ -194,17 +194,17 @@
 
     <h:form id="js4vForm">
         <p:dialog header="Exporting Data for Visualization" widgetVar="dlg" 
-                  width="440px" resizable="false" closable="false" modal="true">
+                  width="660px" resizable="false" closable="false" modal="true">
             <h:outputText id="exportStatus" value="#{js4vBean.exportStatus}" 
                           styleClass="preformatted"/>
             <p:separator style="height: 10px"/>
-            <h:panelGrid columns="2" cellspacing="2" cellpadding="2">
+            <h:panelGrid columns="2" cellspacing="2" cellpadding="2" width="100%">
                 <p:commandButton value="Cancel" title="Back to select job(s) for export" 
-                                 style="width: 130px" oncomplete="PF('dlg').hide()" 
+                                 style="width: 100%" oncomplete="PF('dlg').hide()" 
                                  action="#{js4vBean.cancelExportData}"/>
                 <p:commandButton id="procButton" 
                                  value="Proceed" title="Proceed to export data for visualization" 
-                                 style="width: 130px" disabled="#{!js4vBean.allowToProceed}" 
+                                 style="width: 100%" disabled="#{!js4vBean.allowToProceed}" 
                                  action="#{js4vBean.proceed2ExportData}"/>
             </h:panelGrid>
         </p:dialog>

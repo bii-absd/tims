@@ -116,6 +116,8 @@ import org.apache.logging.log4j.LogManager;
  * 13-Feb-2017 - To consolidate all the pipeline parameters (i.e. chip_type, 
  * normalization and summarization) into one field (i.e. parameters) in the 
  * database.
+ * 10-Oct-2017 - Added new method getCompletedProfileJobsInStudy() to return
+ * the list of completed jobs for this visualiser's profile.
  */
 
 public abstract class SubmittedJobDB {
@@ -393,6 +395,45 @@ public abstract class SubmittedJobDB {
         return plList;
     }
     
+    // Return the list of completed jobs for this profile in this study.
+    public static List<FinalizingJobEntry> getCompletedProfileJobsInStudy
+        (String studyID, String vname, String profile) {
+        Connection conn = null;
+        List<FinalizingJobEntry> jobList = new ArrayList<>();
+        String query = "SELECT * FROM submitted_job sj INNER JOIN "
+                     + "pipeline pl ON sj.pipeline_name = pl.name WHERE "
+                     + "status_id IN (3,5) AND study_id = ? AND pipeline_name "
+                     + "IN (SELECT pipeline_name FROM visual_profile_detail "
+                     + "WHERE vname = ? AND profile = ?) "
+                     + "ORDER BY pipeline_name, job_id";
+        
+        try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            stm.setString(1, studyID);
+            stm.setString(2, vname);
+            stm.setString(3, profile);
+            ResultSet rs = stm.executeQuery();
+            
+            while (rs.next()) {
+                jobList.add(new FinalizingJobEntry(rs));
+            }
+            
+            stm.close();
+            logger.debug("No of completed jobs for " + studyID + " under " +
+                         profile + " is " + jobList.size());
+        }
+        catch (SQLException|NamingException e) {
+            logger.error("FAIL to retrieve completed pipeline jobs for " + studyID);
+            logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
+        }
+        
+        return jobList;
+    }
+    
     // Return the list of completed jobs for this pipeline in this study.
     public static List<FinalizingJobEntry> getCompletedPlJobsInStudy
         (String studyID, String pipeline) {
@@ -411,7 +452,7 @@ public abstract class SubmittedJobDB {
             ResultSet rs = stm.executeQuery();
             
             while (rs.next()) {
-                jobList.add(new FinalizingJobEntry(rs, pipeline));
+                jobList.add(new FinalizingJobEntry(rs));
             }
             
             stm.close();

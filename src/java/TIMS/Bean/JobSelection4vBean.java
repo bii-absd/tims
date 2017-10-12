@@ -9,6 +9,7 @@ import TIMS.Database.StudyDB;
 import TIMS.Database.SubmittedJobDB;
 import TIMS.Database.UserAccount;
 import TIMS.Database.UserAccountDB;
+import TIMS.Database.VisualProfileDB;
 import TIMS.General.Constants;
 import TIMS.General.QueryStringGenerator;
 import TIMS.General.ResourceRetriever;
@@ -39,6 +40,8 @@ import org.apache.logging.log4j.Logger;
  * 04-Jul-2016 - Implemented the integration with cBioPortal application.
  * 07-Jul-2016 - To reset the cbio_url to NULL before starting the export.
  * 10-Feb-2017 - To allow jobs from up to 5 pipelines to be selected for export.
+ * 09-Oct-2017 - The grouping of pipeline jobs will be based on the profile from
+ * visualiser (i.e. it is no longer based on pipeline.)
  */
 
 @ManagedBean (name="js4vBean")
@@ -47,13 +50,13 @@ public class JobSelection4vBean implements Serializable {
     // Get the logger for Log4j
     private final static Logger logger = LogManager.
             getLogger(JobSelection4vBean.class.getName());
-    private String study_id, exportStatus;
+    private String study_id, exportStatus, visualiser;
     // Store the user ID of the current user.
     private final String userName;
     private final UserAccount user;
     private boolean allowToProceed;
     private LinkedHashMap<String, String> studyHash;
-    private List<String> plNameList = new ArrayList<>();
+    private List<String> profDescList = new ArrayList<>();
     private FinalizingJobEntry selectedJob0, selectedJob1, selectedJob2, 
                                selectedJob3, selectedJob4;
     // Store the list of selected jobs.
@@ -64,9 +67,14 @@ public class JobSelection4vBean implements Serializable {
     public JobSelection4vBean() {
         userName = (String) FacesContext.getCurrentInstance().
                 getExternalContext().getSessionMap().get("User");
+        // visualiser will indicate the visualiser to export to.
+        visualiser = (String) FacesContext.getCurrentInstance().
+                getExternalContext().getSessionMap().get("visualiser");
         user = UserAccountDB.getUserAct(userName);
-        logger.debug("JobSelection4vBean created.");
-        logger.info(userName + " access Job Selection for Visualization page.");
+        logger.info(userName + " access Job Selection for " + visualiser);
+        // Need to call the ResourceRetriever to get the 'msg' object before
+        // passing the control to the cBioVisualizer thread.
+        ResourceRetriever.getMsg("jobs-sel");
     }
     
     @PostConstruct
@@ -105,7 +113,7 @@ public class JobSelection4vBean implements Serializable {
             selectedJobs.removeAll(Collections.singleton(null));
             int index = 1;
             for (FinalizingJobEntry job : selectedJobs) {
-                String jobDescription = index + ". " + job.getTid() + " - " 
+                String jobDescription = index + ". " + job.getPipelineText() + " - " 
                                       + job.getUserName() + " - "
                                       + job.getSubmitTimeString() + ".\n";
                 exportStatus += jobDescription;
@@ -120,7 +128,6 @@ public class JobSelection4vBean implements Serializable {
     // exporting of data for visualization.
     public String proceed2ExportData() {
         String nextpage = Constants.MAIN_PAGE;
-
         // Update cbio_target for all the jobs to false.
         SubmittedJobDB.resetCbioTarget4Study(study_id);
         // Update cbio_target for the selected jobs to true.
@@ -161,42 +168,61 @@ public class JobSelection4vBean implements Serializable {
     // lists and build new one.
     private void clearLists() {
         jobEntryLists.clear();
+        profDescList.clear();
         selectedJobs.clear();
     }
     
-    // Build new lists based on the study_id selected by user.
+    // Build new lists based on the visualiser and study_id selected by user.
     private void buildLists() {
         int index = 0;
-        // Retrieve all the pipeline that has completed jobs in this study.
-        plNameList = SubmittedJobDB.getCompletedPlNameInStudy(study_id);
+        // List of string to hold the profile and pipeline lists.
+        List<String> profList = VisualProfileDB.
+                                getProfileListForVisualiser(visualiser);
+        List<FinalizingJobEntry> jobList;
         
-        // For each pipeline, retrieve the list of jobs that belong to it.
-        for (String plName : plNameList) {
-            jobEntryLists.add(index++, SubmittedJobDB.
-                    getCompletedPlJobsInStudy(study_id, plName));
+        // For each profile, retrieve the list of pipelines group under it.
+        for (String profile : profList) {
+            jobList = SubmittedJobDB.getCompletedProfileJobsInStudy
+                        (study_id, visualiser, profile);
+            // Check to make sure there are completed jobs for this profile.
+            if (!jobList.isEmpty()) {
+                profDescList.add(VisualProfileDB.
+                        getProfileDescription(visualiser, profile));
+                jobEntryLists.add(index++, jobList);
+            }
         }
     }
 
     // A study has been selected if it is not equal to null and "0".
-    public Boolean getStudySelectedStatus() {
+    public boolean getStudySelectedStatus() {
         if (study_id != null) {
             if (study_id.compareTo("0") != 0) {
                 // A study is selected.
                 return true;
             }
-        }
-        
+        }        
         return false;
     }
 
+    // To build the message for the export button based on the visualiser
+    // used.
+    public String getExportMessage() {
+        String msg = Constants.DATABASE_INVALID_STR;
+        
+        if (visualiser.equals("CBIO")) {
+            msg = "Export Data to cBioPortal"; 
+        }
+        return msg;
+    }
+    
     // If the user is able to select any Study ID, there is minimum one pipeline
     // job available.
     public List<FinalizingJobEntry> getJobList0() {
         return jobEntryLists.get(0);
     }
-    // Return the pipeline description; to be use as data table header title.
+    // Return the profile description; to be use as data table header title.
     public String getPl0() {
-        return ResourceRetriever.getMsg(plNameList.get(0));
+        return profDescList.get(0);
     }
     // Job selected for the first pipeline technology.
     public void setSelectedJob0(FinalizingJobEntry job) {
@@ -216,7 +242,7 @@ public class JobSelection4vBean implements Serializable {
         return jobEntryLists.get(1);
     }
     public String getPl1() {
-        return ResourceRetriever.getMsg(plNameList.get(1));
+        return profDescList.get(1);
     }
     public void setSelectedJob1(FinalizingJobEntry job) {
         selectedJob1 = job;
@@ -233,7 +259,7 @@ public class JobSelection4vBean implements Serializable {
         return jobEntryLists.get(2);
     }
     public String getPl2() {
-        return ResourceRetriever.getMsg(plNameList.get(2));
+        return profDescList.get(2);
     }
     public void setSelectedJob2(FinalizingJobEntry job) {
         selectedJob2 = job;
@@ -250,7 +276,7 @@ public class JobSelection4vBean implements Serializable {
         return jobEntryLists.get(3);
     }
     public String getPl3() {
-        return ResourceRetriever.getMsg(plNameList.get(3));
+        return profDescList.get(3);
     }
     public void setSelectedJob3(FinalizingJobEntry job) {
         selectedJob3 = job;
@@ -267,7 +293,7 @@ public class JobSelection4vBean implements Serializable {
         return jobEntryLists.get(4);
     }
     public String getPl4() {
-        return ResourceRetriever.getMsg(plNameList.get(4));
+        return profDescList.get(4);
     }
     public void setSelectedJob4(FinalizingJobEntry job) {
         selectedJob4 = job;
