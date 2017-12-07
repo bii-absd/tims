@@ -22,6 +22,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.math.RoundingMode;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -413,10 +415,10 @@ public class cBioVisualizer extends Thread {
     
     // Create the commands to stop and start tomcat server.
     private void createTomcatCommands() {
-//        TCSTOP.add("http://localhost:8080/manager/text/stop?path=/cbioportal");
-//        TCSTART.add("http://localhost:8080/manager/text/start?path=/cbioportal");
-        TCSTOP.add("http://192.168.142.20:8080/manager/text/stop?path=/cbioportal");
-        TCSTART.add("http://192.168.142.20:8080/manager/text/start?path=/cbioportal");
+        TCSTOP.add("http://localhost:8080/manager/text/stop?path=/cbioportal");
+        TCSTART.add("http://localhost:8080/manager/text/start?path=/cbioportal");
+//        TCSTOP.add("http://192.168.142.20:8080/manager/text/stop?path=/cbioportal");
+//        TCSTART.add("http://192.168.142.20:8080/manager/text/start?path=/cbioportal");
         logger.debug("Tomcat START command: " + TCSTART.toString());
         logger.debug("Tomcat STOP command: " + TCSTOP.toString());
     }
@@ -434,6 +436,18 @@ public class cBioVisualizer extends Thread {
 
     // Create the cBioPortal URL for this study.
     private String createCbioUrl() {
+        String ipAddress;
+        try {
+            // Get the IP address of the current system.
+            InetAddress ip = InetAddress.getLocalHost();
+            ipAddress = ip.getHostAddress();
+        } catch (UnknownHostException ex) {
+            logger.error("FAIL to get the IP address of the system.");
+            logger.error(ex.getMessage());
+            // Set the IP address to 'localhost'.
+            ipAddress = "localhost";
+        }
+
         // Create a random 60 characters string.
         int dummyNum = ThreadLocalRandom.current().nextInt(Integer.MAX_VALUE/2, Integer.MAX_VALUE);
         String dummyStr = BCrypt.hashpw(String.valueOf(dummyNum), BCrypt.gensalt());
@@ -443,7 +457,8 @@ public class cBioVisualizer extends Thread {
         String target = dummyStr.substring(0, 30) + studyID.substring(0, 5) 
                       + dummyStr.substring(30) + studyID.substring(5);
         
-        return SystemParametersDB.getcBioPortalUrl() + target;
+        return "http://" + ipAddress + ":8080/cbioportal/?sid=" + target;
+        
     }
     
     // Create the log file.
