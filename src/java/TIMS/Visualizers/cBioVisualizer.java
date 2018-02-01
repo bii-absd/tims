@@ -32,7 +32,9 @@ import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadLocalRandom;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
@@ -83,6 +85,8 @@ import org.mindrot.jbcrypt.BCrypt;
  * 29-Aug-2017 - Updated with a newer version of cBioPortal (1.4.0). To restart
  * the cBioPortal application instead of the Tomcat server after each data 
  * import. To import the icd code to cBioPortal only when it is being used.
+ * 01-Feb-2018 - Fix the bug found when identifying the unique subject ID to 
+ * export to cBioPortal.
  */
 
 public class cBioVisualizer extends Thread {
@@ -111,7 +115,7 @@ public class cBioVisualizer extends Thread {
     // cBioPortal import command.
     private List<String> CMD = new ArrayList<>();
     // To store the subjects ID from all the pipeline output.
-    StringBuilder casesAllList = new StringBuilder();
+    Set<String> casesAllList = new HashSet<String>();
     // Commands to stop and start the cBioPortal application.
     private List<String> TCSTOP = new ArrayList<>();
     private List<String> TCSTART = new ArrayList<>();
@@ -190,7 +194,7 @@ public class cBioVisualizer extends Thread {
             // will be deleted after use.
             String data_file = SubmittedJobDB.unzipOutputFile(job.getJob_id());
             // Store the list of subject IDs; to be use in the case_list.
-            StringBuilder case_list_ids = new StringBuilder();
+            Set<String> case_list_ids = new HashSet<String>();
             // To store the stable ID.
             String stable_id = null;
             
@@ -400,7 +404,6 @@ public class cBioVisualizer extends Thread {
         try {
             Path from = FileSystems.getDefault().getPath(zScoreFile);
             Path to = FileSystems.getDefault().getPath(datafile);
-//            Files.copy(from, to, REPLACE_EXISTING);
             Files.move(from, to, REPLACE_EXISTING);
             logger.debug("z-score file moved to temp directory.");
         }
@@ -633,7 +636,7 @@ public class cBioVisualizer extends Thread {
     // Create the case list file for each pipeline. Return the absolute path
     // of the case list file.
     private String createCaseListFile(String pipeline, String description, 
-            StringBuilder case_list, String stable_id) {
+            Set<String> case_list, String stable_id) {
         String result = Constants.FAILED;
         File case_file = new File(case_dir + "cases_" + pipeline + ".txt");
         
@@ -645,7 +648,11 @@ public class cBioVisualizer extends Thread {
             fw.write("stable_id: " + studyID + "_" + stable_id + "\n");
             fw.write("case_list_name: " + ResourceRetriever.getMsg(pipeline) + " Cases\n");
             fw.write("case_list_description: " + description + "\n");
-            fw.write("case_list_ids: " + case_list.toString() + "\n");
+            fw.write("case_list_ids: ");
+            for (String case_id : case_list) {
+                fw.write(case_id + "\t");
+            }
+            fw.write("\n");
             // Update the result with the absolute path of the case list file.
             result = case_file.getAbsolutePath();
         }
@@ -693,7 +700,7 @@ public class cBioVisualizer extends Thread {
             fw.write("#1\t1\n");
             fw.write("PATIENT_ID\tSAMPLE_ID\n");
             // Write all the unique subject ID into this data file.
-            for (String subject : casesAllList.toString().split("\t")) {
+            for (String subject : casesAllList) {
                 fw.write(subject + "\t" + subject + "\n");
             }
         }
@@ -705,18 +712,15 @@ public class cBioVisualizer extends Thread {
     // Create the list of subject IDs from the first line of pipeline output; 
     // to be use in the case_list. Parameter offset will tell how many columns
     // to ignore.
-    private StringBuilder createSubjectsList(String filename, int offset) {
-        StringBuilder subjectsList = new StringBuilder();
+    private Set<String> createSubjectsList(String filename, int offset) {
+        Set<String> subjectsList = new HashSet<String>();
         
         try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
             String header = br.readLine();
             String[] subjectID = header.split("\t");
             for (int i = offset; i < subjectID.length; i++) {
-                subjectsList.append(subjectID[i]).append("\t");
-                // Only store those unique subjects ID in the all case list.
-                if (!casesAllList.toString().contains(subjectID[i])) {
-                    casesAllList.append(subjectID[i]).append("\t");
-                }
+                subjectsList.add(subjectID[i]);
+                casesAllList.add(subjectID[i]);
             }
         }
         catch (IOException e) {
@@ -730,8 +734,8 @@ public class cBioVisualizer extends Thread {
     // Create the list of subject IDs from the xth column of the pipeline
     // output; to be use in the case_list. Parameter offset will tell us which
     // column contains the subject ID.
-    private StringBuilder createSubjectsListForMAF(String filename, int offset) {
-        StringBuilder subjectsList = new StringBuilder();
+    private Set<String> createSubjectsListForMAF(String filename, int offset) {
+        Set<String> subjectsList = new HashSet<String>();
         String lineRead;
         String[] columns;
         
@@ -745,16 +749,11 @@ public class cBioVisualizer extends Thread {
                 if (columns.length <= offset) {
                     // Invalid data file has been passed in, break out of the 
                     // while loop.
-                    subjectsList.append("INVALID_DATAFILE");
+                    subjectsList.add("INVALID_DATAFILE");
                     break;
                 } else {
-                    // Only store those unique subjects ID in the case lists.
-                    if (!subjectsList.toString().contains(columns[offset])) {
-                        subjectsList.append(columns[offset]).append("\t");
-                    }
-                    if (!casesAllList.toString().contains(columns[offset])) {
-                        casesAllList.append(columns[offset]).append("\t");
-                    }
+                    subjectsList.add(columns[offset]);
+                    casesAllList.add(columns[offset]);
                 }
             }
         }
