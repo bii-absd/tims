@@ -81,14 +81,7 @@
                 </p:commandLink>
             </h:panelGrid>
         </p:tab>
-            
-        <p:tab id="proteome" rendered="false" title="Proteome Data" titleStyleClass="tab-title">
-            <h:panelGrid cellpadding="1">
-                <p:commandLink value="Proteome Pipeline 1" styleClass="mainmenuitem"/>
-                <p:commandLink value="Proteome Pipeline 2" styleClass="mainmenuitem"/>
-            </h:panelGrid>
-        </p:tab>
-            
+
         <p:tab id="visualization" rendered="#{authBean.visualizationON}" 
                title="Visualization" titleStyleClass="tab-title">
             <h:panelGrid cellpadding="1">
@@ -104,7 +97,7 @@
             </h:panelGrid>
         </p:tab>
             
-        <p:tab id="clData" title="Clinical Subject Data" titleStyleClass="tab-title">
+        <p:tab id="clData" title="Subject Data" titleStyleClass="tab-title">
             <h:panelGrid cellpadding="1">
                 <p:commandLink value="#{msg['md-mgnt']}" 
                                action="#{menuSelBean.setupStudyList}"

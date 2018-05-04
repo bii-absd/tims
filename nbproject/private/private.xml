@@ -3,11 +3,20 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/NetBeansProjects/TIMS/web/restricted/accountmanagement.xhtml</file>
-            <file>file:/C:/NetBeansProjects/TIMS/src/java/TIMS/Database/Subject.java</file>
-            <file>file:/C:/NetBeansProjects/TIMS/web/WEB-INF/sun-web.xml</file>
-            <file>file:/C:/NetBeansProjects/TIMS/src/java/TIMS/Bean/AccountManagementBean.java</file>
-            <file>file:/C:/NetBeansProjects/TIMS/web/restricted/activitytracking.xhtml</file>
+            <file>file:/C:/NetBeansProjects/TIMS/src/java/TIMS/General/Constants.java</file>
+            <file>file:/C:/NetBeansProjects/TIMS/src/java/TIMS/General/MetaRecordTester.java</file>
+            <file>file:/C:/NetBeansProjects/TIMS/src/java/TIMS/General/MetaRecordTesterThread.java</file>
+            <file>file:/C:/NetBeansProjects/TIMS/src/java/TIMS/General/PrologHelper.java</file>
+            <file>file:/C:/NetBeansProjects/TIMS/src/java/TIMS/Database/StudyDB.java</file>
+            <file>file:/C:/NetBeansProjects/TIMS/src/java/TIMS/General/MetaRecordStatusTracker.java</file>
+            <file>file:/C:/NetBeansProjects/TIMS/web/restricted/metadatamanagement.xhtml</file>
+            <file>file:/C:/NetBeansProjects/TIMS/src/java/TIMS/Database/SubjectRecordDB.java</file>
+            <file>file:/C:/NetBeansProjects/TIMS/src/java/TIMS/General/FileHelper.java</file>
+            <file>file:/C:/NetBeansProjects/TIMS/src/java/TIMS/Bean/MetaDataManagementBean.java</file>
+            <file>file:/C:/NetBeansProjects/TIMS/src/java/TIMS/Database/SubjectDB.java</file>
+            <file>file:/C:/NetBeansProjects/TIMS/src/java/TIMS/Bean/FileUploadBean.java</file>
+            <file>file:/C:/NetBeansProjects/TIMS/src/java/TIMS/Database/SubjectDetail.java</file>
+            <file>file:/C:/NetBeansProjects/TIMS/src/java/TIMS/Database/MetaRecord.java</file>
         </group>
     </open-files>
 </project-private>

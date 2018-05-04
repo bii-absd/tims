@@ -1,11 +1,12 @@
 /*
- * Copyright @2015-2017
+ * Copyright @2015-2018
  */
 package TIMS.Database;
 
 import TIMS.General.Constants;
 import TIMS.General.FileHelper;
 import TIMS.General.Postman;
+// Libraries for Java
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -56,6 +57,8 @@ import org.apache.logging.log4j.LogManager;
  * will be own by group i.e. the direct link between group and subject's meta 
  * data will be break off. The subject record and pipeline output will be 
  * separated into 2 files.
+ * 24-Apr-2018 - Changes in the system directory format; all the study related
+ * output/report will be stored in the studies/study_id/ directory.
  */
 
 public class DataRetriever extends Thread {
@@ -77,11 +80,13 @@ public class DataRetriever extends Thread {
         this.study_id = study_id;
         this.userName = userName;
         finalize_file = Constants.getSYSTEM_PATH() + 
-                        Constants.getFINALIZE_PATH() + 
-                        study_id + Constants.getFINALIZE_FILE_EXT();
+                        Constants.getSTUDIES_PATH() + 
+                        study_id + File.separator + 
+                        "output" + Constants.getFINALIZE_FILE_EXT();
         finalize_meta = Constants.getSYSTEM_PATH() + 
-                        Constants.getFINALIZE_PATH() + 
-                        study_id + "_meta" + Constants.getFINALIZE_FILE_EXT();
+                        Constants.getSTUDIES_PATH() + 
+                        study_id + File.separator + 
+                        "meta" + Constants.getFINALIZE_FILE_EXT();
         annot_ver = StudyDB.getStudyAnnotVer(study_id);
         // Get a data source connection for this thread.
         conn = DBHelper.getDSConn();
@@ -104,8 +109,9 @@ public class DataRetriever extends Thread {
         // Zip the finalized output file and meta data file into one package.
         String[] srcFiles = {finalize_file, finalize_meta};
         String zipFile = Constants.getSYSTEM_PATH() + 
-                         Constants.getFINALIZE_PATH() + study_id + 
-                         Constants.getZIPFILE_EXT();
+                         Constants.getSTUDIES_PATH() + 
+                         study_id + File.separator +
+                         "finalized_output" + Constants.getZIPFILE_EXT();
         try {
             FileHelper.zipFiles(zipFile, srcFiles);
             logger.debug("Output and Meta data files for Study " + study_id + " zipped.");

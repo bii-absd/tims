@@ -1,9 +1,11 @@
 /*
- * Copyright @2015-2016
+ * Copyright @2015-2018
  */
 package TIMS.Database;
 
 import TIMS.General.Constants;
+import TIMS.General.FileHelper;
+// Libraries for Java
 import java.io.File;
 import java.sql.Date;
 import java.sql.ResultSet;
@@ -45,16 +47,19 @@ import java.util.List;
  * 04-Jul-2016 - Added one new method getCBioDisableStatus().
  * 07-Jul-2016 - Added one new method getExportedJobsDetail() to return the list 
  * of job detail that have exported to the visualizer.
+ * 06-Apr-2018 - Database version 2.0 changes to support meta data upload
+ * through Excel.
  */
 
 public class Study {
     // study table attributes
     private String study_id, title, owner_id, grp_id, annot_ver, description, 
                    background, grant_info, finalized_output, detail_files, 
-                   summary, icd_code, cbio_url;
+                   summary, icd_code, cbio_url, meta_quality_report;
     private Date start_date, end_date;
     private Boolean finalized, closed;
-
+    private byte[] data_col_name_list;
+    
     // Construct the Study object directly using the result set returned from
     // the database query.
     public Study(ResultSet rs) throws SQLException {
@@ -74,13 +79,16 @@ public class Study {
         this.finalized = rs.getBoolean("finalized");
         this.closed = rs.getBoolean("closed");
         this.cbio_url = rs.getString("cbio_url");
+        this.meta_quality_report = rs.getString("meta_quality_report");
+        this.data_col_name_list = rs.getBytes("data_col_name_list");
         // Retrieve the PI ID using the Group ID that own this Study.
         this.owner_id = GroupDB.getGrpPIID(grp_id);
     }
     
     // This constructor is used for constructing new Study.
-    // For every new Study created, the finalized_output, detail_files, cbio_url
-    // and summary will be empty, and closed status will be false (i.e. not closed).
+    // For every new Study created, the finalized_output, detail_files, 
+    // cbio_url, meta_quality_report and summary will be empty, and closed 
+    // status will be false (i.e. not closed).
     public Study(String study_id, String title, String grp_id, String annot_ver,
                  String icd_code, String description, String background, 
                  String grant_info, Date start_date, Date end_date, Boolean finalized) 
@@ -93,11 +101,24 @@ public class Study {
         this.description = description;
         this.background = background;
         this.grant_info = grant_info;
-        finalized_output = detail_files = summary = cbio_url = null;
+        finalized_output = detail_files = summary = cbio_url = meta_quality_report = null;
         this.start_date = start_date;
         this.end_date = end_date;
         this.finalized = finalized;
-        closed = false;
+        this.closed = false;
+        // For new study, data column name is null.
+        this.data_col_name_list = null;
+    }
+    
+    // Return the list of data column name.
+    public List<String> getDataColumnNameList() {
+        List<String> nameList = new ArrayList<>();
+        
+        if (data_col_name_list != null) {
+            nameList = FileHelper.convertByteArrayToList(data_col_name_list);
+        }
+        
+        return nameList;
     }
     
     // If data has been exported to cBioPortal, don't disable the link (i.e.
@@ -271,6 +292,9 @@ public class Study {
     }
     public void setCbio_url(String cbio_url) {
         this.cbio_url = cbio_url;
+    }
+    public String getMeta_quality_report() {
+        return meta_quality_report;
     }
     public Boolean getFinalized() {
         return finalized;

@@ -1,10 +1,11 @@
 /*
- * Copyright @2015-2016
+ * Copyright @2015-2018
  */
 package TIMS.Bean;
 
 import TIMS.General.Constants;
 import TIMS.General.FileHelper;
+// Libraries for Java
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -75,6 +76,10 @@ import org.apache.logging.log4j.LogManager;
  * 30-Aug-2016 - Added 3 new methods, getInputFilenameForRDM(), resetFileBean() 
  * and getFilename. Enhanced method renameFilename. Change all Boolean 
  * variables to boolean.
+ * 24-Apr-2018 - Changes in the system directory format; all the study related
+ * output/report will be stored in the studies/study_id/ directory. The 
+ * studies/study_id/ directory will be created whenever a new study ID is being
+ * created.
  */
 
 public class FileUploadBean implements Serializable {
@@ -175,14 +180,14 @@ public class FileUploadBean implements Serializable {
     }
     
     // Create TIMS system directories i.e. /var/TIMS/ .../TIMS/users 
-    // .../TIMS/images .../TIMS/input .../TIMS/finalize_output etc.
+    // .../TIMS/images .../TIMS/input .../TIMS/studies etc.
     public static boolean createSystemDirectories(String systemDir) {
         boolean result = 
                 createSystemDirectory(systemDir + File.separator) &&
                 createSystemDirectory(systemDir + Constants.getUSERS_PATH()) &&
                 createSystemDirectory(systemDir + Constants.getPIC_PATH()) &&
                 createSystemDirectory(systemDir + Constants.getINPUT_PATH()) &&
-                createSystemDirectory(systemDir + Constants.getFINALIZE_PATH()) &&
+                createSystemDirectory(systemDir + Constants.getSTUDIES_PATH()) &&
                 createSystemDirectory(systemDir + Constants.getTMP_PATH()) &&
                 createSystemDirectory(systemDir + Constants.getCBIO_PATH());
         
@@ -202,11 +207,13 @@ public class FileUploadBean implements Serializable {
         return result;
     }
     
-    // Create study system directory i.e. .../TIMS/input/Bayer .../TIMS/cbio/Bayer
+    // Create study system directory i.e. .../TIMS/input/Bayer 
+    // .../TIMS/cbio/Bayer .../TIMS/studies/Bayer
     public static boolean createStudyDirectory(String study_id) {
         boolean result = 
             createSystemDirectory(Constants.getSYSTEM_PATH() + Constants.getINPUT_PATH() + study_id) &&
-            createSystemDirectory(Constants.getSYSTEM_PATH() + Constants.getCBIO_PATH() + study_id);
+            createSystemDirectory(Constants.getSYSTEM_PATH() + Constants.getCBIO_PATH() + study_id) &&
+            createSystemDirectory(Constants.getSYSTEM_PATH() + Constants.getSTUDIES_PATH() + study_id);
                 
         return result;
     }

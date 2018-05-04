@@ -1,10 +1,11 @@
 /*
- * Copyright @2015-2017
+ * Copyright @2015-2018
  */
 package TIMS.Database;
 
 import TIMS.General.Constants;
 import TIMS.General.FileHelper;
+// Libraries for Java
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -87,12 +88,68 @@ import org.apache.logging.log4j.LogManager;
  * to private. Removed unused code. Changed all Boolean variables to boolean.
  * 24-Apr-2017 - Meta data management will be allowed for all studies that are
  * not closed.
+ * 06-Apr-2018 - Database version 2.0 changes. Added 2 new columns in study 
+ * table; meta_quality_report and data_col_name_list. Added 4 new methods 
+ * updateMetaQualityReport, getMetaQualityReportPath, getColumnNameList and 
+ * updateStudyColumnNameList. Removed unused code.
  */
 
 public abstract class StudyDB {
     // Get the logger for Log4j
     private final static Logger logger = LogManager.
             getLogger(StudyDB.class.getName());
+
+    // Return the column name list used in this study.
+    public static byte[] getColumnNameList(String studyID) {
+        byte[] column_name_list = null;
+        Connection conn = null;
+        String query = "SELECT data_col_name_list FROM study WHERE study_id = ?";
+        
+        try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            stm.setString(1, studyID);
+            ResultSet rs = stm.executeQuery();
+            
+            if (rs.next()) {
+                column_name_list = rs.getBytes("data_col_name_list");
+            }
+            stm.close();
+        }
+        catch (SQLException|NamingException e) {
+            logger.error("FAIL to retrieve data column name list!");
+            logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
+        }
+        
+        return column_name_list;
+    }
+    
+    // Update study's column name list; call when the admin wish to delete the 
+    // full subject meta data from the study, and during the first meta data 
+    // upload.
+    public static void updateStudyColumnNameList(String studyID, byte[] colNameList) {
+        Connection conn = null;
+        String query = "UPDATE study SET data_col_name_list = ? WHERE study_id = ?";
+        
+        try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            stm.setBytes(1, colNameList);
+            stm.setString(2, studyID);
+            stm.executeUpdate();
+            stm.close();
+        }
+        catch (SQLException|NamingException e) {
+            logger.error("FAIL to update data column name list!");
+            logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
+        }
+    }
 
     // Return the study object that has this study id.
     public static Study getStudyObject(String studyID) {
@@ -310,6 +367,22 @@ public abstract class StudyDB {
         logger.debug("Updating detail output path for " + studyID);
         updateStudyField(query);
     }
+    // Update the meta_quality_report field with the path of quality report file.
+    public static void updateMetaQualityReport(String studyID, String path) {
+        String query = "UPDATE study SET meta_quality_report = \'" + path 
+                     + "\' WHERE study_id = \'" + studyID + "\'";
+        
+        logger.debug("Updating meta quality report path for " + studyID);
+        updateStudyField(query);        
+    }
+    // Null the path of quality report file.
+    public static void nullMetaQualityReport(String studyID) {
+        String query = "UPDATE study SET meta_quality_report = null "
+                     + "WHERE study_id = \'" + studyID + "\'";
+        
+        logger.debug("Null the meta quality report path for " + studyID);
+        updateStudyField(query);                
+    }
     
     // Helper function to update study's field using the query passed in.
     private static void updateStudyField(String query) {
@@ -330,21 +403,6 @@ public abstract class StudyDB {
         }
     }
     
-    /* NO LONGER IN USE!
-    // For subject Meta data management, the method getPIStudyHash() will be
-    // used instead.
-    // Return the list of 'opened' (i.e. not finalized yet) Study ID setup under
-    // the group(s) that this lead is heading. The list of Study ID will be
-    // available for the lead to select for subject Meta data management.
-    public static LinkedHashMap<String, String> getPIOpenStudyHash(String piID) {
-        String query = "SELECT study_id FROM study WHERE finalized = false AND "
-                     + "grp_id IN (SELECT grp_id FROM grp WHERE pi = \'"
-                     + piID + "\') ORDER BY study_id";
-
-        logger.debug("Retrieving open study list for PI " + piID);
-        return getStudyHash(query);
-    }
-    */
     // Return the list of unclosed Study ID under the group(s) that this lead is
     // heading. The list of Study ID will be available for the lead to select
     // for pipeline execution.
@@ -356,21 +414,7 @@ public abstract class StudyDB {
         logger.debug("Retrieving study list for PI " + piID);
         return getStudyHash(query);
     }
-    /* NO LONGER IN USE!
-    // For subject Meta data management, the method getUserStudyHash() will be
-    // used instead.
-    // Return the list of 'opened' (i.e. not finalized yet) Study ID setup under
-    // the group that this user ID belongs to. The list of Study ID will be
-    // available for user to select for subject Meta data management.
-    public static LinkedHashMap<String, String> getUserOpenStudyHash(String userID) {
-        String query = "SELECT study_id FROM study WHERE finalized = false AND "
-                     + "grp_id = (SELECT unit_id FROM user_account WHERE user_id = \'"
-                     + userID + "\') ORDER BY study_id";
-
-        logger.debug("Retrieving open study list for user " + userID);
-        return getStudyHash(query);
-    }
-    */
+    
     // Return the list of unclosed Study ID setup under the group that this 
     // user ID belongs to. The list of Study ID will be available for user to
     // select for pipeline execution.
@@ -434,7 +478,6 @@ public abstract class StudyDB {
             while (rs.next()) {
                 studyHash.put(rs.getString("study_id"), rs.getString("study_id"));
             }
-            
             stm.close();
         }
         catch (SQLException|NamingException e) {
@@ -463,7 +506,6 @@ public abstract class StudyDB {
             while (rs.next()) {
                 deptStudies.add(new Study(rs));
             }
-            
             stm.close();
             logger.debug("Studies review list retrieved.");
         }
@@ -519,7 +561,6 @@ public abstract class StudyDB {
             while (rs.next()) {
                 finalizedStudies.add(new Study(rs));
             }
-            
             stm.close();
             logger.debug("Finalized studies retrieved.");
         }
@@ -550,7 +591,6 @@ public abstract class StudyDB {
             while (rs.next()) {
                 studyList.add(new Study(rs));
             }
-            
             stm.close();
             logger.debug("Query study completed.");
         }
@@ -612,6 +652,10 @@ public abstract class StudyDB {
     public static String getCbioURL(String study_id) {
         return getStudyPropValue(study_id, "cbio_url");
     }
+    // Retrieve the meta quality report path for this study.
+    public static String getMetaQualityReportPath(String study_id) {
+        return getStudyPropValue(study_id, "meta_quality_report");
+    }
     
     // Helper function to retrieve one of the study's property value.
     private static String getStudyPropValue(String study_id, String property) {
@@ -656,7 +700,6 @@ public abstract class StudyDB {
             while (rs.next()) {
                 annotHash.put(rs.getString("annot_ver"), rs.getString("annot_ver"));
             }
-
             stm.close();
             logger.debug("Annotation Version: " + annotHash.toString());
         }

@@ -1,5 +1,5 @@
 /*
- * Copyright @2015-2017
+ * Copyright @2015-2018
  */
 package TIMS.Database;
 
@@ -7,7 +7,9 @@ import TIMS.General.Constants;
 import TIMS.General.FileHelper;
 import TIMS.General.Postman;
 import TIMS.General.ResourceRetriever;
+// Libraries for Java
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
@@ -114,6 +116,8 @@ import org.apache.pdfbox.pdmodel.graphics.xobject.PDJpeg;
  * will be own by group i.e. the direct link between group and subject's meta 
  * data will be break off. Changes due to table name change in database (i.e.
  * from finalized_output to finalized_record.)
+ * 24-Apr-2018 - Changes in the system directory format; all the study related
+ * output/report will be stored in the studies/study_id/ directory.
  */
 
 public class DataDepositor extends Thread {
@@ -163,7 +167,8 @@ public class DataDepositor extends Thread {
         Study study = StudyDB.getStudyObject(study_id);
         annot_ver = study.getAnnot_ver();
         summaryReportPath = Constants.getSYSTEM_PATH() + 
-                            Constants.getFINALIZE_PATH() + study_id + 
+                            Constants.getSTUDIES_PATH() + 
+                            study_id + File.separator + 
                             Constants.getSUMMARY_FILE_NAME() + 
                             Constants.getSUMMARY_FILE_EXT();
         logger.debug("DataDepositor created for study: " + study_id);
@@ -228,7 +233,8 @@ public class DataDepositor extends Thread {
             
             if (finalizeStatus) {
                 String zipFile = Constants.getSYSTEM_PATH() + 
-                                 Constants.getFINALIZE_PATH() + study_id + 
+                                 Constants.getSTUDIES_PATH() + 
+                                 study_id + File.separator +
                                  Constants.getDETAIL_FILE_NAME() + 
                                  Constants.getZIPFILE_EXT();
                 String[] srcFiles = new String[jobList.size()];

@@ -1,8 +1,9 @@
 /*
- * Copyright @2016-2017
+ * Copyright @2016-2018
  */
 package TIMS.Database;
 
+// Libraries for Java
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -23,139 +24,107 @@ import java.time.LocalDate;
  * the result set returned from database query.
  * 29-May-2017 - Changes due to change in Subject table (i.e. age_at_baseline
  * changed to float type.)
+ * 06-Apr-2018 - Database version 2.0 changes to support meta data upload
+ * through Excel.
  */
 
 public class SubjectDetail {
     // subject_detail view attributes
-    private String study_id, subject_id, country_code, race, subtype_code, 
-                   remarks, event;
-    private float height, weight, age_at_baseline;
-    private LocalDate event_date, record_date;
-    private char gender;
-
+    private final String study_id, subject_id;
+    private String race, gender, height, weight, remarks, event, casecontrol;
+    private LocalDate event_date, record_date, dob;
+    private byte[] dat;
+    
     // Construct the SubjectDetail object directly using the result set returned
     // from the database query.
     public SubjectDetail(ResultSet rs) throws SQLException {
         this.study_id = rs.getString("study_id");
         this.subject_id = rs.getString("subject_id");
-        this.record_date = (rs.getDate("record_date") != null)?
-                            rs.getDate("record_date").toLocalDate():null;
-        this.country_code = rs.getString("country_code");
         this.race = rs.getString("race");
-        this.subtype_code = rs.getString("subtype_code");
+        this.gender = rs.getString("gender");
         this.remarks = rs.getString("remarks");
         this.event = rs.getString("event");
-        this.age_at_baseline = rs.getFloat("age_at_baseline");
-        this.height = rs.getFloat("height");
-        this.weight = rs.getFloat("weight");
+        this.height = rs.getString("height");
+        this.weight = rs.getString("weight");
         this.event_date = (rs.getDate("event_date") != null)?
                            rs.getDate("event_date").toLocalDate():null;
-        this.gender = rs.getString("gender").charAt(0);
+        this.record_date = (rs.getDate("record_date") != null)?
+                            rs.getDate("record_date").toLocalDate():null;
+        this.dob = rs.getDate("dob").toLocalDate();
+        this.casecontrol = rs.getString("casecontrol");
+        this.dat = rs.getBytes("dat");
+    }
+    
+    // Return the casecontrol value (i.e. 1.0) in int (i.e. 1).
+    public int getCaseControlInInt() {
+        return (int) Float.parseFloat(casecontrol);
     }
     
     // Machine generated constructor.
-    public SubjectDetail(String study_id, String subject_id, LocalDate record_date,
-                         String country_code, String race, String subtype_code, 
-                         String remarks, String event, float age_at_baseline, 
-                         float height, float weight, LocalDate event_date, char gender) 
+    public SubjectDetail(String study_id, String subject_id, String race, 
+            String gender, String remarks, String event, String height, 
+            String weight, LocalDate event_date, LocalDate record_date, 
+            LocalDate dob, String casecontrol) 
     {
         this.study_id = study_id;
         this.subject_id = subject_id;
-        this.record_date = record_date;
-        this.country_code = country_code;
         this.race = race;
-        this.subtype_code = subtype_code;
+        this.gender = gender;
         this.remarks = remarks;
         this.event = event;
-        this.age_at_baseline = age_at_baseline;
         this.height = height;
         this.weight = weight;
         this.event_date = event_date;
-        this.gender = gender;
+        this.record_date = record_date;
+        this.dob = dob;
+        this.casecontrol = casecontrol;
     }
-    
-    // Return the country name for this user nationality.
-    public String getCountry_name() {
-        return NationalityDB.getCountryName(country_code);
-    }
-    
+
     // Machine generated getters and setters.
-    public String getStudy_id() {
-        return study_id;
-    }
-    public void setStudy_id(String study_id) {
-        this.study_id = study_id;
-    }
-    public String getSubject_id() {
-        return subject_id;
-    }
-    public void setSubject_id(String subject_id) {
-        this.subject_id = subject_id;
-    }
-    public LocalDate getRecord_date() {
-        return record_date;
-    }
-    public void setRecord_date(LocalDate record_date) {
-        this.record_date = record_date;
-    }
-    public String getCountry_code() {
-        return country_code;
-    }
-    public void setCountry_code(String country_code) {
-        this.country_code = country_code;
-    }
-    public String getRace() {
-        return race;
-    }
-    public void setRace(String race) {
-        this.race = race;
-    }
-    public String getSubtype_code() {
-        return subtype_code;
-    }
-    public void setSubtype_code(String subtype_code) {
-        this.subtype_code = subtype_code;
-    }
-    public String getRemarks() {
-        return remarks;
-    }
-    public void setRemarks(String remarks) {
-        this.remarks = remarks;
-    }
-    public String getEvent() {
-        return event;
-    }
-    public void setEvent(String event) {
-        this.event = event;
-    }
-    public float getAge_at_baseline() {
-        return age_at_baseline;
-    }
-    public void setAge_at_baseline(float age_at_baseline) {
-        this.age_at_baseline = age_at_baseline;
-    }
-    public float getHeight() {
-        return height;
-    }
-    public void setHeight(float height) {
-        this.height = height;
-    }
-    public float getWeight() {
-        return weight;
-    }
-    public void setWeight(float weight) {
-        this.weight = weight;
-    }
-    public LocalDate getEvent_date() {
-        return event_date;
-    }
-    public void setEvent_date(LocalDate event_date) {
-        this.event_date = event_date;
-    }
-    public char getGender() {
-        return gender;
-    }
-    public void setGender(char gender) {
-        this.gender = gender;
-    }
+    public String getStudy_id() 
+    {   return study_id;    }
+    public String getSubject_id() 
+    {   return subject_id;  }
+    public String getRace() 
+    {   return race;    }
+    public void setRace(String race) 
+    {   this.race = race;   }
+    public String getGender() 
+    {   return gender;  }
+    public void setGender(String gender) 
+    {   this.gender = gender;   }
+    public String getRemarks() 
+    {   return remarks; }
+    public void setRemarks(String remarks) 
+    {   this.remarks = remarks; }
+    public String getEvent() 
+    {   return event;   }
+    public void setEvent(String event) 
+    {   this.event = event; }
+    public String getHeight() 
+    {   return height;  }
+    public void setHeight(String height) 
+    {   this.height = height;   }
+    public String getWeight() 
+    {   return weight;  }
+    public void setWeight(String weight) 
+    {   this.weight = weight;   }
+    public LocalDate getEvent_date() 
+    {   return event_date;  }
+    public void setEvent_date(LocalDate event_date) 
+    {   this.event_date = event_date;   }
+    public LocalDate getRecord_date() 
+    {   return record_date; }
+    public void setRecord_date(LocalDate record_date) 
+    {   this.record_date = record_date; }
+    public LocalDate getDob() 
+    {   return dob; }
+    public void setDob(LocalDate dob) 
+    {   this.dob = dob; }
+    public String getCasecontrol() 
+    {   return casecontrol;    }
+    public void setCasecontrol(String casecontrol) 
+    {   this.casecontrol = casecontrol;   }
+    public byte[] getDat() 
+    {   return dat; }
 }

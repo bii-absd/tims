@@ -1,9 +1,10 @@
 /*
- * Copyright @2015-2017
+ * Copyright @2015-2018
  */
 package TIMS.General;
 
 import TIMS.Bean.FileUploadBean;
+// Libraries for Java
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -109,8 +110,11 @@ import org.apache.logging.log4j.LogManager;
  * 20-Apr-2017 - Added one new constant SERVER_NAME.
  * 17-Jul-2017 - Added two new constants INTERVAL_FILE_NAME and 
  * INTERVAL_FILE_EXT.
- * 06-Oct-2017 - Removed constant NGS_PAGE. Added one new constant
+ * 06-Oct-2017 - Deleted constant NGS_PAGE. Added one new constant
  * JOB_SELECTION_4V.
+ * 23-Apr-2018 - Added 6 new constants STUDIES_PATH, META_QUALITY_FILE_NAME, 
+ * META_QUALITY_FILE_EXT, UPL_MD, UPD_MD and DEL_MD. Deleted one
+ * constant FINALIZE_PATH.
  */
 
 @ManagedBean (name = "constants")
@@ -130,7 +134,7 @@ public class Constants {
     public final static String FALSE = "false";
     public final static String NONE = "none";
     public final static String FAILED = "FAILED";
-    // Categories of activity (LOG, EXE, CRE, CHG, CUS, DWL, UPL, EXP, SET & VIS).
+    // Categories of activity.
     public final static String LOG_IN = "Login";
     public final static String LOG_OFF = "Logoff";
     public final static String EXE_PL = "Run Pipeline";
@@ -140,6 +144,9 @@ public class Constants {
     public final static String CRE_ID = "Create ID";
     public final static String CHG_PWD = "Change Password";
     public final static String CHG_ID = "Update ID";
+    public final static String UPL_MD = "Upload Meta Data";
+    public final static String UPD_MD = "Update Meta Data";
+    public final static String DEL_MD = "Delete Meta Data";
     public final static String CHG_RD = "Update Raw Data";
     public final static String CUS_RD = "Customize Raw Data";
     public final static String DWL_FIL = "Download File";
@@ -173,7 +180,7 @@ public class Constants {
     private static String INPUT_PATH = null;
     private static String CONFIG_PATH = null;
     private static String LOG_PATH = null;
-    private static String FINALIZE_PATH = null;
+    private static String STUDIES_PATH = null;
     private static String TMP_PATH = null;
     private static String CBIO_PATH = null;
     private static String CBIO_CASE_DIR = null;
@@ -190,6 +197,8 @@ public class Constants {
     private static String SUMMARY_FILE_EXT = null;
     private static String DETAIL_FILE_NAME = null;
     private static String FINALIZE_FILE_EXT = null;
+    private static String META_QUALITY_FILE_NAME = null;
+    private static String META_QUALITY_FILE_EXT = null;
     private static String ANNOT_FILE_NAME = null;
     private static String ANNOT_FILE_EXT = null;
     private static String CONTROL_FILE_NAME = null;
@@ -244,8 +253,8 @@ public class Constants {
                     File.separator + setup.get("CONFIG_PATH") + File.separator;
             LOG_PATH = 
                     File.separator + setup.get("LOG_PATH") + File.separator;
-            FINALIZE_PATH = 
-                    File.separator + setup.get("FINALIZE_PATH") + File.separator;
+            STUDIES_PATH = 
+                    File.separator + setup.get("STUDIES_PATH") + File.separator;
             TMP_PATH = File.separator + setup.get("TMP_PATH") + File.separator;
             CBIO_PATH = File.separator + setup.get("CBIO_PATH") + File.separator;
             CBIO_CASE_DIR = setup.get("CBIO_CASE_DIR") + File.separator;
@@ -262,6 +271,8 @@ public class Constants {
             SUMMARY_FILE_EXT = setup.get("SUMMARY_FILE_EXT");
             DETAIL_FILE_NAME = setup.get("DETAIL_FILE_NAME");
             FINALIZE_FILE_EXT = setup.get("FINALIZE_FILE_EXT");
+            META_QUALITY_FILE_NAME = setup.get("META_QUALITY_FILE_NAME");
+            META_QUALITY_FILE_EXT = setup.get("META_QUALITY_FILE_EXT");
             ANNOT_FILE_NAME = setup.get("ANNOT_FILE_NAME");
             ANNOT_FILE_EXT = setup.get("ANNOT_FILE_EXT");
             CONTROL_FILE_NAME = setup.get("CONTROL_FILE_NAME");
@@ -298,6 +309,14 @@ public class Constants {
         return dateFormat.format(new Date());        
     }
     
+    // Return the path where the meta quality report for this study is to be
+    // stored.
+    public static String getMETA_QUALITY_REPORT_PATH(String study_id) {
+        return Constants.getSYSTEM_PATH() + Constants.getSTUDIES_PATH() + 
+               study_id + File.separator + Constants.getMETA_QUALITY_FILE_NAME() +
+               Constants.getMETA_QUALITY_FILE_EXT();
+    }
+    
     // Machine generated getters
     public static String getSYSTEM_PATH() { return SYSTEM_PATH; }
     public static String getUSERS_PATH() { return USERS_PATH; }
@@ -306,7 +325,7 @@ public class Constants {
     public static String getINPUT_PATH() { return INPUT_PATH; }
     public static String getCONFIG_PATH() { return CONFIG_PATH; }
     public static String getLOG_PATH() { return LOG_PATH; }
-    public static String getFINALIZE_PATH() { return FINALIZE_PATH; }
+    public static String getSTUDIES_PATH() { return STUDIES_PATH; }
     public static String getTMP_PATH() { return TMP_PATH; }
     public static String getCBIO_PATH() { return CBIO_PATH; }
     public static String getCBIO_CASE_DIR() { return CBIO_CASE_DIR; }
@@ -323,6 +342,8 @@ public class Constants {
     public static String getSUMMARY_FILE_EXT() { return SUMMARY_FILE_EXT; }
     public static String getDETAIL_FILE_NAME() { return DETAIL_FILE_NAME; }
     public static String getFINALIZE_FILE_EXT() { return FINALIZE_FILE_EXT; }
+    public static String getMETA_QUALITY_FILE_NAME() { return META_QUALITY_FILE_NAME; }
+    public static String getMETA_QUALITY_FILE_EXT() { return META_QUALITY_FILE_EXT; }
     public static String getANNOT_FILE_NAME() { return ANNOT_FILE_NAME; }
     public static String getANNOT_FILE_EXT() { return ANNOT_FILE_EXT; }
     public static String getCONTROL_FILE_NAME() { return CONTROL_FILE_NAME; }

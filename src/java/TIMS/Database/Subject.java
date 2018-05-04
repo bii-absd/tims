@@ -1,7 +1,12 @@
 /*
- * Copyright @2015-2017
+ * Copyright @2015-2018
  */
 package TIMS.Database;
+
+// Libraries for Java
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.time.LocalDate;
 
 /**
  * Subject is used to represent the subject table in the database.
@@ -23,81 +28,69 @@ package TIMS.Database;
  * 18-Apr-2017 - Removed grp_id, and added study_id, subtype_code and
  * age_at_baseline.
  * 29-May-2017 - Variable age_at_baseline changed from integer to float type.
+ * 06-Apr-2018 - Database version 2.0 changes to support meta data upload
+ * through Excel.
  */
 
 public class Subject {
-    // subject table attributes
-    private String subject_id, study_id, country_code, race, subtype_code;
-    private char gender;
-    private float age_at_baseline;
+    private String subject_id, study_id, race, gender, casecontrol;
+    private LocalDate dob;
 
+    // Construct the Subject object directly using the result set returned 
+    // from the database query.
+    public Subject(ResultSet rs) throws SQLException {
+        this.subject_id = rs.getString("subject_id");
+        this.study_id = rs.getString("study_id");
+        this.race = rs.getString("race");
+        this.gender = rs.getString("gender");
+        this.dob = rs.getDate("dob").toLocalDate();
+        this.casecontrol = rs.getString("casecontrol");
+        
+    }
+    
     // Machine generated constructor
-    public Subject(String subject_id, String study_id, char gender, String country_code, 
-            String race, String subtype_code, float age_at_baseline) {
+    public Subject(String subject_id, String study_id, String race, 
+            String gender, LocalDate dob, String casecontrol) {
         this.subject_id = subject_id;
         this.study_id = study_id;
-        this.gender = gender;
-        this.country_code = country_code;
         this.race = race;
-        this.subtype_code = subtype_code;
-        this.age_at_baseline = age_at_baseline;
+        this.gender = gender;
+        this.dob = dob;
+        this.casecontrol = casecontrol;
     }
-    
-    
+
+    // Return the casecontrol value (i.e. 1.0) in int (i.e. 1).
+    public int getCaseControlInInt() {
+        return (int) Float.parseFloat(casecontrol);
+    }
+
     // Return the string representation of this subject in the format of:
-    // Study_ID|Subject_ID|Gender|Nationality|Race
+    // Study_ID|Subject_ID|Race|Gender|DOB
     @Override
     public String toString() {
-        return study_id + "|" + subject_id + "|" + gender + "|" + country_code 
-                + "|" + race;
-    }
-    
-    // Return the country name for this user nationality.
-    public String getCountry_name() {
-        return NationalityDB.getCountryName(country_code);
+        return study_id + "|" + subject_id + "|" + race + "|" + gender 
+                + "|" + dob;
     }
     
     // Machine generated getters and setters
-    public String getSubject_id() {
-        return subject_id;
-    }
-    public void setSubject_id(String subject_id) {
-        this.subject_id = subject_id;
-    }
-    public String getStudy_id() {
-        return study_id;
-    }
-    public void setStudy_id(String study_id) {
-        this.study_id = study_id;
-    }
-    public String getCountry_code() {
-        return country_code;
-    }
-    public void setCountry_code(String country_code) {
-        this.country_code = country_code;
-    }
-    public String getRace() {
-        return race;
-    }
-    public void setRace(String race) {
-        this.race = race;
-    }
-    public char getGender() {
-        return gender;
-    }
-    public void setGender(char gender) {
-        this.gender = gender;
-    }
-    public String getSubtype_code() {
-        return subtype_code;
-    }
-    public void setSubtype_code(String subtype_code) {
-        this.subtype_code = subtype_code;
-    }
-    public float getAge_at_baseline() {
-        return age_at_baseline;
-    }
-    public void setAge_at_baseline(float age_at_baseline) {
-        this.age_at_baseline = age_at_baseline;
-    }
+    public String getSubject_id() 
+    {   return subject_id;  }
+    public String getStudy_id() 
+    {   return study_id;    }
+    public String getRace() 
+    {   return race;    }
+    public void setRace(String race) 
+    {   this.race = race;   }
+    public String getGender() 
+    {   return gender;  }
+    public void setGender(String gender) 
+    {   this.gender = gender;   }
+    public LocalDate getDob() 
+    {   return dob; }
+    public void setDob(LocalDate dob) 
+    {   this.dob = dob; }
+    public String getCasecontrol() 
+    {   return casecontrol;    }
+    public void setCasecontrol(String casecontrol) 
+    {   this.casecontrol = casecontrol;   }
 }

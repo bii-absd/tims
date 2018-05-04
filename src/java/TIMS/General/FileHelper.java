@@ -1,15 +1,22 @@
 /*
- * Copyright @2016-2017
+ * Copyright @2016-2018
  */
 package TIMS.General;
 
+import TIMS.Database.StudyDB;
 import TIMS.Database.SubjectDB;
 import TIMS.Database.SubjectDetail;
+// Libraries for Java
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.file.FileSystems;
@@ -47,6 +54,9 @@ import org.apache.logging.log4j.LogManager;
  * 25-Aug-2016 - Added 2 static methods, fileExist and deleteDirectory.
  * 30-Aug-2016 - Added 2 static methods, moveFile and getFilesWithExt.
  * 25-Apr-2017 - Added 1 static method, generateMetaDataList.
+ * 12-Apr-2017 - Added 4 static methods; copyUploadedFileToLocalDirectory, 
+ * convertByteArrayToList, convertObjectToByteArray and convertStrListToStr. 
+ * Modified method generateMetaDataList.
  */
 
 public abstract class FileHelper {
@@ -61,7 +71,7 @@ public abstract class FileHelper {
         return delFile.delete();
     }
     
-    // Zip the file(s) in srcFiles to zip file zipFile.
+    // Zip the file(s) in srcFiles to zipFile.
     public static void zipFiles(String zipFile, String[] srcFiles) 
             throws IOException {
         byte[] buffer = new byte[2048];
@@ -77,7 +87,6 @@ public abstract class FileHelper {
                     while ((len = fis.read(buffer)) > 0) {
                         zos.write(buffer, 0, len);
                     }
-                        
                     zos.closeEntry();
                 }
             }
@@ -188,42 +197,105 @@ public abstract class FileHelper {
         return result;
     }
     
+    // Copy the uploaded file to a local directory.
+    public static boolean copyUploadedFileToLocalDirectory
+        (org.primefaces.model.UploadedFile src, String localDir) 
+    {
+        try {
+            InputStream ipStream = src.getInputstream();
+            OutputStream opStream = new FileOutputStream(new File(localDir));
+            int len = 0;
+            byte[] buffer = new byte[1024];
+            while ( (len = ipStream.read(buffer)) > 0) {
+                opStream.write(buffer, 0, len);
+            }
+        } catch (IOException ioe) {
+            logger.error("Failed to copy uploaded file to local directory!");
+            logger.error(ioe.getMessage());
+            return Constants.NOT_OK;
+        }
+        return Constants.OK;
+    }
+    
+    // Convert byte array to List<String> (after reading bytea from database).
+    public static List<String> convertByteArrayToList(byte[] data) {
+        ByteArrayInputStream byteIn = new ByteArrayInputStream(data);
+        
+        try (ObjectInputStream ois = new ObjectInputStream(byteIn))
+        {
+            @SuppressWarnings("unchecked")
+            List<String>list = (List<String>) ois.readObject();
+            
+            return list;
+        } catch (IOException|ClassNotFoundException ex) {
+            logger.error("FAIL to convert byte array to list!");
+            logger.error(ex.getMessage());
+        }
+        return null;
+    }
+    
+    // Convert the object to byte array (for writting to database).
+    public static byte[] convertObjectToByteArray(Object obj) {
+        ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+        
+        try (ObjectOutputStream oos = new ObjectOutputStream(byteOut))
+        {
+            oos.writeObject(obj);
+        } catch (IOException ioe) {
+            logger.error("FAIL to convert object to byte array!");
+            logger.error(ioe.getMessage());
+        }
+
+        return byteOut.toByteArray();
+    }
+    
+    // Convert the list of string to a string whereby each individual string
+    // is separated by '|'
+    private static String convertStrListToStr(List<String> strList) {
+        StringBuilder strBuilder = new StringBuilder();
+        
+        for (String str : strList) {
+            strBuilder.append(str).append("|");
+        }
+        
+        return strBuilder.toString();
+    }
+    
     // Helper function to consolidate and generate the Meta data list for the
     // study ID passed in.
     public static boolean generateMetaDataList(String study_id, String filepath) {
-        boolean status = Constants.OK;
-        StringBuilder subjectLine = new StringBuilder();
+        boolean status = Constants.NOT_OK;
+        StringBuilder line = new StringBuilder();
         
         try {
-            List<SubjectDetail> subjectDetailList = 
+            byte[] dat = StudyDB.getColumnNameList(study_id);
+            if (dat != null) {
+                List<String> dbColNameL = FileHelper.convertByteArrayToList(dat);
+                List<SubjectDetail> subjectDetailList = 
                                     SubjectDB.getSubtDetailList(study_id);
-            PrintStream ps = new PrintStream(new File (filepath));
-            // Write the header line first.
-            ps.println("Subject ID|Age at Baseline|Gender|Nationality|Race|"
-                     + "Height|Weight|Record Date|Remarks|Event|Event Date");            
-            for (SubjectDetail subj : subjectDetailList) {
-                subjectLine.append(subj.getSubject_id()).append("|").
-                        append(subj.getAge_at_baseline()).append("|").
-                        append(subj.getGender()).append("|").
-                        append(subj.getCountry_code()).append("|").
-                        append(subj.getRace()).append("|").
-                        append(subj.getHeight()).append("|").
-                        append(subj.getWeight()).append("|").
-                        append(subj.getRecord_date()).append("|").
-                        append(subj.getRemarks()).append("|").
-                        append(subj.getEvent()).append("|").
-                        append(subj.getEvent_date());
-                ps.println(subjectLine.toString());
-                // Empty the string after each subject Meta data.
-                subjectLine.delete(0, subjectLine.length());
-            }
+                PrintStream ps = new PrintStream(new File (filepath));
+                // Write the header line first.
+                line.append("Subject ID|").append(convertStrListToStr(dbColNameL));
+                ps.println(line.toString());
+                // Empty the string.
+                line.delete(0, line.length());
+                // Write the record for each subject.
+                for (SubjectDetail subj : subjectDetailList) {
+                    List<String> record = FileHelper.convertByteArrayToList(subj.getDat());
+                    
+                    line.append(subj.getSubject_id()).append("|").append(convertStrListToStr(record));
+                    ps.println(line.toString());
+                    // Empty the string after each subject Meta data.
+                    line.delete(0, line.length());
+                }
             
-            ps.close();
+                ps.close();
+                status = Constants.OK;
+            }
         }
         catch (SQLException|NamingException|IOException ioe) {
             logger.error("FAIl to generate meta data list for study " + study_id);
             logger.error(ioe.getMessage());
-            status = Constants.NOT_OK;
         }
         
         return status;

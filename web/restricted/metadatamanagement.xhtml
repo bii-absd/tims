@@ -11,18 +11,31 @@
     <ui:param name="link" value="#{MDMgntBean.breadCrumbLink}"/>
     <ui:define name="content">
     <p:growl id="MDMsg"/>
-    <h:form id="genMetaList">
-        <p:panel style="height: 40px" rendered="#{!MDMgntBean.metaListEmpty}">
-            <p:commandButton value="Download Meta Data List" 
+    <p:panel id="ctlPanel" style="height: 40px">
+        <h:form id="genMetaList">
+            <p:commandButton value="Download Meta Data" id="genMetaBut"
                              icon="ui-icon-document" ajax="false"
                              action="#{MDMgntBean.downloadMetaDataList}"
                              rendered="#{!MDMgntBean.metaListEmpty}" 
+                             style="font-size: 12px; margin-right: 10px"/>
+            <p:commandButton value="Quality Report of Last Data Upload" 
+                             id="QReportBut" 
+                             icon="ui-icon-info" ajax="false"
+                             action="#{MDMgntBean.downloadDataQualityReport}" 
+                             rendered="#{MDMgntBean.quality_report}"
+                             style="font-size: 12px; margin-right: 10px"/>
+            <p:commandButton value="Delete All Meta Data" id="delAllBut"
+                             icon="ui-icon-trash" 
+                             onclick="PF('delAllDlg').show()"
+                             rendered="#{authBean.administrator and !MDMgntBean.metaListEmpty}" 
                              style="font-size: 12px"/>
-        </p:panel>
-    </h:form>
+        </h:form>
+    </p:panel>
+    
     <p:accordionPanel id="accPanel" activeIndex="null">
         <p:tab id="editData" title="Edit Meta Data" titleStyleClass="tab-title">
             <h:form id="editDataForm">
+                <p:remoteCommand name="updateTable" update="MDTable"/>
                 <p:dataTable var="mddata" rows="10" id="MDTable" 
                              value="#{MDMgntBean.subtDetailList}" paginator="true" 
                              paginatorTemplate="{FirstPageLink} {PreviousPageLink}
@@ -31,18 +44,24 @@
                              editable="true" 
                              filteredValue="#{MDMgntBean.filteredSubtDetailList}">
                     <p:ajax event="rowEdit" listener="#{MDMgntBean.onRowEdit}" 
-                            update="MDMsg"/>
+                            oncomplete="updateTable()" update="MDMsg"/>
                     <p:column filterBy="#{mddata.subject_id}" filterMatchMode="contains"  
                               headerText="Subject ID" style="width: 200px">
                         <h:outputText value="#{mddata.subject_id}"/>
                     </p:column>
-                    <p:column headerText="Age at Baseline" styleClass="jssmallcol">
+                    <p:column headerText="Date of Birth" styleClass="jssmallcol">
+                        <h:outputText value="#{mddata.dob}"/>
+                    </p:column>
+                    <p:column headerText="CaseControl" styleClass="jssmallcol">
                         <p:cellEditor>
                             <f:facet name="output">
-                                <h:outputText value="#{mddata.age_at_baseline}"/>
+                                <h:outputText value="#{mddata.caseControlInInt}"/>
                             </f:facet>
                             <f:facet name="input">
-                                <h:inputText value="#{mddata.age_at_baseline}" style="width: 100%"/>
+                                <p:selectOneMenu value="#{mddata.casecontrol}" style="width: 100%">
+                                    <f:selectItem itemLabel="0" itemValue="0"/>
+                                    <f:selectItem itemLabel="1" itemValue="1.0"/>
+                                </p:selectOneMenu>
                             </f:facet>
                         </p:cellEditor>
                     </p:column>
@@ -53,22 +72,9 @@
                             </f:facet>
                             <f:facet name="input">
                                 <p:selectOneMenu value="#{mddata.gender}" style="width: 100%">
+                                    <f:selectItem itemLabel="" itemValue=""/>
                                     <f:selectItem itemLabel="Male" itemValue="M"/>
                                     <f:selectItem itemLabel="Female" itemValue="F"/>
-                                </p:selectOneMenu>
-                            </f:facet>
-                        </p:cellEditor>
-                    </p:column>
-                    <p:column headerText="Nationality" styleClass="col140">
-                        <p:cellEditor>
-                            <f:facet name="output">
-                                <h:outputText value="#{mddata.country_name}"/>
-                            </f:facet>
-                            <f:facet name="input">
-                                <p:selectOneMenu value="#{mddata.country_code}" 
-                                                 style="width: 100%" filter="true" 
-                                                 filterMatchMode="startsWith">
-                                    <f:selectItems value="#{MDMgntBean.nationalityCodeHash}"/>
                                 </p:selectOneMenu>
                             </f:facet>
                         </p:cellEditor>
@@ -80,11 +86,11 @@
                             </f:facet>
                             <f:facet name="input">
                                 <p:selectOneMenu value="#{mddata.race}" style="width: 100%">
-                                    <f:selectItem itemLabel="Chinese" itemValue="CHN"/>
-                                    <f:selectItem itemLabel="Malay" itemValue="MAL"/>
-                                    <f:selectItem itemLabel="Indian" itemValue="IND"/>
-                                    <f:selectItem itemLabel="Eurasian" itemValue="ERA"/>
-                                    <f:selectItem itemLabel="Others" itemValue="OTH"/>
+                                    <f:selectItem itemLabel="Chinese" itemValue="CHINESE"/>
+                                    <f:selectItem itemLabel="Malay" itemValue="MALAY"/>
+                                    <f:selectItem itemLabel="Indian" itemValue="INDIAN"/>
+                                    <f:selectItem itemLabel="Eurasian" itemValue="EURASIAN"/>
+                                    <f:selectItem itemLabel="Others" itemValue="OTHERS"/>
                                 </p:selectOneMenu>
                             </f:facet>
                         </p:cellEditor>
@@ -129,9 +135,7 @@
                             </f:facet>
                             <f:facet name="input">
                                 <h:inputText value="#{mddata.remarks}" 
-                                             validatorMessage="#{msg['error-remarks']}"
                                              style="width: 100%">
-                                    <f:validateRegex pattern="^[^|]*$"/>
                                 </h:inputText>
                             </f:facet>
                         </p:cellEditor>
@@ -143,9 +147,7 @@
                             </f:facet>
                             <f:facet name="input">
                                 <h:inputText value="#{mddata.event}" 
-                                             validatorMessage="#{msg['error-event']}"
                                              style="width: 100%">
-                                    <f:validateRegex pattern="^[^|]*$"/>
                                 </h:inputText>
                             </f:facet>
                         </p:cellEditor>
@@ -167,75 +169,63 @@
                 </p:dataTable>
             </h:form>
         </p:tab>
-        
-        <p:tab id="uploadData" title="Upload New Meta Data (Format of Meta Data: 
-               Subject_ID|Age_at_Baseline|Gender|Nationality|Race|Height|Weight|Record_Date|Remarks)" 
+        <p:tab id="uploadXLS" title="Upload New Meta Data in Excel" 
                titleStyleClass="tab-title">
-            <h:form id="uploadDataForm" enctype="multipart/form-data">
-                <p:fileUpload id="uploadDataFile" mode="advanced" 
-                              update="MDMsg :accPanel:editDataForm:MDTable" 
-                              label="Select Meta Data File" 
-                              allowTypes="/(\.|\/)(txt)$/"
-                              fileUploadListener="#{MDMgntBean.metaDataUpload}"/>
-            </h:form>
-        </p:tab>
-        
-        <p:tab id="addData" title="Input New Measurement" titleStyleClass="tab-title">
-            <h:form id="addDataForm">
-                <h:panelGrid columns="3" border="0" cellpadding="4" cellspacing="2">
-                    <h:outputText value="Subject ID" styleClass="inputlabel"/>
-                    <p:selectOneMenu id="subjectid" value="#{MDMgntBean.subject_id}" required="true" 
-                                     filter="true" filterMatchMode="startsWith">
-                        <f:selectItems value="#{MDMgntBean.subtIDHash}"/>
-                    </p:selectOneMenu>
-                    <h:message id="subjectid-status" for="subjectid" styleClass="errors"/>
-                
-                    <h:outputText value="Record Date" styleClass="inputlabel"/>
-                    <p:calendar id="record" value="#{MDMgntBean.util_record_date}" 
-                                required="true" pattern="yyyy-MM-dd"/>
-                    <h:message for="record" styleClass="errors"/>
-                    
-                    <h:outputText value="Height (Meter)" styleClass="inputlabel"/>
-                    <p:inputText id="height" size="20" autocomplete="off" 
-                                 value="#{MDMgntBean.height}">
-                        <f:validateDoubleRange minimum="0.54" maximum="2.72"/>
-                    </p:inputText>
-                    <h:message for="height" styleClass="errors"/>
-                    
-                    <h:outputText value="Weight (KG)" styleClass="inputlabel"/>
-                    <p:inputText id="weight" size="20" autocomplete="off" 
-                                 value="#{MDMgntBean.weight}">
-                        <f:validateDoubleRange minimum="2.2" maximum="635.0"/>
-                    </p:inputText>
-                    <h:message for="weight" styleClass="errors"/>
-                    
-                    <h:outputText value="Remarks" styleClass="inputlabel"/>
-                    <p:inputText id="remarks" autocomplete="off" 
-                                 validatorMessage="#{msg['error-remarks']}"
-                                 value="#{MDMgntBean.remarks}">
-                        <f:validateRegex pattern="^[^|]*$"/>
-                    </p:inputText>
-                    <h:message for="remarks" styleClass="errors"/>
-                    
-                    <h:outputText value="Event" styleClass="inputlabel"/>
-                    <p:inputText id="event" autocomplete="off" 
-                                 validatorMessage="#{msg['error-event']}"
-                                 value="#{MDMgntBean.event}">
-                        <f:validateRegex pattern="^[^|]*$"/>
-                    </p:inputText>
-                    <h:message for="event" styleClass="errors"/>
-                    
-                    <h:outputText value="Event Date" styleClass="inputlabel"/>
-                    <p:calendar value="#{MDMgntBean.util_event_date}" pattern="yyyy-MM-dd"/>
-                    <h:panelGroup/>
-                </h:panelGrid>
-
-                <p:spacer height="40" width="2"/>
-                <h:commandButton action="#{MDMgntBean.insertNewMeasurement}" 
-                                 value="Insert Measurement" 
-                                 style="font-size: 12px"/>
+            <h:form id="uploadXLSForm" enctype="multipart/form-data">
+                <p:fileUpload id="uploadXLSFile" mode="advanced" 
+                              update="MDMsg :accPanel:editDataForm:MDTable :dataQForm :ctlPanel"
+                              label="Select Excel File" onstart="PF('buiPanel').show()"
+                              allowTypes="/(\.|\/)(xlsx)$/" oncomplete="PF('buiPanel').hide()"
+                              fileUploadListener="#{MDMgntBean.xlsxDataUpload}"/>
             </h:form>
         </p:tab>
     </p:accordionPanel>
+    <p:blockUI block="accPanel" widgetVar="buiPanel">
+        <p:graphicImage library="images" name="ajax-loader.gif"/>
+    </p:blockUI>
+    
+    <p:dialog header="Do you want to delete All the Subject Meta Data?" widgetVar="delAllDlg" 
+              resizable="false" modal="true">
+        <h:form id="delAllForm">
+            <h:panelGrid columns="2" cellspacing="2" cellpadding="2" width="100%">
+                <p:commandButton value="NO" style="width: 100%" 
+                                 oncomplete="PF('delAllDlg').hide()"/>
+                <p:commandButton value="YES" style="width: 100%" 
+                                 update=":accPanel:editDataForm:MDTable :ctlPanel" 
+                                 title="Proceed to update Study column data name, and delete all the Subject Meta data." 
+                                 oncomplete="PF('delAllDlg').hide()"
+                                 action="#{MDMgntBean.deleteAllSubjectMetaData}"/>
+            </h:panelGrid>
+        </h:form>
+    </p:dialog>
+    
+    <p:dialog header="Preliminary Overview of Data Quality" 
+              widgetVar="dataQDlg" resizable="false" closable="false">
+        <h:form id="dataQForm">
+            <p:panelGrid columns="2" id="dataQPanel">
+                <h:outputText value="Records with empty or invalid date"/>
+                <h:outputText value="#{MDMgntBean.invalidDateMsg}"/>
+                <h:outputText value="Records with missing Subject ID or Gender or Race"/>
+                <h:outputText value="#{MDMgntBean.missingCoreMsg}"/>
+                <h:outputText value="Records with invalid Gender or Race"/>
+                <h:outputText value="#{MDMgntBean.invalidCoreMsg}"/>
+                <h:outputText value="Records related to missing visits"/>
+                <h:outputText value="#{MDMgntBean.missingVisitMsg}"/>
+                <h:outputText value="Records ready for further processing"/>
+                <h:outputText value="#{MDMgntBean.readyMsg}"/>
+                <h:outputText value="Skip Consistency Check" style="font-weight: bold"/>
+                <p:selectBooleanCheckbox value="#{MDMgntBean.SKIP_CONSISTENCY_CHECK}"/>
+            </p:panelGrid>
+            <p:separator styleClass="configsep"/>
+            <h:panelGrid columns="2" cellspacing="2" cellpadding="2" width="100%">
+                <p:commandButton value="Cancel" style="width: 100%" update=":ctlPanel"
+                                 oncomplete="PF('dataQDlg').hide()" 
+                                 action="#{MDMgntBean.doNotProceed}"/>
+                <p:commandButton value="Proceed" style="width: 100%" 
+                                 title="Proceed with consistency check and insertion into database" 
+                                 action="#{MDMgntBean.proceedWithFurtherCheck}"/>
+            </h:panelGrid>
+        </h:form>
+    </p:dialog>
     </ui:define>
 </ui:composition>

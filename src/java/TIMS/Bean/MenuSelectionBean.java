@@ -1,5 +1,5 @@
 /*
- * Copyright @2015-2017
+ * Copyright @2015-2018
  */
 package TIMS.Bean;
 
@@ -8,6 +8,7 @@ import TIMS.Database.StudyDB;
 import TIMS.Database.UserAccountDB;
 import TIMS.Database.UserRoleDB;
 import TIMS.General.Constants;
+// Libraries for Java
 import java.io.Serializable;
 import java.util.LinkedHashMap;
 // Libraries for Java Extension
@@ -75,6 +76,7 @@ import org.apache.logging.log4j.LogManager;
  * 13-Jul-2017 - Changes due to the addition of GATK Sequencing Pipelines.
  * 06-Oct-2017 - Remove unused code. Added a dialog for user to select the
  * visualiser to use when viewing their pipeline output.
+ * 20-Apr-2018 - Minor update to method proceedToMetaDataMgnt().
  */
 
 @ManagedBean (name="menuSelBean")
@@ -168,16 +170,13 @@ public class MenuSelectionBean implements Serializable{
         return Constants.JOB_SELECTION_4V + "?faces-redirect=true";
     }
     
-    // Save the study selection in the session map, and proceed to meta data
-    // management page.
+    // Proceed to meta data management page.
     public String proceedToMetaDataMgnt() {
         // Save the Study ID selection in the session map to be use by 
         // MetaDataManagementBean.
         FacesContext.getCurrentInstance().getExternalContext().
                 getSessionMap().put("study_id", study_id);
 
-        logger.debug(userName + ": selected study " + study_id + 
-                     " to manage it's Meta data.");
         // Proceed to Meta data upload page.
         return Constants.META_DATA_MANAGEMENT + "?faces-redirect=true";
     }

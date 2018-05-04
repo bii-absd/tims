@@ -1,12 +1,12 @@
 /*
- * Copyright @2016
+ * Copyright @2016-2018
  */
 package TIMS.General;
 
 import TIMS.Database.SubmittedJobDB;
 import TIMS.Database.UserAccount;
 import TIMS.Database.UserAccountDB;
-
+// Libraries for Java
 import java.util.Properties;
 // Libraries for Java Extension
 import javax.faces.context.FacesContext;
@@ -45,6 +45,7 @@ import org.apache.logging.log4j.LogManager;
  * of email content.
  * 25-Aug-2016 - Enhanced sendDataUploadedEmail and sendJobStatusEmail; to show 
  * the pipeline description in the email subject and content.
+ * 23-Apr-2018 - Added new method sendMetaDataUploadStatusEmail().
  */
 
 public abstract class Postman {
@@ -181,6 +182,12 @@ public abstract class Postman {
         }
     }
 
+    // Send a meta data upload status email to notify the user of the status.
+    public static void sendMetaDataUploadStatusEmail(String study_id, 
+            String userName, boolean status) {
+        sendTaskStatusEmail(study_id, userName, status, "meta data upload", 
+                "\n\nData quality report is ready for download at Meta Data Management page.\n\n");
+    }
     // Send a export data status email to notify the user of the status.
     public static void sendExportDataStatusEmail(String study_id, 
             String userName, boolean status)
