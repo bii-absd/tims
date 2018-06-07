@@ -26,6 +26,7 @@ import org.apache.logging.log4j.LogManager;
  * Revision History
  * 06-Apr-2018 - Created with the following methods: checkForMissingVisit,
  * checkForMissingSubject and validateMetaRecords.
+ * 21-May-2018 - Minor changes in method validateMetaRecords().
  */
 
 public class MetaRecordTester {
@@ -125,17 +126,15 @@ public class MetaRecordTester {
             throw new java.lang.RuntimeException("FAIL to create Prolog database!");
         }
         
-        for (MetaRecord record : recordsSet) {
+        for (MetaRecord rec : recordsSet) {
             // All records (i.e. START and NEW_SUBJECT) need to be tested.
-            if (!record.isInvalidOrMissingData()) {
-                if (PrologHelper.queryPrologDatabase(record.getPrologQuery())) {
-                    record.setRecordStatusAsValid();
+            if (!rec.isInvalidOrMissingData()) {
+                if (PrologHelper.queryPrologDatabase(rec.getPrologQuery())) {
+                    rec.setRecordStatusAsValid();
                 }
                 else {
-                    logger.info("Index #" + record.getIndex() + 
-                                " failed validation. " + record.getRace() + 
-                                " - " + record.getGender());
-                    record.setRecordStatusAsInvalid();
+                    logger.info("Invalid record #" + rec.getCoreData());
+                    rec.setRecordStatusAsInvalid();
                 }
             }
         }

@@ -30,6 +30,8 @@ import java.time.LocalDate;
  * 29-May-2017 - Variable age_at_baseline changed from integer to float type.
  * 06-Apr-2018 - Database version 2.0 changes to support meta data upload
  * through Excel.
+ * 15-May-2018 - Removed method getCaseControlInInt, because casecontrol will
+ * be represented by case or control (instead of 0 and 1).
  */
 
 public class Subject {
@@ -57,11 +59,6 @@ public class Subject {
         this.gender = gender;
         this.dob = dob;
         this.casecontrol = casecontrol;
-    }
-
-    // Return the casecontrol value (i.e. 1.0) in int (i.e. 1).
-    public int getCaseControlInInt() {
-        return (int) Float.parseFloat(casecontrol);
     }
 
     // Return the string representation of this subject in the format of:

@@ -26,6 +26,8 @@ import java.time.LocalDate;
  * changed to float type.)
  * 06-Apr-2018 - Database version 2.0 changes to support meta data upload
  * through Excel.
+ * 15-May-2018 - Removed method getCaseControlInInt, because casecontrol will
+ * be represented by case or control (instead of 0 and 1).
  */
 
 public class SubjectDetail {
@@ -53,11 +55,6 @@ public class SubjectDetail {
         this.dob = rs.getDate("dob").toLocalDate();
         this.casecontrol = rs.getString("casecontrol");
         this.dat = rs.getBytes("dat");
-    }
-    
-    // Return the casecontrol value (i.e. 1.0) in int (i.e. 1).
-    public int getCaseControlInInt() {
-        return (int) Float.parseFloat(casecontrol);
     }
     
     // Machine generated constructor.

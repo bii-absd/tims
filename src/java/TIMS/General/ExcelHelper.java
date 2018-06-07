@@ -18,6 +18,7 @@ import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.DataFormatter;
 // Library for stream reader
 import com.monitorjbl.xlsx.StreamingReader;
 
@@ -29,6 +30,8 @@ import com.monitorjbl.xlsx.StreamingReader;
  * 
  * Revision History
  * 30-Apr-2018 - Created with methods convertRowToStrList and readNextRow().
+ * 18-May-2018 - Enhanced the way we read in Date Formatted cell i.e. to
+ * handle DateTime, Time and Date cell value.
  */
 
 public class ExcelHelper {
@@ -54,7 +57,24 @@ public class ExcelHelper {
             // the cell as numeric value.
             if (c.getCellType() == Cell.CELL_TYPE_NUMERIC) {
                 if (DateUtil.isCellDateFormatted(c)) {
-                    colDataL.add(MetaRecord.df.format(c.getDateCellValue()));
+                    // Date, Time and Date&Time cell will be detected as Date
+                    // Formatted.
+                    // Read in format: dd/MM/yyyy hh:mm a
+                    String tmp = MetaRecord.dateTimef.format(c.getDateCellValue());
+                    if (!tmp.isEmpty()) {
+                        String[] dateTimeAmPm = tmp.split(" ");
+                        // For time cell, the default date is 31/12/1899.
+                        if (dateTimeAmPm[0].equals("31/12/1899")) {
+                            // This cell contains time value.
+                            tmp = new DataFormatter().formatCellValue(c);
+                        }
+                        // For date cell, the default time is 12:00 AM
+                        else if (dateTimeAmPm[1].equals("12:00") && dateTimeAmPm[2].equals("AM")) {
+                            // This cell contains date value.
+                            tmp = MetaRecord.datef.format(c.getDateCellValue());
+                        }
+                    }
+                    colDataL.add(tmp);
                 }
                 else {
                     colDataL.add(String.valueOf(c.getNumericCellValue()));
@@ -65,7 +85,6 @@ public class ExcelHelper {
                 colDataL.add(c.getStringCellValue());
             }
         }
-        
         return colDataL;
     }
     

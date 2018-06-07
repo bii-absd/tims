@@ -57,6 +57,8 @@ import org.apache.logging.log4j.LogManager;
  * 12-Apr-2017 - Added 4 static methods; copyUploadedFileToLocalDirectory, 
  * convertByteArrayToList, convertObjectToByteArray and convertStrListToStr. 
  * Modified method generateMetaDataList.
+ * 15-May-2018 - When generating the meta data list, the core data values will
+ * be taken from the subject detail instead of the column data.
  */
 
 public abstract class FileHelper {
@@ -270,12 +272,13 @@ public abstract class FileHelper {
         try {
             byte[] dat = StudyDB.getColumnNameList(study_id);
             if (dat != null) {
-                List<String> dbColNameL = FileHelper.convertByteArrayToList(dat);
+                List<String> dbColNameL = convertByteArrayToList(dat);
                 List<SubjectDetail> subjectDetailList = 
                                     SubjectDB.getSubtDetailList(study_id);
                 PrintStream ps = new PrintStream(new File (filepath));
                 // Write the header line first.
-                line.append("Subject ID|").append(convertStrListToStr(dbColNameL));
+                line.append("Subject ID|Date of Birth|CaseControl|Gender|Race|Height|Weight|Record Date|").
+                     append(convertStrListToStr(dbColNameL));
                 ps.println(line.toString());
                 // Empty the string.
                 line.delete(0, line.length());
@@ -283,7 +286,15 @@ public abstract class FileHelper {
                 for (SubjectDetail subj : subjectDetailList) {
                     List<String> record = FileHelper.convertByteArrayToList(subj.getDat());
                     
-                    line.append(subj.getSubject_id()).append("|").append(convertStrListToStr(record));
+                    line.append(subj.getSubject_id()).append("|").
+                         append(subj.getDob()).append("|").
+                         append(subj.getCasecontrol()).append("|").
+                         append(subj.getGender()).append("|").
+                         append(subj.getRace()).append("|").
+                         append(subj.getHeight()).append("|").
+                         append(subj.getWeight()).append("|").
+                         append(subj.getRecord_date()).append("|").
+                         append(convertStrListToStr(record));
                     ps.println(line.toString());
                     // Empty the string after each subject Meta data.
                     line.delete(0, line.length());

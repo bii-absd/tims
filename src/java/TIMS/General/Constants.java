@@ -115,6 +115,7 @@ import org.apache.logging.log4j.LogManager;
  * 23-Apr-2018 - Added 6 new constants STUDIES_PATH, META_QUALITY_FILE_NAME, 
  * META_QUALITY_FILE_EXT, UPL_MD, UPD_MD and DEL_MD. Deleted one
  * constant FINALIZE_PATH.
+ * 07-Jun-2018 - Rename and redefine GROUP_MANAGEMENT to WORKUNIT_MANAGEMENT.
  */
 
 @ManagedBean (name = "constants")
@@ -162,7 +163,7 @@ public class Constants {
     public final static String MAIN_PAGE = "main?faces-redirect=true";
     public final static String ACCOUNT_MANAGEMENT = "accountmanagement";
     public final static String PIPELINE_MANAGEMENT = "pipelinemanagement";
-    public final static String GROUP_MANAGEMENT = "groupmanagement";
+    public final static String WORKUNIT_MANAGEMENT = "workunitmanagement";
     public final static String STUDY_MANAGEMENT = "studymanagement";
     public final static String META_DATA_MANAGEMENT = "metadatamanagement";
     public final static String RAW_DATA_MANAGEMENT = "rawdatamanagement";

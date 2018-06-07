@@ -1,5 +1,5 @@
 /*
- * Copyright @2015-2016
+ * Copyright @2015-2018
  */
 package TIMS.Bean;
 
@@ -12,6 +12,7 @@ import TIMS.Database.Institution;
 import TIMS.Database.InstitutionDB;
 import TIMS.Database.UserAccountDB;
 import TIMS.General.Constants;
+// Libraries for Java
 import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -30,11 +31,11 @@ import org.primefaces.context.RequestContext;
 import org.primefaces.util.ComponentUtils;
 
 /**
- * GroupManagementBean is the backing bean for the groupmanagement view.
+ * WorkUnitManagementBean is the backing bean for the workunitmanagement view.
  * 
  * Author: Tay Wei Hong
  * Date: 16-Nov-2015
- * 
+ 
  * Revision History
  * 06-Nov-2015 - Created with all the standard getters and setters. Added new
  * method createNewInstitution() for creating new institution.
@@ -57,14 +58,16 @@ import org.primefaces.util.ComponentUtils;
  * 07-Apr-2016 - During creation/updating of group, the department ID and PI IDs
  * hashmap will be build using the institution selected as a filtering criteria.
  * 03-Jun-2016 - Remove unused code.
+ * 07-Jun-2018 - Renamed class name from GroupManagementBean to 
+ * WorkUnitManagementBean.
  */
 
 @ManagedBean (name="grpMgntBean")
 @ViewScoped
-public class GroupManagementBean implements Serializable {
+public class WorkUnitManagementBean implements Serializable {
     // Get the logger for Log4j
     private final static Logger logger = LogManager.
-            getLogger(GroupManagementBean.class.getName());
+            getLogger(WorkUnitManagementBean.class.getName());
     // Attributes for Institution object
     private String inst_id, inst_name;
     // Attributes for Department object
@@ -78,13 +81,13 @@ public class GroupManagementBean implements Serializable {
     // Store the user ID of the current user.
     private final String userName;
     
-    public GroupManagementBean() {
+    public WorkUnitManagementBean() {
         instPiIDHash = new LinkedHashMap<>();
         instDeptHash = new LinkedHashMap<>();
         userName = (String) getFacesContext().getExternalContext().
                 getSessionMap().get("User");
-        logger.debug("ItemListManagementBean created.");
-        logger.info(userName + ": access Item List Management page.");
+        logger.debug("WorkUnitManagementBean created.");
+        logger.info(userName + ": access Work Unit Management page.");
     }
     
     @PostConstruct
@@ -111,7 +114,7 @@ public class GroupManagementBean implements Serializable {
             addFacesErrorMsg("Failed to create new institution ID!");
         }
         
-        return Constants.GROUP_MANAGEMENT;
+        return Constants.WORKUNIT_MANAGEMENT;
     }
     
     // Create the new department ID
@@ -131,7 +134,7 @@ public class GroupManagementBean implements Serializable {
             addFacesErrorMsg("Failed to create new department ID!");
         }
         
-        return Constants.GROUP_MANAGEMENT;
+        return Constants.WORKUNIT_MANAGEMENT;
     }
     
     // Create the new group ID
@@ -151,7 +154,7 @@ public class GroupManagementBean implements Serializable {
             addFacesErrorMsg("Failed to create new group ID!");
         }
         
-        return Constants.GROUP_MANAGEMENT;
+        return Constants.WORKUNIT_MANAGEMENT;
     }
     
     // Update the inst table in the database.

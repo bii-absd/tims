@@ -1,5 +1,5 @@
 /*
- * Copyright @2015-2017
+ * Copyright @2015-2018
  */
 package TIMS.Bean;
 
@@ -19,6 +19,7 @@ import TIMS.General.FileHelper;
 import TIMS.General.Postman;
 import TIMS.General.ProcessExitDetector;
 import TIMS.General.ResourceRetriever;
+// Libraries for Java
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -134,6 +135,8 @@ import org.apache.logging.log4j.LogManager;
  * 13-Jul-2017 - Changes due to the addition of GATK Sequencing Pipelines.
  * 25-Sep-2017 - If the pipeline process failed to start, need to update the
  * job status to failed.
+ * 15-May-2018 - Don't create the dummy files for pipeline output and detail
+ * after submitting jobs.
  */
 
 public abstract class ConfigBean implements Serializable {
@@ -359,8 +362,8 @@ public abstract class ConfigBean implements Serializable {
             // 4. Pipeline is ready to be run now
             result = executePipeline(logFilePath);
             // Create dummy pipeline files for user to download.
-            createDummyFile(pipelineOutput);
-            createDummyFile(detailOutput);
+//            createDummyFile(pipelineOutput);
+//            createDummyFile(detailOutput);
             
             // Record this pipeline execution activity into database.
             ActivityLogDB.recordUserActivity(userName, Constants.EXE_PL, 

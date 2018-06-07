@@ -14,6 +14,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Pattern;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -29,7 +30,12 @@ import org.apache.logging.log4j.LogManager;
  * 
  * Revision History
  * 06-Apr-2018 - Created with the implementation for the stage transition flow,
- * and basic validation for the record date and dob.
+ * and basic validation for the core data.
+ * 15-May-2018 - Add in addition check to make sure that the year is 4 digits 
+ * in dod and record_date. Validate the height and weight if they are present.
+ * Fix the initial re-assignment of record status in the constructor i.e. to
+ * follow what is being shown in the flowchart. casecontrol is a core data
+ * now i.e. it cannot be null and it needs to pass the validation.
  */
 
 public class MetaRecord {
@@ -42,11 +48,18 @@ public class MetaRecord {
     private List<String> dat;
     private RecordStatusEnum record_status_enum;
     // Read in the date in dd/MM/yy format.
-    public static final SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy");
+    public static final SimpleDateFormat datef = new SimpleDateFormat("dd/MM/yyyy");
+    public static final SimpleDateFormat dateTimef = new SimpleDateFormat("dd/MM/yyyy hh:mm a");
     public final DateTimeFormatter dtf_ddMMyyyy = DateTimeFormatter.ofPattern
         ("dd/MM/yyyy", Locale.ENGLISH);
     public final DateTimeFormatter dtf_yyyyMMdd = DateTimeFormatter.ofPattern
         ("yyyy-MM-dd", Locale.ENGLISH);
+    private static final Pattern DATE_PATTERN = 
+        Pattern.compile("^\\d{1,2}/\\d{1,2}/\\d{4}$");
+    private static final Pattern HEIGHT_PATTERN = 
+        Pattern.compile("(^[0-2]\\.[0-9][0-9]?$)?");
+    private static final Pattern WEIGHT_PATTERN = 
+        Pattern.compile("(^[1-9][0-9]?[0-9]?\\.?[0-9]?$)?");
     
     public MetaRecord(String subject_id, String race, String casecontrol, 
             String height, String weight, String record_date, String dob, 
@@ -61,21 +74,33 @@ public class MetaRecord {
         this.index = index;
         this.record_status_enum = RecordStatusEnum.START;
         this.msg = "Record #" + index + " start.";
-        df.setLenient(false);
+        datef.setLenient(false);
 
         if (!checkRecordDateValidity(record_date)) {
             this.record_status_enum = RecordStatusEnum.INVALID_DATE;
             this.msg = "Record #" + index + ": Visit date is invalid.";
+            if (!record_date.isEmpty()) {
+                logger.error("Invalid record date: " + record_date);
+            }
         }
-
-        if (!checkDOBValidity(dob)) {
+        else if (!checkDOBValidity(dob)) {
             this.record_status_enum = RecordStatusEnum.INVALID_DATE;
             this.msg = "Record #" + index + ": DOB is invalid.";
+            if (!dob.isEmpty()) {
+                logger.error("Invalid DOB: " + dob);
+            }
         }
-        
-        if (checkForNull()) {
+        else if (checkForNull()) {
             this.record_status_enum = RecordStatusEnum.MISSING_DATA;
             this.msg = "Record #" + index + ": Missing core data.";
+        }
+        else if (height != null && !height.isEmpty() && 
+                !HEIGHT_PATTERN.matcher(height).matches()) {
+            this.record_status_enum = RecordStatusEnum.INVALID;
+        }
+        else if (weight != null && !weight.isEmpty() && 
+                !WEIGHT_PATTERN.matcher(weight).matches()) {
+            this.record_status_enum = RecordStatusEnum.INVALID;
         }
     }
     
@@ -201,35 +226,51 @@ public class MetaRecord {
     // Test the validity of the record date string.
     private boolean checkRecordDateValidity(String date_str) {
         try {
-            Date date = df.parse(date_str);
+            Date date = datef.parse(date_str);
             record_date = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            // Further check to make sure the year is 4 digits.
+            return DATE_PATTERN.matcher(date_str).matches();
         } catch (ParseException pe) {
             logger.error(pe.getMessage());
             return Constants.NOT_OK;
         }
-        return Constants.OK;
     }
     // Test the validity of the date of birth string.
     private boolean checkDOBValidity(String date_str) {
         try {
-            Date date = df.parse(date_str);
+            Date date = datef.parse(date_str);
             dob = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            // Further check to make sure the year is 4 digits.
+            return DATE_PATTERN.matcher(date_str).matches();
         } catch (ParseException pe) {
             logger.error(pe.getMessage());
             return Constants.NOT_OK;
         }
-        return Constants.OK;
     }
     // Check for missing core data.
     private boolean checkForNull() {
-        return (race.isEmpty()) ||  (gender.isEmpty()) || (subject_id.isEmpty());
+        return (race.isEmpty()) ||  (gender.isEmpty()) || 
+               (subject_id.isEmpty() || casecontrol.isEmpty());
     }
     
-    // Return the Prolog query that will be used to validate the meta record
-    // race and gender.
+    // Return the Prolog query that will be used to validate the meta record.
     public String getPrologQuery() {
-        // validate_record(Race,Gender)
-        return "validate_record(" + race.toLowerCase() + "," + gender.toLowerCase() + ")";
+        // partial_validate(Race,Gender)
+        if (!height.isEmpty() && !weight.isEmpty()) {
+            return "full_validate(" + race.toLowerCase() + "," + 
+                   gender.toLowerCase() + "," + casecontrol.toLowerCase() + 
+                   "," + height + "," + weight + ")";
+        }
+        else {
+            return "partial_validate(" + race.toLowerCase() + "," + 
+                    gender.toLowerCase() + "," + casecontrol.toLowerCase() + ")";
+        }
+    }
+    
+    // Return the consolidation core data as a string.
+    public String getCoreData() {
+        return index + ": " + race + " - " + gender + " - " + 
+               casecontrol + " - " + height + " - " + weight;
     }
     
     // Return record date as a String in this format yyyy-MM-dd

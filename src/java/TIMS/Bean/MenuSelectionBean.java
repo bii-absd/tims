@@ -77,6 +77,8 @@ import org.apache.logging.log4j.LogManager;
  * 06-Oct-2017 - Remove unused code. Added a dialog for user to select the
  * visualiser to use when viewing their pipeline output.
  * 20-Apr-2018 - Minor update to method proceedToMetaDataMgnt().
+ * 08-May-2018 - Standardise the study list for both pipeline configuration
+ * page and raw data management page.
  */
 
 @ManagedBean (name="menuSelBean")
@@ -111,16 +113,8 @@ public class MenuSelectionBean implements Serializable{
     // selection.
     public void setupPlConfigPageURL() {
         String nextPage = plName;
+        setupStudyList();
         
-        if (UserRoleDB.isLead(roleID)) {
-            studyList = StudyDB.getPIStudyHash(userName);
-        }
-        else if (roleID == UserRoleDB.admin()) {
-            studyList = StudyDB.getAllStudyHash();
-        }
-        else {
-            studyList = StudyDB.getUserStudyHash(userName);
-        }
         // For GATK Sequencing pipelines, whole-genome pipelines will share
         // the same bean and xhtml (the same goes for targeted pipelines.)
         if (plName.equals(PipelineDB.GATK_WG_GERM) || 
@@ -146,9 +140,12 @@ public class MenuSelectionBean implements Serializable{
         if (UserRoleDB.isLead(roleID)) {
             studyList = StudyDB.getPIStudyHash(userName);
         }
+        else if (roleID == UserRoleDB.admin()) {
+            studyList = StudyDB.getAllStudyHash();
+        }
         else {
             studyList = StudyDB.getUserStudyHash(userName);
-        }        
+        }
     }
     
     // User decided not to proceed to pipeline configuration page. Stay at the

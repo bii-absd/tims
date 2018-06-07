@@ -57,6 +57,7 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 // Library for stream reader
 import com.monitorjbl.xlsx.StreamingReader;
+import java.util.Arrays;
 
 /**
  * MetaDataManagementBean is the backing bean for the metadatamanagement view.
@@ -115,6 +116,9 @@ import com.monitorjbl.xlsx.StreamingReader;
  * 06-Apr-2018 - Database version 2.0 changes. Implemented the module for 
  * uploading of meta data through Excel file, and the validation and consistency
  * checks on the uploaded data.
+ * 15-May-2018 - Removed the core data from the data column value; the core data
+ * will be stored and displayed separately. Add in a check to make sure all the
+ * core data columns are available before proceeding to create the meta records.
  */
 
 @ManagedBean (name="MDMgntBean")
@@ -217,11 +221,8 @@ public class MetaDataManagementBean implements Serializable {
                 
                 // Construct the Meta record for this subject.
                 // For now, we will hard-code the mapping for the data of interests.
-                // Remove the Subject ID column from the record; it will stored
-                // and display separately.
-                String pid = recordTM.get("PID");
-                recordTM.remove("PID");
-                MetaRecord record = new MetaRecord(pid,
+                MetaRecord record = new MetaRecord(
+                        recordTM.get("PID"),
                         recordTM.get("Race"),
                         recordTM.get("casecontrol"),
                         recordTM.get("Visit__exam_Height_in_metres"),
@@ -229,8 +230,11 @@ public class MetaDataManagementBean implements Serializable {
                         recordTM.get("Date"),
                         recordTM.get("DateOfBirth"),
                         recordTM.get("Gender"),
-                        new ArrayList<>(recordTM.values()),
+                        // Set the colum data value as null first.
+                        null,
                         row);
+                // Update the column data after removing the core data.
+                record.setDat(removeCoreData(recordTM));
                 recordsLHS.add(record);
             }
         } catch (IOException ioe) {
@@ -239,6 +243,31 @@ public class MetaDataManagementBean implements Serializable {
             // error message.
             throw new java.lang.RuntimeException("Fail to create meta records from Excel File!");
         }
+    }
+    
+    // Core data will be stored and display separately; remove them from the 
+    // record.
+    private List<String> removeCoreData(TreeMap<String, String> rec) {
+        rec.remove("PID");
+        rec.remove("Race");
+        rec.remove("casecontrol");
+        rec.remove("Visit__exam_Height_in_metres");
+        rec.remove("Visit__exam_Weight");
+        rec.remove("Date");
+        rec.remove("DateOfBirth");
+        rec.remove("Gender");
+        
+        return new ArrayList<>(rec.values());
+    }
+    private void removeCoreDataColumn() {
+        colNameTM.remove("PID");
+        colNameTM.remove("Race");
+        colNameTM.remove("casecontrol");
+        colNameTM.remove("Visit__exam_Height_in_metres");
+        colNameTM.remove("Visit__exam_Weight");
+        colNameTM.remove("Date");
+        colNameTM.remove("DateOfBirth");
+        colNameTM.remove("Gender");
     }
     
     // Upload subject meta data using Excel file.
@@ -264,6 +293,16 @@ public class MetaDataManagementBean implements Serializable {
             // column will be used in the drop-down list for user to map the 
             // data of interests.
             unsortedColNameL = exHelper.readNextRow();
+            // Check to make sure all the core data columns are available.
+            // This step can be REMOVED once the feature for user to map the
+            // data of interests is available.
+            List<String> tmp = Arrays.asList("PID","Race","casecontrol",
+                    "Visit__exam_Height_in_metres","Visit__exam_Weight",
+                    "Date","DateOfBirth","Gender");
+            if (!unsortedColNameL.containsAll(tmp)) {
+                throw new java.lang.RuntimeException("Missing core data columns!");
+            }
+            
             // Reset colNameTM before constructing.
             colNameTM.clear();
             for (String colData : unsortedColNameL) {
@@ -276,7 +315,8 @@ public class MetaDataManagementBean implements Serializable {
             // Remove the Subject ID column from the record since it will be
             // stored and display separately.
             // FOR NOW HARD CODE THE SUBJECT ID COLUMN NAME i.e PID.
-            colNameTM.remove("PID");
+            removeCoreDataColumn();
+
             // 4. Compare the column name from current upload with the one
             // stored in database.
             List<String> sortedColNameL = new ArrayList<>(colNameTM.keySet());

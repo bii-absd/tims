@@ -89,10 +89,10 @@ public class MetaRecordStatusTracker {
     private static Map<RecordStatusEnum, StatusCounter> createCommonCounter() {
         Map<RecordStatusEnum, StatusCounter> stat = new LinkedHashMap<>();
         // The following 6 status are common.
-        stat.put(RecordStatusEnum.MISSING_DATA, 
-                new StatusCounter("Records with missing data: ", ""));
         stat.put(RecordStatusEnum.INVALID_DATE, 
                 new StatusCounter("Records with invalid date: ", ""));
+        stat.put(RecordStatusEnum.MISSING_DATA, 
+                new StatusCounter("Records with missing data: ", ""));
         // For missing visits, we need to print the missing visits in the
         // sub-header.
         stat.put(RecordStatusEnum.MISSING_VISIT, 
