@@ -26,8 +26,8 @@
                     <p:submenu label="Admin">
                         <p:menuitem value="#{msg['acct-mgnt']}" icon="fa fa-user" 
                                     url="accountmanagement.xhtml"/>
-                        <p:menuitem value="#{msg['feature-mgnt']}" icon="fa fa-key" 
-                                    url="featuresetup.xhtml" 
+                        <p:menuitem value="#{msg['visual-mgnt']}" icon="fa fa-key" 
+                                    url="visualizermanagement.xhtml" 
                                     rendered="#{authBean.administrator}"/>
                         <p:menuitem value="#{msg['study-mgnt']}" icon="fa fa-book" 
                                     url="studymanagement.xhtml" 
@@ -40,8 +40,7 @@
                                     rendered="#{authBean.administrator}"/>
                         <p:menuitem value="#{msg['job-mgnt']}" icon="fa fa-folder-open" 
                                     action="#{authBean.allUsersJobStatus}"
-                                    rendered="#{authBean.administrator}">
-                        </p:menuitem>
+                                    rendered="#{authBean.administrator}"/>
                         <p:menuitem value="#{msg['act-track']}" 
                                     icon="fa fa-pencil-square-o" 
                                     url="activitytracking.xhtml" 
@@ -67,7 +66,7 @@
             </h:panelGrid>
             
             <p:breadCrumb>
-                <p:menuitem value="Array Data" url="main.xhtml" title="Back to Main Page"/>
+                <p:menuitem url="main.xhtml" title="Back to Main Page"/>
                 <p:menuitem styleClass="subheading" value="#{link}"/>
             </p:breadCrumb>
         </h:form>

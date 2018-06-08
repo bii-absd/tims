@@ -7,12 +7,12 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
     
-    <ui:define name="title">Feature Management</ui:define>
-    <ui:param name="link" value="#{msg['feature-mgnt']}"/>
+    <ui:define name="title">Visualization Management</ui:define>
+    <ui:param name="link" value="#{msg['visual-mgnt']}"/>
     <ui:define name="content">
         <p:growl id="fteMgntMsg"/>
         <p:accordionPanel id="ftePanel" rendered="#{authBean.administrator}">
-            <p:tab id="editFte" title="Turn ON|OFF Feature" titleStyleClass="tab-title">
+            <p:tab id="editFte" title="Turn ON|OFF Visualizer" titleStyleClass="tab-title">
                 <h:form id="editFteForm">
                     <p:dataTable var="fte" rows="10" id="fteTable" 
                                  value="#{fteMgntBean.fteList}" paginator="true"
@@ -24,7 +24,7 @@
                                 update="fteMgntMsg"/>
                         <p:ajax event="rowEditCancel" listener="#{fteMgntBean.onRowEditCancel}" 
                                 update="fteMgntMsg"/>
-                        <p:column headerText="Feature" style="text-align: left">
+                        <p:column headerText="Visualizer" style="text-align: left">
                             <h:outputText value="#{fte.fcode}"/>
                         </p:column>
                         <p:column headerText="Status" styleClass="jssmallcol">

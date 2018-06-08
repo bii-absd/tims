@@ -12,7 +12,7 @@
     <ui:define name="content">
     <h:form>
     <p:accordionPanel>
-        <p:tab id="array" title="Array Data" titleStyleClass="tab-title">
+        <p:tab id="array" title="Array Processing" titleStyleClass="tab-title">
             <h:panelGrid cellpadding="1">
                 <p:commandLink action="#{menuSelBean.setupPlConfigPageURL}" 
                                value="#{msg['cnv-affymetrix']}" update=":dlgForm" 
@@ -47,7 +47,7 @@
             </h:panelGrid>
         </p:tab>
             
-        <p:tab id="ngs" title="NGS Data" titleStyleClass="tab-title">
+        <p:tab id="ngs" title="NGS Processing" titleStyleClass="tab-title">
             <h:panelGrid>
                 <p:commandLink action="#{menuSelBean.setupPlConfigPageURL}"
                                value="#{msg['gatk-wg-germ']}" update=":dlgForm"

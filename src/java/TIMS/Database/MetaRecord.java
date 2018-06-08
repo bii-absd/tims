@@ -6,6 +6,7 @@ package TIMS.Database;
 import TIMS.General.Constants;
 import TIMS.General.MetaRecordStatusTracker.RecordStatusEnum;
 // Libraries for Java
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -36,6 +37,8 @@ import org.apache.logging.log4j.LogManager;
  * Fix the initial re-assignment of record status in the constructor i.e. to
  * follow what is being shown in the flowchart. casecontrol is a core data
  * now i.e. it cannot be null and it needs to pass the validation.
+ * 08-Jun-2018 - Height and weight if present, will be round off to 2 decimal
+ * places.
  */
 
 public class MetaRecord {
@@ -47,6 +50,8 @@ public class MetaRecord {
     private int index;
     private List<String> dat;
     private RecordStatusEnum record_status_enum;
+    // Round off all the height and weight to 2 decimal places.
+    public static final DecimalFormat heightWeightDF = new DecimalFormat("#.##");
     // Read in the date in dd/MM/yy format.
     public static final SimpleDateFormat datef = new SimpleDateFormat("dd/MM/yyyy");
     public static final SimpleDateFormat dateTimef = new SimpleDateFormat("dd/MM/yyyy hh:mm a");
@@ -57,9 +62,9 @@ public class MetaRecord {
     private static final Pattern DATE_PATTERN = 
         Pattern.compile("^\\d{1,2}/\\d{1,2}/\\d{4}$");
     private static final Pattern HEIGHT_PATTERN = 
-        Pattern.compile("(^[0-2]\\.[0-9][0-9]?$)?");
+        Pattern.compile("(^[0-2]\\.?[0-9]*$)?");
     private static final Pattern WEIGHT_PATTERN = 
-        Pattern.compile("(^[1-9][0-9]?[0-9]?\\.?[0-9]?$)?");
+        Pattern.compile("(^[0-9]*\\.?[0-9]*$)?");
     
     public MetaRecord(String subject_id, String race, String casecontrol, 
             String height, String weight, String record_date, String dob, 
@@ -75,7 +80,7 @@ public class MetaRecord {
         this.record_status_enum = RecordStatusEnum.START;
         this.msg = "Record #" + index + " start.";
         datef.setLenient(false);
-
+        
         if (!checkRecordDateValidity(record_date)) {
             this.record_status_enum = RecordStatusEnum.INVALID_DATE;
             this.msg = "Record #" + index + ": Visit date is invalid.";
@@ -101,6 +106,17 @@ public class MetaRecord {
         else if (weight != null && !weight.isEmpty() && 
                 !WEIGHT_PATTERN.matcher(weight).matches()) {
             this.record_status_enum = RecordStatusEnum.INVALID;
+        }
+        
+        // Round off height and weight to 2 decimal places.
+        if (this.record_status_enum == RecordStatusEnum.START) {
+            if (!height.isEmpty()) {
+                this.height = heightWeightDF.format(Double.parseDouble(height));
+            }
+            
+            if (!weight.isEmpty()) {
+                this.weight = heightWeightDF.format(Double.parseDouble(weight));
+            }
         }
     }
     

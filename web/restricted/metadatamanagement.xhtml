@@ -33,155 +33,45 @@
     </p:panel>
     
     <p:accordionPanel id="accPanel" activeIndex="null">
-        <p:tab id="editData" title="Edit Meta Data" titleStyleClass="tab-title">
-            <h:form id="editDataForm">
-                <p:remoteCommand name="updateTable" update="MDTable"/>
-                <p:dataTable var="mddata" rows="10" id="MDTable" 
-                             value="#{MDMgntBean.subtDetailList}" paginator="true" 
-                             paginatorTemplate="{FirstPageLink} {PreviousPageLink}
-                             {CurrentPageReport} {NextPageLink} {LastPageLink}"
-                             styleClass="table-odd-row table-even-row" 
-                             editable="true" 
-                             filteredValue="#{MDMgntBean.filteredSubtDetailList}">
-                    <p:ajax event="rowEdit" listener="#{MDMgntBean.onRowEdit}" 
-                            oncomplete="updateTable()" update="MDMsg"/>
-                    <p:column filterBy="#{mddata.subject_id}" filterMatchMode="contains"  
-                              headerText="Subject ID" style="width: 200px">
-                        <h:outputText value="#{mddata.subject_id}"/>
-                    </p:column>
-                    <p:column headerText="Date of Birth" styleClass="jssmallcol">
-                        <h:outputText value="#{mddata.dob}"/>
-                    </p:column>
-                    <p:column headerText="CaseControl" styleClass="jssmallcol">
-                        <p:cellEditor>
-                            <f:facet name="output">
-                                <h:outputText value="#{mddata.casecontrol}"/>
-                            </f:facet>
-                            <f:facet name="input">
-                                <p:selectOneMenu value="#{mddata.casecontrol}" style="width: 100%">
-                                    <f:selectItem itemLabel="case" itemValue="case"/>
-                                    <f:selectItem itemLabel="control" itemValue="control"/>
-                                </p:selectOneMenu>
-                            </f:facet>
-                        </p:cellEditor>
-                    </p:column>
-                    <p:column headerText="Gender" styleClass="col50">
-                        <p:cellEditor>
-                            <f:facet name="output">
-                                <h:outputText value="#{mddata.gender}"/>
-                            </f:facet>
-                            <f:facet name="input">
-                                <p:selectOneMenu value="#{mddata.gender}" style="width: 100%">
-                                    <f:selectItem itemLabel="" itemValue=""/>
-                                    <f:selectItem itemLabel="M" itemValue="M"/>
-                                    <f:selectItem itemLabel="F" itemValue="F"/>
-                                </p:selectOneMenu>
-                            </f:facet>
-                        </p:cellEditor>
-                    </p:column>
-                    <p:column headerText="Race" styleClass="col50">
-                        <p:cellEditor>
-                            <f:facet name="output">
-                                <h:outputText value="#{mddata.race}"/>
-                            </f:facet>
-                            <f:facet name="input">
-                                <p:selectOneMenu value="#{mddata.race}" style="width: 100%">
-                                    <f:selectItem itemLabel="Chinese" itemValue="CHINESE"/>
-                                    <f:selectItem itemLabel="Malay" itemValue="MALAY"/>
-                                    <f:selectItem itemLabel="Indian" itemValue="INDIAN"/>
-                                    <f:selectItem itemLabel="Eurasian" itemValue="EURASIAN"/>
-                                    <f:selectItem itemLabel="Others" itemValue="OTHERS"/>
-                                </p:selectOneMenu>
-                            </f:facet>
-                        </p:cellEditor>
-                    </p:column>
-                    <p:column headerText="Height" styleClass="col50">
-                        <p:cellEditor>
-                            <f:facet name="output">
-                                <h:outputText value="#{mddata.height}"/>
-                            </f:facet>
-                            <f:facet name="input">
-                                <p:inputText value="#{mddata.height}" 
-                                             validatorMessage="#{msg['error-height']}"
-                                             style="width: 100%">
-                                    <f:validateRegex 
-                                        pattern="(^0\.[5][4-9]|0\.[6-9][0-9]|1\.[0-9][0-9]|2\.[0-4][0-9]|2\.5[0-1]$)?"/>
-                                </p:inputText>
-                            </f:facet>
-                        </p:cellEditor>
-                    </p:column>
-                    <p:column headerText="Weight" styleClass="col50">
-                        <p:cellEditor>
-                            <f:facet name="output">
-                                <h:outputText value="#{mddata.weight}"/>
-                            </f:facet>
-                            <f:facet name="input">
-                                <p:inputText value="#{mddata.weight}" 
-                                             validatorMessage="#{msg['error-weight']}"
-                                             style="width: 100%">
-                                    <f:validateRegex 
-                                        pattern="(^([2-9]|[1-9][0-9]|[1-5][0-9][0-9]|[6][0-3][0-4])\.[0-9]$)?"/>
-                                </p:inputText>
-                            </f:facet>
-                        </p:cellEditor>
-                    </p:column>
-                    <p:column headerText="Record Date" styleClass="jssmallcol">
-                        <p:cellEditor>
-                            <f:facet name="output">
-                                <h:outputText value="#{mddata.record_date}"/>
-                            </f:facet>
-                            <f:facet name="input">
-                                <p:calendar value="#{MDMgntBean.util_record_date}" 
-                                            pattern="yyyy-MM-dd"/>
-                            </f:facet>
-                        </p:cellEditor>
-                    </p:column>
-                    <p:column headerText="Remarks" styleClass="col300">
-                        <p:cellEditor>
-                            <f:facet name="output">
-                                <h:outputText value="#{mddata.remarks}"/>
-                            </f:facet>
-                            <f:facet name="input">
-                                <h:inputText value="#{mddata.remarks}" 
-                                             style="width: 100%">
-                                </h:inputText>
-                            </f:facet>
-                        </p:cellEditor>
-                    </p:column>
-                    <p:column headerText="Event" styleClass="col300">
-                        <p:cellEditor>
-                            <f:facet name="output">
-                                <h:outputText value="#{mddata.event}"/>
-                            </f:facet>
-                            <f:facet name="input">
-                                <h:inputText value="#{mddata.event}" 
-                                             style="width: 100%">
-                                </h:inputText>
-                            </f:facet>
-                        </p:cellEditor>
-                    </p:column>
-                    <p:column headerText="Event Date" styleClass="jssmallcol">
-                        <p:cellEditor>
-                            <f:facet name="output">
-                                <h:outputText value="#{mddata.event_date}"/>
-                            </f:facet>
-                            <f:facet name="input">
-                                <p:calendar value="#{MDMgntBean.util_event_date}" 
-                                            pattern="yyyy-MM-dd"/>
-                            </f:facet>
-                        </p:cellEditor>
-                    </p:column>
-                    <p:column style="width: 32px">
-                        <p:rowEditor/>
-                    </p:column>
-                </p:dataTable>
-            </h:form>
+        <p:tab id="viewData" title="Meta Data Listing" titleStyleClass="tab-title">
+            <p:dataTable var="mddata" rows="10" id="MDTable" 
+                         value="#{MDMgntBean.subtDetailList}" paginator="true" 
+                         paginatorTemplate="{FirstPageLink} {PreviousPageLink}
+                         {CurrentPageReport} {NextPageLink} {LastPageLink}"
+                         styleClass="table-odd-row table-even-row" 
+                         filteredValue="#{MDMgntBean.filteredSubtDetailList}">
+                <p:column filterBy="#{mddata.subject_id}" filterMatchMode="contains"  
+                          headerText="Subject ID" style="width: 200px">
+                    <h:outputText value="#{mddata.subject_id}"/>
+                </p:column>
+                <p:column headerText="Date of Birth" styleClass="jssmallcol">
+                    <h:outputText value="#{mddata.dob}"/>
+                </p:column>
+                <p:column headerText="CaseControl" styleClass="jssmallcol">
+                    <h:outputText value="#{mddata.casecontrol}"/>
+                </p:column>
+                <p:column headerText="Gender" styleClass="col50">
+                    <h:outputText value="#{mddata.gender}"/>
+                </p:column>
+                <p:column headerText="Race" styleClass="col50">
+                    <h:outputText value="#{mddata.race}"/>
+                </p:column>
+                <p:column headerText="Height" styleClass="col50">
+                    <h:outputText value="#{mddata.height}"/>
+                </p:column>
+                <p:column headerText="Weight" styleClass="col50">
+                    <h:outputText value="#{mddata.weight}"/>
+                </p:column>
+                <p:column headerText="Record Date" styleClass="jssmallcol">
+                    <h:outputText value="#{mddata.record_date}"/>
+                </p:column>
+            </p:dataTable>
         </p:tab>
         <p:tab id="uploadXLS" title="Upload New Meta Data in Excel" 
                titleStyleClass="tab-title">
             <h:form id="uploadXLSForm" enctype="multipart/form-data">
                 <p:fileUpload id="uploadXLSFile" mode="advanced" 
-                              update="MDMsg :accPanel:editDataForm:MDTable :dataQForm :ctlPanel"
+                              update="MDMsg :accPanel:MDTable :dataQForm :ctlPanel"
                               label="Select Excel File" onstart="PF('buiPanel').show()"
                               allowTypes="/(\.|\/)(xlsx)$/" oncomplete="PF('buiPanel').hide()"
                               fileUploadListener="#{MDMgntBean.xlsxDataUpload}"/>
@@ -199,7 +89,7 @@
                 <p:commandButton value="NO" style="width: 100%" 
                                  oncomplete="PF('delAllDlg').hide()"/>
                 <p:commandButton value="YES" style="width: 100%" 
-                                 update=":accPanel:editDataForm:MDTable :ctlPanel" 
+                                 update=":accPanel:MDTable :ctlPanel" 
                                  title="Proceed to update Study column data name, and delete all the Subject Meta data." 
                                  oncomplete="PF('delAllDlg').hide()"
                                  action="#{MDMgntBean.deleteAllSubjectMetaData}"/>
