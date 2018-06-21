@@ -1,5 +1,5 @@
 /*
- * Copyright @2016-2017
+ * Copyright @2016-2018
  */
 package TIMS.Visualizers;
 
@@ -15,6 +15,7 @@ import TIMS.General.FileHelper;
 import TIMS.General.Postman;
 import TIMS.General.ResourceRetriever;
 import TIMS.General.Statistics;
+// Libraries for Java
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -24,10 +25,6 @@ import java.io.PrintStream;
 import java.math.RoundingMode;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -87,6 +84,8 @@ import org.mindrot.jbcrypt.BCrypt;
  * import. To import the icd code to cBioPortal only when it is being used.
  * 01-Feb-2018 - Fix the bug found when identifying the unique subject ID to 
  * export to cBioPortal.
+ * 11-Jun-2018 - Do not replace the original data file with the z-score file;
+ * instead just update the datafile with the path of the z-score file.
  */
 
 public class cBioVisualizer extends Thread {
@@ -235,7 +234,7 @@ public class cBioVisualizer extends Thread {
                     stable_id = "rna_seq_mrna_median_Zscores";
                     case_list_ids = createSubjectsList(data_file, 2);
                     // Convert pipeline output to z-score format.
-                    convert2zScoreFile(data_file, "seq_rna");
+                    data_file = convert2zScoreFile(data_file, "seq_rna");
                     break;
                 case PipelineDB.GEX_AFFYMETRIX:
                     alteration_type = "MRNA_EXPRESSION";
@@ -245,7 +244,7 @@ public class cBioVisualizer extends Thread {
                     stable_id = "mrna_median_Zscores";
                     case_list_ids = createSubjectsList(data_file, 2);
                     // Convert pipeline output to z-score format.
-                    convert2zScoreFile(data_file, "affymetrix");
+                    data_file = convert2zScoreFile(data_file, "affymetrix");
                     break;
                 case PipelineDB.GEX_ILLUMINA:
                     alteration_type = "MRNA_EXPRESSION";
@@ -255,7 +254,7 @@ public class cBioVisualizer extends Thread {
                     stable_id = "mrna_median_Zscores";
                     case_list_ids = createSubjectsList(data_file, 2);
                     // Convert pipeline output to z-score format.
-                    convert2zScoreFile(data_file, "illumina");
+                    data_file = convert2zScoreFile(data_file, "illumina");
                     break;
                 case PipelineDB.METHYLATION:
                     alteration_type = "METHYLATION";
@@ -400,6 +399,9 @@ public class cBioVisualizer extends Thread {
             logger.error(ioe.getMessage());
         }
 
+        /* Instead of replacing the original datafile with the converted z-score
+        // file, we will update the datafile with the path of the converted
+        // z-score file.
         // Move and replace the datafile with the converted z-score file.
         try {
             Path from = FileSystems.getDefault().getPath(zScoreFile);
@@ -411,7 +413,7 @@ public class cBioVisualizer extends Thread {
             logger.error("FAIl to copy z-score file to temp directory!");
             logger.error(ioe.getMessage());
         }
-
+        */
         // Return the path to the converted z-score file.
         return zScoreFile;
     }

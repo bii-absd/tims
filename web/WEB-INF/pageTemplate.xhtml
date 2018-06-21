@@ -24,19 +24,19 @@
 
                 <p:menubar>
                     <p:submenu label="Admin">
+                        <p:menuitem value="#{msg['workunit-mgnt']}" icon="fa fa-list-ul"
+                                    url="workunitmanagement.xhtml" 
+                                    rendered="#{authBean.administrator}"/>
                         <p:menuitem value="#{msg['acct-mgnt']}" icon="fa fa-user" 
                                     url="accountmanagement.xhtml"/>
-                        <p:menuitem value="#{msg['visual-mgnt']}" icon="fa fa-key" 
-                                    url="visualizermanagement.xhtml" 
-                                    rendered="#{authBean.administrator}"/>
                         <p:menuitem value="#{msg['study-mgnt']}" icon="fa fa-book" 
                                     url="studymanagement.xhtml" 
                                     rendered="#{authBean.administrator}"/>
                         <p:menuitem value="#{msg['pipeline-mgnt']}" icon="fa fa-flask"
                                     url="pipelinemanagement.xhtml" 
                                     rendered="#{authBean.administrator}"/>
-                        <p:menuitem value="#{msg['workunit-mgnt']}" icon="fa fa-list-ul"
-                                    url="workunitmanagement.xhtml" 
+                        <p:menuitem value="#{msg['visual-mgnt']}" icon="fa fa-key" 
+                                    url="visualizermanagement.xhtml" 
                                     rendered="#{authBean.administrator}"/>
                         <p:menuitem value="#{msg['job-mgnt']}" icon="fa fa-folder-open" 
                                     action="#{authBean.allUsersJobStatus}"

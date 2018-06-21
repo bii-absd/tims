@@ -34,6 +34,7 @@
     
     <p:accordionPanel id="accPanel" activeIndex="null">
         <p:tab id="viewData" title="Meta Data Listing" titleStyleClass="tab-title">
+            <h:form id="viewDataForm">
             <p:dataTable var="mddata" rows="10" id="MDTable" 
                          value="#{MDMgntBean.subtDetailList}" paginator="true" 
                          paginatorTemplate="{FirstPageLink} {PreviousPageLink}
@@ -66,12 +67,13 @@
                     <h:outputText value="#{mddata.record_date}"/>
                 </p:column>
             </p:dataTable>
+            </h:form>
         </p:tab>
         <p:tab id="uploadXLS" title="Upload New Meta Data in Excel" 
                titleStyleClass="tab-title">
             <h:form id="uploadXLSForm" enctype="multipart/form-data">
                 <p:fileUpload id="uploadXLSFile" mode="advanced" 
-                              update="MDMsg :accPanel:MDTable :dataQForm :ctlPanel"
+                              update="MDMsg :accPanel:viewDataForm:MDTable :dataQForm :ctlPanel"
                               label="Select Excel File" onstart="PF('buiPanel').show()"
                               allowTypes="/(\.|\/)(xlsx)$/" oncomplete="PF('buiPanel').hide()"
                               fileUploadListener="#{MDMgntBean.xlsxDataUpload}"/>
@@ -89,7 +91,7 @@
                 <p:commandButton value="NO" style="width: 100%" 
                                  oncomplete="PF('delAllDlg').hide()"/>
                 <p:commandButton value="YES" style="width: 100%" 
-                                 update=":accPanel:MDTable :ctlPanel" 
+                                 update=":accPanel:viewDataForm:MDTable :ctlPanel" 
                                  title="Proceed to update Study column data name, and delete all the Subject Meta data." 
                                  oncomplete="PF('delAllDlg').hide()"
                                  action="#{MDMgntBean.deleteAllSubjectMetaData}"/>

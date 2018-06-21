@@ -10,41 +10,37 @@
     <ui:define name="title">Visualization Management</ui:define>
     <ui:param name="link" value="#{msg['visual-mgnt']}"/>
     <ui:define name="content">
-        <p:growl id="fteMgntMsg"/>
+        <p:growl id="visMgntMsg"/>
         <p:accordionPanel id="ftePanel" rendered="#{authBean.administrator}">
-            <p:tab id="editFte" title="Turn ON|OFF Visualizer" titleStyleClass="tab-title">
-                <h:form id="editFteForm">
-                    <p:dataTable var="fte" rows="10" id="fteTable" 
-                                 value="#{fteMgntBean.fteList}" paginator="true"
-                                 paginatorTemplate="{FirstPageLink} {PreviousPageLink}
-                                 {CurrentPageReport} {NextPageLink} {LastPageLink}"
-                                 styleClass="table-odd-row table-even-row" 
-                                 editable="true">
-                        <p:ajax event="rowEdit" listener="#{fteMgntBean.onRowEdit}" 
-                                update="fteMgntMsg"/>
-                        <p:ajax event="rowEditCancel" listener="#{fteMgntBean.onRowEditCancel}" 
-                                update="fteMgntMsg"/>
-                        <p:column headerText="Visualizer" style="text-align: left">
-                            <h:outputText value="#{fte.fcode}"/>
-                        </p:column>
-                        <p:column headerText="Status" styleClass="jssmallcol">
-                            <p:cellEditor>
-                                <f:facet name="output">
-                                    <h:outputText value="#{fte.activeStatus}"/>
-                                </f:facet>
-                                <f:facet name="input">
-                                    <p:selectOneMenu value="#{fte.active}" style="width: 100%">
-                                        <f:selectItem itemLabel="ON" itemValue="true"/>
-                                        <f:selectItem itemLabel="OFF" itemValue="false"/>
-                                    </p:selectOneMenu>
-                                </f:facet>
-                            </p:cellEditor>
-                        </p:column>
-                        <p:column style="width: 32px">
-                            <p:rowEditor/>
-                        </p:column>
-                    </p:dataTable>
-                </h:form>
+            <p:tab id="editFte" title="Select Visualizer" titleStyleClass="tab-title">
+            <h:form id="editFteForm">
+                <p:dataTable var="fte" rows="10" id="fteTable" 
+                             value="#{fteMgntBean.fteList}" 
+                             styleClass="table-odd-row table-even-row" 
+                             editable="true">
+                    <p:ajax event="rowEdit" listener="#{fteMgntBean.onRowEdit}" 
+                            update="visMgntMsg"/>
+                    <p:column style="text-align: left">
+                        <h:outputText value="#{fte.fcode}"/>
+                    </p:column>
+                    <p:column headerText="Setting" styleClass="jssmallcol">
+                        <p:cellEditor>
+                            <f:facet name="output">
+                                <h:outputText value="#{fte.status}"/>
+                            </f:facet>
+                            <f:facet name="input">
+                                <p:selectOneMenu value="#{fte.status}" style="width: 100%">
+                                    <f:selectItem itemLabel="None" itemValue="None"/>
+                                    <f:selectItem itemLabel="cBioPortal" itemValue="cBioPortal"/>
+                                </p:selectOneMenu>
+                            </f:facet>
+                        </p:cellEditor>
+                    </p:column>
+                    <p:column style="width: 32px">
+                        <p:rowEditor/>
+                    </p:column>
+                </p:dataTable>
+            </h:form>
             </p:tab>
         </p:accordionPanel>
     </ui:define>

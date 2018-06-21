@@ -1,5 +1,5 @@
 /*
- * Copyright @2015-2017
+ * Copyright @2015-2018
  */
 package TIMS.Bean;
 
@@ -15,6 +15,7 @@ import TIMS.Database.UserAccount;
 import TIMS.Database.UserAccountDB;
 import TIMS.Database.UserRoleDB;
 import TIMS.General.Constants;
+// Libraries for Java
 import java.io.File;
 import java.io.Serializable;
 import java.nio.file.FileSystems;
@@ -115,6 +116,9 @@ import org.apache.logging.log4j.LogManager;
  * implementation.
  * 30-Aug-2016 - Changes due to change in method name in Constants class.
  * 02-Feb-2017 - Load the system parameters from database after login.
+ * 11-Jun-2018 - Changes due to update in feature table; replaced active 
+ * (BOOLEAN) with status (TEXT). Added one new method, getHomeStr() that return
+ * the string to be use for the Home Link.
  */
 
 @ManagedBean (name="authBean")
@@ -125,14 +129,14 @@ public class AuthenticationBean implements Serializable {
             getLogger(AuthenticationBean.class.getName());
     private String loginName, password, instName;
     private UserAccount userAcct;
-    private LinkedHashMap<String, Boolean> featureList;
+    private static LinkedHashMap<String, String> featureList;
     
     public AuthenticationBean() {
         logger.debug("AuthenticationBean created.");
     }
     
-    // Retrieve and setup the feature active status list from the database.
-    private void setupFeatureList() {
+    // Retrieve the feature status list from the database.
+    public static void setupFeatureList() {
         featureList = FeatureDB.getAllFeatureStatusHash();
     }
     
@@ -279,13 +283,30 @@ public class AuthenticationBean implements Serializable {
         return Constants.LOGIN_PAGE + "?faces-redirect=true";
     }
     
-    // Return the active status for feature CBIOPORTAL VISUALIZER.
+    // Return true if the visualizer is set to cBioPortal.
     public boolean isCBioPortalON() {
-        return featureList.get("CBIOPORTAL VISUALIZER");
+        return featureList.get("Visualizer").equals("cBioPortal");
     }
-    // Return the active status for feature VISUALIZATION.
+    // Return true if the visualizer is set to None.
     public boolean isVisualizationON() {
-        return featureList.get("VISUALIZATION");
+        return !featureList.get("Visualizer").equals("None");
+    }
+    
+    // Return the home link to be display at the main page; depending on the
+    // user's assgined role.
+    public String getHomeStr() {
+        String homeStr = "Home";
+        
+        if ( (userAcct.getRole_id() == UserRoleDB.director()) || 
+             (userAcct.getRole_id() == UserRoleDB.hod()) ) {
+            homeStr = "Home (Dashboard)";
+        }
+        else if ( (userAcct.getRole_id() == UserRoleDB.pi()) || 
+                  (userAcct.getRole_id() == UserRoleDB.user())) {
+            homeStr = "Home (Workflow)";
+        }
+        
+        return homeStr;
     }
     
     // Return true if the user is an Admin else return false. The return value 
@@ -295,7 +316,7 @@ public class AuthenticationBean implements Serializable {
             return Constants.OK;
         }
         else {
-            return userAcct.getRole_id() == UserRoleDB.admin();            
+            return userAcct.getRole_id() == UserRoleDB.admin();
         }
     }
     

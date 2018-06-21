@@ -1,5 +1,5 @@
 /*
- * Copyright @2016
+ * Copyright @2016-2018
  */
 package TIMS.Database;
 
@@ -16,22 +16,18 @@ import java.sql.SQLException;
  * Revision History
  * 21-Jul-2016 - Created with all the standard getters and setters. Implemented
  * method, getActiveStatus() to return ON|OFF based on the active status.
+ * 11-Jun-2018 - Changes due to update in feature table; replaced active 
+ * (BOOLEAN) with status (TEXT).
  */
 
 public class Feature implements Serializable {
-    private String fcode;
-    private boolean active;
+    private String fcode, status;
     
     // Construct the Feature object directly using the result set returned from
     // the database query.
     public Feature(ResultSet rs) throws SQLException {
         this.fcode = rs.getString("fcode");
-        this.active = rs.getBoolean("active");
-    }
-    
-    // Return active status.
-    public String getActiveStatus() {
-        return active?"ON":"OFF";
+        this.status = rs.getString("status");
     }
     
     // Machine generated getters and setters.
@@ -41,10 +37,10 @@ public class Feature implements Serializable {
     public void setFcode(String fcode) {
         this.fcode = fcode;
     }
-    public boolean isActive() {
-        return active;
+    public String getStatus() {
+        return status;
     }
-    public void setActive(boolean active) {
-        this.active = active;
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

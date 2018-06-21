@@ -1,9 +1,10 @@
 /*
- * Copyright @2016
+ * Copyright @2016-2018
  */
 package TIMS.Database;
 
 import TIMS.General.Constants;
+// Libraries for Java
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -27,6 +28,8 @@ import org.apache.logging.log4j.LogManager;
  * Revision History
  * 21-Jul-2016 - Created with 4 static methods, getFeatureActiveStatus(),
  * getAllFeatureStatusHash(), getAllFeatureStatus() and updateFeature().
+ * 11-Jun-2018 - Changes due to update in feature table; replaced active
+ * (BOOLEAN) with status (TEXT).
  */
 
 public abstract class FeatureDB {
@@ -34,11 +37,11 @@ public abstract class FeatureDB {
     private final static Logger logger = LogManager.
             getLogger(FeatureDB.class.getName());
 
-    // Return the feature active status based on the fcode passed in.
-    public static boolean getFeatureActiveStatus(String fcode) {
-        boolean active = Constants.NOT_OK;
+    // Return the feature status based on the fcode passed in.
+    public static String getFeatureStatus(String fcode) {
+        String status = Constants.DATABASE_INVALID_STR;
         Connection conn = null;
-        String query = "SELECT active FROM feature WHERE fcode = ?";
+        String query = "SELECT status FROM feature WHERE fcode = ?";
         
         try {
             conn = DBHelper.getDSConn();
@@ -47,25 +50,24 @@ public abstract class FeatureDB {
             ResultSet rs = stm.executeQuery();
             
             if (rs.next()) {
-                active = rs.getBoolean("active");
+                status = rs.getString("status");
             }
-            
             stm.close();
         }
         catch (SQLException|NamingException e) {
-            logger.error("FAIL to retrieve feature active status!");
+            logger.error("FAIL to retrieve feature status!");
             logger.error(e.getMessage());
         }
         finally {
             DBHelper.closeDSConn(conn);
         }
     
-        return active;
+        return status;
     }
     
     // Return all the feature settings defined in the database as a hash map.
-    public static LinkedHashMap<String, Boolean> getAllFeatureStatusHash() {
-        LinkedHashMap<String, Boolean> fteHash = new LinkedHashMap<>();
+    public static LinkedHashMap<String, String> getAllFeatureStatusHash() {
+        LinkedHashMap<String, String> fteHash = new LinkedHashMap<>();
         Connection conn = null;
         String query = "SELECT * FROM feature ORDER BY fcode";
         
@@ -75,13 +77,12 @@ public abstract class FeatureDB {
             ResultSet rs = stm.executeQuery();
             
             while (rs.next()) {
-                fteHash.put(rs.getString("fcode"), rs.getBoolean("active"));
+                fteHash.put(rs.getString("fcode"), rs.getString("status"));
             }
-            
             stm.close();
         }
         catch (SQLException|NamingException e) {
-            logger.error("FAIL to query feature hash!");
+            logger.error("FAIL to query feature database!");
             logger.error(e.getMessage());
         }
         finally {
@@ -105,12 +106,11 @@ public abstract class FeatureDB {
             while (rs.next()) {
                 fList.add(new Feature(rs));
             }
-            
             stm.close();
-            logger.debug("Feature active status list retrieved.");
+            logger.debug("Feature status list retrieved.");
         }
         catch (SQLException|NamingException e) {
-            logger.error("FAIL to retrieve feature active status list!");
+            logger.error("FAIL to retrieve feature status list!");
             logger.error(e.getMessage());
         }
         finally {
@@ -125,11 +125,11 @@ public abstract class FeatureDB {
     public static void updateFeature(Feature fte) 
             throws SQLException, NamingException 
     {
-        String query = "UPDATE feature SET active = ? WHERE fcode = ?";
+        String query = "UPDATE feature SET status = ? WHERE fcode = ?";
         Connection conn = DBHelper.getDSConn();
         PreparedStatement stm = conn.prepareStatement(query);
         
-        stm.setBoolean(1, fte.isActive());
+        stm.setString(1, fte.getStatus());
         stm.setString(2, fte.getFcode());
         // Execute the update statement.
         stm.executeUpdate();
