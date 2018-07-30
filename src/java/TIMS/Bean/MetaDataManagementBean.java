@@ -6,9 +6,8 @@ package TIMS.Bean;
 import TIMS.Database.ActivityLogDB;
 import TIMS.Database.MetaRecord;
 import TIMS.Database.StudyDB;
-import TIMS.Database.SubjectRecord;
+import TIMS.Database.StudySpecificField;
 import TIMS.Database.SubjectRecordDB;
-import TIMS.Database.Subject;
 import TIMS.Database.SubjectDB;
 import TIMS.Database.SubjectDetail;
 import TIMS.General.Constants;
@@ -25,9 +24,6 @@ import TIMS.General.MetaRecordTesterThread;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
-import java.sql.SQLException;
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.ArrayList;
@@ -36,19 +32,18 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.Map;
 // Libraries for Java Extension
 import javax.annotation.PostConstruct;
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
-import javax.naming.NamingException;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 // Libraries for primefaces
 import org.primefaces.event.FileUploadEvent;
-import org.primefaces.event.RowEditEvent;
 import org.primefaces.model.UploadedFile;
 import org.primefaces.context.RequestContext;
 // Libraries for Apache POI
@@ -57,7 +52,6 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 // Library for stream reader
 import com.monitorjbl.xlsx.StreamingReader;
-import java.util.Arrays;
 
 /**
  * MetaDataManagementBean is the backing bean for the metadatamanagement view.
@@ -119,6 +113,9 @@ import java.util.Arrays;
  * 15-May-2018 - Removed the core data from the data column value; the core data
  * will be stored and displayed separately. Add in a check to make sure all the
  * core data columns are available before proceeding to create the meta records.
+ * 17-Jul-2018 - Commented out unused code. Implemented the Dashboard module. 
+ * Tagging of core data fields to column ID can be done through Excel file;
+ * instead of hard coding the column ID.
  */
 
 @ManagedBean (name="MDMgntBean")
@@ -127,10 +124,12 @@ public class MetaDataManagementBean implements Serializable {
     // Get the logger for Log4j
     private final static Logger logger = LogManager.
             getLogger(MetaDataManagementBean.class.getName());
+    /* NO LONGER IN USE!
     private String subject_id, country_code, race, remarks, event;
     private char gender;
     private float height, weight, age_at_baseline;
     private java.util.Date util_event_date, util_record_date;
+    */
     // Store the study's subject record that we are managing.
     private List<SubjectDetail> subtDetailList, filteredSubtDetailList;
     private final String userName, study_id;
@@ -146,6 +145,11 @@ public class MetaDataManagementBean implements Serializable {
     private boolean FIRST_UPLOAD, SKIP_CONSISTENCY_CHECK, quality_report;
     // The set of records that user are uploading through excel sheet.
     private Set<MetaRecord> recordsLHS;
+    // Category of the study specific fields.
+    private List<String> categoryList;
+    // Core data to Excel column ID tagging.
+    private HashMap<String, String> core_data_tag;
+    private List<List<StudySpecificField>> ssf_lists;
     
     public MetaDataManagementBean() {
         userName = (String) getFacesContext().getExternalContext().
@@ -160,9 +164,31 @@ public class MetaDataManagementBean implements Serializable {
 
     @PostConstruct
     public void init() {
+        core_data_tag = StudyDB.getMetaDataTagForStudy(study_id);
         refreshPageVariables();
+        refreshStudySpecificFieldLists();
     }
 
+    // Build the study specific field lists.
+    private void refreshStudySpecificFieldLists() {
+        ssf_lists = new ArrayList<>();
+        categoryList = StudyDB.getSpecificFieldCategoryFromStudy(study_id);
+        
+        for (String category : categoryList) {
+            // For each category, retrieve the list of fields that fall under it.
+            List<String> field_list = StudyDB.
+                    getSpecificFieldListFromStudyCategory(study_id, category);
+            List<StudySpecificField> list_of_ssf = new ArrayList<>();
+            for (String field : field_list) {
+                // For each field, construct a StudySpecificField object and
+                // add it to the list of study specific field.
+                StudySpecificField tmp = new StudySpecificField(category, field);
+                list_of_ssf.add(tmp);
+            }
+            ssf_lists.add(list_of_ssf);
+        }
+    }
+    
     // Build the subjects detail list.
     private void refreshPageVariables() {
         if (StudyDB.getMetaQualityReportPath(study_id) == null) {
@@ -172,18 +198,11 @@ public class MetaDataManagementBean implements Serializable {
             quality_report = true;
         }
         
-        try {
-            subtDetailList = SubjectDB.getSubtDetailList(study_id);
-        }
-        catch (SQLException|NamingException e) {
-            logger.error("FAIL to retrieve subject records for study: " + study_id);
-            logger.error(e.getMessage());
-            getFacesContext().addMessage(null, new FacesMessage(
-                FacesMessage.SEVERITY_ERROR,
-                "System failed to retrieve subject records from database!", ""));
-        }
+        subtDetailList = SubjectDB.getSubtDetailList(study_id);
     }
 
+    // Create the hashmap of meta data records using the values found in the
+    // uploaded excel sheet.
     private void createMetaRecordsFromExcel(String xlsxFile) {
         // Load all the patient records into a LinkedHashSet.
         recordsLHS = new LinkedHashSet<>();
@@ -222,6 +241,7 @@ public class MetaDataManagementBean implements Serializable {
                 // Construct the Meta record for this subject.
                 // For now, we will hard-code the mapping for the data of interests.
                 MetaRecord record = new MetaRecord(
+                        /*
                         recordTM.get("PID"),
                         recordTM.get("Race"),
                         recordTM.get("casecontrol"),
@@ -230,11 +250,22 @@ public class MetaDataManagementBean implements Serializable {
                         recordTM.get("Date"),
                         recordTM.get("DateOfBirth"),
                         recordTM.get("Gender"),
+                        recordTM.get("Age_At_Baseline"),
+                        */
+                        recordTM.get(core_data_tag.get("SubjectID")),
+                        recordTM.get(core_data_tag.get("Race")),
+                        recordTM.get(core_data_tag.get("CaseControl")),
+                        recordTM.get(core_data_tag.get("Height")),
+                        recordTM.get(core_data_tag.get("Weight")),
+                        recordTM.get(core_data_tag.get("RecordDate")),
+                        recordTM.get(core_data_tag.get("DateOfBirth")),
+                        recordTM.get(core_data_tag.get("Gender")),
+                        recordTM.get(core_data_tag.get("AgeAtBaseline")),
                         // Set the colum data value as null first.
                         null,
                         row);
                 // Update the column data after removing the core data.
-                record.setDat(removeCoreData(recordTM));
+                record.setDat(new ArrayList<>(removeCoreData(recordTM).values()));
                 recordsLHS.add(record);
             }
         } catch (IOException ioe) {
@@ -247,31 +278,135 @@ public class MetaDataManagementBean implements Serializable {
     
     // Core data will be stored and display separately; remove them from the 
     // record.
-    private List<String> removeCoreData(TreeMap<String, String> rec) {
-        rec.remove("PID");
-        rec.remove("Race");
-        rec.remove("casecontrol");
-        rec.remove("Visit__exam_Height_in_metres");
-        rec.remove("Visit__exam_Weight");
-        rec.remove("Date");
-        rec.remove("DateOfBirth");
-        rec.remove("Gender");
-        
-        return new ArrayList<>(rec.values());
+    private TreeMap<String, String> removeCoreData(TreeMap<String, String> rec) {
+        rec.remove(core_data_tag.get("SubjectID"));
+        rec.remove(core_data_tag.get("Race"));
+        rec.remove(core_data_tag.get("CaseControl"));
+//        rec.remove(core_data_tag.get("Height"));
+//        rec.remove(core_data_tag.get("Weight"));
+        rec.remove(core_data_tag.get("RecordDate"));
+        rec.remove(core_data_tag.get("Gender"));
+        rec.remove(core_data_tag.get("AgeAtBaseline"));
+
+        return rec;
     }
-    private void removeCoreDataColumn() {
-        colNameTM.remove("PID");
-        colNameTM.remove("Race");
-        colNameTM.remove("casecontrol");
-        colNameTM.remove("Visit__exam_Height_in_metres");
-        colNameTM.remove("Visit__exam_Weight");
-        colNameTM.remove("Date");
-        colNameTM.remove("DateOfBirth");
-        colNameTM.remove("Gender");
+    
+    // Upload core data column ID tags using Excel file. Insert core data tag
+    // into database.
+    public void coreDataTagsUpload(FileUploadEvent event) {
+        UploadedFile uFile = event.getFile();
+        core_data_tag = new HashMap<>();
+        String localDir = Constants.getSYSTEM_PATH() 
+                        + Constants.getTMP_PATH() 
+                        + uFile.getFileName();
+        
+        try {
+            // 1. Copy the uploaded Excel file to local directory.
+            if (FileHelper.copyUploadedFileToLocalDirectory(uFile, localDir)) {
+                logger.info("Excel file copied to local directory: " + localDir);
+            }
+            else {
+                // Fail to copy, terminate the upload and display error message.
+                throw new java.lang.RuntimeException("Fail to copy Excel File!");
+            }
+            
+            exHelper = new ExcelHelper(localDir, "Data");
+            // Read in the first row of field data [CATEGORY|FIELD]
+            List<String> field = exHelper.readNextRow();
+            while (field != null) {
+                if (field.size() >= 2) {
+                    // Store the core data and it's column ID tag.
+                    core_data_tag.put(field.get(0), field.get(1));
+                }
+                field = exHelper.readNextRow();
+            }
+            
+            for (Map.Entry data : core_data_tag.entrySet()) {
+                StudyDB.insertMetaDataTag(study_id, (String) data.getKey(), 
+                                         (String) data.getValue());
+            }
+            // Delete the temporary Excel file after use.
+            FileHelper.delete(localDir);
+            // Record this activity.
+            String detail = "Excel File " + uFile.getFileName();
+            ActivityLogDB.recordUserActivity(userName, Constants.UPL_CDT, detail);
+            // Post the success message to user.
+            getFacesContext().addMessage(null, new FacesMessage(
+                FacesMessage.SEVERITY_INFO, "Core data tag uploaded.", ""));
+        } catch (RuntimeException rte) {
+            logger.error(rte.getMessage());
+            // Catch the runtime exception generated locally and display the 
+            // respective error message to the user.
+            getFacesContext().addMessage(null, new FacesMessage(
+                FacesMessage.SEVERITY_ERROR, rte.getMessage(), ""));
+        }
+    }
+    
+    // Upload study specific fields using Excel file. Insert uploaded specific
+    // fields into database.
+    public void ssFieldsUpload(FileUploadEvent event) {
+        UploadedFile uFile = event.getFile();
+        LinkedHashMap<String, List<String>> ssFields_hashmap = new LinkedHashMap<>();
+        String localDir = Constants.getSYSTEM_PATH() 
+                        + Constants.getTMP_PATH() 
+                        + uFile.getFileName();
+        
+        try {
+            // 1. Copy the uploaded Excel file to local directory.
+            if (FileHelper.copyUploadedFileToLocalDirectory(uFile, localDir)) {
+                logger.info("Excel file copied to local directory: " + localDir);
+            }
+            else {
+                // Fail to copy, terminate the upload and display error message.
+                throw new java.lang.RuntimeException("Fail to copy Excel File!");
+            }
+            
+            exHelper = new ExcelHelper(localDir, "Data");
+            // Read in the first row of field data [CATEGORY|FIELD]
+            List<String> field = exHelper.readNextRow();
+            while (field != null) {
+                if (field.size() >= 2) {
+                    // Group the fields under each category.
+                    if (ssFields_hashmap.get(field.get(0)) == null) {
+                        // New category.
+                        List<String> tmp = new ArrayList<>();
+                        tmp.add(field.get(1));
+                        ssFields_hashmap.put(field.get(0), tmp);
+                    }
+                else {
+                    // Existing category, add the field to the existing list of 
+                    // string.
+                    ssFields_hashmap.get(field.get(0)).add(field.get(1));
+                    }
+                }
+                field = exHelper.readNextRow();
+            }
+            
+            for (Map.Entry data : ssFields_hashmap.entrySet()) {
+                StudyDB.insertSSField(study_id, (String) data.getKey(), 
+                        FileHelper.convertObjectToByteArray(data.getValue()));
+            }
+            // Delete the temporary Excel file after use.
+            FileHelper.delete(localDir);
+            // Update the study specific field datalist.
+            refreshStudySpecificFieldLists();
+            // Record this activity.
+            String detail = "Excel File " + uFile.getFileName();
+            ActivityLogDB.recordUserActivity(userName, Constants.UPL_SSF, detail);
+            // Post the success message to user.
+            getFacesContext().addMessage(null, new FacesMessage(
+                FacesMessage.SEVERITY_INFO, "Study specific fields uploaded.", ""));
+        } catch (RuntimeException rte) {
+            logger.error(rte.getMessage());
+            // Catch the runtime exception generated locally and display the 
+            // respective error message to the user.
+            getFacesContext().addMessage(null, new FacesMessage(
+                FacesMessage.SEVERITY_ERROR, rte.getMessage(), ""));
+        }
     }
     
     // Upload subject meta data using Excel file.
-    public void xlsxDataUpload(FileUploadEvent event) {
+    public void metaDataUpload(FileUploadEvent event) {
         FIRST_UPLOAD = false;
         UploadedFile uFile = event.getFile();
         String localDir = Constants.getSYSTEM_PATH() 
@@ -294,12 +429,12 @@ public class MetaDataManagementBean implements Serializable {
             // data of interests.
             unsortedColNameL = exHelper.readNextRow();
             // Check to make sure all the core data columns are available.
-            // This step can be REMOVED once the feature for user to map the
-            // data of interests is available.
+            /*
             List<String> tmp = Arrays.asList("PID","Race","casecontrol",
                     "Visit__exam_Height_in_metres","Visit__exam_Weight",
                     "Date","DateOfBirth","Gender");
-            if (!unsortedColNameL.containsAll(tmp)) {
+            */
+            if (!unsortedColNameL.containsAll(core_data_tag.values())) {
                 throw new java.lang.RuntimeException("Missing core data columns!");
             }
             
@@ -312,10 +447,9 @@ public class MetaDataManagementBean implements Serializable {
             // 3. Create the Meta Records using data from the Excel sheet.
             createMetaRecordsFromExcel(localDir);
 
-            // Remove the Subject ID column from the record since it will be
-            // stored and display separately.
-            // FOR NOW HARD CODE THE SUBJECT ID COLUMN NAME i.e PID.
-            removeCoreDataColumn();
+            // Remove core data from the column name since they will be stored 
+            // and display separately.
+            colNameTM = removeCoreData(colNameTM);
 
             // 4. Compare the column name from current upload with the one
             // stored in database.
@@ -423,7 +557,7 @@ public class MetaDataManagementBean implements Serializable {
         // Update the subject detail table.
         refreshPageVariables();
         // Record this activity.
-        String detail = "Using Excel File " + uFile.getFileName();
+        String detail = "Excel File " + uFile.getFileName();
         ActivityLogDB.recordUserActivity(userName, Constants.UPL_MD, detail);
     }
 
@@ -488,7 +622,8 @@ public class MetaDataManagementBean implements Serializable {
             statsTracker.concatMessageForStatus(rec.getRecord_status_enum(), msg);
         }
     }
-        
+    
+    /* NO LONGER IN USE!
     // Update the subject meta data in database
     public void onRowEdit(RowEditEvent event) {
         LocalDate new_record_date = null;
@@ -549,6 +684,7 @@ public class MetaDataManagementBean implements Serializable {
                         FacesMessage.SEVERITY_ERROR, "Failed to update meta data!", ""));
         }
     }
+    */
     
     // Build the meta data list for the study; for user to download.
     public void downloadMetaDataList() {
@@ -587,6 +723,25 @@ public class MetaDataManagementBean implements Serializable {
         logger.info(userName + " deleted all the subject Meta data in " + study_id);
         // Update the subject list.
         refreshPageVariables();
+    }
+
+    // Used by admin to delete all the study specific fields.
+    public void deleteStudySpecificFields() {
+        StudyDB.deleteStudySpecificFields(study_id);
+        // Record user activity.
+        ActivityLogDB.recordUserActivity(userName, Constants.DEL_SSF, study_id);
+        // Update the study specific field datalist.
+        refreshStudySpecificFieldLists();
+    }
+    
+    // Used by admin to delete all the study meta data tags. After this, no meta
+    // data upload is allowed.
+    public void deleteStudyMetaDataTag() {
+        StudyDB.deleteMetaDataTagForStudy(study_id);
+        // Record user activity.
+        ActivityLogDB.recordUserActivity(userName, Constants.DEL_CDT, study_id);
+        // Reset core data tag.
+        core_data_tag = new HashMap<>();        
     }
     
     // Retrieve the faces context
@@ -632,6 +787,40 @@ public class MetaDataManagementBean implements Serializable {
         return subtDetailList.isEmpty();
     }
     
+    // Check whether the study specific category list is empty; use to control
+    // the rendering of the Delete All Study Specific Fields button.
+    public boolean isCategoryListEmpty() {
+        return categoryList.isEmpty();
+    }
+    
+    // Check whether the core data column ID tag has been setup; use to control
+    // the rendering of the Upload Meta Data button.
+    public boolean isCoreDataTagEmpty() {
+        return core_data_tag.isEmpty();
+    }
+    
+    // Return the list of study specific fields under each category; will only
+    // allow 3 categories for now.
+    public List<StudySpecificField> getSsfList1() {
+        return (ssf_lists.size() >= 1)?ssf_lists.get(0):null;
+    }
+    public List<StudySpecificField> getSsfList2() {
+        return (ssf_lists.size() >= 2)?ssf_lists.get(1):null;
+    }
+    public List<StudySpecificField> getSsfList3() {
+        return (ssf_lists.size() >= 3)?ssf_lists.get(2):null;
+    }
+    // Return the name of category; will only allow 3 categories for now.
+    public String getSsc1() {
+        return (categoryList.size() >= 1)?categoryList.get(0):"";
+    }
+    public String getSsc2() {
+        return (categoryList.size() >= 2)?categoryList.get(1):"";
+    }
+    public String getSsc3() {
+        return (categoryList.size() >= 3)?categoryList.get(2):"";
+    }
+    
     // Return the list of meta data belonging to the same department ID as
     // the user.
     public List<SubjectDetail> getSubtDetailList() {
@@ -660,73 +849,6 @@ public class MetaDataManagementBean implements Serializable {
                 "":statsTracker.getStatsForPassedRecords();
     }
     
-    // Machine generated getters and setters.
-    public String getSubject_id() {
-        return subject_id;
-    }
-    public void setSubject_id(String subject_id) {
-        this.subject_id = subject_id;
-    }
-    public float getAge_at_baseline() {
-        return age_at_baseline;
-    }
-    public void setAge_at_baseline(float age_at_baseline) {
-        this.age_at_baseline = age_at_baseline;
-    }
-    public char getGender() {
-        return gender;
-    }
-    public void setGender(char gender) {
-        this.gender = gender;
-    }
-    public String getCountry_code() {
-        return country_code;
-    }
-    public void setCountry_code(String country_code) {
-        this.country_code = country_code;
-    }
-    public String getRace() {
-        return race;
-    }
-    public void setRace(String race) {
-        this.race = race;
-    }
-    public float getHeight() {
-        return height;
-    }
-    public void setHeight(float height) {
-        this.height = height;
-    }
-    public float getWeight() {
-        return weight;
-    }
-    public void setWeight(float weight) {
-        this.weight = weight;
-    }
-    public String getRemarks() {
-        return remarks;
-    }
-    public void setRemarks(String remarks) {
-        this.remarks = remarks;
-    }
-    public String getEvent() {
-        return event;
-    }
-    public void setEvent(String event) {
-        this.event = event;
-    }
-    public java.util.Date getUtil_event_date() {
-        return util_event_date;
-    }
-    public void setUtil_event_date(java.util.Date util_event_date) {
-        this.util_event_date = util_event_date;
-    }
-    public java.util.Date getUtil_record_date() {
-        return util_record_date;
-    }
-    public void setUtil_record_date(java.util.Date util_record_date) {
-        this.util_record_date = util_record_date;
-    }
     public List<SubjectDetail> getFilteredSubtDetailList() {
         return filteredSubtDetailList;
     }

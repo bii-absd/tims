@@ -35,6 +35,7 @@ import org.apache.logging.log4j.LogManager;
  * 16-Apr-2018 - Created with the following methods: skipDataConsistencyCheck,
  * dataConsistencyCheck, updateRelevantMetaRecords and 
  * generateFinalDataQualityStats.
+ * 13-Jul-2018 - Changes due to change in subject table.
  */
 
 public class MetaRecordTesterThread extends Thread {
@@ -173,7 +174,8 @@ public class MetaRecordTesterThread extends Thread {
                     if (!newSubjectsL.contains(rec.getSubject_id())) {
                         Subject newSubjt = new Subject(rec.getSubject_id(), study_id, 
                                         rec.getRace(), rec.getGender(), 
-                                        rec.getDob(), rec.getCasecontrol());
+                                        rec.getDob(), rec.getCasecontrol(), 
+                                        rec.getAge_at_baseline());
                         SubjectDB.insertSubject(newSubjt, conn);
                         // Keep track of the subject IDs inserted.
                         newSubjectsL.add(rec.getSubject_id());
@@ -200,7 +202,8 @@ public class MetaRecordTesterThread extends Thread {
                             Subject exSubjt = new Subject(rec.getSubject_id(), 
                                               study_id, rec.getRace(), 
                                               rec.getGender(), rec.getDob(), 
-                                              rec.getCasecontrol());
+                                              rec.getCasecontrol(), 
+                                              rec.getAge_at_baseline());
                             SubjectDB.updateSubt(exSubjt, conn);
                             // Keep track of the subject IDs updated.
                             exSubjectsL.add(rec.getSubject_id());

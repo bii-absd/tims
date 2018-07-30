@@ -1,9 +1,10 @@
 /*
- * Copyright @2016
+ * Copyright @2016-2018
  */
 package TIMS.Database;
 
 import TIMS.General.Constants;
+// Libraries for Java.
 import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -37,6 +38,8 @@ import org.apache.logging.log4j.LogManager;
  * group hierarchy structure (together with its leading PI).
  * 08-Apr-2016 - Added new method getInstGrpHash, to retrieve the HashMap of 
  * all the group IDs setup under a specific institution.
+ * 12-Jul-2018 - Added new method getGrpIDList, to return the list of group IDs
+ * setup in the system using the query passed in.
  */
 
 public abstract class GroupDB implements Serializable {
@@ -117,6 +120,33 @@ public abstract class GroupDB implements Serializable {
         }
         
         return allGrpHash;
+    }
+    
+    // Helper function to return the list of group IDs setup in the system
+    // using the query passed in.
+    public static List<String> getGrpIDList(String query) {
+        List<String> grpIDList = new ArrayList<>();
+        Connection conn = null;
+
+        try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            ResultSet rs = stm.executeQuery();
+            
+            while (rs.next()) {
+                grpIDList.add(rs.getString(1));
+            }
+            stm.close();
+        }
+        catch (SQLException|NamingException e) {
+            logger.error("FAIL to retrieve full list of group ID!");
+            logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
+        }
+        
+        return grpIDList;
     }
     
     // Return the list of Group setup in the system under this institution.

@@ -39,13 +39,16 @@ import org.apache.logging.log4j.LogManager;
  * now i.e. it cannot be null and it needs to pass the validation.
  * 08-Jun-2018 - Height and weight if present, will be round off to 2 decimal
  * places.
+ * 13-Jul-2018 - Added one new field age_at_baseline. This is not a compulsory 
+ * field and will only be added to the Subject table if it is available.
  */
 
 public class MetaRecord {
     // Get the logger for Log4j
     private final static Logger logger = LogManager.
             getLogger(MetaRecord.class.getName());
-    private String subject_id, race, casecontrol, height, weight, gender, msg;
+    private String subject_id, race, casecontrol, height, weight, gender, 
+                   age_at_baseline, msg;
     private LocalDate record_date, dob;
     private int index;
     private List<String> dat;
@@ -68,13 +71,14 @@ public class MetaRecord {
     
     public MetaRecord(String subject_id, String race, String casecontrol, 
             String height, String weight, String record_date, String dob, 
-            String gender, List<String> dat, int index) {
+            String gender, String age_at_baseline, List<String> dat, int index) {
         this.subject_id = subject_id;
         this.race = race;
         this.casecontrol = casecontrol;
         this.height = height;
         this.weight = weight;
         this.gender = gender;
+        this.age_at_baseline = age_at_baseline;
         this.dat = dat;
         this.index = index;
         this.record_status_enum = RecordStatusEnum.START;
@@ -358,6 +362,14 @@ public class MetaRecord {
 
     public void setGender(String gender) 
     {   this.gender = gender;   }
+
+    public String getAge_at_baseline() {
+        return age_at_baseline;
+    }
+
+    public void setAge_at_baseline(String age_at_baseline) {
+        this.age_at_baseline = age_at_baseline;
+    }
 
     public List<String> getDat() 
     {   return dat; }

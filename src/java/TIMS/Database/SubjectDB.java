@@ -60,6 +60,9 @@ import org.apache.logging.log4j.LogManager;
  * 06-Apr-2018 - Database version 2.0 changes. Added 3 new methods 
  * deleteAllSubjectsFromStudy, getSubject and getSubjectIDsList. Enhanced 
  * methods: insertSubject and updateSubject. Remove unused code.
+ * 03-Jul-2018 - Added new method getDistinctValueInColumn(column_name, study_id) 
+ * to return the list of distinct value found in this column under this study.
+ * Changes due to addition of new field age_at_baseline in Subject table.
  */
 
 public abstract class SubjectDB {
@@ -121,7 +124,7 @@ public abstract class SubjectDB {
     public static Boolean insertSubject(Subject subject, Connection conn) {
         Boolean result = Constants.OK;
         String query = "INSERT INTO subject(subject_id,study_id,race,"
-                + "gender,dob,casecontrol) VALUES(?,?,?,?,?,?)";
+                + "gender,dob,casecontrol,age_at_baseline) VALUES(?,?,?,?,?,?,?)";
         
         try {
             PreparedStatement stm = conn.prepareStatement(query);
@@ -131,6 +134,7 @@ public abstract class SubjectDB {
             stm.setString(4, subject.getGender());
             stm.setObject(5, subject.getDob(), Types.DATE);
             stm.setString(6, subject.getCasecontrol());
+            stm.setString(7, subject.getAge_at_baseline());
             stm.executeUpdate();
             stm.close();
             
@@ -172,11 +176,11 @@ public abstract class SubjectDB {
     }
     
     // Update subject meta data in database.
-    // Only allow changes to gender, race, dob and casecontrol.
+    // Only allow changes to gender, race, dob, casecontrol and age_at_baseline.
     private static boolean updateSubject(Subject subject, Connection conn) {
         boolean result = Constants.OK;
         String query = "UPDATE subject SET gender = ?, casecontrol = ?, "
-                     + "race = ?, dob = ? WHERE subject_id = ? "
+                     + "race = ?, dob = ?, age_at_baseline = ? WHERE subject_id = ? "
                      + "and study_id = ?";
         
         try {
@@ -185,8 +189,9 @@ public abstract class SubjectDB {
             stm.setString(2, subject.getCasecontrol());
             stm.setString(3, subject.getRace());
             stm.setObject(4, subject.getDob(), Types.DATE);
-            stm.setString(5, subject.getSubject_id());
-            stm.setString(6, subject.getStudy_id());
+            stm.setString(5, subject.getAge_at_baseline());
+            stm.setString(6, subject.getSubject_id());
+            stm.setString(7, subject.getStudy_id());
             stm.executeUpdate();
             stm.close();
             
@@ -257,31 +262,95 @@ public abstract class SubjectDB {
     }
     
     // Return the list of subject details belonging to this study.
-    // Exception thrown here need to be handle by the caller.
-    public static List<SubjectDetail> getSubtDetailList(String study_id) 
-            throws SQLException, NamingException 
-    {
-        Connection conn = DBHelper.getDSConn();
+    public static List<SubjectDetail> getSubtDetailList(String study_id) {
+        Connection conn = null;
         List<SubjectDetail> subtDetailList = new ArrayList<>();
         String query = "SELECT * from subject_detail WHERE study_id = ? "
                      + "ORDER BY subject_id, record_date";
-        PreparedStatement stm = conn.prepareStatement(query);
         
-        stm.setString(1, study_id);
-        ResultSet rs = stm.executeQuery();
+        try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            stm.setString(1, study_id);
+            ResultSet rs = stm.executeQuery();
 
-        while (rs.next()) {
-            subtDetailList.add(new SubjectDetail(rs));
+            while (rs.next()) {
+                subtDetailList.add(new SubjectDetail(rs));
+            }
+            stm.close();
         }
-        stm.close();
-        DBHelper.closeDSConn(conn);
+        catch (SQLException|NamingException e) {
+            logger.error("FAIL to retrieve subject detail for " + study_id);
+            logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
+        }
         
         return subtDetailList;
     }
     
+    // Return the list of subject belonging to this study.
+    public static List<Subject> getSubjectList(String study_id) {        
+        Connection conn = null;
+        List<Subject> subjectList = new ArrayList<>();
+        String query = "SELECT * from subject WHERE study_id = ? ";
+        
+        try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            stm.setString(1, study_id);
+            ResultSet rs = stm.executeQuery();
+
+            while (rs.next()) {
+                subjectList.add(new Subject(rs));
+            }
+            stm.close();
+        }
+        catch (SQLException|NamingException e) {
+            logger.error("FAIL to retrieve list of subjects!");
+            logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
+        }
+        
+        return subjectList;
+    }
+    
+    // Retrieve the list of column X values where column Y is having y_value.
+    public static List<String> getColXBasedOnColYValue(String col_x, 
+            String col_y, String y_value, String study_id) {
+        Connection conn = null;
+        List<String> list_colx = new ArrayList<>();
+        String query = "SELECT " + col_x + " FROM subject WHERE study_id = ?"
+                     + " AND " + col_y + " = ?";
+        
+        try {
+            conn =DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            stm.setString(1, study_id);
+            stm.setString(2, y_value);
+            ResultSet rs = stm.executeQuery();
+            while (rs.next()) {
+                list_colx.add(rs.getString(col_x));
+            }
+            stm.close();
+        }
+        catch (SQLException|NamingException e) {
+            logger.error("FAIL to retrieve the list of " + col_x + 
+                         " where " + col_y + " is " + y_value);
+            logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
+        }
+        
+        return list_colx;
+    }
+    
     // Check whether the subject exists for this study.
-    public static boolean isSubjectExistInStudy
-                            (String subject_id, String study_id)
+    public static boolean isSubjectExistInStudy(String subject_id, String study_id)
     {
         Connection conn = null;
         boolean isSubjectExist = Constants.NOT_OK;
@@ -307,5 +376,65 @@ public abstract class SubjectDB {
         }
 
         return isSubjectExist;
+    }
+    
+    // Return the list of distinct(s) value found in this column under this study.
+    public static List<String> getDistinctValueInColumn(String column_name, 
+            String study_id) {
+        Connection conn = null;
+        List<String> distinct_value = new ArrayList<>();
+        String query = "SELECT DISTINCT " + column_name 
+                     + " FROM subject WHERE study_id = ? ORDER BY " 
+                     + column_name;
+        
+        try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            stm.setString(1, study_id);
+            ResultSet rs = stm.executeQuery();
+            
+            while (rs.next()) {
+                distinct_value.add(rs.getString(column_name));
+            }
+            stm.close();
+        }
+        catch (SQLException|NamingException e) {
+            logger.error("FAIL to get list of distinct " + column_name);
+            logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
+        }
+        
+        return distinct_value;
+    }
+    
+    // Return the list of age_at_baseline (converted to float) under this study.
+    public static List<Float> getAgeAtBaselineList(String study_id) {
+        List<Float> age_at_baseline_list = new ArrayList<>();
+        Connection conn = null;
+        String query = "SELECT age_at_baseline FROM subject WHERE study_id = ? "
+                     + "ORDER BY length(age_at_baseline), age_at_baseline";
+        
+        try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            stm.setString(1, study_id);
+            ResultSet rs = stm.executeQuery();
+            
+            while (rs.next()) {
+                age_at_baseline_list.add(Float.valueOf(rs.getString("age_at_baseline")));
+            }
+            stm.close();            
+        }
+        catch (SQLException|NamingException e) {
+            logger.error("FAIL to get age_at_baseline list!");
+            logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
+        }
+        
+        return age_at_baseline_list;
     }
 }

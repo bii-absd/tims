@@ -24,11 +24,6 @@
                              action="#{MDMgntBean.downloadDataQualityReport}" 
                              rendered="#{MDMgntBean.quality_report}"
                              style="font-size: 12px; margin-right: 10px"/>
-            <p:commandButton value="Delete All Meta Data" id="delAllBut"
-                             icon="ui-icon-trash" 
-                             onclick="PF('delAllDlg').show()"
-                             rendered="#{authBean.administrator and !MDMgntBean.metaListEmpty}" 
-                             style="font-size: 12px"/>
         </h:form>
     </p:panel>
     
@@ -63,38 +58,121 @@
                 <p:column headerText="Weight" styleClass="col50">
                     <h:outputText value="#{mddata.weight}"/>
                 </p:column>
+                <p:column headerText="Age at Baseline" styleClass="col50">
+                    <h:outputText value="#{mddata.age_at_baseline}"/>
+                </p:column>
                 <p:column headerText="Record Date" styleClass="jssmallcol">
                     <h:outputText value="#{mddata.record_date}"/>
                 </p:column>
             </p:dataTable>
             </h:form>
         </p:tab>
-        <p:tab id="uploadXLS" title="Upload New Meta Data in Excel" 
+        <p:tab id="viewSSF" title="Specific Fields Grouping" titleStyleClass="tab-title">
+            <h:form id="viewSSFForm">
+                <p:panelGrid columns="3" id="SSFPanel" styleClass="configcolumn">
+                    <p:dataList value="#{MDMgntBean.ssfList1}" var="ssf1" 
+                                type="ordered" styleClass="datalist-row">
+                        <f:facet name="header">
+                            #{MDMgntBean.ssc1}
+                        </f:facet>
+                        #{ssf1.field}
+                    </p:dataList>
+                    <p:dataList value="#{MDMgntBean.ssfList2}" var="ssf2" 
+                                type="ordered" styleClass="datalist-row">
+                        <f:facet name="header">
+                            #{MDMgntBean.ssc2}
+                        </f:facet>
+                        #{ssf2.field}
+                    </p:dataList>
+                    <p:dataList value="#{MDMgntBean.ssfList3}" var="ssf3" 
+                                type="ordered" styleClass="datalist-row">
+                        <f:facet name="header">
+                            #{MDMgntBean.ssc3}
+                        </f:facet>
+                        #{ssf3.field}
+                    </p:dataList>
+                </p:panelGrid>
+            </h:form>
+        </p:tab>
+        <p:tab id="uploadXLS" title="Upload Excel File" 
                titleStyleClass="tab-title">
-            <h:form id="uploadXLSForm" enctype="multipart/form-data">
-                <p:fileUpload id="uploadXLSFile" mode="advanced" 
-                              update="MDMsg :accPanel:viewDataForm:MDTable :dataQForm :ctlPanel"
-                              label="Select Excel File" onstart="PF('buiPanel').show()"
-                              allowTypes="/(\.|\/)(xlsx)$/" oncomplete="PF('buiPanel').hide()"
-                              fileUploadListener="#{MDMgntBean.xlsxDataUpload}"/>
+            <h:panelGrid columns="3" cellspacing="4" cellpadding="4">
+                <h:form id="uploadCDTForm" enctype="multipart/form-data">
+                    <p:fileUpload id="uploadCDT" mode="advanced" 
+                                  update="MDMsg :accPanel:uploadMDForm :accPanel:resetForm"
+                                  label="Core Data Tag File"
+                                  allowTypes="/(\.|\/)(xlsx)$/"
+                                  fileUploadListener="#{MDMgntBean.coreDataTagsUpload}"/>
+                </h:form>
+                <h:form id="uploadMDForm" enctype="multipart/form-data">
+                    <p:fileUpload id="uploadMD" mode="advanced" 
+                                  rendered="#{!MDMgntBean.coreDataTagEmpty}"
+                                  update="MDMsg :accPanel:viewDataForm:MDTable :dataQForm :accPanel:resetForm :ctlPanel"
+                                  label="Meta Data File" onstart="PF('buiPanel').show()"
+                                  allowTypes="/(\.|\/)(xlsx)$/" oncomplete="PF('buiPanel').hide()"
+                                  fileUploadListener="#{MDMgntBean.metaDataUpload}"/>
+                </h:form>
+                <h:form id="uploadSSFForm" enctype="multipart/form-data">
+                    <p:fileUpload id="uploadSSF" mode="advanced" 
+                                  update="MDMsg :accPanel:viewSSFForm:SSFPanel :accPanel:resetForm :ctlPanel"
+                                  label="Study Specific Fields File"
+                                  allowTypes="/(\.|\/)(xlsx)$/"
+                                  fileUploadListener="#{MDMgntBean.ssFieldsUpload}"/>
+                </h:form>
+            </h:panelGrid>
+        </p:tab>
+        <p:tab id="resetTab" title="Reset" titleStyleClass="tab-title" 
+               rendered="#{authBean.administrator}">
+            <h:form id="resetForm">
+                <p:commandButton value="Delete Core Data Tag" id="delCDTBut" 
+                                 icon="ui-icon-trash" 
+                                 update=":accPanel:resetForm :accPanel:uploadMDForm"
+                                 action="#{MDMgntBean.deleteStudyMetaDataTag}"
+                                 rendered="#{!MDMgntBean.coreDataTagEmpty}" 
+                                 style="font-size: 12px; margin-right: 10px"/>
+                <p:commandButton value="Delete All Meta Data" 
+                                 id="delMDBut" icon="ui-icon-trash" 
+                                 onclick="PF('delAllDlg').show()"
+                                 rendered="#{!MDMgntBean.metaListEmpty}" 
+                                 style="font-size: 12px; margin-right: 10px"/>
+                <p:commandButton value="Delete Study Specific Fields"
+                                 id="delSSFBut" icon="ui-icon-trash" 
+                                 onclick="PF('delSSFDlg').show()"
+                                 rendered="#{!MDMgntBean.categoryListEmpty}"
+                                 style="font-size: 12px"/>
             </h:form>
         </p:tab>
     </p:accordionPanel>
-    <p:blockUI block="accPanel" widgetVar="buiPanel">
+    <p:blockUI block="accPanel :ctlPanel" widgetVar="buiPanel">
         <p:graphicImage library="images" name="ajax-loader.gif"/>
     </p:blockUI>
     
-    <p:dialog header="Do you want to delete All the Subject Meta Data?" widgetVar="delAllDlg" 
-              resizable="false" modal="true">
+    <p:dialog header="Do you want to delete All the Subject Meta Data?" 
+              widgetVar="delAllDlg" resizable="false" modal="true">
         <h:form id="delAllForm">
             <h:panelGrid columns="2" cellspacing="2" cellpadding="2" width="100%">
                 <p:commandButton value="NO" style="width: 100%" 
                                  oncomplete="PF('delAllDlg').hide()"/>
                 <p:commandButton value="YES" style="width: 100%" 
-                                 update=":accPanel:viewDataForm:MDTable :ctlPanel" 
-                                 title="Proceed to update Study column data name, and delete all the Subject Meta data." 
+                                 update=":accPanel:viewDataForm:MDTable :accPanel:resetForm :ctlPanel" 
+                                 title="Proceed to delete all the Subject Meta data." 
                                  oncomplete="PF('delAllDlg').hide()"
                                  action="#{MDMgntBean.deleteAllSubjectMetaData}"/>
+            </h:panelGrid>
+        </h:form>
+    </p:dialog>
+    
+    <p:dialog header="Do you want to delete All the Study Specific Fields?" 
+              widgetVar="delSSFDlg" resizable="false" modal="true">
+        <h:form id="delSSFForm">
+            <h:panelGrid columns="2" cellspacing="2" cellpadding="2" width="100%">
+                <p:commandButton value="NO" style="width: 100%" 
+                                 oncomplete="PF('delSSFDlg').hide()"/>
+                <p:commandButton value="YES" style="width: 100%" 
+                                 update=":accPanel:viewSSFForm:SSFPanel :accPanel:resetForm" 
+                                 title="Proceed to delete all the Study Specific Fields." 
+                                 oncomplete="PF('delSSFDlg').hide()"
+                                 action="#{MDMgntBean.deleteStudySpecificFields}"/>
             </h:panelGrid>
         </h:form>
     </p:dialog>

@@ -119,6 +119,8 @@ import org.apache.logging.log4j.LogManager;
  * 11-Jun-2018 - Changes due to update in feature table; replaced active 
  * (BOOLEAN) with status (TEXT). Added one new method, getHomeStr() that return
  * the string to be use for the Home Link.
+ * 13-Jul-2018 - Director and HOD will now be directed to dashboard page when
+ * they first login.
  */
 
 @ManagedBean (name="authBean")
@@ -233,8 +235,8 @@ public class AuthenticationBean implements Serializable {
                 // Proceed from login to the next view depending on user role.
                 if ( (userAcct.getRoleName().compareTo("Director") == 0) || 
                      (userAcct.getRoleName().compareTo("HOD") == 0) ) {
-                    // For director and HOD, direct them to the studies review page.
-                    result = Constants.PAGES_DIR + Constants.STUDIES_REVIEW;
+                    // For director and HOD, direct them to the dashboard.
+                    result = Constants.PAGES_DIR + Constants.DASHBOARD;
                 }
                 else {
                     // For other users, direct them to the main page.

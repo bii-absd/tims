@@ -88,8 +88,8 @@ public class ExcelHelper {
         return colDataL;
     }
     
-    // Read the next row of the Excel sheet and return the column data as a list
-    // of string.
+    // Read the next row of the excel sheet and return the column data as a list
+    // of string. Only work for excel sheet that has less than 100 rows.
     public List<String> readNextRow() {
         List<String> colDataL = null;
         try (Workbook wb = StreamingReader.builder()

@@ -27,14 +27,12 @@ import java.nio.file.Paths;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 // Libraries for Java Extension
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
-import javax.naming.NamingException;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -59,6 +57,8 @@ import org.apache.logging.log4j.LogManager;
  * Modified method generateMetaDataList.
  * 15-May-2018 - When generating the meta data list, the core data values will
  * be taken from the subject detail instead of the column data.
+ * 10-Jul-2018 - Minor changes in method generateMetaDataList due to changes in
+ * method SubjectDB.getSubtDetailList
  */
 
 public abstract class FileHelper {
@@ -277,7 +277,7 @@ public abstract class FileHelper {
                                     SubjectDB.getSubtDetailList(study_id);
                 PrintStream ps = new PrintStream(new File (filepath));
                 // Write the header line first.
-                line.append("Subject ID|Date of Birth|CaseControl|Gender|Race|Height|Weight|Record Date|").
+                line.append("Subject ID|Date of Birth|CaseControl|Gender|Race|Height|Weight|Age at Baseline|Record Date|").
                      append(convertStrListToStr(dbColNameL));
                 ps.println(line.toString());
                 // Empty the string.
@@ -293,6 +293,7 @@ public abstract class FileHelper {
                          append(subj.getRace()).append("|").
                          append(subj.getHeight()).append("|").
                          append(subj.getWeight()).append("|").
+                         append(subj.getAge_at_baseline()).append("|").
                          append(subj.getRecord_date()).append("|").
                          append(convertStrListToStr(record));
                     ps.println(line.toString());
@@ -304,7 +305,7 @@ public abstract class FileHelper {
                 status = Constants.OK;
             }
         }
-        catch (SQLException|NamingException|IOException ioe) {
+        catch (IOException ioe) {
             logger.error("FAIl to generate meta data list for study " + study_id);
             logger.error(ioe.getMessage());
         }

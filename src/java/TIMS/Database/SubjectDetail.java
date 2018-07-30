@@ -3,10 +3,15 @@
  */
 package TIMS.Database;
 
+import TIMS.General.Constants;
+import TIMS.General.FileHelper;
 // Libraries for Java
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * SubjectDetail is used to represent the subject_detail view in the database.
@@ -28,14 +33,18 @@ import java.time.LocalDate;
  * through Excel.
  * 15-May-2018 - Removed method getCaseControlInInt, because casecontrol will
  * be represented by case or control (instead of 0 and 1).
+ * 13-Jul-2018 - Added two new methods, convertDataToHashMap and 
+ * retrieveDataFromHashMap. Removed attributes remarks, event and event_date.
+ * Added one new attribute age_at_baseline.
  */
 
 public class SubjectDetail {
     // subject_detail view attributes
     private final String study_id, subject_id;
-    private String race, gender, height, weight, remarks, event, casecontrol;
-    private LocalDate event_date, record_date, dob;
+    private String race, gender, height, weight, casecontrol, age_at_baseline;
+    private LocalDate record_date, dob;
     private byte[] dat;
+    private HashMap<String, String> data_hashmap;
     
     // Construct the SubjectDetail object directly using the result set returned
     // from the database query.
@@ -44,39 +53,66 @@ public class SubjectDetail {
         this.subject_id = rs.getString("subject_id");
         this.race = rs.getString("race");
         this.gender = rs.getString("gender");
-        this.remarks = rs.getString("remarks");
-        this.event = rs.getString("event");
         this.height = rs.getString("height");
         this.weight = rs.getString("weight");
-        this.event_date = (rs.getDate("event_date") != null)?
-                           rs.getDate("event_date").toLocalDate():null;
         this.record_date = (rs.getDate("record_date") != null)?
                             rs.getDate("record_date").toLocalDate():null;
         this.dob = rs.getDate("dob").toLocalDate();
         this.casecontrol = rs.getString("casecontrol");
+        this.age_at_baseline = rs.getString("age_at_baseline");
         this.dat = rs.getBytes("dat");
     }
     
     // Machine generated constructor.
     public SubjectDetail(String study_id, String subject_id, String race, 
-            String gender, String remarks, String event, String height, 
-            String weight, LocalDate event_date, LocalDate record_date, 
-            LocalDate dob, String casecontrol) 
+            String gender, String height, String weight, LocalDate record_date, 
+            LocalDate dob, String casecontrol, String age_at_baseline) 
     {
         this.study_id = study_id;
         this.subject_id = subject_id;
         this.race = race;
         this.gender = gender;
-        this.remarks = remarks;
-        this.event = event;
         this.height = height;
         this.weight = weight;
-        this.event_date = event_date;
         this.record_date = record_date;
         this.dob = dob;
         this.casecontrol = casecontrol;
+        this.age_at_baseline = age_at_baseline;
     }
 
+    // Convert the dat from byte[] to hashmap using the list of column name
+    // passed in.
+    public boolean convertDataToHashMap(List<String> colNameL) {
+        boolean result = Constants.OK;
+        data_hashmap = new HashMap<>();
+        List<String> datL = FileHelper.convertByteArrayToList(dat);
+        Iterator<String> datItr = datL.iterator();
+        
+        for (String colName : colNameL) {
+            if (datItr.hasNext()) {
+                data_hashmap.put(colName, datItr.next());
+            }
+            else {
+                // Something is wrong if the column name list is longer than
+                // the data list.
+                result = Constants.NOT_OK;
+                break;
+            }
+        }
+        
+        return result;
+    }
+    
+    // Retrieve the data value of this column from the hashmap.
+    public String retrieveDataFromHashMap(String column) {
+        if (data_hashmap.isEmpty()) {
+            return null;
+        }
+        else {
+            return data_hashmap.get(column);
+        }
+    }
+    
     // Machine generated getters and setters.
     public String getStudy_id() 
     {   return study_id;    }
@@ -90,14 +126,6 @@ public class SubjectDetail {
     {   return gender;  }
     public void setGender(String gender) 
     {   this.gender = gender;   }
-    public String getRemarks() 
-    {   return remarks; }
-    public void setRemarks(String remarks) 
-    {   this.remarks = remarks; }
-    public String getEvent() 
-    {   return event;   }
-    public void setEvent(String event) 
-    {   this.event = event; }
     public String getHeight() 
     {   return height;  }
     public void setHeight(String height) 
@@ -106,10 +134,6 @@ public class SubjectDetail {
     {   return weight;  }
     public void setWeight(String weight) 
     {   this.weight = weight;   }
-    public LocalDate getEvent_date() 
-    {   return event_date;  }
-    public void setEvent_date(LocalDate event_date) 
-    {   this.event_date = event_date;   }
     public LocalDate getRecord_date() 
     {   return record_date; }
     public void setRecord_date(LocalDate record_date) 
@@ -122,6 +146,10 @@ public class SubjectDetail {
     {   return casecontrol;    }
     public void setCasecontrol(String casecontrol) 
     {   this.casecontrol = casecontrol;   }
+    public String getAge_at_baseline() 
+    {   return age_at_baseline; }
+    public void setAge_at_baseline(String age_at_baseline) 
+    {   this.age_at_baseline = age_at_baseline; }
     public byte[] getDat() 
     {   return dat; }
 }

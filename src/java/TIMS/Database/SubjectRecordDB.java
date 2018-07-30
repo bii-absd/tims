@@ -7,7 +7,6 @@ import TIMS.General.Constants;
 import TIMS.General.FileHelper;
 // Libraries for Java
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -43,6 +42,7 @@ import org.apache.logging.log4j.LogManager;
  * deleteAllSubjectRecordsFromStudy, getSubjectRecord and 
  * getSubjectRecordDateList. Enhanced 2 methods: insertSR and 
  * updatePartialSubjectRecord.
+ * 13-Jul-2018 - Changes due to changes in subject_record table.
  */
 
 public abstract class SubjectRecordDB {
@@ -221,7 +221,7 @@ public abstract class SubjectRecordDB {
     
     // Update subject record from this study in database. Called when user 
     // decided to skip consistency check during meta data upload through Excel.
-    // Only allow update to height, weight and dat.
+    // Only allow update to height, weight, sample_id and dat.
     public static boolean updatePartialSubjectRecord
                             (SubjectRecord sr, Connection conn) 
     {
@@ -229,17 +229,18 @@ public abstract class SubjectRecordDB {
         String detail = sr.getStudy_id() + " - " + sr.getSubject_id() 
                       + " - " + sr.getRecord_date();
         String query = "UPDATE subject_record SET height = ?, weight = ?, "
-                     + "dat = ? WHERE subject_id = ? AND record_date = ? "
-                     + "AND study_id = ?";
+                     + "sample_id = ?, dat = ? WHERE subject_id = ? "
+                     + "AND record_date = ? AND study_id = ?";
         
         try {
             PreparedStatement stm = conn.prepareStatement(query);
             stm.setString(1, sr.getHeight());
             stm.setString(2, sr.getWeight());
-            stm.setBytes(3, FileHelper.convertObjectToByteArray(sr.getDataValueList()));            
-            stm.setString(4, sr.getSubject_id());
-            stm.setObject(5, sr.getRecord_date(), Types.DATE);
-            stm.setString(6, sr.getStudy_id());
+            stm.setString(3, sr.getSample_id());
+            stm.setBytes(4, FileHelper.convertObjectToByteArray(sr.getDataValueList()));            
+            stm.setString(5, sr.getSubject_id());
+            stm.setObject(6, sr.getRecord_date(), Types.DATE);
+            stm.setString(7, sr.getStudy_id());
             stm.executeUpdate();
             stm.close();
             
@@ -254,39 +255,32 @@ public abstract class SubjectRecordDB {
         return result;        
     }
     
+    /* NO LONGER IN USE!
     // Update subject record from this study in database.
-    // Allow changes to height, weight, remarks, record _date, event and 
-    // event_date.
+    // Allow changes to height, weight and record_date.
     public static boolean updateSR(SubjectRecord sr, LocalDate new_record_date) {
         boolean result = Constants.OK;
         Date rec_date = null;
         Date new_rec_date = null;
-        Date eve_date = null;
         String detail = sr.getStudy_id() + " - " + sr.getSubject_id() 
                       + " - " + new_record_date;
         Connection conn = null;
         String query = "UPDATE subject_record SET height = ?, weight = ?, "
-                     + "remarks = ?, event = ?, event_date = ?, record_date = ? "
-                     + "WHERE subject_id = ? AND record_date = ? AND study_id = ?";
+                     + "record_date = ? WHERE subject_id = ? AND "
+                     + "record_date = ? AND study_id = ?";
         
         rec_date = java.sql.Date.valueOf(sr.getRecord_date());
         new_rec_date = java.sql.Date.valueOf(new_record_date);
-        if (sr.getEvent_date() != null) {
-            eve_date = java.sql.Date.valueOf(sr.getEvent_date());
-        }
         
         try {
             conn = DBHelper.getDSConn();
             PreparedStatement stm = conn.prepareStatement(query);
             stm.setString(1, sr.getHeight());
             stm.setString(2, sr.getWeight());
-            stm.setString(3, sr.getRemarks());
-            stm.setString(4, sr.getEvent());
-            stm.setDate(5, eve_date);
-            stm.setDate(6, new_rec_date);
-            stm.setString(7, sr.getSubject_id());
-            stm.setDate(8, rec_date);
-            stm.setString(9, sr.getStudy_id());
+            stm.setDate(3, new_rec_date);
+            stm.setString(4, sr.getSubject_id());
+            stm.setDate(5, rec_date);
+            stm.setString(6, sr.getStudy_id());
             stm.executeUpdate();
             stm.close();
             
@@ -303,6 +297,7 @@ public abstract class SubjectRecordDB {
         
         return result;
     }
+    */
     
     // Check whether any subject record exists in the database for this subject. 
     // Exception thrown here need to be handle by the caller.

@@ -114,14 +114,14 @@
 
         <p:tab id="job" title="My Work Area" titleStyleClass="tab-title">
             <h:panelGrid cellpadding="1">
+                <h:outputLink title="Dashboard" value="dashboard.xhtml" 
+                              styleClass="mainmenuitem">
+                    Dashboard
+                </h:outputLink>
                 <h:commandLink title="View my job submission status" 
                                value="#{msg['job-status']}" 
                                action="#{authBean.singleUserJobStatus}" 
                                styleClass="mainmenuitem"/>
-                <h:outputLink title="Review my studies" value="studiesreview.xhtml" 
-                              styleClass="mainmenuitem">
-                    Studies Review
-                </h:outputLink>
                 <h:outputLink title="Download consolidated output and summary report" 
                               value="completedstudyoutput.xhtml" 
                               styleClass="mainmenuitem">

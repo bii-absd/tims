@@ -23,11 +23,13 @@ import java.util.List;
  * subtype_code, added record_date.
  * 06-Apr-2018 - Database version 2.0 changes to support meta data upload
  * through Excel.
+ * 13-Jul-2018 - Removed attributes event, event_date and remarks. Added one
+ * new attribute sample_id.
  */
 
 public class SubjectRecord {
-    private String subject_id, study_id, height, weight, remarks, event;
-    private LocalDate event_date, record_date;
+    private String subject_id, study_id, height, weight, sample_id;
+    private LocalDate record_date;
     private byte[] dat;
     
     // Construct the SubjectRecord object directly using the result set
@@ -38,11 +40,9 @@ public class SubjectRecord {
         this.record_date = rs.getDate("record_date").toLocalDate();
         this.height = rs.getString("height");
         this.weight = rs.getString("weight");
-        this.remarks = rs.getString("remarks");
-        this.event = rs.getString("event");
-        this.event_date = (rs.getDate("event_date") != null)?
-                           rs.getDate("event_date").toLocalDate():null;
         this.dat = rs.getBytes("dat");
+        // Initialise to empty string for now.
+        this.sample_id = "";
     }
     
     // Constructor used during Meta data upload to insert new subject record.
@@ -55,23 +55,19 @@ public class SubjectRecord {
         this.height = height;
         this.weight = weight;
         this.dat = dat;
-        // Initialise these 3 fields to null.
-        remarks = event = null;
-        event_date = null;
+        // Initialise to empty string for now.
+        this.sample_id = "";
     }
     
     // Machine generated constructor
     public SubjectRecord(String subject_id, String study_id, LocalDate record_date,
-                        String remarks, String event, String height, 
-                        String weight, LocalDate event_date, byte[] dat) {
+                        String height, String weight, String sample_id, byte[] dat) {
         this.subject_id = subject_id;
         this.study_id = study_id;
         this.record_date = record_date;
-        this.remarks = remarks;
-        this.event = event;
         this.height = height;
         this.weight = weight;
-        this.event_date = event_date;
+        this.sample_id = sample_id;
         this.dat = dat;
     }
     
@@ -105,18 +101,6 @@ public class SubjectRecord {
     public void setRecord_date(LocalDate record_date) {
         this.record_date = record_date;
     }
-    public String getRemarks() {
-        return remarks;
-    }
-    public void setRemarks(String remarks) {
-        this.remarks = remarks;
-    }
-    public String getEvent() {
-        return event;
-    }
-    public void setEvent(String event) {
-        this.event = event;
-    }
     public String getHeight() {
         return height;
     }
@@ -129,10 +113,10 @@ public class SubjectRecord {
     public void setWeight(String weight) {
         this.weight = weight;
     }
-    public LocalDate getEvent_date() {
-        return event_date;
+    public String getSample_id() {
+        return sample_id;
     }
-    public void setEvent_date(LocalDate event_date) {
-        this.event_date = event_date;
+    public void setSample_id(String sample_id) {
+        this.sample_id = sample_id;
     }
 }

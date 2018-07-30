@@ -32,10 +32,12 @@ import java.time.LocalDate;
  * through Excel.
  * 15-May-2018 - Removed method getCaseControlInInt, because casecontrol will
  * be represented by case or control (instead of 0 and 1).
+ * 13-Jul-2018 - Added one new field age_at_baseline in Subject table.
  */
 
 public class Subject {
-    private String subject_id, study_id, race, gender, casecontrol;
+    private String subject_id, study_id, race, gender, casecontrol, 
+                   age_at_baseline;
     private LocalDate dob;
 
     // Construct the Subject object directly using the result set returned 
@@ -47,18 +49,20 @@ public class Subject {
         this.gender = rs.getString("gender");
         this.dob = rs.getDate("dob").toLocalDate();
         this.casecontrol = rs.getString("casecontrol");
-        
+        this.age_at_baseline =rs.getString("age_at_baseline");
     }
     
     // Machine generated constructor
     public Subject(String subject_id, String study_id, String race, 
-            String gender, LocalDate dob, String casecontrol) {
+            String gender, LocalDate dob, String casecontrol, 
+            String age_at_baseline) {
         this.subject_id = subject_id;
         this.study_id = study_id;
         this.race = race;
         this.gender = gender;
         this.dob = dob;
         this.casecontrol = casecontrol;
+        this.age_at_baseline = age_at_baseline;
     }
 
     // Return the string representation of this subject in the format of:
@@ -90,4 +94,10 @@ public class Subject {
     {   return casecontrol;    }
     public void setCasecontrol(String casecontrol) 
     {   this.casecontrol = casecontrol;   }
+    public String getAge_at_baseline() {
+        return age_at_baseline;
+    }
+    public void setAge_at_baseline(String age_at_baseline) {
+        this.age_at_baseline = age_at_baseline;
+    }
 }

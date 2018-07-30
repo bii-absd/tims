@@ -116,6 +116,8 @@ import org.apache.logging.log4j.LogManager;
  * META_QUALITY_FILE_EXT, UPL_MD, UPD_MD and DEL_MD. Deleted one
  * constant FINALIZE_PATH.
  * 07-Jun-2018 - Rename and redefine GROUP_MANAGEMENT to WORKUNIT_MANAGEMENT.
+ * 06-Jul-2018 - Added five new constants DASHBOARD, UPL_SSF, UPL_CDT, DEL_CDT 
+ * and DEL_SSF for Dashboard module.
  */
 
 @ManagedBean (name = "constants")
@@ -148,6 +150,10 @@ public class Constants {
     public final static String UPL_MD = "Upload Meta Data";
     public final static String UPD_MD = "Update Meta Data";
     public final static String DEL_MD = "Delete Meta Data";
+    public final static String UPL_SSF = "Upload Study Specific Fields";
+    public final static String UPL_CDT = "Upload Core Data Tags";
+    public final static String DEL_SSF = "Delete Study Specific Fields";
+    public final static String DEL_CDT = "Delete Core Data Tags";
     public final static String CHG_RD = "Update Raw Data";
     public final static String CUS_RD = "Customize Raw Data";
     public final static String DWL_FIL = "Download File";
@@ -171,6 +177,7 @@ public class Constants {
     public final static String FINALIZE_STUDY = "finalizestudy";
     public final static String COMPLETED_STUDY_OUTPUT = "completedstudyoutput";
     public final static String STUDIES_REVIEW = "studiesreview?faces-redirect=true";
+    public final static String DASHBOARD = "dashboard?faces-redirect=true";
     public final static String JOB_SELECTION_4V = "jobselection4v";
     public final static String ERROR = "error?faces-redirect=true";
     // Constants read in from setup file.

@@ -162,6 +162,13 @@ ul.ui-menu-child {
     background-color: rgb(233, 249, 244);
 }
 
+/* Style defined for displaying rows in the datagrid.
+*/
+.datalist-row .ui-datalist-item {
+    font-family: courier, arial, monospace;
+    font-size: 10pt;
+}
+
 /* Style defined for the input label at clinicaldatamanagement.xhtml 
 */
 .inputlabel {

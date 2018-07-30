@@ -13,6 +13,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 // Libraries for Java Extension
@@ -92,6 +93,8 @@ import org.apache.logging.log4j.LogManager;
  * table; meta_quality_report and data_col_name_list. Added 4 new methods 
  * updateMetaQualityReport, getMetaQualityReportPath, getColumnNameList and 
  * updateStudyColumnNameList. Removed unused code.
+ * 19-Jul-2018 - Added one new method getStudyListUnderGroup. Added a group of 
+ * methods for study_specific_fields and meta_data_tag tables.
  */
 
 public abstract class StudyDB {
@@ -464,6 +467,17 @@ public abstract class StudyDB {
         logger.debug("Retrieving study list for visualization.");
         return getStudyHash(query);
     }
+
+    // Return the list of Study ID (with Meta data uploaded) that belongs to 
+    // this group.
+    public static List<String> getDashboardStudyUnderGroup(String grp_id) {
+        String query = "SELECT DISTINCT study_id FROM study st "
+                     + "NATURAL JOIN subject sb WHERE st.grp_id = \'"
+                     + grp_id + "\' AND st.closed = false ORDER BY study_id";
+        
+        logger.debug("Retrieving study IDs list for group ID " + grp_id);
+        return new ArrayList<>(getStudyHash(query).values());
+    }
     
     // Helper function to build the study list hash map based on the input query.
     private static LinkedHashMap<String, String> getStudyHash(String query) {
@@ -712,5 +726,200 @@ public abstract class StudyDB {
         }
         
         return annotHash;
-    }    
+    }
+    
+    // The following methods are mean for study_specific_fields table;
+    // temporary park here.    
+    // Insert the new study specific field into database.
+    public static void insertSSField(String study_id, String category, 
+            byte[] fields) {
+        Connection conn = null;
+        String query = "INSERT INTO study_specific_fields(study_id,category,fields) "
+                     + "VALUES(?,?,?)";
+        
+        try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            stm.setString(1, study_id);
+            stm.setString(2, category);
+            stm.setBytes(3, fields);
+            stm.executeUpdate();
+            stm.close();
+            
+            logger.info("New study specific field category inserted into database: " 
+                    + study_id + " - " + category);
+        }
+        catch (SQLException|NamingException e) {
+            logger.error("FAIL to insert study specific fields!");
+            logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
+        }
+    }
+    
+    // Return the list of specific field category (limit to 3) that belong to 
+    // this study.
+    public static List<String> getSpecificFieldCategoryFromStudy(String study_id) {
+        List<String> categories = new ArrayList<>();
+        Connection conn = null;
+        String query = "SELECT category FROM study_specific_fields "
+                     + "WHERE study_id = ? LIMIT 3";
+        
+        try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            stm.setString(1, study_id);
+            ResultSet rs = stm.executeQuery();
+            
+            while (rs.next()) {
+                categories.add(rs.getString("category"));
+            }
+            stm.close();
+        }
+        catch (SQLException|NamingException e) {
+            logger.error("FAIL to retrieve specific field catergory belonging to " + study_id);
+            logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
+        }
+
+        return categories;
+    }
+    
+    // Return the list of specific fields under this study's category.
+    public static List<String> getSpecificFieldListFromStudyCategory
+        (String study_id, String category) {
+        List<String> field_list = new ArrayList<>();
+        Connection conn = null;
+        String query = "SELECT fields FROM study_specific_fields "
+                     + "WHERE study_id = ? AND category = ?";
+        
+        try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            stm.setString(1, study_id);
+            stm.setString(2, category);
+            ResultSet rs = stm.executeQuery();
+            
+            if (rs.next()) {
+                field_list = FileHelper.convertByteArrayToList
+                                        (rs.getBytes("fields"));
+            }
+            stm.close();
+        }
+        catch (SQLException|NamingException e) {
+            logger.error("FAIL to retrieve specific field list belonging to " + 
+                        study_id + " - " + category);
+            logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
+        }
+        
+        return field_list;
+    }
+
+    // Delete all the study specific fields belonging to this study.
+    public static void deleteStudySpecificFields(String study_id) {
+        Connection conn = null;
+        String query = "DELETE FROM study_specific_fields WHERE study_id = ?";
+        
+        try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            stm.setString(1, study_id);
+            stm.executeUpdate();
+            stm.close();
+        }
+        catch (SQLException|NamingException e) {
+            logger.error("FAIL to delete study specific fields belonging to " + study_id);
+            logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
+        }
+    }
+    
+    // The following methods are mean for meta_data_tag table;
+    // temporary park here.
+    // Insert the new meta data tag into database.
+    public static void insertMetaDataTag(String study_id, String core_data, 
+            String column_id) {
+        Connection conn = null;
+        String query = "INSERT INTO meta_data_tag(study_id,core_data,column_id) "
+                     + "VALUES(?,?,?)";
+        
+        try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            stm.setString(1, study_id);
+            stm.setString(2, core_data);
+            stm.setString(3, column_id);
+            stm.executeUpdate();
+            stm.close();
+            
+            logger.info("New meta data tag inserted into database: " + study_id 
+                      + " - " + core_data + " - " + column_id);
+        }
+        catch (SQLException|NamingException e) {
+            logger.error("FAIL to insert meta data tag!");
+            logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
+        }
+    }
+    
+    // Return the meta data tag setup for this study.
+    public static HashMap<String,String> getMetaDataTagForStudy(String study_id) {
+        HashMap<String, String> meta_data_tag = new HashMap<>();
+        Connection conn = null;
+        String query = "SELECT core_data, column_id FROM meta_data_tag "
+                     + "WHERE study_id = ?";
+        
+        try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            stm.setString(1, study_id);
+            ResultSet rs = stm.executeQuery();
+            
+            while (rs.next()) {
+                meta_data_tag.put(rs.getString("core_data"), 
+                                  rs.getString("column_id"));
+            }
+            stm.close();
+        }
+        catch (SQLException|NamingException e) {
+            logger.error("FAIL to retrieve meta data tag from " + study_id);
+            logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
+        }
+
+        return meta_data_tag;
+    }
+    
+    // Delete all the meta data tag belonging to this study.
+    public static void deleteMetaDataTagForStudy(String study_id) {
+        Connection conn = null;
+        String query = "DELETE FROM meta_data_tag WHERE study_id = ?";
+        
+        try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            stm.setString(1, study_id);
+            stm.executeUpdate();
+            stm.close();
+        }
+        catch (SQLException|NamingException e) {
+            logger.error("FAIL to delete meta data tag belonging to " + study_id);
+            logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
+        }
+    }
 }
