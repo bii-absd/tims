@@ -6,6 +6,7 @@ package TIMS.Database;
 import TIMS.General.Constants;
 import TIMS.General.MetaRecordStatusTracker.RecordStatusEnum;
 // Libraries for Java
+import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -41,6 +42,8 @@ import org.apache.logging.log4j.LogManager;
  * places.
  * 13-Jul-2018 - Added one new field age_at_baseline. This is not a compulsory 
  * field and will only be added to the Subject table if it is available.
+ * 14-Aug-2018 - Include the validation and formating (1 decimal) for 
+ * age_at_baseline.
  */
 
 public class MetaRecord {
@@ -55,6 +58,8 @@ public class MetaRecord {
     private RecordStatusEnum record_status_enum;
     // Round off all the height and weight to 2 decimal places.
     public static final DecimalFormat heightWeightDF = new DecimalFormat("#.##");
+    // Round off all the age to 1 decimal place.
+    public static DecimalFormat ageDF = new DecimalFormat("#.#");
     // Read in the date in dd/MM/yy format.
     public static final SimpleDateFormat datef = new SimpleDateFormat("dd/MM/yyyy");
     public static final SimpleDateFormat dateTimef = new SimpleDateFormat("dd/MM/yyyy hh:mm a");
@@ -67,6 +72,8 @@ public class MetaRecord {
     private static final Pattern HEIGHT_PATTERN = 
         Pattern.compile("(^[0-2]\\.?[0-9]*$)?");
     private static final Pattern WEIGHT_PATTERN = 
+        Pattern.compile("(^[0-9]*\\.?[0-9]*$)?");
+    private static final Pattern AGE_PATTERN = 
         Pattern.compile("(^[0-9]*\\.?[0-9]*$)?");
     
     public MetaRecord(String subject_id, String race, String casecontrol, 
@@ -84,6 +91,8 @@ public class MetaRecord {
         this.record_status_enum = RecordStatusEnum.START;
         this.msg = "Record #" + index + " start.";
         datef.setLenient(false);
+        ageDF.setRoundingMode(RoundingMode.UP);
+        ageDF.setMinimumFractionDigits(1);
         
         if (!checkRecordDateValidity(record_date)) {
             this.record_status_enum = RecordStatusEnum.INVALID_DATE;
@@ -111,15 +120,21 @@ public class MetaRecord {
                 !WEIGHT_PATTERN.matcher(weight).matches()) {
             this.record_status_enum = RecordStatusEnum.INVALID;
         }
+        else if (age_at_baseline != null && !age_at_baseline.isEmpty() &&
+                !AGE_PATTERN.matcher(age_at_baseline).matches()) {
+            this.record_status_enum = RecordStatusEnum.INVALID;
+        }
         
         // Round off height and weight to 2 decimal places.
         if (this.record_status_enum == RecordStatusEnum.START) {
             if (!height.isEmpty()) {
                 this.height = heightWeightDF.format(Double.parseDouble(height));
             }
-            
             if (!weight.isEmpty()) {
                 this.weight = heightWeightDF.format(Double.parseDouble(weight));
+            }
+            if (!age_at_baseline.isEmpty()) {
+                this.age_at_baseline = ageDF.format(Double.parseDouble(age_at_baseline));
             }
         }
     }

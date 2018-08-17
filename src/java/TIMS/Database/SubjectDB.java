@@ -63,6 +63,8 @@ import org.apache.logging.log4j.LogManager;
  * 03-Jul-2018 - Added new method getDistinctValueInColumn(column_name, study_id) 
  * to return the list of distinct value found in this column under this study.
  * Changes due to addition of new field age_at_baseline in Subject table.
+ * 31-Jul-2018 - Bug fix: To check for empty string and non-float string at
+ * method getAgeAtBaselineList().
  */
 
 public abstract class SubjectDB {
@@ -423,9 +425,17 @@ public abstract class SubjectDB {
             ResultSet rs = stm.executeQuery();
             
             while (rs.next()) {
-                age_at_baseline_list.add(Float.valueOf(rs.getString("age_at_baseline")));
+                if (rs.getString("age_at_baseline").length() > 0) {
+                    try {
+                        age_at_baseline_list.add(Float.valueOf
+                            (rs.getString("age_at_baseline")));
+                    }
+                    catch (NumberFormatException nfe) {
+                        // Not a float; do nothing.
+                    }
+                }
             }
-            stm.close();            
+            stm.close();
         }
         catch (SQLException|NamingException e) {
             logger.error("FAIL to get age_at_baseline list!");

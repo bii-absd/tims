@@ -98,14 +98,14 @@
                titleStyleClass="tab-title">
             <h:panelGrid columns="3" cellspacing="4" cellpadding="4">
                 <h:form id="uploadCDTForm" enctype="multipart/form-data">
-                    <p:fileUpload id="uploadCDT" mode="advanced" 
+                    <p:fileUpload id="uploadCDT" mode="advanced" fileLimit="1" 
                                   update="MDMsg :accPanel:uploadMDForm :accPanel:resetForm"
                                   label="Core Data Tag File"
                                   allowTypes="/(\.|\/)(xlsx)$/"
                                   fileUploadListener="#{MDMgntBean.coreDataTagsUpload}"/>
                 </h:form>
                 <h:form id="uploadMDForm" enctype="multipart/form-data">
-                    <p:fileUpload id="uploadMD" mode="advanced" 
+                    <p:fileUpload id="uploadMD" mode="advanced" fileLimit="1"
                                   rendered="#{!MDMgntBean.coreDataTagEmpty}"
                                   update="MDMsg :accPanel:viewDataForm:MDTable :dataQForm :accPanel:resetForm :ctlPanel"
                                   label="Meta Data File" onstart="PF('buiPanel').show()"
@@ -113,7 +113,7 @@
                                   fileUploadListener="#{MDMgntBean.metaDataUpload}"/>
                 </h:form>
                 <h:form id="uploadSSFForm" enctype="multipart/form-data">
-                    <p:fileUpload id="uploadSSF" mode="advanced" 
+                    <p:fileUpload id="uploadSSF" mode="advanced" fileLimit="1"
                                   update="MDMsg :accPanel:viewSSFForm:SSFPanel :accPanel:resetForm :ctlPanel"
                                   label="Study Specific Fields File"
                                   allowTypes="/(\.|\/)(xlsx)$/"

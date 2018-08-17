@@ -116,6 +116,8 @@ import com.monitorjbl.xlsx.StreamingReader;
  * 17-Jul-2018 - Commented out unused code. Implemented the Dashboard module. 
  * Tagging of core data fields to column ID can be done through Excel file;
  * instead of hard coding the column ID.
+ * 14-Aug-2018 - Removed unused code. Remove Height, Weight and DateOfBirth data
+ * in method removeCoreData().
  */
 
 @ManagedBean (name="MDMgntBean")
@@ -124,12 +126,6 @@ public class MetaDataManagementBean implements Serializable {
     // Get the logger for Log4j
     private final static Logger logger = LogManager.
             getLogger(MetaDataManagementBean.class.getName());
-    /* NO LONGER IN USE!
-    private String subject_id, country_code, race, remarks, event;
-    private char gender;
-    private float height, weight, age_at_baseline;
-    private java.util.Date util_event_date, util_record_date;
-    */
     // Store the study's subject record that we are managing.
     private List<SubjectDetail> subtDetailList, filteredSubtDetailList;
     private final String userName, study_id;
@@ -201,6 +197,27 @@ public class MetaDataManagementBean implements Serializable {
         subtDetailList = SubjectDB.getSubtDetailList(study_id);
     }
 
+    /*
+    private int getNoOfRowsInExcel(String xlsxFile) {
+        File excel = new File(xlsxFile);
+        FileInputStream fis;
+        XSSFWorkbook wb;
+        XSSFSheet sh;
+        
+        try {
+            fis = new FileInputStream(excel);
+            wb = new XSSFWorkbook(fis);
+            sh = wb.getSheet("Data");
+            logger.info("No of rows in " + xlsxFile + " is " + sh.getLastRowNum() + 1);
+            
+            return sh.getLastRowNum() + 1;
+        } catch (IOException ex) {
+            logger.error(ex.getMessage());
+            return 0;
+        }
+    }
+    */
+    
     // Create the hashmap of meta data records using the values found in the
     // uploaded excel sheet.
     private void createMetaRecordsFromExcel(String xlsxFile) {
@@ -241,17 +258,6 @@ public class MetaDataManagementBean implements Serializable {
                 // Construct the Meta record for this subject.
                 // For now, we will hard-code the mapping for the data of interests.
                 MetaRecord record = new MetaRecord(
-                        /*
-                        recordTM.get("PID"),
-                        recordTM.get("Race"),
-                        recordTM.get("casecontrol"),
-                        recordTM.get("Visit__exam_Height_in_metres"),
-                        recordTM.get("Visit__exam_Weight"),
-                        recordTM.get("Date"),
-                        recordTM.get("DateOfBirth"),
-                        recordTM.get("Gender"),
-                        recordTM.get("Age_At_Baseline"),
-                        */
                         recordTM.get(core_data_tag.get("SubjectID")),
                         recordTM.get(core_data_tag.get("Race")),
                         recordTM.get(core_data_tag.get("CaseControl")),
@@ -282,9 +288,10 @@ public class MetaDataManagementBean implements Serializable {
         rec.remove(core_data_tag.get("SubjectID"));
         rec.remove(core_data_tag.get("Race"));
         rec.remove(core_data_tag.get("CaseControl"));
-//        rec.remove(core_data_tag.get("Height"));
-//        rec.remove(core_data_tag.get("Weight"));
+        rec.remove(core_data_tag.get("Height"));
+        rec.remove(core_data_tag.get("Weight"));
         rec.remove(core_data_tag.get("RecordDate"));
+        rec.remove(core_data_tag.get("DateOfBirth"));
         rec.remove(core_data_tag.get("Gender"));
         rec.remove(core_data_tag.get("AgeAtBaseline"));
 
@@ -429,17 +436,14 @@ public class MetaDataManagementBean implements Serializable {
             // data of interests.
             unsortedColNameL = exHelper.readNextRow();
             // Check to make sure all the core data columns are available.
-            /*
-            List<String> tmp = Arrays.asList("PID","Race","casecontrol",
-                    "Visit__exam_Height_in_metres","Visit__exam_Weight",
-                    "Date","DateOfBirth","Gender");
-            */
             if (!unsortedColNameL.containsAll(core_data_tag.values())) {
                 throw new java.lang.RuntimeException("Missing core data columns!");
             }
             
             // Reset colNameTM before constructing.
             colNameTM.clear();
+            // Store the column name as sorted, so that the order of the column
+            // will not matter.
             for (String colData : unsortedColNameL) {
                 colNameTM.put(colData, colData);
             }
@@ -501,7 +505,6 @@ public class MetaDataManagementBean implements Serializable {
                 else {
                     // There is missing subject(s) in the current upload,
                     // terminate the data upload and display error message.
-                    // TODO: Generate quality report!
                     throw new java.lang.RuntimeException
                         ("Mising subject detected in this upload!");
                 }
@@ -622,69 +625,6 @@ public class MetaDataManagementBean implements Serializable {
             statsTracker.concatMessageForStatus(rec.getRecord_status_enum(), msg);
         }
     }
-    
-    /* NO LONGER IN USE!
-    // Update the subject meta data in database
-    public void onRowEdit(RowEditEvent event) {
-        LocalDate new_record_date = null;
-        FacesContext fc = getFacesContext();
-        SubjectDetail subtDetail = (SubjectDetail) event.getObject();
-        // Because the system is receiving the date as java.util.Date hence
-        // we need to perform a conversion here before storing it into database.
-        if (util_event_date != null) {
-            subtDetail.setEvent_date(util_event_date.toInstant().
-                    atZone(ZoneId.systemDefault()).toLocalDate());
-        }
-        if (util_record_date != null) {
-            new_record_date = util_record_date.toInstant().
-                    atZone(ZoneId.systemDefault()).toLocalDate();
-        }
-        else {
-            // No change in the record date.
-            new_record_date = subtDetail.getRecord_date();
-        }
-        // Build the Subject and SubjectRecord objects using the selected 
-        // SubjectDetail object.
-        Subject subt = new Subject(subtDetail.getSubject_id(),
-                                   subtDetail.getStudy_id(),
-                                   subtDetail.getRace(),
-                                   subtDetail.getGender(),
-                                   subtDetail.getDob(),
-                                   subtDetail.getCasecontrol());
-        SubjectRecord sr = new SubjectRecord(subtDetail.getSubject_id(),
-                                           subtDetail.getStudy_id(),
-                                           subtDetail.getRecord_date(),
-                                           subtDetail.getRemarks(),
-                                           subtDetail.getEvent(),
-                                           subtDetail.getHeight(),
-                                           subtDetail.getWeight(),
-                                           subtDetail.getEvent_date(),
-                                           // For now, initialise as null.
-                                           null
-                                           );
-        
-        if (SubjectDB.updateSubt(subt) && SubjectRecordDB.updateSR(sr, new_record_date)) {
-            // Record this subject meta data update into database.
-            String detail = "Subject " + subt.getSubject_id() 
-                          + " in Study " + study_id 
-                          + ". Gender: " + subt.getGender() 
-                          + " Race: " + subt.getRace()
-                          + " DOB: " + subt.getDob()
-                          + " Case or Control: " + subt.getCasecontrol();
-            ActivityLogDB.recordUserActivity(userName, Constants.CHG_ID, detail);
-            logger.info(userName + ": updated " + detail);
-            fc.addMessage(null, new FacesMessage(
-                        FacesMessage.SEVERITY_INFO, "Meta data updated.", ""));
-            // Update the subject list.
-            refreshPageVariables();
-        }
-        else {
-            logger.error("FAIL to update meta data!");
-            fc.addMessage(null, new FacesMessage(
-                        FacesMessage.SEVERITY_ERROR, "Failed to update meta data!", ""));
-        }
-    }
-    */
     
     // Build the meta data list for the study; for user to download.
     public void downloadMetaDataList() {

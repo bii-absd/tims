@@ -32,6 +32,7 @@ import com.monitorjbl.xlsx.StreamingReader;
  * 30-Apr-2018 - Created with methods convertRowToStrList and readNextRow().
  * 18-May-2018 - Enhanced the way we read in Date Formatted cell i.e. to
  * handle DateTime, Time and Date cell value.
+ * 17-Aug-2018 - If the time is 12:20 AM, it is a date cell.
  */
 
 public class ExcelHelper {
@@ -68,8 +69,9 @@ public class ExcelHelper {
                             // This cell contains time value.
                             tmp = new DataFormatter().formatCellValue(c);
                         }
-                        // For date cell, the default time is 12:00 AM
-                        else if (dateTimeAmPm[1].equals("12:00") && dateTimeAmPm[2].equals("AM")) {
+                        // For date cell, the default time is 12:00 or 12:20 AM
+                        else if ( (dateTimeAmPm[1].equals("12:00") && dateTimeAmPm[2].equals("AM")) ||
+                                  (dateTimeAmPm[1].equals("12:20") && dateTimeAmPm[2].equals("AM"))) {
                             // This cell contains date value.
                             tmp = MetaRecord.datef.format(c.getDateCellValue());
                         }

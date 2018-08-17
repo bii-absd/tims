@@ -48,6 +48,11 @@ import org.primefaces.model.chart.LegendPlacement;
  * 
  * Revision History
  * 25-Jun-2018 - Implemented Dashboard module.
+ * 13-Aug-2018 - Re-design the way the specific fields barchart is being 
+ * generated. The subjectDetailList will be clear once it is no longer needed 
+ * (to free up memory space). To check for empty age_at_baseline data in method 
+ * genPieChartDOForAgeAtBaseline(). To hide the series info from the barchart
+ * tool-tip when mouse-over.
  */
 
 @ManagedBean (name = "DBBean")
@@ -67,6 +72,8 @@ public class DashboardBean implements Serializable {
     private PieChartModel piechartR, piechartL;
     private BarChartModel barchartL, barchartR;
     private HorizontalBarChartModel specificFieldsBarchart;
+    private HashMap<String, Integer> specific_fields_w_data, 
+                                     specific_fields_wo_data;
     
     
     public DashboardBean() {
@@ -79,6 +86,9 @@ public class DashboardBean implements Serializable {
         barchartL = new BarChartModel();
         specificFieldsBarchart = new HorizontalBarChartModel();
         categories = new ArrayList<>();
+        subjectDetailList = new ArrayList<>();
+        specific_fields_w_data = new HashMap<>();
+        specific_fields_wo_data = new HashMap<>();
         
         logger.debug(userName + ": access dashboard.");
     }
@@ -231,6 +241,10 @@ public class DashboardBean implements Serializable {
         if (study_id.compareTo("0") != 0) {
             logger.info("Study ID: " + study_id);
             study_sel = StudyDB.getStudyObject(study_id);
+            // Clean up the specific fields data points hashmaps.
+            specific_fields_w_data.clear();
+            specific_fields_wo_data.clear();
+            
             subjectDetailList = SubjectDB.getSubtDetailList(study_id);
             List<String> colNameL = FileHelper.convertByteArrayToList
                                         (StudyDB.getColumnNameList(study_id));
@@ -249,27 +263,73 @@ public class DashboardBean implements Serializable {
             if (!categories.isEmpty()) {
                 // By default, the first category will be selected.
                 specific_fields_selection = categories.get(0);
+                // Build the specific fields data points hashmaps.
+                buildSpecificFieldsDataPoints();
                 // Update study specific fields barchart.
                 updateSpecificFieldsBarchart();
             }
             // The barchart at the left plot race against gender.
             barchartL = createBarChartModel(genBarChartDOFromDBColumnsXY
                  ("race", "gender", study_id), "race", "Number of Subjects");
+            // Only show the y-axis i.e. number of subjects.
+            barchartL.setDatatipFormat("%2$d");
             // The barchart at the right plot race against casecontrol.
             barchartR = createBarChartModel(genBarChartDOFromDBColumnsXY
                  ("race", "casecontrol", study_id), "race", "Number of Subjects");
+            // Only show the y-axis i.e. number of subjects.
+            barchartR.setDatatipFormat("%2$d");
             // The piechart at the left plot the age group distribution chart.
             piechartL = createPieChartModel(genPieChartDOForAgeAtBaseline());
             // The piechart at the right plot the distribution of visit type.
             piechartR = createPieChartModel(genPieChartDOFromSpecificField
                                 ("ContacType", "Visit Type Breakdown Chart"));
+            // Clear the current subject detail list to free up memory.
+            subjectDetailList.clear();
         }
     }
 
+    // Build the data points (i.e. with data, without data) for all the specific
+    // fields in this study.
+    private void buildSpecificFieldsDataPoints() {
+        int with_data, wo_data;
+        // Go through all the categories, and retrieve the list of specific 
+        // fields.
+        for (String category : categories) {
+            List<String> field_list = StudyDB.
+                getSpecificFieldListFromStudyCategory(study_id, category);
+            // Go through the specific fields and tally the data points.
+            for (String field : field_list) {
+                with_data = wo_data = 0;
+                for (SubjectDetail subject : subjectDetailList) {
+                    if (subject.retrieveDataFromHashMap(field) == null || 
+                        subject.retrieveDataFromHashMap(field).isEmpty()) {
+                        wo_data++;
+                    }
+                    else {
+                        with_data++;
+                    }
+                }
+                // Insert the data points for this specific field into the 
+                // hashmaps.
+                specific_fields_w_data.put(field, with_data);
+                specific_fields_wo_data.put(field, wo_data);
+            }
+        }
+    }
+    
     // Generate the PieChartDataObject for the age_at_baseline field in the
     // subject table.
     private PieChartDataObject genPieChartDOForAgeAtBaseline() {
+        PieChartDataObject pco = new PieChartDataObject("Age Group Breakdown Chart");
         List<Float> age_baseline_list = SubjectDB.getAgeAtBaselineList(study_id);
+        // Make sure there is data available for further computation, else just
+        // return a default piechart.
+        if (age_baseline_list.isEmpty()) {
+            logger.debug("No data is available for age_at_baseline!");
+            pco.addSeries("INVALID AGE DATA", 1);
+            return pco;
+        }
+        
         int floor = (int) Math.floor(age_baseline_list.get(0));
         int ceiling = (int) Math.ceil(age_baseline_list.get
                                      (age_baseline_list.size()-1));
@@ -282,7 +342,6 @@ public class DashboardBean implements Serializable {
         }
         int lower_bound = floor;
         int upper_bound = 0;
-        PieChartDataObject pco = new PieChartDataObject("Age Group Breakdown Chart");
         // Keep creating the age grouping until the upper_bound is greater than
         // the ceiling.
         while (upper_bound < ceiling) {
@@ -314,12 +373,13 @@ public class DashboardBean implements Serializable {
         return pco;
     }
     
-    // Generate the PieChartDataObject for this specific field using the values 
-    // from the subject detail hashmap.
+    // Generate the PieChartDataObject for this specific field in the hashmap of
+    // the subject detail. The type of data should be category based e.g. the 
+    // available data value should be limited.
     private PieChartDataObject genPieChartDOFromSpecificField
         (String field, String title) 
     {
-        LinkedHashMap<String, Integer> series_tally = new LinkedHashMap<>();        
+        LinkedHashMap<String, Integer> series_tally = new LinkedHashMap<>();
         // Tally the count for each unique series name for this field.
         for (SubjectDetail subject : subjectDetailList) {
             String series = subject.retrieveDataFromHashMap(field);
@@ -409,23 +469,16 @@ public class DashboardBean implements Serializable {
                                                         new LinkedHashMap<>();
         for (String field : field_list) {
             BarChartDataObject dat = new BarChartDataObject(field);
-            dat.addSeries("Records with data");
-            dat.addSeries("Records without data");
-            for (SubjectDetail subject : subjectDetailList) {
-                if (subject.retrieveDataFromHashMap(field) == null || 
-                    subject.retrieveDataFromHashMap(field).isEmpty()) {
-                    dat.increSeriesCount("Records without data");
-                }
-                else {
-                    dat.increSeriesCount("Records with data");
-                }
-            }
+            dat.addSeries("Records with data", specific_fields_w_data.get(field));
+            dat.addSeries("Records without data", specific_fields_wo_data.get(field));
             // Convert the series count to percentage form.
             dat.convertSeriesCountToPercentage();
             data_object_hashmap.put(field, dat);
         }
-        
+        // Update the specific fields barchart.
         specificFieldsBarchart = createHorizontalBarChartModel(data_object_hashmap);
+        // Only show the x-axis i.e. percentage of records.
+        specificFieldsBarchart.setDatatipFormat("%1$d");
         logger.info("Category: " + specific_fields_selection);
     }
     

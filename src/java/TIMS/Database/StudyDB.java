@@ -95,6 +95,7 @@ import org.apache.logging.log4j.LogManager;
  * updateStudyColumnNameList. Removed unused code.
  * 19-Jul-2018 - Added one new method getStudyListUnderGroup. Added a group of 
  * methods for study_specific_fields and meta_data_tag tables.
+ * 08-Aug-2018 - Added one auto-increment column id in study_specific_fields.
  */
 
 public abstract class StudyDB {
@@ -764,7 +765,7 @@ public abstract class StudyDB {
         List<String> categories = new ArrayList<>();
         Connection conn = null;
         String query = "SELECT category FROM study_specific_fields "
-                     + "WHERE study_id = ? LIMIT 3";
+                     + "WHERE study_id = ? ORDER BY id LIMIT 3";
         
         try {
             conn = DBHelper.getDSConn();

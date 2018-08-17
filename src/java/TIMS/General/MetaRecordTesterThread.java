@@ -36,6 +36,7 @@ import org.apache.logging.log4j.LogManager;
  * dataConsistencyCheck, updateRelevantMetaRecords and 
  * generateFinalDataQualityStats.
  * 13-Jul-2018 - Changes due to change in subject table.
+ * 14-Aug-2018 - Added the check for age_at_baseline consistency.
  */
 
 public class MetaRecordTesterThread extends Thread {
@@ -108,11 +109,11 @@ public class MetaRecordTesterThread extends Thread {
     
     // Only records marked as VALID and NEW_VISIT will be checked for data 
     // consistency.
-    // For NEW_VISIT record, only the dob, case_control, gender and race will be 
-    // checked.
-    // For VALID record, the dob, case_control, gender and race + height, 
-    // weight and the full column data will be check against the column data 
-    // currently in the database.
+    // For NEW_VISIT record, only the dob, case_control, gender, race and 
+    // age_at_baseline will be checked.
+    // For VALID record, the dob, case_control, gender, race and age_at_baseline
+    // + height, weight and the full column data will be check against the 
+    // column data currently in the database.
     private void dataConsistencyCheck() {
         for (MetaRecord rec : recordsSet) {
             if (rec.isValid() || rec.isNewVisit()) {
@@ -123,6 +124,7 @@ public class MetaRecordTesterThread extends Thread {
                 if (subjt.getGender().equals(rec.getGender()) && 
                     subjt.getRace().equals(rec.getRace()) &&
                     subjt.getDob().equals(rec.getDob()) &&
+                    subjt.getAge_at_baseline().equals(rec.getAge_at_baseline()) &&
                     subjt.getCasecontrol().equals(rec.getCasecontrol())) {
                     if (rec.isValid()) {
                         // This is an existing record; need to check that the 
