@@ -96,6 +96,7 @@ import org.apache.logging.log4j.LogManager;
  * 19-Jul-2018 - Added one new method getStudyListUnderGroup. Added a group of 
  * methods for study_specific_fields and meta_data_tag tables.
  * 08-Aug-2018 - Added one auto-increment column id in study_specific_fields.
+ * 23-Aug-2018 - To allow update to study specific fields.
  */
 
 public abstract class StudyDB {
@@ -730,28 +731,48 @@ public abstract class StudyDB {
     }
     
     // The following methods are mean for study_specific_fields table;
-    // temporary park here.    
-    // Insert the new study specific field into database.
-    public static void insertSSField(String study_id, String category, 
+    // temporary park here.
+    // Insert or update the study specific field into database.
+    public static void updateSSField(String study_id, String category, 
             byte[] fields) {
         Connection conn = null;
-        String query = "INSERT INTO study_specific_fields(study_id,category,fields) "
-                     + "VALUES(?,?,?)";
+        PreparedStatement stm = null;
+        StringBuilder oper = new StringBuilder(study_id).append(" - ").append(category);
         
         try {
             conn = DBHelper.getDSConn();
-            PreparedStatement stm = conn.prepareStatement(query);
+            // Check whether is this a existing category.
+            stm = conn.prepareStatement
+                ("SELECT 1 FROM study_specific_fields WHERE study_id = ? AND category = ?");
             stm.setString(1, study_id);
             stm.setString(2, category);
-            stm.setBytes(3, fields);
+            ResultSet rs = stm.executeQuery();
+            
+            if (rs.isBeforeFirst()) {
+                // Existing category; update.
+                stm = conn.prepareStatement
+                    ("UPDATE study_specific_fields SET fields = ? WHERE study_id = ? AND category = ?");
+                stm.setBytes(1, fields);
+                stm.setString(2, study_id);
+                stm.setString(3, category);
+                oper.append(": Updated.");
+            }
+            else {
+                // New category; insert.
+                stm = conn.prepareStatement
+                    ("INSERT INTO study_specific_fields(study_id,category,fields) VALUES(?,?,?)");
+                stm.setString(1, study_id);
+                stm.setString(2, category);
+                stm.setBytes(3, fields);
+                oper.append(": Inserted.");
+            }
             stm.executeUpdate();
             stm.close();
             
-            logger.info("New study specific field category inserted into database: " 
-                    + study_id + " - " + category);
+            logger.info(oper);
         }
         catch (SQLException|NamingException e) {
-            logger.error("FAIL to insert study specific fields!");
+            logger.error("FAIL to update study specific fields!");
             logger.error(e.getMessage());
         }
         finally {
@@ -764,12 +785,14 @@ public abstract class StudyDB {
     public static List<String> getSpecificFieldCategoryFromStudy(String study_id) {
         List<String> categories = new ArrayList<>();
         Connection conn = null;
-        String query = "SELECT category FROM study_specific_fields "
-                     + "WHERE study_id = ? ORDER BY id LIMIT 3";
+        StringBuilder err = new StringBuilder
+            ("FAIL to retrieve specific field catergory belonging to ").
+                append(study_id);
         
         try {
             conn = DBHelper.getDSConn();
-            PreparedStatement stm = conn.prepareStatement(query);
+            PreparedStatement stm = conn.prepareStatement
+                ("SELECT category FROM study_specific_fields WHERE study_id = ? ORDER BY id LIMIT 3");
             stm.setString(1, study_id);
             ResultSet rs = stm.executeQuery();
             
@@ -779,7 +802,7 @@ public abstract class StudyDB {
             stm.close();
         }
         catch (SQLException|NamingException e) {
-            logger.error("FAIL to retrieve specific field catergory belonging to " + study_id);
+            logger.error(err);
             logger.error(e.getMessage());
         }
         finally {
@@ -794,12 +817,14 @@ public abstract class StudyDB {
         (String study_id, String category) {
         List<String> field_list = new ArrayList<>();
         Connection conn = null;
-        String query = "SELECT fields FROM study_specific_fields "
-                     + "WHERE study_id = ? AND category = ?";
+        StringBuilder err = new StringBuilder
+            ("FAIL to retrieve specific field list belonging to ").
+                append(study_id).append(" - ").append(category);
         
         try {
             conn = DBHelper.getDSConn();
-            PreparedStatement stm = conn.prepareStatement(query);
+            PreparedStatement stm = conn.prepareStatement
+                ("SELECT fields FROM study_specific_fields WHERE study_id = ? AND category = ?");
             stm.setString(1, study_id);
             stm.setString(2, category);
             ResultSet rs = stm.executeQuery();
@@ -811,8 +836,7 @@ public abstract class StudyDB {
             stm.close();
         }
         catch (SQLException|NamingException e) {
-            logger.error("FAIL to retrieve specific field list belonging to " + 
-                        study_id + " - " + category);
+            logger.error(err);
             logger.error(e.getMessage());
         }
         finally {
@@ -825,17 +849,20 @@ public abstract class StudyDB {
     // Delete all the study specific fields belonging to this study.
     public static void deleteStudySpecificFields(String study_id) {
         Connection conn = null;
-        String query = "DELETE FROM study_specific_fields WHERE study_id = ?";
+        StringBuilder err = new StringBuilder
+            ("FAIL to delete study specific fields belonging to ").
+                append(study_id);
         
         try {
             conn = DBHelper.getDSConn();
-            PreparedStatement stm = conn.prepareStatement(query);
+            PreparedStatement stm = conn.prepareStatement
+                ("DELETE FROM study_specific_fields WHERE study_id = ?");
             stm.setString(1, study_id);
             stm.executeUpdate();
             stm.close();
         }
         catch (SQLException|NamingException e) {
-            logger.error("FAIL to delete study specific fields belonging to " + study_id);
+            logger.error(err);
             logger.error(e.getMessage());
         }
         finally {
@@ -849,20 +876,21 @@ public abstract class StudyDB {
     public static void insertMetaDataTag(String study_id, String core_data, 
             String column_id) {
         Connection conn = null;
-        String query = "INSERT INTO meta_data_tag(study_id,core_data,column_id) "
-                     + "VALUES(?,?,?)";
+        StringBuilder oper = new StringBuilder
+            ("New meta data tag inserted into database: ").append(study_id).
+                append(" - ").append(core_data).append(" - ").append(column_id);
         
         try {
             conn = DBHelper.getDSConn();
-            PreparedStatement stm = conn.prepareStatement(query);
+            PreparedStatement stm = conn.prepareStatement
+                ("INSERT INTO meta_data_tag(study_id,core_data,column_id) VALUES(?,?,?)");
             stm.setString(1, study_id);
             stm.setString(2, core_data);
             stm.setString(3, column_id);
             stm.executeUpdate();
             stm.close();
             
-            logger.info("New meta data tag inserted into database: " + study_id 
-                      + " - " + core_data + " - " + column_id);
+            logger.info(oper);
         }
         catch (SQLException|NamingException e) {
             logger.error("FAIL to insert meta data tag!");
@@ -877,12 +905,13 @@ public abstract class StudyDB {
     public static HashMap<String,String> getMetaDataTagForStudy(String study_id) {
         HashMap<String, String> meta_data_tag = new HashMap<>();
         Connection conn = null;
-        String query = "SELECT core_data, column_id FROM meta_data_tag "
-                     + "WHERE study_id = ?";
+        StringBuilder err = new StringBuilder
+            ("FAIL to retrieve meta data tag from ").append(study_id);
         
         try {
             conn = DBHelper.getDSConn();
-            PreparedStatement stm = conn.prepareStatement(query);
+            PreparedStatement stm = conn.prepareStatement
+                ("SELECT core_data, column_id FROM meta_data_tag WHERE study_id = ?");
             stm.setString(1, study_id);
             ResultSet rs = stm.executeQuery();
             
@@ -893,7 +922,7 @@ public abstract class StudyDB {
             stm.close();
         }
         catch (SQLException|NamingException e) {
-            logger.error("FAIL to retrieve meta data tag from " + study_id);
+            logger.error(err);
             logger.error(e.getMessage());
         }
         finally {
@@ -906,17 +935,19 @@ public abstract class StudyDB {
     // Delete all the meta data tag belonging to this study.
     public static void deleteMetaDataTagForStudy(String study_id) {
         Connection conn = null;
-        String query = "DELETE FROM meta_data_tag WHERE study_id = ?";
+        StringBuilder err = new StringBuilder
+            ("FAIL to delete meta data tag belonging to ").append(study_id);
         
         try {
             conn = DBHelper.getDSConn();
-            PreparedStatement stm = conn.prepareStatement(query);
+            PreparedStatement stm = conn.prepareStatement
+                ("DELETE FROM meta_data_tag WHERE study_id = ?");
             stm.setString(1, study_id);
             stm.executeUpdate();
             stm.close();
         }
         catch (SQLException|NamingException e) {
-            logger.error("FAIL to delete meta data tag belonging to " + study_id);
+            logger.error(err);
             logger.error(e.getMessage());
         }
         finally {

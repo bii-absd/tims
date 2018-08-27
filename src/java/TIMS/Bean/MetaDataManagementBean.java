@@ -118,6 +118,7 @@ import com.monitorjbl.xlsx.StreamingReader;
  * instead of hard coding the column ID.
  * 14-Aug-2018 - Removed unused code. Remove Height, Weight and DateOfBirth data
  * in method removeCoreData().
+ * 23-Aug-2018 - To allow update to study specific fields.
  */
 
 @ManagedBean (name="MDMgntBean")
@@ -380,7 +381,7 @@ public class MetaDataManagementBean implements Serializable {
                         tmp.add(field.get(1));
                         ssFields_hashmap.put(field.get(0), tmp);
                     }
-                else {
+                    else {
                     // Existing category, add the field to the existing list of 
                     // string.
                     ssFields_hashmap.get(field.get(0)).add(field.get(1));
@@ -390,7 +391,7 @@ public class MetaDataManagementBean implements Serializable {
             }
             
             for (Map.Entry data : ssFields_hashmap.entrySet()) {
-                StudyDB.insertSSField(study_id, (String) data.getKey(), 
+                StudyDB.updateSSField(study_id, (String) data.getKey(), 
                         FileHelper.convertObjectToByteArray(data.getValue()));
             }
             // Delete the temporary Excel file after use.
