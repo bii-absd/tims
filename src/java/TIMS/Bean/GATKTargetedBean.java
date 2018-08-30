@@ -1,14 +1,18 @@
 /*
- * Copyright @2017
+ * Copyright @2017-2018
  */
 package TIMS.Bean;
 
 import TIMS.General.Constants;
 import TIMS.General.ResourceRetriever;
+// Library for Java
 import java.io.File;
 // Libraries for Java Extension
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ViewScoped;
+import javax.inject.Named;
+//import javax.faces.bean.ManagedBean;
+//import javax.faces.bean.ViewScoped;
+// Library for omnifaces
+import org.omnifaces.cdi.ViewScoped;
 
 /**
  * GATKTargetedBean is used as the backing bean for the gatk-targeted-seq view.
@@ -20,9 +24,12 @@ import javax.faces.bean.ViewScoped;
  * 10-Jul-2017 - Initial creation by extending GEXAffymetrixBean. Override the
  * initFiles(), renameAnnotCtrlFiles(), createConfigFile(), and 
  * retrieveRawDataFileList() methods, and created a new method getIntFileName().
+ * 28-Aug-2018 - To replace JSF managed bean with CDI, and JSF ViewScoped with
+ * omnifaces's ViewScoped.
  */
 
-@ManagedBean (name="GatkTarBean")
+//@ManagedBean (name="GatkTarBean")
+@Named("GatkTarBean")
 @ViewScoped
 public class GATKTargetedBean extends GEXAffymetrixBean {
     private FileUploadBean intFile;

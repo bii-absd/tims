@@ -14,13 +14,16 @@ import java.util.List;
 // Libraries for Java Extension
 import javax.annotation.PostConstruct;
 import javax.faces.application.FacesMessage;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ViewScoped;
+//import javax.faces.bean.ManagedBean;
+//import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
+import javax.inject.Named;
 import javax.naming.NamingException;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+// Library for omnifaces
+import org.omnifaces.cdi.ViewScoped;
 // Libraries for PrimeFaces
 import org.primefaces.event.RowEditEvent;
 
@@ -35,9 +38,12 @@ import org.primefaces.event.RowEditEvent;
  * the edit function for feature active status.
  * 11-Jun-2018 - Changes due to update in feature table; replaced active 
  * (BOOLEAN) with status (TEXT).
+ * 28-Aug-2018 - To replace JSF managed bean with CDI, and JSF ViewScoped with
+ * omnifaces's ViewScoped.
  */
 
-@ManagedBean (name="fteMgntBean")
+//@ManagedBean (name="fteMgntBean")
+@Named("fteMgntBean")
 @ViewScoped
 public class FeatureManagementBean implements Serializable {
     // Get the logger for Log4j

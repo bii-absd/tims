@@ -13,12 +13,15 @@ import java.io.Serializable;
 import java.util.LinkedHashMap;
 // Libraries for Java Extension
 import javax.annotation.PostConstruct;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ViewScoped;
+//import javax.faces.bean.ManagedBean;
+//import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
+import javax.inject.Named;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+// Library for omnifaces
+import org.omnifaces.cdi.ViewScoped;
 
 /**
  * MenuSelectionBean is used as the backing bean for the main view.
@@ -79,9 +82,12 @@ import org.apache.logging.log4j.LogManager;
  * 20-Apr-2018 - Minor update to method proceedToMetaDataMgnt().
  * 08-May-2018 - Standardise the study list for both pipeline configuration
  * page and raw data management page.
+ * 28-Aug-2018 - To replace JSF managed bean with CDI, and JSF ViewScoped with
+ * omnifaces's ViewScoped.
  */
 
-@ManagedBean (name="menuSelBean")
+//@ManagedBean (name="menuSelBean")
+@Named("menuSelBean")
 @ViewScoped
 public class MenuSelectionBean implements Serializable{
     // Get the logger for Log4j

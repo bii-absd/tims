@@ -1,14 +1,18 @@
 /*
- * Copyright @2016-2017
+ * Copyright @2016-2018
  */
 package TIMS.Bean;
 
 import static TIMS.Bean.ConfigBean.logger;
 import TIMS.General.Constants;
+// Library for Java
 import java.io.File;
 // Libraries for Java Extension
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ViewScoped;
+import javax.inject.Named;
+// Library for omnifaces
+import org.omnifaces.cdi.ViewScoped;
+//import javax.faces.bean.ManagedBean;
+//import javax.faces.bean.ViewScoped;
 
 /**
  * CNVIlluminaBean is used as the backing bean for the cnv-pipeline view.
@@ -56,9 +60,12 @@ import javax.faces.bean.ViewScoped;
  * 06-Feb-2017 - Enhanced method retrieveRawDataFileList() to use the helper
  * function filterRawDataFileList().
  * 08-Feb-2017 - Renamed from CNVPipelineBean to CNVIlluminaBean.
+ * 28-Aug-2018 - To replace JSF managed bean with CDI, and JSF ViewScoped with
+ * omnifaces's ViewScoped.
  */
 
-@ManagedBean (name="cnvIlluBean")
+//@ManagedBean (name="cnvIlluBean")
+@Named("cnvIlluBean")
 @ViewScoped
 public class CNVIlluminaBean extends GEXAffymetrixBean {
     private FileUploadBean ctrlFile;

@@ -1,18 +1,22 @@
 /*
- * Copyright @2015-2016
+ * Copyright @2015-2018
  */
 package TIMS.Bean;
 
 import TIMS.Database.InputData;
 import TIMS.Database.InputDataDB;
 import TIMS.General.Constants;
+// Libraries for Java
 import java.sql.SQLException;
 import java.util.List;
 // Libraries for Java Extension
 import javax.annotation.PostConstruct;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ViewScoped;
+import javax.inject.Named;
+//import javax.faces.bean.ManagedBean;
+//import javax.faces.bean.ViewScoped;
 import javax.naming.NamingException;
+// Library for omnifaces
+import org.omnifaces.cdi.ViewScoped;
 
 /**
  * GEXAffymetrixBean is used as the backing bean for the gex-affymetrix view.
@@ -72,9 +76,12 @@ import javax.naming.NamingException;
  * 05-Sep-2016 - Changes due to change in constant name.
  * 14-Sep-2016 - Implemented Raw Data Customization module. Removed method 
  * insertJob().
+ * 28-Aug-2018 - To replace JSF managed bean with CDI, and JSF ViewScoped with
+ * omnifaces's ViewScoped.
  */
 
-@ManagedBean (name="gexAffyBean")
+//@ManagedBean (name="gexAffyBean")
+@Named("gexAffyBean")
 @ViewScoped
 public class GEXAffymetrixBean extends ConfigBean {
     protected List<String> missingFiles = null;

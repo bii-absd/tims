@@ -1,5 +1,5 @@
 /*
- * Copyright @2016
+ * Copyright @2016-2018
  */
 package TIMS.Bean;
 
@@ -8,19 +8,22 @@ import TIMS.Database.Study;
 import TIMS.Database.StudyDB;
 import TIMS.Database.VaultKeeper;
 import TIMS.General.Constants;
+// Libraries for Java
 import java.io.Serializable;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 // Libraries for Java Extension
 import javax.annotation.PostConstruct;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ViewScoped;
+//import javax.faces.bean.ManagedBean;
+//import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
+import javax.inject.Named;
 import javax.naming.NamingException;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.omnifaces.cdi.ViewScoped;
 
 /**
  * CloseStudyBean is the backing bean for the closestudy view.
@@ -31,9 +34,12 @@ import org.apache.logging.log4j.LogManager;
  * Revision History
  * 14-Mar-2016 - Created with all the standard getters and setters. Implemented 
  * the module to close study.
+ * 28-Aug-2018 - To replace JSF managed bean with CDI, and JSF ViewScoped with
+ * omnifaces's ViewScoped.
  */
 
-@ManagedBean (name="clstudyBean")
+@Named("clstudyBean")
+//@ManagedBean (name="clstudyBean")
 @ViewScoped
 public class CloseStudyBean implements Serializable {
     // Get the logger for Log4j

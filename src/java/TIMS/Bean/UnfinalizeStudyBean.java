@@ -1,5 +1,5 @@
 /*
- * Copyright @2016
+ * Copyright @2016-2018
  */
 package TIMS.Bean;
 
@@ -10,19 +10,23 @@ import TIMS.Database.StudyDB;
 import TIMS.Database.SubmittedJobDB;
 import TIMS.Database.UserAccountDB;
 import TIMS.General.Constants;
+// Libraries for Java
 import java.io.Serializable;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 // Libraries for Java Extension
 import javax.annotation.PostConstruct;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ViewScoped;
+//import javax.faces.bean.ManagedBean;
+//import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
+import javax.inject.Named;
 import javax.naming.NamingException;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+// Library for omnifaces
+import org.omnifaces.cdi.ViewScoped;
 
 /**
  * UnfinalizeStudyBean is the backing bean for the unfinalizestudy view.
@@ -39,9 +43,12 @@ import org.apache.logging.log4j.LogManager;
  * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
  * (Institution - Department - Group).
  * 14-Dec-2016 - Do nothing for ad-hoc study.
+ * 28-Aug-2018 - To replace JSF managed bean with CDI, and JSF ViewScoped with
+ * omnifaces's ViewScoped.
  */
 
-@ManagedBean (name="unfinBean")
+//@ManagedBean (name="unfinBean")
+@Named("unfinBean")
 @ViewScoped
 public class UnfinalizeStudyBean implements Serializable {
     // Get the logger for Log4j

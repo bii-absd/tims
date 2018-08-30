@@ -1,13 +1,16 @@
 /*
- * Copyright @2016-2017
+ * Copyright @2016-2018
  */
 package TIMS.Bean;
 
 import static TIMS.Bean.ConfigBean.logger;
 import java.util.List;
 // Libraries for Java Extension
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ViewScoped;
+import javax.inject.Named;
+//import javax.faces.bean.ManagedBean;
+//import javax.faces.bean.ViewScoped;
+// Library for omnifaces
+import org.omnifaces.cdi.ViewScoped;
 
 /**
  * METHPipelineBean is used as the backing bean for the meth-pipeline view.
@@ -51,9 +54,12 @@ import javax.faces.bean.ViewScoped;
  * 06-Feb-2017 - Enhanced method getAllFilenameFromAnnot() to use the helper
  * function getFilenamePairs().
  * 08-Feb-2017 - Changes due to change in method name at ConfigBean.
+ * 28-Aug-2018 - To replace JSF managed bean with CDI, and JSF ViewScoped with
+ * omnifaces's ViewScoped.
  */
 
-@ManagedBean (name="methPBean")
+//@ManagedBean (name="methPBean")
+@Named("methPBean")
 @ViewScoped
 public class METHPipelineBean extends GEXAffymetrixBean {
 

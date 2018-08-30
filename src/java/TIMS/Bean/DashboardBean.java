@@ -24,14 +24,17 @@ import java.util.List;
 import java.util.Map;
 // Libraries for Java Extension
 import javax.annotation.PostConstruct;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ViewScoped;
+//import javax.faces.bean.ManagedBean;
+//import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
 import javax.faces.model.SelectItemGroup;
+import javax.inject.Named;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+// Library for omnifaces
+import org.omnifaces.cdi.ViewScoped;
 // Libraries for Primefaces
 import org.primefaces.model.chart.PieChartModel;
 import org.primefaces.model.chart.AxisType;
@@ -53,9 +56,12 @@ import org.primefaces.model.chart.LegendPlacement;
  * (to free up memory space). To check for empty age_at_baseline data in method 
  * genPieChartDOForAgeAtBaseline(). To hide the series info from the barchart
  * tool-tip when mouse-over.
+ * 28-Aug-2018 - To replace JSF managed bean with CDI, and JSF ViewScoped with
+ * omnifaces's ViewScoped.
  */
 
-@ManagedBean (name = "DBBean")
+//@ManagedBean (name = "DBBean")
+@Named("DBBean")
 @ViewScoped
 public class DashboardBean implements Serializable {
     // Get the logger for Log4j
@@ -100,7 +106,7 @@ public class DashboardBean implements Serializable {
         String groupQuery = QueryStringGenerator.genGrpQuery4Review(user);
         study_list = buildStudyListSelectItems(groupQuery);        
     }
-    
+
     // Construct the list of select items found in the drop-down list for study
     // selection.
     private List<SelectItem> buildStudyListSelectItems(String grpQuery) {

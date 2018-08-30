@@ -36,9 +36,10 @@ import java.util.Map;
 // Libraries for Java Extension
 import javax.annotation.PostConstruct;
 import javax.faces.application.FacesMessage;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ViewScoped;
+//import javax.faces.bean.ManagedBean;
+//import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
+import javax.inject.Named;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -52,6 +53,8 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 // Library for stream reader
 import com.monitorjbl.xlsx.StreamingReader;
+// Library for omniface
+import org.omnifaces.cdi.ViewScoped;
 
 /**
  * MetaDataManagementBean is the backing bean for the metadatamanagement view.
@@ -119,9 +122,12 @@ import com.monitorjbl.xlsx.StreamingReader;
  * 14-Aug-2018 - Removed unused code. Remove Height, Weight and DateOfBirth data
  * in method removeCoreData().
  * 23-Aug-2018 - To allow update to study specific fields.
+ * 28-Aug-2018 - To replace JSF managed bean with CDI, and JSF ViewScoped with
+ * omnifaces's ViewScoped.
  */
 
-@ManagedBean (name="MDMgntBean")
+//@ManagedBean (name="MDMgntBean")
+@Named("MDMgntBean")
 @ViewScoped
 public class MetaDataManagementBean implements Serializable {
     // Get the logger for Log4j

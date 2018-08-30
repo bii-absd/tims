@@ -1,5 +1,5 @@
 /*
- * Copyright @2016-2017
+ * Copyright @2016-2018
  */
 package TIMS.Bean;
 
@@ -10,6 +10,7 @@ import TIMS.Database.PipelineDB;
 import TIMS.General.Constants;
 import TIMS.General.FileHelper;
 import TIMS.General.ResourceRetriever;
+// Libraries for Java
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -20,14 +21,18 @@ import java.util.List;
 // Libraries for Java Extension
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ViewScoped;
+//import javax.faces.bean.ManagedBean;
+//import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
+import javax.inject.Named;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 // Library for PrimeFaces
 import org.primefaces.event.FileUploadEvent;
+// Library for omnifaces
+import org.omnifaces.cdi.ViewScoped;
+
 
 /**
  * RawDataManagementBean is the backing bean for the rawdatamanagement view.
@@ -44,9 +49,12 @@ import org.primefaces.event.FileUploadEvent;
  * 08-Feb-2017 - Changes due to change in PipelineDB constant name.
  * 08-Mar-2017 - Added the filter type (i.e. CEL) for CNV Affymetrix pipeline.
  * 14-Jul-2017 - Changes due to the addition of GATK Sequencing Pipelines.
+ * 28-Aug-2018 - To replace JSF managed bean with CDI, and JSF ViewScoped with
+ * omnifaces's ViewScoped.
  */
 
-@ManagedBean (name="RDMgntBean")
+//@ManagedBean (name="RDMgntBean")
+@Named("RDMgntBean")
 @ViewScoped
 public class RawDataManagementBean implements Serializable {
     // Get the logger for Log4j
@@ -306,13 +314,13 @@ public class RawDataManagementBean implements Serializable {
     }
     
     // Return true if this pipeline has interval file, else return false.
-    public final boolean getIntervalFileStatus() {
+    public boolean getIntervalFileStatus() {
         return (plName.equals(PipelineDB.GATK_TAR_GERM) ||
                 plName.equals(PipelineDB.GATK_TAR_SOMA));
     }
     
     // Return true if this pipeline has control file, else return false.
-    public final boolean getControlFileStatus() {
+    public boolean getControlFileStatus() {
         return (plName.equals(PipelineDB.CNV_ILLUMINA) || 
                 plName.equals(PipelineDB.GEX_ILLUMINA));
     }

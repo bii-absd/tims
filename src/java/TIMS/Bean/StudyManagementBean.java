@@ -1,5 +1,5 @@
 /*
- * Copyright @2015-2016
+ * Copyright @2015-2018
  */
 package TIMS.Bean;
 
@@ -13,6 +13,7 @@ import TIMS.Database.Study;
 import TIMS.Database.StudyDB;
 import TIMS.Database.UserAccountDB;
 import TIMS.General.Constants;
+// Libraries for Java
 import java.io.Serializable;
 import java.sql.Date;
 import java.util.ArrayList;
@@ -21,16 +22,19 @@ import java.util.List;
 // Libraries for Java Extension
 import javax.annotation.PostConstruct;
 import javax.faces.application.FacesMessage;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ViewScoped;
+//import javax.faces.bean.ManagedBean;
+//import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
 import javax.faces.model.SelectItemGroup;
+import javax.inject.Named;
 // Libraries for primefaces
 import org.primefaces.event.RowEditEvent;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+// Library for omnifaces
+import org.omnifaces.cdi.ViewScoped;
 
 /**
  * StudyManagementBean is the backing bean for the studymanagement view.
@@ -69,9 +73,12 @@ import org.apache.logging.log4j.LogManager;
  * table.
  * 23-Mar-2016 - To allow user to update the study description, background and
  * grant information.
+ * 28-Aug-2018 - To replace JSF managed bean with CDI, and JSF ViewScoped with
+ * omnifaces's ViewScoped.
  */
 
-@ManagedBean (name="studyMgntBean")
+//@ManagedBean (name="studyMgntBean")
+@Named("studyMgntBean")
 @ViewScoped
 public class StudyManagementBean implements Serializable {
     // Get the logger for Log4j

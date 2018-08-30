@@ -19,16 +19,18 @@ import java.util.List;
 // Libraries for Java Extension
 import javax.annotation.PostConstruct;
 import javax.faces.application.FacesMessage;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ViewScoped;
+//import javax.faces.bean.ManagedBean;
+//import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
+import javax.inject.Named;
 // Libraries for PrimeFaces
 import org.primefaces.event.RowEditEvent;
+import org.primefaces.context.RequestContext;
+import org.primefaces.util.ComponentUtils;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-import org.primefaces.context.RequestContext;
-import org.primefaces.util.ComponentUtils;
+import org.omnifaces.cdi.ViewScoped;
 
 /**
  * WorkUnitManagementBean is the backing bean for the workunitmanagement view.
@@ -60,9 +62,12 @@ import org.primefaces.util.ComponentUtils;
  * 03-Jun-2016 - Remove unused code.
  * 07-Jun-2018 - Renamed class name from GroupManagementBean to 
  * WorkUnitManagementBean.
+ * 28-Aug-2018 - To replace JSF managed bean with CDI, and JSF ViewScoped with
+ * omnifaces's ViewScoped.
  */
 
-@ManagedBean (name="grpMgntBean")
+//@ManagedBean (name="grpMgntBean")
+@Named("grpMgntBean")
 @ViewScoped
 public class WorkUnitManagementBean implements Serializable {
     // Get the logger for Log4j

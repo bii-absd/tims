@@ -1,5 +1,5 @@
 /*
- * Copyright @2015-2016
+ * Copyright @2015-2018
  */
 package TIMS.Bean;
 
@@ -7,19 +7,22 @@ import TIMS.Database.ActivityLogDB;
 import TIMS.Database.Pipeline;
 import TIMS.Database.PipelineDB;
 import TIMS.General.Constants;
+// Libraries for Java
 import java.io.Serializable;
 import java.sql.SQLException;
 import java.util.List;
 // Libraries for Java Extension
 import javax.annotation.PostConstruct;
 import javax.faces.application.FacesMessage;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ViewScoped;
+//import javax.faces.bean.ManagedBean;
+//import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
+import javax.inject.Named;
 import javax.naming.NamingException;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.omnifaces.cdi.ViewScoped;
 // Libraries for PrimeFaces
 import org.primefaces.event.RowEditEvent;
 
@@ -42,9 +45,12 @@ import org.primefaces.event.RowEditEvent;
  * 29-Feb-2016 - Implementation of Data Source pooling. To use DataSource to 
  * get the database connection instead of using DriverManager.
  * 25-Aug-2016 - Implementation for database 3.6 Part I.
+ * 28-Aug-2018 - To replace JSF managed bean with CDI, and JSF ViewScoped with
+ * omnifaces's ViewScoped.
  */
 
-@ManagedBean (name="plMgntBean")
+//@ManagedBean (name="plMgntBean")
+@Named("plMgntBean")
 @ViewScoped
 public class PipelineManagementBean implements Serializable {
     // Get the logger for Log4j

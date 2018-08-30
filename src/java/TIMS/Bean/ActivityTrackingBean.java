@@ -1,11 +1,12 @@
 /*
- * Copyright @2016
+ * Copyright @2016-2018
  */
 package TIMS.Bean;
 
 import TIMS.Database.ActivityLog;
 import TIMS.Database.ActivityLogDB;
 import TIMS.Database.UserAccountDB;
+// Libraries for Java
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -14,12 +15,15 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 // Libraries for Java Extension
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ViewScoped;
+//import javax.faces.bean.ManagedBean;
+//import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
+import javax.inject.Named;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+// Library for omnifaces
+import org.omnifaces.cdi.ViewScoped;
 
 /**
  * ActivityTrackingBean is the backing bean for the activitytracking view.
@@ -38,9 +42,12 @@ import org.apache.logging.log4j.LogManager;
  * from his/her institution.
  * 27-Apr-2016 - To build and supply the list of activity for selection in the
  * activity tracking page.
+ * 28-Aug-2018 - To replace JSF managed bean with CDI, and JSF ViewScoped with
+ * omnifaces's ViewScoped.
  */
 
-@ManagedBean (name = "actiBean")
+//@ManagedBean (name = "actiBean")
+@Named("actiBean")
 @ViewScoped
 public class ActivityTrackingBean implements Serializable {
     // Get the logger for Log4j

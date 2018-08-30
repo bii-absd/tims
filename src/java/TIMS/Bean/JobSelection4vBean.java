@@ -1,5 +1,5 @@
 /*
- * Copyright @2016-2017
+ * Copyright @2016-2018
  */
 package TIMS.Bean;
 
@@ -14,6 +14,7 @@ import TIMS.General.Constants;
 import TIMS.General.QueryStringGenerator;
 import TIMS.General.ResourceRetriever;
 import TIMS.Visualizers.cBioVisualizer;
+// Libraries for Java
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -21,12 +22,15 @@ import java.util.LinkedHashMap;
 import java.util.List;
 // Libraries for Java Extension
 import javax.annotation.PostConstruct;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ViewScoped;
+//import javax.faces.bean.ManagedBean;
+//import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
+import javax.inject.Named;
 // Libraries for Log4j
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+// Library for omnifaces
+import org.omnifaces.cdi.ViewScoped;
 
 /**
  * JobSelection4vBean is the backing bean for the jobselection4v view.
@@ -42,9 +46,12 @@ import org.apache.logging.log4j.Logger;
  * 10-Feb-2017 - To allow jobs from up to 5 pipelines to be selected for export.
  * 09-Oct-2017 - The grouping of pipeline jobs will be based on the profile from
  * visualiser (i.e. it is no longer based on pipeline.)
+ * 28-Aug-2018 - To replace JSF managed bean with CDI, and JSF ViewScoped with
+ * omnifaces's ViewScoped.
  */
 
-@ManagedBean (name="js4vBean")
+//@ManagedBean (name="js4vBean")
+@Named("js4vBean")
 @ViewScoped
 public class JobSelection4vBean implements Serializable {
     // Get the logger for Log4j

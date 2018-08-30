@@ -1,5 +1,5 @@
 /*
- * Copyright @2015-2016
+ * Copyright @2015-2018
  */
 package TIMS.Bean;
 
@@ -12,6 +12,7 @@ import TIMS.Database.UserAccount;
 import TIMS.Database.UserAccountDB;
 import TIMS.Database.UserRoleDB;
 import TIMS.General.Constants;
+// Libraries for Java
 import java.io.Serializable;
 import java.sql.SQLException;
 import java.util.LinkedHashMap;
@@ -19,13 +20,16 @@ import java.util.List;
 // Libraries for Java Extension
 import javax.annotation.PostConstruct;
 import javax.faces.application.FacesMessage;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ViewScoped;
+//import javax.faces.bean.ManagedBean;
+//import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
+import javax.inject.Named;
 import javax.naming.NamingException;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+// Library for omnifaces
+import org.omnifaces.cdi.ViewScoped;
 // Libraries for PrimeFaces
 import org.primefaces.event.RowEditEvent;
 import org.primefaces.event.FileUploadEvent;
@@ -81,9 +85,12 @@ import org.primefaces.event.TabChangeEvent;
  * 08-Apr-2016 - Added in the logic to prevent user from switching from one
  * institution to another institution during updating of user account. Added in
  * the institution selection during account creation.
+ * 28-Aug-2018 - To replace JSF managed bean with CDI, and JSF ViewScoped with
+ * omnifaces's ViewScoped.
  */
 
-@ManagedBean (name="acctMgntBean")
+//@ManagedBean (name="acctMgntBean")
+@Named("acctMgntBean")
 @ViewScoped
 public class AccountManagementBean implements Serializable {
     // Get the logger for Log4j

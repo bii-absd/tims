@@ -1,5 +1,5 @@
 /*
- * Copyright @2016
+ * Copyright @2016-2018
  */
 package TIMS.Bean;
 
@@ -10,18 +10,22 @@ import TIMS.Database.UserAccount;
 import TIMS.Database.UserAccountDB;
 import TIMS.General.Constants;
 import TIMS.General.QueryStringGenerator;
+// Libraries for Java
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.List;
 // Libraries for Java Extension
 import javax.annotation.PostConstruct;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ViewScoped;
+//import javax.faces.bean.ManagedBean;
+//import javax.faces.bean.ViewScoped;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
+import javax.inject.Named;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+// Library for omnifaces
+import org.omnifaces.cdi.ViewScoped;
 
 /**
  * VisualizeStudyDataBean is the backing bean for the visualizemystudy view.
@@ -34,9 +38,12 @@ import org.apache.logging.log4j.LogManager;
  * first visualizer i.e. cBioportal.
  * 07-Jul-2016 - Added one new variable, selectedStudy and it's associated 
  * functions.
+ * 28-Aug-2018 - To replace JSF managed bean with CDI, and JSF ViewScoped with
+ * omnifaces's ViewScoped.
  */
 
-@ManagedBean (name = "visStudyBean")
+//@ManagedBean (name = "visStudyBean")
+@Named("visStudyBean")
 @ViewScoped
 public class VisualizeStudyDataBean implements Serializable {
     // Get the logger for Log4j

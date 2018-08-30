@@ -1,5 +1,5 @@
 /*
- * Copyright @2015-2017
+ * Copyright @2015-2018
  */
 package TIMS.Bean;
 
@@ -11,6 +11,7 @@ import TIMS.Database.SubjectRecordDB;
 import TIMS.Database.SubmittedJobDB;
 import TIMS.General.Constants;
 import TIMS.General.ResourceRetriever;
+// Libraries for Java
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -22,14 +23,16 @@ import java.util.LinkedHashMap;
 import java.util.List;
 // Libraries for Java Extension
 import javax.annotation.PostConstruct;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ViewScoped;
+//import javax.faces.bean.ManagedBean;
+//import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
+import javax.inject.Named;
 import javax.naming.NamingException;
 import javax.servlet.ServletContext;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.omnifaces.cdi.ViewScoped;
 
 /**
  * FinalizeStudyBean is the backing bean for the finalizestudy view.
@@ -84,9 +87,12 @@ import org.apache.logging.log4j.LogManager;
  * 19-Apr-2017 - Subject's meta data will now be own by study, and the study 
  * will be own by group i.e. the direct link between group and subject's meta 
  * data will be break off.
+ * 28-Aug-2018 - To replace JSF managed bean with CDI, and JSF ViewScoped with
+ * omnifaces's ViewScoped.
  */
 
-@ManagedBean (name="finalizedBean")
+//@ManagedBean (name="finalizedBean")
+@Named("finalizedBean")
 @ViewScoped
 public class FinalizeStudyBean implements Serializable {
     // Get the logger for Log4j

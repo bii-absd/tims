@@ -1,5 +1,5 @@
 /*
- * Copyright @2015-2016
+ * Copyright @2015-2018
  */
 package TIMS.Bean;
 
@@ -7,13 +7,17 @@ import static TIMS.Bean.ConfigBean.logger;
 import TIMS.Database.InputData;
 import TIMS.Database.InputDataDB;
 import TIMS.General.Constants;
+// Libraries for Java
 import java.io.File;
 import java.sql.SQLException;
 // Libraries for Java Extension
 import javax.annotation.PostConstruct;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ViewScoped;
+import javax.inject.Named;
+//import javax.faces.bean.ManagedBean;
+//import javax.faces.bean.ViewScoped;
 import javax.naming.NamingException;
+// Library for omnifaces
+import org.omnifaces.cdi.ViewScoped;
 
 /**
  * GEXIlluminaBean is used as the backing bean for the gex-illumina view.
@@ -74,9 +78,12 @@ import javax.naming.NamingException;
  * 05-Sep-2016 - Changes due to change in constant name.
  * 14-Sep-2016 - Implemented Raw Data Customization module. Removed method 
  * insertJob().
+ * 28-Aug-2018 - To replace JSF managed bean with CDI, and JSF ViewScoped with
+ * omnifaces's ViewScoped.
  */
 
-@ManagedBean (name="gexIlluBean")
+//@ManagedBean (name="gexIlluBean")
+@Named("gexIlluBean")
 @ViewScoped
 public class GEXIlluminaBean extends ConfigBean {
     private FileUploadBean ctrlFile;

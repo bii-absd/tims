@@ -1,13 +1,17 @@
 /*
- * Copyright @2017
+ * Copyright @2017-2018
  */
 package TIMS.Bean;
 
 import static TIMS.Bean.ConfigBean.logger;
+// Library for Java
 import java.util.List;
 // Libraries for Java Extension
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ViewScoped;
+//import javax.faces.bean.ManagedBean;
+//import javax.faces.bean.ViewScoped;
+import javax.inject.Named;
+// Library for omnifaces
+import org.omnifaces.cdi.ViewScoped;
 
 
 /**
@@ -20,9 +24,12 @@ import javax.faces.bean.ViewScoped;
  * 06-Feb-2017 - Initial creation by extending GEXAffymetrixBean. Override the
  * initFiles(), getAllFilenameFromAnnot() and retrieveRawDataFileList() methods.
  * 08-Feb-2017 - Changes due to change in method name at ConfigBean.
+ * 28-Aug-2018 - To replace JSF managed bean with CDI, and JSF ViewScoped with
+ * omnifaces's ViewScoped.
  */
 
-@ManagedBean (name="seqrnaBean")
+//@ManagedBean (name="seqrnaBean")
+@Named("seqrnaBean")
 @ViewScoped
 public class SeqRNABean extends GEXAffymetrixBean {
     

@@ -1,5 +1,5 @@
 /*
- * Copyright @2016
+ * Copyright @2016-2018
  */
 package TIMS.Bean;
 
@@ -11,16 +11,20 @@ import TIMS.Database.UserAccountDB;
 import TIMS.General.Constants;
 import TIMS.General.FileHelper;
 import TIMS.General.QueryStringGenerator;
+// Libraries for Java
 import java.io.Serializable;
 import java.util.List;
 // Libraries for Java Extension
 import javax.annotation.PostConstruct;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ViewScoped;
+//import javax.faces.bean.ManagedBean;
+//import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
+import javax.inject.Named;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+// Library for omnifaces
+import org.omnifaces.cdi.ViewScoped;
 
 /**
  * StudiesReviewBean is the backing bean for the studiesreview and 
@@ -43,9 +47,12 @@ import org.apache.logging.log4j.LogManager;
  * 19-May-2016 - To allow user to download the detail output file.
  * 22-Jun-2016 - Updated init() to use the query string generation function 
  * in QueryStringGenerator.
+ * 28-Aug-2018 - To replace JSF managed bean with CDI, and JSF ViewScoped with
+ * omnifaces's ViewScoped.
  */
 
-@ManagedBean (name = "StudiesBean")
+//@ManagedBean (name = "StudiesBean")
+@Named("StudiesBean")
 @ViewScoped
 public class StudiesReviewBean implements Serializable {
     // Get the logger for Log4j
