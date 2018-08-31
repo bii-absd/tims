@@ -74,6 +74,7 @@ public class DashboardBean implements Serializable {
     private HorizontalBarChartModel specificFieldsBarchart;
     private HashMap<String, Integer> specific_fields_w_data, 
                                      specific_fields_wo_data;
+    private SubjectDB subjects;
     
     
     public DashboardBean() {
@@ -241,11 +242,12 @@ public class DashboardBean implements Serializable {
         if (study_id.compareTo("0") != 0) {
             logger.info("Study ID: " + study_id);
             study_sel = StudyDB.getStudyObject(study_id);
+            subjects = new SubjectDB(study_id);
             // Clean up the specific fields data points hashmaps.
             specific_fields_w_data.clear();
             specific_fields_wo_data.clear();
             
-            subjectDetailList = SubjectDB.getSubtDetailList(study_id);
+            subjectDetailList = subjects.getSubtDetailList();
             List<String> colNameL = FileHelper.convertByteArrayToList
                                         (StudyDB.getColumnNameList(study_id));
             // Convert the meta data in each subject detail object from byte[]  
@@ -270,12 +272,12 @@ public class DashboardBean implements Serializable {
             }
             // The barchart at the left plot race against gender.
             barchartL = createBarChartModel(genBarChartDOFromDBColumnsXY
-                 ("race", "gender", study_id), "race", "Number of Subjects");
+                 ("race", "gender"), "race", "Number of Subjects");
             // Only show the y-axis i.e. number of subjects.
             barchartL.setDatatipFormat("%2$d");
             // The barchart at the right plot race against casecontrol.
             barchartR = createBarChartModel(genBarChartDOFromDBColumnsXY
-                 ("race", "casecontrol", study_id), "race", "Number of Subjects");
+                 ("race", "casecontrol"), "race", "Number of Subjects");
             // Only show the y-axis i.e. number of subjects.
             barchartR.setDatatipFormat("%2$d");
             // The piechart at the left plot the age group distribution chart.
@@ -321,7 +323,7 @@ public class DashboardBean implements Serializable {
     // subject table.
     private PieChartDataObject genPieChartDOForAgeAtBaseline() {
         PieChartDataObject pco = new PieChartDataObject("Age Group Breakdown Chart");
-        List<Float> age_baseline_list = SubjectDB.getAgeAtBaselineList(study_id);
+        List<Float> age_baseline_list = subjects.getAgeAtBaselineList();
         // Make sure there is data available for further computation, else just
         // return a default piechart.
         if (age_baseline_list.isEmpty()) {
@@ -408,12 +410,12 @@ public class DashboardBean implements Serializable {
     // columns X and Y. Column X values will plot on the x-axis, and Y values
     // will be plot on the y-axis.
     private HashMap<String, BarChartDataObject> genBarChartDOFromDBColumnsXY
-        (String colX, String colY, String study) 
+        (String colX, String colY) 
     {
         // x_values will store the list of data name for this chart.
-        List<String> x_values = SubjectDB.getDistinctValueInColumn(colX, study);
+        List<String> x_values = subjects.getDistinctValueInColumn(colX);
         // series_set will store the list of series name for this chart.
-        List<String> series_set = SubjectDB.getDistinctValueInColumn(colY, study);
+        List<String> series_set = subjects.getDistinctValueInColumn(colY);
         // Create HashMap<String, List<String>> where the first string will
         // store the data name and the list of strings will store the series 
         // values.
@@ -421,8 +423,8 @@ public class DashboardBean implements Serializable {
                                                         new LinkedHashMap<>();
         for (String data_name : x_values) {
             // data_name - List of series values
-            x2yListValue_hashmap.put(data_name, SubjectDB.getColXBasedOnColYValue
-                                    (colY, colX, data_name, study));
+            x2yListValue_hashmap.put(data_name, subjects.getColXBasedOnColYValue
+                                    (colY, colX, data_name));
         }
         // data_object_hashmap will store the data object(s) for this chart.
         LinkedHashMap<String, BarChartDataObject> data_object_hashmap = 

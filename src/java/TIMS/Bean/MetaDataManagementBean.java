@@ -147,16 +147,22 @@ public class MetaDataManagementBean implements Serializable {
     // Core data to Excel column ID tagging.
     private HashMap<String, String> core_data_tag;
     private List<List<StudySpecificField>> ssf_lists;
+    private final SubjectDB subjects;
     
     public MetaDataManagementBean() {
         userName = (String) getFacesContext().getExternalContext().
                 getSessionMap().get("User");
         study_id = (String) getFacesContext().getExternalContext().
                 getSessionMap().get("study_id");
+        subjects = new SubjectDB(study_id);
         statsTracker = null;
         missingVisits = "";
-        logger.info(userName + ": access Meta Data Management for study " 
-                    + study_id);
+        StringBuilder oper = new StringBuilder(userName).
+                append(": access Meta Data Management for study ").
+                append(study_id);
+        logger.info(oper);
+//        logger.info(userName + ": access Meta Data Management for study " 
+//                    + study_id);
     }
 
     @PostConstruct
@@ -195,30 +201,9 @@ public class MetaDataManagementBean implements Serializable {
             quality_report = true;
         }
         
-        subtDetailList = SubjectDB.getSubtDetailList(study_id);
+        subtDetailList = subjects.getSubtDetailList();
     }
 
-    /*
-    private int getNoOfRowsInExcel(String xlsxFile) {
-        File excel = new File(xlsxFile);
-        FileInputStream fis;
-        XSSFWorkbook wb;
-        XSSFSheet sh;
-        
-        try {
-            fis = new FileInputStream(excel);
-            wb = new XSSFWorkbook(fis);
-            sh = wb.getSheet("Data");
-            logger.info("No of rows in " + xlsxFile + " is " + sh.getLastRowNum() + 1);
-            
-            return sh.getLastRowNum() + 1;
-        } catch (IOException ex) {
-            logger.error(ex.getMessage());
-            return 0;
-        }
-    }
-    */
-    
     // Create the hashmap of meta data records using the values found in the
     // uploaded excel sheet.
     private void createMetaRecordsFromExcel(String xlsxFile) {
@@ -304,21 +289,23 @@ public class MetaDataManagementBean implements Serializable {
     public void coreDataTagsUpload(FileUploadEvent event) {
         UploadedFile uFile = event.getFile();
         core_data_tag = new HashMap<>();
-        String localDir = Constants.getSYSTEM_PATH() 
-                        + Constants.getTMP_PATH() 
-                        + uFile.getFileName();
+//        String localDir = Constants.getSYSTEM_PATH() 
+//                        + Constants.getTMP_PATH() 
+//                        + uFile.getFileName();
+        StringBuilder localDir = new StringBuilder(Constants.getSYSTEM_PATH()).
+                append(Constants.getTMP_PATH()).append(uFile.getFileName());
         
         try {
             // 1. Copy the uploaded Excel file to local directory.
-            if (FileHelper.copyUploadedFileToLocalDirectory(uFile, localDir)) {
-                logger.info("Excel file copied to local directory: " + localDir);
+            if (FileHelper.copyUploadedFileToLocalDirectory(uFile, localDir.toString())) {
+                logger.info("Excel file copied to local directory.");
             }
             else {
                 // Fail to copy, terminate the upload and display error message.
                 throw new java.lang.RuntimeException("Fail to copy Excel File!");
             }
             
-            exHelper = new ExcelHelper(localDir, "Data");
+            exHelper = new ExcelHelper(localDir.toString(), "Data");
             // Read in the first row of field data [CATEGORY|FIELD]
             List<String> field = exHelper.readNextRow();
             while (field != null) {
@@ -334,10 +321,12 @@ public class MetaDataManagementBean implements Serializable {
                                          (String) data.getValue());
             }
             // Delete the temporary Excel file after use.
-            FileHelper.delete(localDir);
+            FileHelper.delete(localDir.toString());
             // Record this activity.
-            String detail = "Excel File " + uFile.getFileName();
-            ActivityLogDB.recordUserActivity(userName, Constants.UPL_CDT, detail);
+//            String detail = "Excel File " + uFile.getFileName();
+            StringBuilder detail = new StringBuilder("Excel File ").
+                    append(uFile.getFileName());
+            ActivityLogDB.recordUserActivity(userName, Constants.UPL_CDT, detail.toString());
             // Post the success message to user.
             getFacesContext().addMessage(null, new FacesMessage(
                 FacesMessage.SEVERITY_INFO, "Core data tag uploaded.", ""));
@@ -362,7 +351,7 @@ public class MetaDataManagementBean implements Serializable {
         try {
             // 1. Copy the uploaded Excel file to local directory.
             if (FileHelper.copyUploadedFileToLocalDirectory(uFile, localDir)) {
-                logger.info("Excel file copied to local directory: " + localDir);
+                logger.info("Excel file copied to local directory.");
             }
             else {
                 // Fail to copy, terminate the upload and display error message.
@@ -399,8 +388,10 @@ public class MetaDataManagementBean implements Serializable {
             // Update the study specific field datalist.
             refreshStudySpecificFieldLists();
             // Record this activity.
-            String detail = "Excel File " + uFile.getFileName();
-            ActivityLogDB.recordUserActivity(userName, Constants.UPL_SSF, detail);
+//            String detail = "Excel File " + uFile.getFileName();
+            StringBuilder detail = new StringBuilder("Excel File ").
+                                    append(uFile.getFileName());
+            ActivityLogDB.recordUserActivity(userName, Constants.UPL_SSF, detail.toString());
             // Post the success message to user.
             getFacesContext().addMessage(null, new FacesMessage(
                 FacesMessage.SEVERITY_INFO, "Study specific fields uploaded.", ""));
@@ -417,21 +408,23 @@ public class MetaDataManagementBean implements Serializable {
     public void metaDataUpload(FileUploadEvent event) {
         FIRST_UPLOAD = false;
         UploadedFile uFile = event.getFile();
-        String localDir = Constants.getSYSTEM_PATH() 
-                        + Constants.getTMP_PATH() 
-                        + uFile.getFileName();
+//        String localDir = Constants.getSYSTEM_PATH() 
+//                        + Constants.getTMP_PATH() 
+//                        + uFile.getFileName();
+        StringBuilder localDir = new StringBuilder(Constants.getSYSTEM_PATH()).
+                append(Constants.getTMP_PATH()).append(uFile.getFileName());
         
         try {
             // 1. Copy the uploaded Excel file to local directory.
-            if (FileHelper.copyUploadedFileToLocalDirectory(uFile, localDir)) {
-                logger.info("Excel file copied to local directory: " + localDir);
+            if (FileHelper.copyUploadedFileToLocalDirectory(uFile, localDir.toString())) {
+                logger.info("Excel file copied to local directory.");
             }
             else {
                 // Fail to copy, terminate the upload and display error message.
                 throw new java.lang.RuntimeException("Fail to copy Excel File!");
             }
             
-            exHelper = new ExcelHelper(localDir, "Data");
+            exHelper = new ExcelHelper(localDir.toString(), "Data");
             // 2. Get the column name from the first row of Excel sheet. The 
             // column will be used in the drop-down list for user to map the 
             // data of interests.
@@ -450,7 +443,7 @@ public class MetaDataManagementBean implements Serializable {
             }
             
             // 3. Create the Meta Records using data from the Excel sheet.
-            createMetaRecordsFromExcel(localDir);
+            createMetaRecordsFromExcel(localDir.toString());
 
             // Remove core data from the column name since they will be stored 
             // and display separately.
@@ -480,7 +473,7 @@ public class MetaDataManagementBean implements Serializable {
             }
 
             // Retrieve from the database, the subject IDs belonging to this study.
-            List<String> dbSubtIDsL = SubjectDB.getSubjectIDsList(study_id);
+            List<String> dbSubtIDsL = subjects.getSubjectIDsList();
             if (dbSubtIDsL.isEmpty()) {
                 // As of now, this study contains zero subject ID.
                 FIRST_UPLOAD = true;
@@ -557,12 +550,14 @@ public class MetaDataManagementBean implements Serializable {
                 FacesMessage.SEVERITY_ERROR, rte.getMessage(), ""));
         }
         // Delete the temporary Excel file after use.
-        FileHelper.delete(localDir);
+        FileHelper.delete(localDir.toString());
         // Update the subject detail table.
         refreshPageVariables();
         // Record this activity.
-        String detail = "Excel File " + uFile.getFileName();
-        ActivityLogDB.recordUserActivity(userName, Constants.UPL_MD, detail);
+//        String detail = "Excel File " + uFile.getFileName();
+        StringBuilder detail = new StringBuilder("Excel File ").
+                append(uFile.getFileName());
+        ActivityLogDB.recordUserActivity(userName, Constants.UPL_MD, detail.toString());
     }
 
     // After looking at the preliminary review of data quality, the user has 
@@ -584,7 +579,10 @@ public class MetaDataManagementBean implements Serializable {
         String detail = SKIP_CONSISTENCY_CHECK?
                 "Skip Consistency Check":"Proceed with Consistency Check";
         ActivityLogDB.recordUserActivity(userName, Constants.UPD_MD, detail);
-        logger.info(userName + ": proceed with further check: " + detail);
+        StringBuilder oper = new StringBuilder(userName).
+                append(": proceed with further check: ").append(detail);
+//        logger.info(userName + ": proceed with further check: " + detail);
+        logger.info(oper);
         
         return Constants.MAIN_PAGE;
     }
@@ -593,11 +591,15 @@ public class MetaDataManagementBean implements Serializable {
     // preliminary overview of data quality. Generate the preliminary data
     // quality report.
     public String doNotProceed() {
-        String header = 
-            "Preliminary overview of the quality of data (Uploaded by " + 
-            userName + "@" + Constants.getStandardDT() + ")";
+//        String header = 
+//            "Preliminary overview of the quality of data (Uploaded by " + 
+//            userName + "@" + Constants.getStandardDT() + ")";
+        StringBuilder header = 
+                new StringBuilder("Preliminary overview of the quality of data (Uploaded by ").
+                        append(userName).append("@").
+                        append(Constants.getStandardDT()).append(")");
         statsTracker.generateQualityReport
-                    (Constants.getMETA_QUALITY_REPORT_PATH(study_id), header);
+                    (Constants.getMETA_QUALITY_REPORT_PATH(study_id), header.toString());
         StudyDB.updateMetaQualityReport
                     (study_id, Constants.getMETA_QUALITY_REPORT_PATH(study_id));
         refreshPageVariables();
@@ -629,18 +631,21 @@ public class MetaDataManagementBean implements Serializable {
     
     // Build the meta data list for the study; for user to download.
     public void downloadMetaDataList() {
-        String meta_file = Constants.getSYSTEM_PATH() + 
-                           Constants.getTMP_PATH() + 
-                           study_id + "_meta_" + 
-                           Constants.getDT_yyyyMMdd_HHmm() + 
-                           Constants.getOUTPUTFILE_EXT();
-        
-        if (FileHelper.generateMetaDataList(study_id, meta_file)) {
+//        String meta_file = Constants.getSYSTEM_PATH() + 
+//                           Constants.getTMP_PATH() + 
+//                           study_id + "_meta_" + 
+//                           Constants.getDT_yyyyMMdd_HHmm() + 
+//                           Constants.getOUTPUTFILE_EXT();
+        StringBuilder meta_file = new StringBuilder(Constants.getSYSTEM_PATH()).
+                append(Constants.getTMP_PATH()).append(study_id).
+                append("_meta_").append(Constants.getDT_yyyyMMdd_HHmm()).
+                append(Constants.getOUTPUTFILE_EXT());
+        if (FileHelper.generateMetaDataList(study_id, meta_file.toString())) {
             ActivityLogDB.recordUserActivity(userName, Constants.DWL_FIL, 
                                     "Meta Data of " + study_id);
-            FileHelper.download(meta_file);
+            FileHelper.download(meta_file.toString());
             // Delete the Meta Data List after download.
-            FileHelper.delete(meta_file);
+            FileHelper.delete(meta_file.toString());
         }
     }
     
@@ -657,11 +662,17 @@ public class MetaDataManagementBean implements Serializable {
         StudyDB.updateStudyColumnNameList(study_id, null);
         StudyDB.nullMetaQualityReport(study_id);
         SubjectRecordDB.deleteAllSubjectRecordsFromStudy(study_id);
-        SubjectDB.deleteAllSubjectsFromStudy(study_id);
-        String detail = "All the subjects in study " + study_id;
+        subjects.deleteAllSubjectsFromStudy();
+//        String detail = "All the subjects in study " + study_id;
+        StringBuilder detail = new StringBuilder("All the subjects in study ").
+                                    append(study_id);
         // Record user activity.
-        ActivityLogDB.recordUserActivity(userName, Constants.DEL_MD, detail);
-        logger.info(userName + " deleted all the subject Meta data in " + study_id);
+        ActivityLogDB.recordUserActivity(userName, Constants.DEL_MD, detail.toString());
+        StringBuilder oper = new StringBuilder(userName).
+                append(" deleted all the subject Meta data in ").
+                append(study_id);
+//        logger.info(userName + " deleted all the subject Meta data in " + study_id);
+        logger.info(oper);
         // Update the subject list.
         refreshPageVariables();
     }

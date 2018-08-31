@@ -48,6 +48,7 @@ public class MetaRecordTesterThread extends Thread {
     private final List<String> sortedColNameL;
     private final Set<MetaRecord> recordsSet;
     private final boolean skipConsistencyCheck;
+    private final SubjectDB subjects;
 
     public MetaRecordTesterThread(String study_id, String user_name, 
             String missing_visits, List<String> sortedColNameL, 
@@ -58,6 +59,7 @@ public class MetaRecordTesterThread extends Thread {
         this.sortedColNameL = sortedColNameL;
         this.recordsSet = recordsSet;
         this.skipConsistencyCheck = skipConsistencyCheck;
+        this.subjects = new SubjectDB(study_id);
     }
 
     @Override
@@ -95,6 +97,8 @@ public class MetaRecordTesterThread extends Thread {
         }
         Postman.sendMetaDataUploadStatusEmail(study_id, user_name, Constants.OK);
         generateFinalDataQualityStats();
+        // Clean up before exiting.
+        recordsSet.clear();
     }
     
     // Skip data consistency check; mark all valid and new visit records as
@@ -119,12 +123,20 @@ public class MetaRecordTesterThread extends Thread {
             if (rec.isValid() || rec.isNewVisit()) {
                 // Compare the dob, case_control, gender and race with the 
                 // values from database subject.
-                Subject subjt = SubjectDB.getSubject
-                                (study_id, rec.getSubject_id());
+                Subject subjt = subjects.getSubject(rec.getSubject_id());
+                // For those records which have empty age_at_baseline, set it
+                // to the subject's age_at_baseline value.
+                String age_at_baseline;
+                if (rec.getAge_at_baseline().isEmpty()) {
+                    age_at_baseline = subjt.getAge_at_baseline();
+                }
+                else {
+                    age_at_baseline = rec.getAge_at_baseline();
+                }
                 if (subjt.getGender().equals(rec.getGender()) && 
                     subjt.getRace().equals(rec.getRace()) &&
                     subjt.getDob().equals(rec.getDob()) &&
-                    subjt.getAge_at_baseline().equals(rec.getAge_at_baseline()) &&
+                    subjt.getAge_at_baseline().equals(age_at_baseline) &&
                     subjt.getCasecontrol().equals(rec.getCasecontrol())) {
                     if (rec.isValid()) {
                         // This is an existing record; need to check that the 
@@ -178,7 +190,7 @@ public class MetaRecordTesterThread extends Thread {
                                         rec.getRace(), rec.getGender(), 
                                         rec.getDob(), rec.getCasecontrol(), 
                                         rec.getAge_at_baseline());
-                        SubjectDB.insertSubject(newSubjt, conn);
+                        subjects.insertSubject(newSubjt, conn);
                         // Keep track of the subject IDs inserted.
                         newSubjectsL.add(rec.getSubject_id());
                     }
@@ -206,7 +218,7 @@ public class MetaRecordTesterThread extends Thread {
                                               rec.getGender(), rec.getDob(), 
                                               rec.getCasecontrol(), 
                                               rec.getAge_at_baseline());
-                            SubjectDB.updateSubt(exSubjt, conn);
+                            subjects.updateSubt(exSubjt, conn);
                             // Keep track of the subject IDs updated.
                             exSubjectsL.add(rec.getSubject_id());
                         }

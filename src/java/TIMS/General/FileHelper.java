@@ -182,17 +182,23 @@ public abstract class FileHelper {
         Path to = FileSystems.getDefault().getPath(dest);
         // Move the file (from -> to), and replace existing file if found.
         try {
+            StringBuilder oper = new StringBuilder(src).append(" moved to ").
+                                                        append(dest);
             if (Files.exists(to)) {
                 Files.move(from, to, REPLACE_EXISTING);
             }
             else {
                 Files.move(from, to);
             }
-            logger.debug("File moved to " + dest);
+//            logger.debug("File moved to " + dest);
+            logger.info(oper);
         }
         catch (IOException ioe) {
+            StringBuilder err = new StringBuilder("FAIL to move file. SRC: ").
+                    append(src).append(" DEST: ").append(dest);
             result = Constants.NOT_OK;
-            logger.error("FAIL to move file. SRC: " + src + " DEST: " + dest);
+//            logger.error("FAIL to move file. SRC: " + src + " DEST: " + dest);
+            logger.error(err);
             logger.error(ioe.getMessage());
         }
         
@@ -267,18 +273,19 @@ public abstract class FileHelper {
     // study ID passed in.
     public static boolean generateMetaDataList(String study_id, String filepath) {
         boolean status = Constants.NOT_OK;
-        StringBuilder line = new StringBuilder();
+        StringBuilder line = 
+                new StringBuilder("Subject ID|Date of Birth|CaseControl|Gender|Race|Height|Weight|Age at Baseline|Record Date|");
+        SubjectDB subjects = new SubjectDB(study_id);
         
         try {
             byte[] dat = StudyDB.getColumnNameList(study_id);
             if (dat != null) {
                 List<String> dbColNameL = convertByteArrayToList(dat);
                 List<SubjectDetail> subjectDetailList = 
-                                    SubjectDB.getSubtDetailList(study_id);
-                PrintStream ps = new PrintStream(new File (filepath));
-                // Write the header line first.
-                line.append("Subject ID|Date of Birth|CaseControl|Gender|Race|Height|Weight|Age at Baseline|Record Date|").
-                     append(convertStrListToStr(dbColNameL));
+                                                subjects.getSubtDetailList();
+                PrintStream ps = new PrintStream(new File(filepath));
+                // Include the column IDs.
+                line.append(convertStrListToStr(dbColNameL));
                 ps.println(line.toString());
                 // Empty the string.
                 line.delete(0, line.length());
