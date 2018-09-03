@@ -8,6 +8,7 @@ import TIMS.Database.GroupDB;
 import TIMS.Database.PieChartDataObject;
 import TIMS.Database.Study;
 import TIMS.Database.StudyDB;
+import TIMS.Database.StudySpecificFieldDB;
 import TIMS.Database.SubjectDB;
 import TIMS.Database.SubjectDetail;
 import TIMS.Database.UserAccount;
@@ -75,6 +76,7 @@ public class DashboardBean implements Serializable {
     private HashMap<String, Integer> specific_fields_w_data, 
                                      specific_fields_wo_data;
     private SubjectDB subjects;
+    private StudySpecificFieldDB ss_fields;
     
     
     public DashboardBean() {
@@ -243,6 +245,7 @@ public class DashboardBean implements Serializable {
             logger.info("Study ID: " + study_id);
             study_sel = StudyDB.getStudyObject(study_id);
             subjects = new SubjectDB(study_id);
+            ss_fields = new StudySpecificFieldDB(study_id);
             // Clean up the specific fields data points hashmaps.
             specific_fields_w_data.clear();
             specific_fields_wo_data.clear();
@@ -259,7 +262,7 @@ public class DashboardBean implements Serializable {
                     break;
                 }
             }
-            categories = StudyDB.getSpecificFieldCategoryFromStudy(study_id);
+            categories = ss_fields.getSpecificFieldCategory();
             // If categories is empty, it means study specific fields have not
             // been setup.
             if (!categories.isEmpty()) {
@@ -297,8 +300,8 @@ public class DashboardBean implements Serializable {
         // Go through all the categories, and retrieve the list of specific 
         // fields.
         for (String category : categories) {
-            List<String> field_list = StudyDB.
-                getSpecificFieldListFromStudyCategory(study_id, category);
+            List<String> field_list = ss_fields.
+                getSpecificFieldListFromCategory(category);
             // Go through the specific fields and tally the data points.
             for (String field : field_list) {
                 with_data = wo_data = 0;
@@ -460,8 +463,8 @@ public class DashboardBean implements Serializable {
     // Field category has changed, update the specific fields chart accordingly.
     public void updateSpecificFieldsBarchart() {
         // Retrieve the list of specific fields based on the category selected.
-        List<String> field_list = StudyDB.getSpecificFieldListFromStudyCategory
-                                    (study_id, specific_fields_selection);
+        List<String> field_list = ss_fields.getSpecificFieldListFromCategory
+                                    (specific_fields_selection);
         if (field_list.size() > 15) {
             // Limit the number of specific fields to 15 per chart.
             field_list = field_list.subList(0, 15);

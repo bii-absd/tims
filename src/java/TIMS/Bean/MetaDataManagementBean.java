@@ -4,9 +4,11 @@
 package TIMS.Bean;
 
 import TIMS.Database.ActivityLogDB;
+import TIMS.Database.MetaDataTagDB;
 import TIMS.Database.MetaRecord;
 import TIMS.Database.StudyDB;
 import TIMS.Database.StudySpecificField;
+import TIMS.Database.StudySpecificFieldDB;
 import TIMS.Database.SubjectRecordDB;
 import TIMS.Database.SubjectDB;
 import TIMS.Database.SubjectDetail;
@@ -148,6 +150,8 @@ public class MetaDataManagementBean implements Serializable {
     private HashMap<String, String> core_data_tag;
     private List<List<StudySpecificField>> ssf_lists;
     private final SubjectDB subjects;
+    private final StudySpecificFieldDB ss_fields;
+    private final MetaDataTagDB md_tag;
     
     public MetaDataManagementBean() {
         userName = (String) getFacesContext().getExternalContext().
@@ -155,6 +159,8 @@ public class MetaDataManagementBean implements Serializable {
         study_id = (String) getFacesContext().getExternalContext().
                 getSessionMap().get("study_id");
         subjects = new SubjectDB(study_id);
+        ss_fields = new StudySpecificFieldDB(study_id);
+        md_tag = new MetaDataTagDB(study_id);
         statsTracker = null;
         missingVisits = "";
         StringBuilder oper = new StringBuilder(userName).
@@ -167,7 +173,7 @@ public class MetaDataManagementBean implements Serializable {
 
     @PostConstruct
     public void init() {
-        core_data_tag = StudyDB.getMetaDataTagForStudy(study_id);
+        core_data_tag = md_tag.getMetaDataTag();
         refreshPageVariables();
         refreshStudySpecificFieldLists();
     }
@@ -175,12 +181,12 @@ public class MetaDataManagementBean implements Serializable {
     // Build the study specific field lists.
     private void refreshStudySpecificFieldLists() {
         ssf_lists = new ArrayList<>();
-        categoryList = StudyDB.getSpecificFieldCategoryFromStudy(study_id);
+        categoryList = ss_fields.getSpecificFieldCategory();
         
         for (String category : categoryList) {
             // For each category, retrieve the list of fields that fall under it.
-            List<String> field_list = StudyDB.
-                    getSpecificFieldListFromStudyCategory(study_id, category);
+            List<String> field_list = ss_fields.
+                    getSpecificFieldListFromCategory(category);
             List<StudySpecificField> list_of_ssf = new ArrayList<>();
             for (String field : field_list) {
                 // For each field, construct a StudySpecificField object and
@@ -317,7 +323,7 @@ public class MetaDataManagementBean implements Serializable {
             }
             
             for (Map.Entry data : core_data_tag.entrySet()) {
-                StudyDB.insertMetaDataTag(study_id, (String) data.getKey(), 
+                md_tag.insertMetaDataTag((String) data.getKey(), 
                                          (String) data.getValue());
             }
             // Delete the temporary Excel file after use.
@@ -380,7 +386,7 @@ public class MetaDataManagementBean implements Serializable {
             }
             
             for (Map.Entry data : ssFields_hashmap.entrySet()) {
-                StudyDB.updateSSField(study_id, (String) data.getKey(), 
+                ss_fields.updateSSField((String) data.getKey(), 
                         FileHelper.convertObjectToByteArray(data.getValue()));
             }
             // Delete the temporary Excel file after use.
@@ -679,7 +685,7 @@ public class MetaDataManagementBean implements Serializable {
 
     // Used by admin to delete all the study specific fields.
     public void deleteStudySpecificFields() {
-        StudyDB.deleteStudySpecificFields(study_id);
+        ss_fields.deleteSpecificFields();
         // Record user activity.
         ActivityLogDB.recordUserActivity(userName, Constants.DEL_SSF, study_id);
         // Update the study specific field datalist.
@@ -689,7 +695,7 @@ public class MetaDataManagementBean implements Serializable {
     // Used by admin to delete all the study meta data tags. After this, no meta
     // data upload is allowed.
     public void deleteStudyMetaDataTag() {
-        StudyDB.deleteMetaDataTagForStudy(study_id);
+        md_tag.deleteMetaDataTag();
         // Record user activity.
         ActivityLogDB.recordUserActivity(userName, Constants.DEL_CDT, study_id);
         // Reset core data tag.
