@@ -1,5 +1,5 @@
 /*
- * Copyright @2015-2016
+ * Copyright @2015-2018
  */
 package TIMS.Database;
 
@@ -27,20 +27,20 @@ public class Department {
     // dept table fields
     private String inst_id, dept_id, dept_name;
     // Additional attribute to store the institution name
-    private final String inst_name;
+//    private final String inst_name;
 
     public Department(String inst_id, String dept_id, 
             String dept_name) {
         this.inst_id = inst_id;
         this.dept_id = dept_id;
         this.dept_name = dept_name;
-        inst_name = InstitutionDB.getInstNameFromHash(inst_id);
+//        inst_name = InstitutionDB.getInstName(inst_id);
     }
 
     // Return the institution name for this inst_id.
-    public String getInst_name() {
-        return inst_name;
-    }
+//    public String getInst_name() {
+//        return inst_name;
+//    }
     
     // Machine generated getters and setters
     public String getInst_id() {

@@ -4,13 +4,11 @@
 package TIMS.Bean;
 
 import TIMS.Database.ActivityLogDB;
-import TIMS.Database.DepartmentDB;
 import TIMS.Database.Group;
-import TIMS.Database.GroupDB;
-import TIMS.Database.InstitutionDB;
 import TIMS.Database.UserAccount;
 import TIMS.Database.UserAccountDB;
 import TIMS.Database.UserRoleDB;
+import TIMS.Database.WorkUnitDB;
 import TIMS.General.Constants;
 import java.io.Serializable;
 import java.sql.SQLException;
@@ -101,12 +99,14 @@ public class AccountManagementBean implements Serializable {
     private LinkedHashMap<String,Integer> roleNameHash;
     // For uploading of user photo.
     private FileUploadBean photo = null;
+    private final WorkUnitDB work_unit;
     
     public AccountManagementBean() {
         userName = (String) getFacesContext().getExternalContext().
                 getSessionMap().get("User");
         instUnitIDHash = new LinkedHashMap<>();
-        logger.debug("AccountManagementBean created.");
+        work_unit = new WorkUnitDB();
+        logger.info(userName + ": access account management page.");
     }
     
     @PostConstruct
@@ -118,7 +118,7 @@ public class AccountManagementBean implements Serializable {
         // Retrieve the list of role name setup in the system.
         roleNameHash = UserRoleDB.getRoleNameHash();
         // Retrieve the list of institution setup in the system.
-        instNameHash = InstitutionDB.getAllInstNameHash();
+        instNameHash = work_unit.getInstDB().getAllInstNameHash();
     }
     
     // Clear the instUnitIDHash, and reset the institution and role selection 
@@ -143,17 +143,11 @@ public class AccountManagementBean implements Serializable {
     public void onRowEditInit(RowEditEvent event) {
         UserAccount user = (UserAccount) event.getObject();
         // Build the unit ID Hash based on the institution and user role.
-        String instID = InstitutionDB.getInstID(user.getUnit_id());
+        String instID = work_unit.getInstDB().getInstID(user.getUnit_id());
         configInstUnitIDHash(instID, user.getRole_id());
         // Update the selectOneMenu (with ID unitID) for the selected row.
         String updateClientId = ComponentUtils.findComponentClientId("unitID");
         RequestContext.getCurrentInstance().update(updateClientId);
-        
-        /* Old version.
-        UIData table = (UIData) event.getComponent();
-        String updateClientId = table.getClientId() + ":" + table.getRowIndex() + ":unitID";
-        FacesContext.getCurrentInstance().getPartialViewContext().getRenderIds().add(updateClientId);
-        */
     }
     
     // Update the user account detail in the database.
@@ -162,10 +156,15 @@ public class AccountManagementBean implements Serializable {
         try {
             UserAccountDB.updateAccount((UserAccount) event.getObject());
             // Record this user account update activity into database.
-            String detail = "User account " + ((UserAccount) event.getObject())
-                            .getUser_id();
-            ActivityLogDB.recordUserActivity(userName, Constants.CHG_ID, detail);
-            logger.info(userName + ": updated " + detail);
+            StringBuilder detail = new StringBuilder("User account ").
+                    append(((UserAccount) event.getObject()).getUser_id());
+//            String detail = "User account " + ((UserAccount) event.getObject())
+//                            .getUser_id();
+            ActivityLogDB.recordUserActivity(userName, Constants.CHG_ID, detail.toString());
+            StringBuilder oper = new StringBuilder(userName).
+                    append(": updated ").append(detail);
+            logger.info(oper);
+//            logger.info(userName + ": updated " + detail);
             getFacesContext().addMessage(null, new FacesMessage(
                     FacesMessage.SEVERITY_INFO, "User account updated.", ""));
         }
@@ -216,20 +215,27 @@ public class AccountManagementBean implements Serializable {
         try {
             // Insert the new account into database.
             UserAccountDB.insertAccount(newAcct);
-            String detail = "User ID " + user_id + " with " + 
-                         UserRoleDB.getRoleNameFromHash(role_id) + " right";
+            StringBuilder detail = new StringBuilder("User ID ").
+                    append(user_id).append(" with ").
+                    append(UserRoleDB.getRoleNameFromHash(role_id)).
+                    append(" right");
+//            String detail = "User ID " + user_id + " with " + 
+//                         UserRoleDB.getRoleNameFromHash(role_id) + " right";
             // Record account creation activity into database.
-            ActivityLogDB.recordUserActivity(userName, Constants.CRE_ID, detail);
-            logger.info(userName + ": create " + detail);
+            ActivityLogDB.recordUserActivity(userName, Constants.CRE_ID, detail.toString());
+            StringBuilder oper = new StringBuilder(userName).
+                    append(": create ").append(detail);
+            logger.info(oper);
+//            logger.info(userName + ": create " + detail);
             // Create user working directories after the user account has been
             // successfully inserted into database.
             if (FileUploadBean.createUsersDirectories(Constants.getSYSTEM_PATH() +
                                                       Constants.getUSERS_PATH() +
                                                       user_id)) {
-                logger.debug("Working directories for " + user_id + " created.");
+                logger.info("Working directories created.");
                 facesContext.addMessage("newacctstatus", new FacesMessage(
-                        FacesMessage.SEVERITY_INFO, "User Account: " 
-                        + user_id + " successfully created.", ""));
+                        FacesMessage.SEVERITY_INFO, 
+                        "User Account successfully created.", ""));
             }
             else {
                 logger.error("FAIL to create working directories for " + user_id);
@@ -244,11 +250,11 @@ public class AccountManagementBean implements Serializable {
             if (role_id == UserRoleDB.pi()) {
                 // If the PI field is not setup (i.e. null), then set it with 
                 // this new user ID.
-                if (GroupDB.getGrpPIID(unit_id) == null) {
-                    Group tmp = GroupDB.getGrpByGrpID(unit_id);
+                if (work_unit.getGrpDB().getGrpPIID(unit_id) == null) {
+                    Group tmp = work_unit.getGrpDB().getGrpByGrpID(unit_id);
                     // Update the pi field.
                     tmp.setPi(user_id);
-                    GroupDB.updateGroup(tmp);
+                    work_unit.getGrpDB().updateGroup(tmp);
                 }
             }
         }
@@ -257,9 +263,11 @@ public class AccountManagementBean implements Serializable {
             int start = e.getMessage().indexOf("Detail:");
             // Trim the detail error message by removing "Detail: " (i.e. 8 characters)
             String errorMsg = e.getMessage().substring(start+8);
-            
-            logger.error("FAIL to create new User ID: " + user_id + 
-                         " : " + errorMsg);
+            StringBuilder err = new StringBuilder("FAIL to create User ID: ").
+                    append(user_id).append(" : ").append(errorMsg);
+            logger.error(err);
+//            logger.error("FAIL to create User ID: " + user_id + 
+//                         " : " + errorMsg);
             logger.error(e.getMessage());
             facesContext.addMessage("newacctstatus", new FacesMessage(
                     FacesMessage.SEVERITY_ERROR, "Failed: " + errorMsg, ""));
@@ -285,8 +293,8 @@ public class AccountManagementBean implements Serializable {
         user.setPhoto(photo.getInputFilename());
         
         try {
-            UserAccountDB.updateAccount(user);            
-            logger.debug(userName + " updated picture ID.");
+            UserAccountDB.updateAccount(user);
+            logger.info(userName + " updated picture ID.");
         }
         catch (SQLException|NamingException e) {
             logger.error("FAIL to update picture ID!");
@@ -309,7 +317,10 @@ public class AccountManagementBean implements Serializable {
                 id = user_id;
                 // Record password change activity into database.
                 ActivityLogDB.recordUserActivity(userName, Constants.CHG_PWD, id);
-                logger.info(userName + ": change password of " + id);
+                StringBuilder oper = new StringBuilder(userName).
+                        append(": change password of ").append(id);
+                logger.info(oper);
+//                logger.info(userName + ": change password of " + id);
             }
             
             try {
@@ -331,7 +342,7 @@ public class AccountManagementBean implements Serializable {
             }
         }
         else {
-            logger.debug("The passwords entered are not the same.");
+            logger.info("The passwords entered are not the same.");
             facesContext.addMessage("changepwdstatus", new FacesMessage(
                     FacesMessage.SEVERITY_ERROR, 
                     "The passwords entered are not the same!", ""));
@@ -376,21 +387,21 @@ public class AccountManagementBean implements Serializable {
         UserAccount user = getFacesContext().getApplication().
                 evaluateExpressionGet(getFacesContext(), "#{acct}", 
                 UserAccount.class);
-        String instID = InstitutionDB.getInstID(user.getUnit_id());
+        String instID = work_unit.getInstDB().getInstID(user.getUnit_id());
         configInstUnitIDHash(instID, user.getRole_id());
     }
     // Helper method to setup the instUnitIDHash based on the institution and
     // user's role.
     private void configInstUnitIDHash(String instID, int roleID) {
         if (roleID == UserRoleDB.director()) {
-            instUnitIDHash = InstitutionDB.getSingleInstNameHash(instID);
+            instUnitIDHash = work_unit.getInstDB().getSingleInstNameHash(instID);
         }
         else if (roleID == UserRoleDB.hod()) {
-            instUnitIDHash = DepartmentDB.getInstDeptHash(instID);
+            instUnitIDHash = work_unit.getDeptDB().getDeptHashForInst(instID);
         }
         else {
-            instUnitIDHash = GroupDB.getInstGrpHash(instID);
-        }        
+            instUnitIDHash = work_unit.getGrpDB().getGrpHashForInst(instID);
+        }
     }
     
     // Retrieve the faces context

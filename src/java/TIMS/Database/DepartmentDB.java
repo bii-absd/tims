@@ -1,9 +1,10 @@
 /*
- * Copyright @2015-2016
+ * Copyright @2015-2018
  */
 package TIMS.Database;
 
 import TIMS.General.Constants;
+// Libraries for Java
 import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -53,13 +54,13 @@ import org.apache.logging.log4j.LogManager;
  * department name only.
  */
 
-public abstract class DepartmentDB implements Serializable {
+public class DepartmentDB implements Serializable {
     // Get the logger for Log4j
     private final static Logger logger = LogManager.
             getLogger(DepartmentDB.class.getName());
 
     // Return the full list of Department setup in the system.
-    public static List<Department> getDeptList() {
+    public List<Department> getDeptList() {
         Connection conn = null;
         String query = "SELECT * FROM dept ORDER BY inst_id, dept_id";
         List<Department> deptList = new ArrayList<>();
@@ -79,7 +80,7 @@ public abstract class DepartmentDB implements Serializable {
             stm.close();
         }
         catch (SQLException|NamingException e) {
-            logger.error("FAIL to build full department list!");
+            logger.error("FAIL to build department list!");
             logger.error(e.getMessage());
         }
         finally {
@@ -90,7 +91,7 @@ public abstract class DepartmentDB implements Serializable {
     }
     
     // Insert the new department ID into database.
-    public static Boolean insertDepartment(Department dept) {
+    public boolean insertDepartment(Department dept) {
         Connection conn = null;
         Boolean result = Constants.OK;
         String query = "INSERT INTO dept(dept_id,inst_id,dept_name) VALUES(?,?,?)";
@@ -103,7 +104,7 @@ public abstract class DepartmentDB implements Serializable {
             stm.setString(3, dept.getDept_name());
             stm.executeUpdate();
             stm.close();
-            logger.debug("New department ID inserted into database: " + 
+            logger.info("Department ID inserted into database: " + 
                     dept.getDept_id());
         }
         catch (SQLException|NamingException e) {
@@ -118,9 +119,8 @@ public abstract class DepartmentDB implements Serializable {
         return result;
     }
     
-    // Update the department information in the database. Only allow update to
-    // the department name.
-    public static Boolean updateDepartment(Department dept) {
+    // Update the department name in the database.
+    public boolean updateDepartment(Department dept) {
         Connection conn = null;
         Boolean result = Constants.OK;
         String query = "UPDATE dept SET dept_name = ? WHERE dept_id = ?";
@@ -132,7 +132,7 @@ public abstract class DepartmentDB implements Serializable {
             stm.setString(2, dept.getDept_id());
             stm.executeUpdate();
             stm.close();
-            logger.debug("Department " + dept.getDept_id() + " name updated.");
+            logger.info(dept.getDept_id() + " updated.");
         }
         catch (SQLException|NamingException e) {
             result = Constants.NOT_OK;
@@ -147,27 +147,26 @@ public abstract class DepartmentDB implements Serializable {
     }
     
     // Return the list of department ID setup under this institution.
-    public static List<String> getDeptIDList(String inst_id) {
-        return new ArrayList<>(getInstDeptHash(inst_id).values());
+    public List<String> getDeptIDList(String inst_id) {
+        return new ArrayList<>(getDeptHashForInst(inst_id).values());
     }
     
-    // Return the HashMap of department ID setup under this institution.
-    public static LinkedHashMap<String, String> getInstDeptHash(String inst_id) {
+    // Return the HashMap of department ID setup for this institution.
+    public LinkedHashMap<String, String> getDeptHashForInst(String inst_id) {
         String query = "SELECT dept_id, dept_name FROM dept "
                      + "WHERE inst_id = \'" + inst_id + "\' ORDER BY dept_id";
 
         return getDeptHash(query);
     }
     // Return the HashMap of all the department IDs setup in the system.
-    public static LinkedHashMap<String, String> getAllDeptHash() {
+    public LinkedHashMap<String, String> getAllDeptHash() {
         String query = "SELECT dept_id, dept_name FROM dept ORDER BY dept_id";
         
         return getDeptHash(query);
     }
-    
     // Helper function to build the hashmap of the department IDs setup in the
     // system using the query passed in.
-    private static LinkedHashMap<String, String> getDeptHash(String query) {
+    private LinkedHashMap<String, String> getDeptHash(String query) {
         Connection conn = null;
         LinkedHashMap<String, String> deptHash = new LinkedHashMap<>();
         
@@ -193,17 +192,19 @@ public abstract class DepartmentDB implements Serializable {
         return deptHash;
     }
     
+    /*
+    // Retrieve the institution ID that this department belongs to.
+    public String getDeptInstID(String dept_id) {
+        return getDeptPropValue(dept_id, "inst_id");
+    }
+    */
+    
     // Return the name for this department.
     public static String getDeptName(String dept_id) {
         return getDeptPropValue(dept_id, "dept_name");
-    }    
-    // Retrieve the institution ID that this department belongs to.
-    public static String getDeptInstID(String dept_id) {
-        return getDeptPropValue(dept_id, "inst_id");
     }
-    
     // Helper function to retrieve one of the department's property value.
-    public static String getDeptPropValue(String dept_id, String property) {
+    private static String getDeptPropValue(String dept_id, String property) {
         Connection conn = null;
         String propValue = Constants.DATABASE_INVALID_STR;
         String query = "SELECT * FROM dept WHERE dept_id = ?";
@@ -222,7 +223,9 @@ public abstract class DepartmentDB implements Serializable {
             stm.close();
         }
         catch (SQLException|NamingException e) {
-            logger.error("FAIL to retrieve " + property + "for department " + dept_id);
+            StringBuilder err = new StringBuilder("FAIL to retrieve ").
+                    append(property).append(" for department ").append(dept_id);
+//            logger.error("FAIL to retrieve " + property + "for department " + dept_id);
             logger.error(e.getMessage());
         }
         finally {

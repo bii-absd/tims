@@ -194,7 +194,7 @@ public class AuthenticationBean implements Serializable {
         // Build the ICD10 Code HashMap.
         ICD10DB.buildICDHashMaps();
         // Build the Institution ID HashMap.
-        InstitutionDB.buildInstIDHash();
+//        InstitutionDB.buildInstIDHash();
         // Setup the feature active status list.
         setupFeatureList();
         

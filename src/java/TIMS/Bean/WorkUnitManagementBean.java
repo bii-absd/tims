@@ -5,12 +5,10 @@ package TIMS.Bean;
 
 import TIMS.Database.ActivityLogDB;
 import TIMS.Database.Department;
-import TIMS.Database.DepartmentDB;
 import TIMS.Database.Group;
-import TIMS.Database.GroupDB;
 import TIMS.Database.Institution;
-import TIMS.Database.InstitutionDB;
 import TIMS.Database.UserAccountDB;
+import TIMS.Database.WorkUnitDB;
 import TIMS.General.Constants;
 // Libraries for Java
 import java.io.Serializable;
@@ -80,33 +78,38 @@ public class WorkUnitManagementBean implements Serializable {
     private LinkedHashMap<String,String> instNameHash, instDeptHash, instPiIDHash;
     // Store the user ID of the current user.
     private final String userName;
+    // Get the database accessors of institution, department and group tables.
+    private final WorkUnitDB work_unit;
     
     public WorkUnitManagementBean() {
         instPiIDHash = new LinkedHashMap<>();
         instDeptHash = new LinkedHashMap<>();
         userName = (String) getFacesContext().getExternalContext().
                 getSessionMap().get("User");
-        logger.debug("WorkUnitManagementBean created.");
+        work_unit = new WorkUnitDB();
         logger.info(userName + ": access Work Unit Management page.");
     }
     
     @PostConstruct
     public void init() {
-        instList = InstitutionDB.getInstList();
-        deptList = DepartmentDB.getDeptList();                    
-        grpList = GroupDB.getFullGrpList();
-        instNameHash = InstitutionDB.getAllInstNameHash();
+        instList = work_unit.getInstDB().getInstList();
+        deptList = work_unit.getDeptDB().getDeptList();
+        grpList = work_unit.getGrpDB().getFullGrpList();
+        instNameHash = work_unit.getInstDB().getAllInstNameHash();
     }
 
     // Create the new institution ID
     public String createNewInstID() {
         Institution newInst = new Institution(inst_id, inst_name);
         
-        if (InstitutionDB.insertInstitution(newInst)) {
+        if (work_unit.getInstDB().insertInstitution(newInst)) {
             // Record this institution creation activity into database.
-            String detail = "Institution " + inst_id;
-            ActivityLogDB.recordUserActivity(userName, Constants.CRE_ID, detail);
-            logger.info(userName + ": created " + detail);
+            StringBuilder detail = new StringBuilder("Institution ").append(inst_id);
+//            String detail = "Institution " + inst_id;
+            ActivityLogDB.recordUserActivity(userName, Constants.CRE_ID, detail.toString());
+            StringBuilder oper = new StringBuilder(userName).append(": created ").append(detail);
+            logger.info(oper);
+//            logger.info(userName + ": created " + detail);
             addFacesInfoMsg("New institution ID created.");
         }
         else {
@@ -121,12 +124,16 @@ public class WorkUnitManagementBean implements Serializable {
     public String createNewDeptID() {
         Department newDept = new Department(inst_id, dept_id, dept_name);
         
-        if (DepartmentDB.insertDepartment(newDept)) {
+        if (work_unit.getDeptDB().insertDepartment(newDept)) {
             // Record this department creation activity into database.
-            String detail = "Department " + dept_id + " for institution " 
-                            + inst_id;
-            ActivityLogDB.recordUserActivity(userName, Constants.CRE_ID, detail);
-            logger.info(userName + ": created " + detail);
+            StringBuilder detail = new StringBuilder("Department ").
+                    append(dept_id).append(" for institution ").append(inst_id);
+//            String detail = "Department " + dept_id + " for institution " 
+//                            + inst_id;
+            ActivityLogDB.recordUserActivity(userName, Constants.CRE_ID, detail.toString());
+            StringBuilder oper = new StringBuilder(userName).append(": created ").append(detail);
+            logger.info(oper);
+//            logger.info(userName + ": created " + detail);
             addFacesInfoMsg("New department ID created.");
         }
         else {
@@ -142,11 +149,15 @@ public class WorkUnitManagementBean implements Serializable {
         // By default, all the newly created group will be active.
         Group newGrp = new Group(grp_id, pi, dept_id, grp_name, true);
         
-        if (GroupDB.insertGroup(newGrp)) {
+        if (work_unit.getGrpDB().insertGroup(newGrp)) {
             // Record this group creation activity into database.
-            String detail = "Group " + grp_id + " for department " + dept_id;
-            ActivityLogDB.recordUserActivity(userName, Constants.CRE_ID, detail);
-            logger.info(userName + ": created " + detail);
+            StringBuilder detail = new StringBuilder("Group ").append(grp_id).
+                    append(" for department ").append(dept_id);
+//            String detail = "Group " + grp_id + " for department " + dept_id;
+            ActivityLogDB.recordUserActivity(userName, Constants.CRE_ID, detail.toString());
+            StringBuilder oper = new StringBuilder(userName).append(": created ").append(detail);
+            logger.info(oper);
+//            logger.info(userName + ": created " + detail);
             addFacesInfoMsg("New group ID created.");
         }
         else {
@@ -161,10 +172,12 @@ public class WorkUnitManagementBean implements Serializable {
     public void onInstRowEdit(RowEditEvent event) {
         String detail = "Institution " + ((Institution) event.getObject()).getInst_id();
         
-        if (InstitutionDB.updateInstitution((Institution) event.getObject())) {
+        if (work_unit.getInstDB().updateInstitution((Institution) event.getObject())) {
             // Record this institution update activity into database.
             ActivityLogDB.recordUserActivity(userName, Constants.CHG_ID, detail);
-            logger.info(userName + ": updated " + detail);
+            StringBuilder oper = new StringBuilder(userName).append(": updated ").append(detail);
+            logger.info(oper);
+//            logger.info(userName + ": updated " + detail);
             addFacesInfoMsg(detail + " updated.");
         }
         else {
@@ -190,12 +203,14 @@ public class WorkUnitManagementBean implements Serializable {
     public void onDeptRowEdit(RowEditEvent event) {
         String detail = "Department " + ((Department) event.getObject()).getDept_id();
         
-        if (DepartmentDB.updateDepartment((Department) event.getObject())) {
+        if (work_unit.getDeptDB().updateDepartment((Department) event.getObject())) {
             // Record this department update activity into database.
             ActivityLogDB.recordUserActivity(userName, Constants.CHG_ID, detail);
-            logger.info(userName + ": updated " + detail);
+            StringBuilder oper = new StringBuilder(userName).append(": updated ").append(detail);
+            logger.info(oper);
+//            logger.info(userName + ": updated " + detail);
             // Update the department data table.
-            deptList = DepartmentDB.getDeptList();
+            deptList = work_unit.getDeptDB().getDeptList();
             addFacesInfoMsg(detail + " updated.");
         }
         else {
@@ -208,12 +223,14 @@ public class WorkUnitManagementBean implements Serializable {
     public void onGrpRowEdit(RowEditEvent event) {
         String detail = "Group " + ((Group) event.getObject()).getGrp_id();
         
-        if (GroupDB.updateGroup((Group) event.getObject())) {
+        if (work_unit.getGrpDB().updateGroup((Group) event.getObject())) {
             // Record this group update activity into database.
             ActivityLogDB.recordUserActivity(userName, Constants.CHG_ID, detail);
-            logger.info(userName + ": updated " + detail);
+            StringBuilder oper = new StringBuilder(userName).append(": updated ").append(detail);
+            logger.info(oper);
+//            logger.info(userName + ": updated " + detail);
             // Update the group data table.
-            grpList = GroupDB.getFullGrpList();
+            grpList = work_unit.getGrpDB().getFullGrpList();
             addFacesInfoMsg(detail + " updated.");
         }
         else {
@@ -227,10 +244,10 @@ public class WorkUnitManagementBean implements Serializable {
     public void onGrpRowEditInit(RowEditEvent event) {
         Group grp = (Group) event.getObject();
         // Build the instPiIDHash based on the user's institution.
-        String instID = GroupDB.getGrpInstID(grp.getGrp_id());
+        String instID = work_unit.getGrpDB().getInstIDForGrp(grp.getGrp_id());
         instPiIDHash = UserAccountDB.getInstPiIDHash(instID);
         // Build the instDeptHash based on the user's institution.
-        instDeptHash = DepartmentDB.getInstDeptHash(instID);
+        instDeptHash = work_unit.getDeptDB().getDeptHashForInst(instID);
         // Update the selectOneMenu (with ID editGrpPi and editGrpDept) for 
         // the selected row.
         String editGrpPi = ComponentUtils.findComponentClientId("editGrpPi");
@@ -247,7 +264,7 @@ public class WorkUnitManagementBean implements Serializable {
             instPiIDHash.clear();
         }
         else {
-            instDeptHash = DepartmentDB.getInstDeptHash(inst_id);
+            instDeptHash = work_unit.getDeptDB().getDeptHashForInst(inst_id);
             instPiIDHash = UserAccountDB.getInstPiIDHash(inst_id);
         }
     }

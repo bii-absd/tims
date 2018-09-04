@@ -42,7 +42,7 @@ import org.apache.logging.log4j.LogManager;
  * setup in the system using the query passed in.
  */
 
-public abstract class GroupDB implements Serializable {
+public class GroupDB implements Serializable {
     // Get the logger for Log4j
     private final static Logger logger = LogManager.
             getLogger(GroupDB.class.getName());
@@ -74,30 +74,31 @@ public abstract class GroupDB implements Serializable {
     
     // Return the HashMap of all the group IDs (which are active and with pi 
     // setup) in the system. Used in Study Management Edit function.
-    public static LinkedHashMap<String, String> getActiveGrpWithPIHash() {
+    public LinkedHashMap<String, String> getActiveGrpHashWithPI() {
         String query = "SELECT grp_id, grp_name FROM grp "
                      + "WHERE pi IS NOT NULL AND active = true ORDER BY grp_id";
 
         return getGrpHash(query);
     }
+    /* NOT IN USE!
     // Return the HashMap of all the group IDs setup in the system.
     public static LinkedHashMap<String, String> getAllGrpHash() {
         String query = "SELECT grp_id, grp_name FROM grp ORDER BY grp_id";
         
         return getGrpHash(query);
     }
+    */
     // Return the HashMap of all the group IDs setup under this institution in
     // the system.
-    public static LinkedHashMap<String, String> getInstGrpHash(String instID) {
+    public LinkedHashMap<String, String> getGrpHashForInst(String instID) {
         String query = "SELECT grp_id, grp_name FROM inst_dept_grp "
                      + "WHERE inst_id = \'" + instID + "\' ORDER BY grp_id";
         
         return getGrpHash(query);
     }
-    
     // Helper function to return the HashMap of group IDs setup in the system
     // using the query passed in.
-    public static LinkedHashMap<String, String> getGrpHash(String query) {
+    private LinkedHashMap<String, String> getGrpHash(String query) {
         Connection conn = null;
         LinkedHashMap<String, String> allGrpHash = new LinkedHashMap<>();
         
@@ -112,7 +113,7 @@ public abstract class GroupDB implements Serializable {
             stm.close();
         }
         catch (SQLException|NamingException e) {
-            logger.error("FAIL to retrieve full list of group ID!");
+            logger.error("FAIL to retrieve group ID map!");
             logger.error(e.getMessage());
         }
         finally {
@@ -122,8 +123,7 @@ public abstract class GroupDB implements Serializable {
         return allGrpHash;
     }
     
-    // Helper function to return the list of group IDs setup in the system
-    // using the query passed in.
+    // Return the list of group IDs setup in the system using the query passed in.
     public static List<String> getGrpIDList(String query) {
         List<String> grpIDList = new ArrayList<>();
         Connection conn = null;
@@ -139,7 +139,7 @@ public abstract class GroupDB implements Serializable {
             stm.close();
         }
         catch (SQLException|NamingException e) {
-            logger.error("FAIL to retrieve full list of group ID!");
+            logger.error("FAIL to retrieve list of group ID!");
             logger.error(e.getMessage());
         }
         finally {
@@ -149,6 +149,7 @@ public abstract class GroupDB implements Serializable {
         return grpIDList;
     }
     
+    /* NOT IN USE!
     // Return the list of Group setup in the system under this institution.
     public static List<Group> getGrpListByInst(String inst_id) {
         String query = "SELECT * FROM grp WHERE dept_id IN "
@@ -163,24 +164,25 @@ public abstract class GroupDB implements Serializable {
                      + dept_id + "\' ORDER BY grp_id";
         
         return getGrpList(query);
-    }    
+    }
+    */
+    
     // Return the list of Group setup in the system. The list will be used in
     // the Group Management view.
-    public static List<Group> getFullGrpList() {
+    public List<Group> getFullGrpList() {
         String query = "SELECT * FROM grp ORDER BY grp_id";
         
         return getGrpList(query);
     }
-    // Return the Group for this group ID.
-    public static Group getGrpByGrpID(String grp_id) {
+    // Return the Group for this group ID. Used in Account Management view.
+    public Group getGrpByGrpID(String grp_id) {
         String query = "SELECT * FROM grp WHERE grp_id = \'" + grp_id + "\'";
         // There should only be one item in the list returned.
         return getGrpList(query).get(0);
     }
-    
     // Helper function to retrieve the group list from the database using the 
     // query passed in.
-    public static List<Group> getGrpList(String query) {
+    private List<Group> getGrpList(String query) {
         Connection conn = null;
         List<Group> grpList = new ArrayList<>();
         
@@ -210,6 +212,7 @@ public abstract class GroupDB implements Serializable {
         return grpList;
     }
     
+    /* NOT IN USE!
     // Return the list of group hierarchy structure (together with its leading
     // PI).
     public static List<InstDeptGrp> getInstDeptGrpList() {
@@ -234,8 +237,7 @@ public abstract class GroupDB implements Serializable {
                 
                 hierarchyList.add(tmp);
             }
-            
-            logger.debug("Retrieved group hierarchy list.");
+            logger.info("Retrieved group hierarchy list.");
         }
         catch (SQLException|NamingException e) {
             logger.error("FAIL to retrieve the group hierarchy list!");
@@ -247,13 +249,14 @@ public abstract class GroupDB implements Serializable {
         
         return hierarchyList;
     }
+    */
     
     // Return the list of active group ID (with pi setup) under this department.
-    public static List<String> getActiveGrpIDListByDept(String dept_id) {
+    public List<String> getActiveGrpIDListByDept(String dept_id) {
         return new ArrayList<>(getActiveGrpHashByDept(dept_id).values());
-    }    
+    }
     // Return the HashMap of active group ID (with pi setup) under this department.
-    public static LinkedHashMap<String, String> getActiveGrpHashByDept(String dept_id) 
+    public LinkedHashMap<String, String> getActiveGrpHashByDept(String dept_id) 
     {
         Connection conn = null;
         LinkedHashMap<String, String> grpHash = new LinkedHashMap<>();
@@ -265,16 +268,17 @@ public abstract class GroupDB implements Serializable {
             PreparedStatement stm = conn.prepareStatement(query);
             stm.setString(1, dept_id);
             ResultSet rs = stm.executeQuery();
-            
             while (rs.next()) {
                 grpHash.put(rs.getString("grp_id"), rs.getString("grp_id"));
             }
-            
             stm.close();
-            logger.debug("Active group list for " + dept_id + ": " + grpHash.toString());
+            StringBuilder oper = new StringBuilder("Active group list for ").
+                    append(dept_id).append(": ").append(grpHash.toString());
+            logger.info(oper);
+//            logger.debug("Active group list for " + dept_id + ": " + grpHash.toString());
         }
         catch (SQLException|NamingException e) {
-            logger.error("FAIL to query group list for " + dept_id);
+            logger.error("FAIL to query active group list for " + dept_id);
             logger.error(e.getMessage());
         }
         finally {
@@ -285,7 +289,7 @@ public abstract class GroupDB implements Serializable {
     }
     
     // Insert the new group ID into database.
-    public static boolean insertGroup(Group grp) {
+    public boolean insertGroup(Group grp) {
         Connection conn = null;
         boolean result = Constants.OK;
         String query = "INSERT INTO grp(grp_id,pi,dept_id,grp_name) VALUES(?,?,?,?)";
@@ -299,7 +303,7 @@ public abstract class GroupDB implements Serializable {
             stm.setString(4, grp.getGrp_name());
             stm.executeUpdate();
             stm.close();
-            logger.debug("New group ID inserted into database: " + grp.getGrp_id());
+            logger.info("Group ID inserted into database: " + grp.getGrp_id());
         }
         catch (SQLException|NamingException e) {
             result = Constants.NOT_OK;
@@ -314,7 +318,7 @@ public abstract class GroupDB implements Serializable {
     }
     
     // Update the group information in the database.
-    public static boolean updateGroup(Group grp) {
+    public boolean updateGroup(Group grp) {
         Connection conn = null;
         boolean result = Constants.OK;
         String query = "UPDATE grp SET pi = ?, dept_id = ?, grp_name = ?, "
@@ -330,7 +334,7 @@ public abstract class GroupDB implements Serializable {
             stm.setString(5, grp.getGrp_id());
             stm.executeUpdate();
             stm.close();
-            logger.debug("Group " + grp.getGrp_id() + " updated.");
+            logger.info(grp.getGrp_id() + " updated.");
         }
         catch (SQLException|NamingException e) {
             result = Constants.NOT_OK;
@@ -356,9 +360,8 @@ public abstract class GroupDB implements Serializable {
     public static String getGrpName(String grp_id) {
         return getGrpPropValue(grp_id, "grp_name");
     }
-    
     // Helper function to retrieve one of the group's property value.
-    public static String getGrpPropValue(String grp_id, String property) {
+    private static String getGrpPropValue(String grp_id, String property) {
         Connection conn = null;
         String propValue = Constants.DATABASE_INVALID_STR;
         String query = "SELECT * FROM grp WHERE grp_id = ?";
@@ -376,7 +379,10 @@ public abstract class GroupDB implements Serializable {
             stm.close();
         }
         catch (SQLException|NamingException e) {
-            logger.error("FAIL to retrieve " + property + " for group " + grp_id);
+            StringBuilder err = new StringBuilder("FAIL to retrieve ").
+                    append(property).append(" for group ").append(grp_id);
+            logger.error(err);
+//            logger.error("FAIL to retrieve " + property + " for group " + grp_id);
             logger.error(e.getMessage());
         }
         finally {
@@ -387,7 +393,7 @@ public abstract class GroupDB implements Serializable {
     }
     
     // Retrieve the institution ID that this group belongs to.
-    public static String getGrpInstID(String grp_id) {
+    public String getInstIDForGrp(String grp_id) {
         Connection conn = null;
         String inst_id = Constants.DATABASE_INVALID_STR;
         String query = "SELECT inst_id FROM inst_dept_grp WHERE grp_id = ?";

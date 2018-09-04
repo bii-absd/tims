@@ -152,7 +152,7 @@
                     <p:ajax event="rowEdit" listener="#{grpMgntBean.onDeptRowEdit}" 
                             update="acPanel:editDeptForm:deptTable grpMgntMsg"/>
                     <p:column headerText="Institution" styleClass="studytitlecol">
-                        <h:outputText value="#{dept.inst_name}"/>
+                        <h:outputText value="#{dept.inst_id}"/>
                     </p:column>
                     <p:column headerText="Department ID" styleClass="studytitlecol">
                         <h:outputText value="#{dept.dept_id}"/>

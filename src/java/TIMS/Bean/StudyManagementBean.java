@@ -4,14 +4,12 @@
 package TIMS.Bean;
 
 import TIMS.Database.ActivityLogDB;
-import TIMS.Database.DepartmentDB;
-import TIMS.Database.GroupDB;
 import TIMS.Database.ICD10DB;
 import TIMS.Database.Institution;
-import TIMS.Database.InstitutionDB;
 import TIMS.Database.Study;
 import TIMS.Database.StudyDB;
 import TIMS.Database.UserAccountDB;
+import TIMS.Database.WorkUnitDB;
 import TIMS.General.Constants;
 import java.io.Serializable;
 import java.sql.Date;
@@ -89,19 +87,20 @@ public class StudyManagementBean implements Serializable {
     private List<Study> studyList;
     // Store the user ID of the current user.
     private final String userName;
-
+    private final WorkUnitDB work_unit;
+    
     public StudyManagementBean() {
         userName = (String) getFacesContext().getExternalContext().
                 getSessionMap().get("User");
-        logger.debug("StudyManagementBean created.");
-        logger.debug(userName + ": access Study ID Management page.");
+        work_unit = new WorkUnitDB();
+        logger.info(userName + ": access Study ID Management page.");
     }
     
     @PostConstruct
     public void init() {
         start_date = end_date = null;
         annotHash = StudyDB.getAnnotHash();
-        grpHash = GroupDB.getActiveGrpWithPIHash();
+        grpHash = work_unit.getGrpDB().getActiveGrpHashWithPI();
         piIDHash = UserAccountDB.getPiIDHash();
         icdHash = ICD10DB.getICDCodeHash();
         studyList = StudyDB.queryStudy();
@@ -116,10 +115,16 @@ public class StudyManagementBean implements Serializable {
         
         if (StudyDB.updateStudyDBGI((Study) event.getObject())) {
             // Record this study update activity into database.
-            String detail = "Study " + ((Study) event.getObject()).getStudy_id() + 
-                            " DBGI";
-            ActivityLogDB.recordUserActivity(userName, Constants.CHG_ID, detail);
-            logger.info(userName + ": updated " + detail);
+            StringBuilder detail = new StringBuilder("Study ").
+                    append(((Study) event.getObject()).getStudy_id()).
+                    append(" DBGI");
+//            String detail = "Study " + ((Study) event.getObject()).getStudy_id() + 
+//                            " DBGI";
+            ActivityLogDB.recordUserActivity(userName, Constants.CHG_ID, detail.toString());
+            StringBuilder oper = new StringBuilder(userName).
+                                    append(": updated ").append(detail);
+            logger.info(oper);
+//            logger.info(userName + ": updated " + detail);
             // Refresh the study list.
             studyList = StudyDB.queryStudy();
             fc.addMessage(null, new FacesMessage(
@@ -147,10 +152,16 @@ public class StudyManagementBean implements Serializable {
         
         if (StudyDB.updateStudyMI((Study) event.getObject())) {
             // Record this study update activity into database.
-            String detail = "Study " + ((Study) event.getObject()).getStudy_id()
-                          + " main info";
-            ActivityLogDB.recordUserActivity(userName, Constants.CHG_ID, detail);
-            logger.info(userName + ": updated " + detail);
+            StringBuilder detail = new StringBuilder("Study ").
+                    append(((Study) event.getObject()).getStudy_id()).
+                    append(" main info");
+//            String detail = "Study " + ((Study) event.getObject()).getStudy_id()
+//                          + " main info";
+            ActivityLogDB.recordUserActivity(userName, Constants.CHG_ID, detail.toString());
+            StringBuilder oper = new StringBuilder(userName).
+                                    append(": updated ").append(detail);
+            logger.info(oper);
+//            logger.info(userName + ": updated " + detail);
             // Refresh the study list.
             studyList = StudyDB.queryStudy();
             fc.addMessage(null, new FacesMessage(
@@ -165,20 +176,20 @@ public class StudyManagementBean implements Serializable {
 
     // Setup the MultiSelectListbox options i.e. Insitution -> Departments -> Groups.
     private void setupGrouping() {
-        List<Institution> instList = InstitutionDB.getInstList();
+        List<Institution> instList = work_unit.getInstDB().getInstList();
 
         // Loop through the list of institutions setup in the system.
         for (Institution inst : instList) {
             SelectItemGroup instGrp = new SelectItemGroup(inst.getInst_id());
             // Retrieve the list of departments under this institution.
-            List<String> deptIDList = DepartmentDB.getDeptIDList(inst.getInst_id());
+            List<String> deptIDList = work_unit.getDeptDB().getDeptIDList(inst.getInst_id());
             SelectItemGroup[] deptGrp = new SelectItemGroup[deptIDList.size()];
             int i = 0;
 
             for (String dept_id : deptIDList) {
                 // Retrieve the list of groups under this department.
                 // Only retrieve those groups which are active, and have pi setup.
-                List<String> grpIDList = GroupDB.getActiveGrpIDListByDept(dept_id);
+                List<String> grpIDList = work_unit.getGrpDB().getActiveGrpIDListByDept(dept_id);
                 SelectItem[] grpOpts = new SelectItem[grpIDList.size()];
                 int j = 0;
 
@@ -203,7 +214,7 @@ public class StudyManagementBean implements Serializable {
     public String createNewStudy() {
         FacesContext fc = getFacesContext();
         // Set the PI that is heading the group as the owner of this study.
-        owner_id = GroupDB.getGrpPIID(grp_id);
+        owner_id = work_unit.getGrpDB().getGrpPIID(grp_id);
         // Only proceed to create the new study ID if the group has a PI 
         // in-charge setup, else display error message.
         // After the changes to the query statement to retrieve the group ID,
@@ -218,7 +229,7 @@ public class StudyManagementBean implements Serializable {
         } 
         else {
             // Append the institution ID and group ID to the study ID.
-            study_id = GroupDB.getGrpInstID(grp_id) + "-" + grp_id + "-" + 
+            study_id = work_unit.getGrpDB().getInstIDForGrp(grp_id) + "-" + grp_id + "-" + 
                        study_id.toUpperCase();
             // Because the system is receiving the date as java.util.Date hence
             // we need to perform a conversion here before storing it into database.
