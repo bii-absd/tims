@@ -53,11 +53,13 @@ public class ActivityTrackingBean implements Serializable {
     private Date from, to;
     // Store the user ID of the current user.
     private final String userName;
+    private final ActivityLogDB activityDB;
     
     public ActivityTrackingBean() {
         userName = (String) FacesContext.getCurrentInstance().
                 getExternalContext().getSessionMap().get("User");
-        activityList = ActivityLogDB.getActivityList();
+        activityDB = new ActivityLogDB();
+        activityList = activityDB.getActivityList();
         // Currently only allow director and administrator to use this module.
         if (UserAccountDB.isDirector(userName)) {
             // Director can only see the activities of all users under his/her
@@ -103,19 +105,27 @@ public class ActivityTrackingBean implements Serializable {
             para.add("time <= \'" + toStr + "\'");
         }
 
-        activityLog = ActivityLogDB.retrieveActivityLog(para);
+        activityLog = activityDB.retrieveActivityLog(para);
     }
     
     // Return the query that can be used to retrieve the list of users that 
     // belong to this institution.
     private String getInstUserIDQuery(String instID) {
-        String query 
-            = "SELECT user_id FROM user_account WHERE unit_id IN ("
-            + "(SELECT inst_id AS unit_id FROM inst_dept_grp WHERE inst_id = \'" + instID + "\') UNION "
-            + "(SELECT dept_id AS unit_id FROM inst_dept_grp WHERE inst_id = \'" + instID + "\') UNION "
-            + "(SELECT grp_id AS unit_id FROM inst_dept_grp WHERE inst_id = \'" + instID + "\'))";
+//        String query 
+//            = "SELECT user_id FROM user_account WHERE unit_id IN ("
+//            + "(SELECT inst_id AS unit_id FROM inst_dept_grp WHERE inst_id = \'" + instID + "\') UNION "
+//            + "(SELECT dept_id AS unit_id FROM inst_dept_grp WHERE inst_id = \'" + instID + "\') UNION "
+//            + "(SELECT grp_id AS unit_id FROM inst_dept_grp WHERE inst_id = \'" + instID + "\'))";
+        StringBuilder query = new 
+            StringBuilder("SELECT user_id FROM user_account WHERE unit_id IN (").
+                append("(SELECT inst_id AS unit_id FROM inst_dept_grp WHERE inst_id = \'").
+                append(instID).append("\') UNION ").
+                append("(SELECT dept_id AS unit_id FROM inst_dept_grp WHERE inst_id = \'").
+                append(instID).append("\') UNION ").
+                append("(SELECT grp_id AS unit_id FROM inst_dept_grp WHERE inst_id = \'").
+                append(instID).append("\'))");
         
-        return query;
+        return query.toString();
     }
     
     // Return the list of activity currently available in the database.

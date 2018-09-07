@@ -64,7 +64,11 @@
                             </f:facet>
                             <f:facet name="input">
                                 <p:selectOneMenu value="#{acct.role_id}" style="width: 100%">
-                                    <f:selectItems value="#{acctMgntBean.roleNameHash}"/>
+                                    <f:selectItem itemLabel="Admin" itemValue="1"/>
+                                    <f:selectItem itemLabel="Director" itemValue="2"/>
+                                    <f:selectItem itemLabel="HOD" itemValue="3"/>
+                                    <f:selectItem itemLabel="PI" itemValue="4"/>
+                                    <f:selectItem itemLabel="User" itemValue="5"/>
                                     <p:ajax listener="#{acctMgntBean.roleEditChange}" 
                                             update="unitID"/>
                                 </p:selectOneMenu>
@@ -166,7 +170,11 @@
                         <p:selectOneMenu id="role" value="#{acctMgntBean.role_id}"
                                          style="width:180px" required="true">
                             <f:selectItem itemLabel="Select Role" itemValue="0"/>
-                            <f:selectItems value="#{acctMgntBean.roleNameHash}"/>
+                            <f:selectItem itemLabel="Admin" itemValue="1"/>
+                            <f:selectItem itemLabel="Director" itemValue="2"/>
+                            <f:selectItem itemLabel="HOD" itemValue="3"/>
+                            <f:selectItem itemLabel="PI" itemValue="4"/>
+                            <f:selectItem itemLabel="User" itemValue="5"/>
                             <p:ajax listener="#{acctMgntBean.instRoleChange}" update="unit"/>
                         </p:selectOneMenu>
                         <h:message for="role" styleClass="errors"/>

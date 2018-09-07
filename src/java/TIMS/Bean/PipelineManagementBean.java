@@ -55,25 +55,23 @@ public class PipelineManagementBean implements Serializable {
     private List<Pipeline> plList;
     // Store the user ID of the current user.
     private final String userName;
+    private final PipelineDB plDB;
 
     public PipelineManagementBean() {
         userName = (String) getFacesContext().getExternalContext().
                 getSessionMap().get("User");
-        logger.debug("PipelineManagementBean created.");
+        plDB = new PipelineDB();
         logger.info(userName + ": access Pipeline Management page.");
     }
     
     @PostConstruct
     public void init() {
-        try {
-            plList = PipelineDB.getAllPipeline();            
-        }
-        catch (SQLException|NamingException e) {
-            logger.error("FAIL to retrieve pipeline info!");
-            logger.error(e.getMessage());
-            getFacesContext().addMessage(null, new FacesMessage(
-                        FacesMessage.SEVERITY_ERROR,
-                        "System failed to retrieve pipeline from database!", ""));
+        plList = plDB.getAllPipeline();
+        
+        if (plList.isEmpty()) {
+            getFacesContext().addMessage(null, 
+                new FacesMessage(FacesMessage.SEVERITY_WARN,
+                    "System failed to retrieve pipeline info from database!", ""));
         }
     }
 
@@ -82,7 +80,7 @@ public class PipelineManagementBean implements Serializable {
        FacesContext fc = getFacesContext();
        Pipeline newCmd = new Pipeline(plName, plDesc, tid, command, parameter, editable);
        
-       if (PipelineDB.insertPipeline(newCmd)) {
+       if (plDB.insertPipeline(newCmd)) {
            // Record this pipeline creation activity into database.
            String detail = "Pipeline " + plName + " for technology " 
                          + tid;
@@ -106,7 +104,7 @@ public class PipelineManagementBean implements Serializable {
     public void onRowEdit(RowEditEvent event) {
         FacesContext fc = getFacesContext();
         
-        if (PipelineDB.updatePipeline((Pipeline) event.getObject())) {
+        if (plDB.updatePipeline((Pipeline) event.getObject())) {
             // Record this pipeline update activity into database.
             String detail = "Pipeline " + ((Pipeline) event.getObject()).getName();
             ActivityLogDB.recordUserActivity(userName, Constants.CHG_ID, detail);

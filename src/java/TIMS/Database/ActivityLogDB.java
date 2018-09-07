@@ -1,9 +1,10 @@
 /*
- * Copyright @2016
+ * Copyright @2016-2018
  */
 
 package TIMS.Database;
 
+// Libraries for Java
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -20,8 +21,8 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 /**
- * ActivityLogDB is an abstract class and not mean to be instantiate, its main 
- * job is to perform SQL operations on the activity_log table in the database.
+ * ActivityLogDB is used to perform SQL operations on the activity_log table 
+ * in the database.
  * 
  * Author: Tay Wei Hong
  * Date: 26-Jan-2016
@@ -40,7 +41,7 @@ import org.apache.logging.log4j.LogManager;
  * activity currently available in the database.
  */
 
-public abstract class ActivityLogDB {
+public class ActivityLogDB {
     // Get the logger for Log4j
     private final static Logger logger = LogManager.
             getLogger(ActivityLogDB.class.getName());
@@ -80,21 +81,20 @@ public abstract class ActivityLogDB {
     }
 
     // Retrieve the list of activity currently available in the database.
-    public static LinkedHashMap<String, String> getActivityList() {
+    public LinkedHashMap<String, String> getActivityList() {
         Connection conn = null;
-        String query = "SELECT DISTINCT activity FROM activity_log ORDER BY activity";
         LinkedHashMap<String, String> activityList = new LinkedHashMap<>();
         
         try {
             conn = DBHelper.getDSConn();
-            PreparedStatement stm = conn.prepareStatement(query);
+            PreparedStatement stm = conn.prepareStatement
+                ("SELECT DISTINCT activity FROM activity_log ORDER BY activity");
             ResultSet rs = stm.executeQuery();
             
             while (rs.next()) {
                 String activity = rs.getString("activity");
                 activityList.put(activity, activity);
             }
-            logger.debug("Activity list retrieved.");
         }
         catch (SQLException|NamingException e) {
             logger.error("FAIL to retrieve activity list!");
@@ -108,7 +108,7 @@ public abstract class ActivityLogDB {
     }
     
     // Build and return the activity log based on the query passed in.
-    private static List<ActivityLog> buildActivityLog(String query) {
+    private List<ActivityLog> buildActivityLog(String query) {
         Connection conn = null;
         List<ActivityLog> logs = new ArrayList<>();
         
@@ -125,7 +125,6 @@ public abstract class ActivityLogDB {
                 logs.add(tmp);
             }
             stm.close();
-            logger.debug("Retrieved activity log.");
         }
         catch (SQLException|NamingException e) {
             logger.error("FAIL to retrieve activity log!");
@@ -139,26 +138,29 @@ public abstract class ActivityLogDB {
     }
     
     // Build the query string based on the parameters selected by the user.
-    public static List<ActivityLog> retrieveActivityLog(List<String> paraList) {
-        String query = "SELECT * FROM activity_log";
+    public List<ActivityLog> retrieveActivityLog(List<String> paraList) {
+//        String query = "SELECT * FROM activity_log";
+        StringBuilder query = new StringBuilder("SELECT * FROM activity_log");
         
         for (int ind = 0; ind < paraList.size(); ind++) {
             // Check that this is the first parameter.
             if (ind == 0) {
-                query += " WHERE ";
+//                query += " WHERE ";
+                query.append(" WHERE ");
             }
             
-            query += paraList.get(ind);
+//            query += paraList.get(ind);
+            query.append(paraList.get(ind));
             // Check that this is not the last parameter.
             if (ind < paraList.size()-1) {
-                query += " AND ";
+//                query += " AND ";
+                query.append(" AND ");
             }
         }
+//        query += " ORDER BY sn DESC";
+        query.append(" ORDER BY sn DESC");
+        logger.info("Query activity log table: " + query);
         
-        query += " ORDER BY sn DESC";
-  
-        logger.debug("Query activity log table: " + query);
-        
-        return buildActivityLog(query);
+        return buildActivityLog(query.toString());
     }
 }

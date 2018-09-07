@@ -188,6 +188,7 @@ public abstract class ConfigBean implements Serializable {
     protected String custDesc;
     // Customization status i.e. true == saved.
     protected boolean custStatus;
+    protected InputDataDB inputDB;
 
     // This method will only be trigger if all the inputs validation have 
     // passed after the user clicked on Submit. As a result of this behaviour 
@@ -208,6 +209,7 @@ public abstract class ConfigBean implements Serializable {
                     getSessionMap().get("haveNewData");
         pipelineName = (String) getFacesContext().getExternalContext().
                     getSessionMap().get("pipeline");
+        inputDB = new InputDataDB();
         // Setup local variables using the setting retrieved from session map.
         pipelineTech = PipelineDB.getPipelineTechnology(pipelineName);
         commandLink = ResourceRetriever.getMsg(pipelineName);
@@ -226,7 +228,7 @@ public abstract class ConfigBean implements Serializable {
             sampleFile = new FileUploadBean(dir);
         }
         else {
-            inputDataList = InputDataDB.getIpList(studyID, pipelineName);
+            inputDataList = inputDB.getIpList(studyID, pipelineName);
         }
         logger.debug(studyID + " ConfigBean - init().");
     }
@@ -407,13 +409,12 @@ public abstract class ConfigBean implements Serializable {
         String result = Constants.MAIN_PAGE;
         // Build the pipeline command
         List<String> command = new ArrayList<>();
+        PipelineDB plDB = new PipelineDB(pipelineName);
         Pipeline cmd;
         
         try {
             // Retrieve the pipeline command and it's parameter from database.
-            cmd = PipelineDB.getPipeline(pipelineName);
-
-            logger.debug("Pipeline from database: " + cmd.toString());
+            cmd = plDB.getPipeline();
         }
         catch (SQLException|NamingException e) {
             logger.error("FAIL to retrieve pipeline command " +
@@ -426,8 +427,7 @@ public abstract class ConfigBean implements Serializable {
         command.add(cmd.getCommand());
         command.add(cmd.getParameter());
         command.add(pipelineConfig);
-        
-        logger.debug("Full pipeline command: " + command.toString());
+        logger.info("Full pipeline command: " + command.toString());
         
         ProcessBuilder pb = new ProcessBuilder(command);
         // The execution log from the pipeline will be written to the 

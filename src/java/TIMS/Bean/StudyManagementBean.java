@@ -88,11 +88,13 @@ public class StudyManagementBean implements Serializable {
     // Store the user ID of the current user.
     private final String userName;
     private final WorkUnitDB work_unit;
+    private final ICD10DB icd_db;
     
     public StudyManagementBean() {
         userName = (String) getFacesContext().getExternalContext().
                 getSessionMap().get("User");
         work_unit = new WorkUnitDB();
+        icd_db = new ICD10DB();
         logger.info(userName + ": access Study ID Management page.");
     }
     
@@ -102,7 +104,7 @@ public class StudyManagementBean implements Serializable {
         annotHash = StudyDB.getAnnotHash();
         grpHash = work_unit.getGrpDB().getActiveGrpHashWithPI();
         piIDHash = UserAccountDB.getPiIDHash();
-        icdHash = ICD10DB.getICDCodeHash();
+        icdHash = icd_db.getICDCodeHash();
         studyList = StudyDB.queryStudy();
         grouping = new ArrayList<>();
         setupGrouping();

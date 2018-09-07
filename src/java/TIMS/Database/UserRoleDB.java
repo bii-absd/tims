@@ -1,20 +1,23 @@
 /*
- * Copyright @2015-2016
+ * Copyright @2015-2018
  */
 package TIMS.Database;
 
 import TIMS.General.Constants;
+// Libraries for Java
 import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.LinkedHashMap;
 // Libraries for Java Extension
 import javax.naming.NamingException;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+// Libraries for Trove
+import gnu.trove.map.hash.TIntObjectHashMap;
+import gnu.trove.map.hash.TObjectIntHashMap;
 
 /**
  * UserRoleDB is an abstract class and not mean to be instantiate, its main 
@@ -49,13 +52,18 @@ public abstract class UserRoleDB implements Serializable {
     // Get the logger for Log4j
     private final static Logger logger = LogManager.
             getLogger(UserRoleDB.class.getName());
-    private final static LinkedHashMap<String, Integer> 
-            roleNameHash = new LinkedHashMap<>();
-    private final static LinkedHashMap<Integer, String> 
-            roleIDHash = new LinkedHashMap<>();
+//    private final static LinkedHashMap<String, Integer> 
+//            roleNameHash = new LinkedHashMap<>();
+    private final static TObjectIntHashMap<String> roleNameHash = 
+            new TObjectIntHashMap<String>();
+//    private final static LinkedHashMap<Integer, String> 
+//            roleIDHash = new LinkedHashMap<>();
+    private final static TIntObjectHashMap<String> roleIDHash = 
+            new TIntObjectHashMap<String>();
     
     // Return the list of Role setup in the database
-    public static LinkedHashMap<String, Integer> getRoleNameHash() {
+//    public static LinkedHashMap<String, Integer> getRoleNameHash() {
+    public static TObjectIntHashMap<String> getRoleNameHash() {
         // We will only build the roleList once
         if (roleNameHash.isEmpty()) {
             Connection conn = null;
@@ -87,8 +95,8 @@ public abstract class UserRoleDB implements Serializable {
         return roleNameHash;
     }
     
-    // Return the Role ID using the value stored in HashMap roleList.
-    public static int getRoleIDFromHash(String roleName) {
+    // Helper function to return the Role ID from the role name map.
+    private static int getRoleIDFromHash(String roleName) {
         if (roleNameHash.isEmpty()) {
             return Constants.DATABASE_INVALID_ID;
         }

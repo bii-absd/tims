@@ -175,13 +175,13 @@ public class GEXAffymetrixBean extends ConfigBean {
     @Override
     public void saveSampleFileDetail() {
         try {
-            input_sn = InputDataDB.getNextSn(studyID);
+            input_sn = inputDB.getNextSn(studyID);
             // For Affymetrix, we will only store the filepath i.e. for 
             // filename, it is empty.
             InputData newdata = new InputData(studyID, userName, pipelineName,
                     "", inputFile.getLocalDirectoryPath(), inputFileDesc, 
                     input_sn, submitTimeInDB);
-            InputDataDB.insertInputData(newdata);
+            inputDB.insertInputData(newdata);
         }
         catch (SQLException|NamingException e) {
             logger.error("FAIL to insert input data detail!");

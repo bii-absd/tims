@@ -7,6 +7,6 @@
       <description>Keep a copy of the generated servlet class' java code.</description>
     </property>
   </jsp-config>
-  <property name="alternatedocroot_1" value="from=/images/* dir=/var/TIMS"/>
+  <property name="alternatedocroot_1" value="from=/images/* dir=C:\TIMS"/>
 </sun-web-app>
 

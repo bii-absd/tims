@@ -7,7 +7,6 @@ import TIMS.Database.ActivityLogDB;
 import TIMS.Database.DBHelper;
 import TIMS.Database.FeatureDB;
 import TIMS.Database.GroupDB;
-import TIMS.Database.ICD10DB;
 import TIMS.Database.InstitutionDB;
 import TIMS.Database.JobStatusDB;
 import TIMS.Database.SystemParametersDB;
@@ -21,7 +20,7 @@ import java.io.Serializable;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.LinkedHashMap;
+import java.util.Map;
 // Libraries for Java Extension
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
@@ -131,15 +130,15 @@ public class AuthenticationBean implements Serializable {
             getLogger(AuthenticationBean.class.getName());
     private String loginName, password, instName;
     private UserAccount userAcct;
-    private static LinkedHashMap<String, String> featureList;
+    private static Map<String, String> featureList;
     
     public AuthenticationBean() {
         logger.debug("AuthenticationBean created.");
     }
     
     // Retrieve the feature status list from the database.
-    public static void setupFeatureList() {
-        featureList = FeatureDB.getAllFeatureStatusHash();
+    public static void setupFeatureList(Map<String, String> feature) {
+        featureList = feature;
     }
     
     // Setup the database configuration, input and config file path according 
@@ -165,11 +164,11 @@ public class AuthenticationBean implements Serializable {
     
     // Setup the system, check the user login and password against the 
     // database before letting the user use the system.
-    public String login()
-    {
+    public String login() {
         // Next page to proceed to
         String result = Constants.LOGIN_PAGE;
         ServletContext context = getServletContext();
+        FeatureDB featureDB = new FeatureDB();
         
         // Setting up the database configuration, input, config file path, etc
         if (!setupConstants(context))
@@ -192,11 +191,11 @@ public class AuthenticationBean implements Serializable {
         // Build the role list.
         UserRoleDB.getRoleNameHash();
         // Build the ICD10 Code HashMap.
-        ICD10DB.buildICDHashMaps();
+//        ICD10DB.buildICDHashMaps();
         // Build the Institution ID HashMap.
 //        InstitutionDB.buildInstIDHash();
         // Setup the feature active status list.
-        setupFeatureList();
+        setupFeatureList(featureDB.getAllFeatureStatusHash());
         
         // Temporary hack to allow me to enter to create user when the 
         // application is first deployed.

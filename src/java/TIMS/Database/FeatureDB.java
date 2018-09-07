@@ -3,20 +3,21 @@
  */
 package TIMS.Database;
 
-import TIMS.General.Constants;
 // Libraries for Java
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 // Libraries for Java Extension
 import javax.naming.NamingException;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+// Library for Trove
+import gnu.trove.map.hash.THashMap;
 
 /**
  * FeatureDB is an abstract class and not mean to be instantiate, its main 
@@ -32,13 +33,14 @@ import org.apache.logging.log4j.LogManager;
  * (BOOLEAN) with status (TEXT).
  */
 
-public abstract class FeatureDB {
+public class FeatureDB {
     // Get the logger for Log4j
     private final static Logger logger = LogManager.
             getLogger(FeatureDB.class.getName());
 
+    /* NOT IN USE!
     // Return the feature status based on the fcode passed in.
-    public static String getFeatureStatus(String fcode) {
+    public String getFeatureStatus(String fcode) {
         String status = Constants.DATABASE_INVALID_STR;
         Connection conn = null;
         String query = "SELECT status FROM feature WHERE fcode = ?";
@@ -64,16 +66,17 @@ public abstract class FeatureDB {
     
         return status;
     }
+    */
     
     // Return all the feature settings defined in the database as a hash map.
-    public static LinkedHashMap<String, String> getAllFeatureStatusHash() {
-        LinkedHashMap<String, String> fteHash = new LinkedHashMap<>();
+    public Map<String, String> getAllFeatureStatusHash() {
+        Map<String, String> fteHash = new THashMap<>();
         Connection conn = null;
-        String query = "SELECT * FROM feature ORDER BY fcode";
         
         try {
             conn = DBHelper.getDSConn();
-            PreparedStatement stm = conn.prepareStatement(query);
+            PreparedStatement stm = conn.prepareStatement
+                                    ("SELECT * FROM feature ORDER BY fcode");
             ResultSet rs = stm.executeQuery();
             
             while (rs.next()) {
@@ -93,21 +96,20 @@ public abstract class FeatureDB {
     }
     
     // Return all the feature settings defined in the database.
-    public static List<Feature> getAllFeatureStatus() {
+    public List<Feature> getAllFeatureStatus() {
         Connection conn = null;
         List<Feature> fList = new ArrayList<>();
-        String query = "SELECT * FROM feature ORDER BY fcode";
         
         try {
             conn = DBHelper.getDSConn();
-            PreparedStatement stm = conn.prepareStatement(query);
+            PreparedStatement stm = conn.prepareStatement
+                                    ("SELECT * FROM feature ORDER BY fcode");
             ResultSet rs = stm.executeQuery();
             
             while (rs.next()) {
                 fList.add(new Feature(rs));
             }
             stm.close();
-            logger.debug("Feature status list retrieved.");
         }
         catch (SQLException|NamingException e) {
             logger.error("FAIL to retrieve feature status list!");
@@ -122,8 +124,7 @@ public abstract class FeatureDB {
     
     // Update the feature setup. Any exception encountered here will be throw
     // and to be handled by the caller.
-    public static void updateFeature(Feature fte) 
-            throws SQLException, NamingException 
+    public void updateFeature(Feature fte) throws SQLException, NamingException 
     {
         String query = "UPDATE feature SET status = ? WHERE fcode = ?";
         Connection conn = DBHelper.getDSConn();

@@ -96,7 +96,7 @@ public class AccountManagementBean implements Serializable {
     private final String userName;
     private List<UserAccount> userAcctList;
     private LinkedHashMap<String,String> instNameHash, instUnitIDHash, userIDHash;
-    private LinkedHashMap<String,Integer> roleNameHash;
+//    private LinkedHashMap<String,Integer> roleNameHash;
     // For uploading of user photo.
     private FileUploadBean photo = null;
     private final WorkUnitDB work_unit;
@@ -116,7 +116,7 @@ public class AccountManagementBean implements Serializable {
             userIDHash = UserAccountDB.getUserIDHash();
         }
         // Retrieve the list of role name setup in the system.
-        roleNameHash = UserRoleDB.getRoleNameHash();
+//        roleNameHash = UserRoleDB.getRoleNameHash();
         // Retrieve the list of institution setup in the system.
         instNameHash = work_unit.getInstDB().getAllInstNameHash();
     }
@@ -352,9 +352,9 @@ public class AccountManagementBean implements Serializable {
     }
     
     // Return the list of Role setup in the database
-    public LinkedHashMap<String, Integer> getRoleNameHash() {
-        return roleNameHash;
-    }
+//    public LinkedHashMap<String, Integer> getRoleNameHash() {
+//        return roleNameHash;
+//    }
     // Return the list of Institution setup in the database
     public LinkedHashMap<String, String> getInstNameHash() {
         return instNameHash;
