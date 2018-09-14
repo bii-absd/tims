@@ -11,7 +11,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 // Libraries for Java Extension
 import javax.naming.NamingException;
@@ -98,6 +97,21 @@ public class SubjectDB {
         finally {
             DBHelper.closeDSConn(conn);
         }
+    }
+    
+    // This express get method is used during consistency check in meta data 
+    // upload.
+    public Subject getSubject(PreparedStatement stm, String subject_id) 
+            throws SQLException 
+    {
+        Subject subjt = null;
+        stm.setString(1, study_id);
+        stm.setString(2, subject_id);
+        ResultSet rs = stm.executeQuery();
+        if (rs.next()) {
+            subjt = new Subject(rs);
+        }
+        return subjt;
     }
     
     // Return the subject object belonging to this subject id.

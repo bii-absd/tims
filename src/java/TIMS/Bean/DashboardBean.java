@@ -40,6 +40,8 @@ import org.primefaces.model.chart.BarChartModel;
 import org.primefaces.model.chart.ChartSeries;
 import org.primefaces.model.chart.HorizontalBarChartModel;
 import org.primefaces.model.chart.LegendPlacement;
+// Library for Trove
+import gnu.trove.map.hash.TObjectIntHashMap;
 
 /**
  * DashboardBean is the backing bean for the dashboard view.
@@ -73,8 +75,7 @@ public class DashboardBean implements Serializable {
     private PieChartModel piechartR, piechartL;
     private BarChartModel barchartL, barchartR;
     private HorizontalBarChartModel specificFieldsBarchart;
-    private HashMap<String, Integer> specific_fields_w_data, 
-                                     specific_fields_wo_data;
+    private TObjectIntHashMap<String> specific_fields_w_data, specific_fields_wo_data;
     private SubjectDB subjects;
     private StudySpecificFieldDB ss_fields;
     
@@ -90,10 +91,10 @@ public class DashboardBean implements Serializable {
         specificFieldsBarchart = new HorizontalBarChartModel();
         categories = new ArrayList<>();
         subjectDetailList = new ArrayList<>();
-        specific_fields_w_data = new HashMap<>();
-        specific_fields_wo_data = new HashMap<>();
+        specific_fields_w_data = new TObjectIntHashMap<>();
+        specific_fields_wo_data = new TObjectIntHashMap<>();
         
-        logger.debug(userName + ": access dashboard.");
+        logger.info(userName + ": access dashboard.");
     }
     
     @PostConstruct
@@ -242,7 +243,6 @@ public class DashboardBean implements Serializable {
     // A new study has been selected by the user, need to rebuild the charts.
     public void studyChange() {
         if (study_id.compareTo("0") != 0) {
-            logger.info("Study ID: " + study_id);
             study_sel = StudyDB.getStudyObject(study_id);
             subjects = new SubjectDB(study_id);
             ss_fields = new StudySpecificFieldDB(study_id);

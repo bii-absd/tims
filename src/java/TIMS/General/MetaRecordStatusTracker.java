@@ -153,8 +153,6 @@ public class MetaRecordStatusTracker {
         oper.append(count).append("/").append(total_records).append(" (").
              append(nf.format((double)count/total_records)).append(")");
         return oper.toString();
-//        return  count + "/" + total_records + " (" +
-//                nf.format((double)count/total_records) + ")";
     }
     
     // Return the statistics of this status (with respect to the total_records.)
@@ -165,10 +163,7 @@ public class MetaRecordStatusTracker {
             int count = statistics.get(status).getNum_of_records();
             oper.append(count).append("/").append(total_records).append(" (").
                  append(nf.format((double)count/total_records)).append(")");
-//            return  count + "/" + total_records + " (" +
-//                    nf.format((double)count/total_records) + ")";
         }
-//        return "";
         return oper.toString();
     }
     
@@ -212,15 +207,12 @@ public class MetaRecordStatusTracker {
     // static nested class.
     private static class StatusCounter {
         private int num_of_records;
-//        private String message, sub_header;
         private StringBuilder message, sub_header;
 
         public StatusCounter(String sub_header, String message) {
             this.num_of_records = 0;
             this.message = new StringBuilder(message);
             this.sub_header = new StringBuilder(sub_header);
-//            this.message = message;
-//            this.sub_header = sub_header;
         }
         // Increment the num_of_record by one.
         public void incNum_of_records() {
@@ -228,12 +220,10 @@ public class MetaRecordStatusTracker {
         }
         // Concatenate msg to message.
         public void concatMessage(String msg) {
-//            message += msg;
             message.append(msg);
         }
         // Concatenate msg to sub_header.
         public void concatSubHeader(String msg) {
-//            sub_header += msg;
             sub_header.append(msg);
         }
         // Machine generated code.

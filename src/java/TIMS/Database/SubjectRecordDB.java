@@ -60,8 +60,11 @@ public abstract class SubjectRecordDB {
         // subject record, hence need to set a savepoint for rollback and
         // to continue with the next record if it happens.
         Savepoint sp = conn.setSavepoint();
-        String detail = sr.getStudy_id() + " - " + sr.getSubject_id() 
-                      + " - " + sr.getRecord_date();
+        StringBuilder detail = new StringBuilder(sr.getStudy_id()).
+                                   append(" - ").append(sr.getSubject_id()).
+                                   append(" - ").append(sr.getRecord_date());
+//        String detail = sr.getStudy_id() + " - " + sr.getSubject_id() 
+//                      + " - " + sr.getRecord_date();
         String query = "INSERT INTO subject_record(subject_id,study_id,"
                      + "record_date,height,weight,dat) VALUES (?,?,?,?,?,?)";
         
@@ -77,7 +80,7 @@ public abstract class SubjectRecordDB {
             stm.close();
             // Operation is successful, release the savepoint.
             conn.releaseSavepoint(sp);
-            logger.debug("Insert subject record: " + detail);
+            logger.info("Insert subject record: " + detail);
         }
         catch (SQLException e) {
             result = Constants.NOT_OK;
@@ -104,13 +107,29 @@ public abstract class SubjectRecordDB {
             stm.close();
         }
         catch (SQLException|NamingException e) {
-            logger.error("FAIL to delete subject records belonging to " 
-                        + study_id);
+            logger.error("FAIL to delete subject records!");
             logger.error(e.getMessage());
         }
         finally {
             DBHelper.closeDSConn(conn);
         }
+    }
+    
+    // This express get method is used during consistency check in meta data 
+    // upload.
+    public static SubjectRecord getSubjectRecord(PreparedStatement stm, 
+            String study_id, String subject_id, LocalDate record_date) 
+            throws SQLException 
+    {
+        SubjectRecord sr = null;
+        stm.setString(1, study_id);
+        stm.setString(2, subject_id);
+        stm.setObject(3, record_date, Types.DATE);
+        ResultSet rs = stm.executeQuery();    
+        if (rs.next()) {
+            sr = new SubjectRecord(rs);
+        }
+        return sr;
     }
     
     // Return the subject record belonging to this primary key (i.e. study_id +
@@ -135,8 +154,13 @@ public abstract class SubjectRecordDB {
             }
         }
         catch (SQLException|NamingException e) {
-            logger.error("FAIL to retrieve subject record: " + study_id + 
-                         "-" + subject_id + "-" + record_date);
+            StringBuilder err = new 
+                StringBuilder("FAIL to retrieve subject record: ").
+                    append(study_id).append("-").append(subject_id).
+                    append("-").append(record_date);
+            logger.error(err);
+//            logger.error("FAIL to retrieve subject record: " + study_id + 
+//                         "-" + subject_id + "-" + record_date);
             logger.error(e.getMessage());
         }
         finally {
@@ -160,13 +184,14 @@ public abstract class SubjectRecordDB {
             ResultSet rs = stm.executeQuery();
             
             while (rs.next()) {
-                srdList.add(rs.getString("subject_id") + joinStr + 
-                            rs.getString("record_date"));
+                StringBuilder tmp = new StringBuilder(rs.getString("subject_id")).
+                                        append(joinStr).
+                                        append(rs.getString("record_date"));
+                srdList.add(tmp.toString());
             }
         }
         catch (SQLException|NamingException e) {
-            logger.error("FAIL to retrieve list of subject_id-record_date from study: " 
-                        + study_id);
+            logger.error("FAIL to retrieve list of subject_id-record_date!");
             logger.error(e.getMessage());
         }
         finally {
@@ -226,8 +251,11 @@ public abstract class SubjectRecordDB {
                             (SubjectRecord sr, Connection conn) 
     {
         boolean result = Constants.OK;
-        String detail = sr.getStudy_id() + " - " + sr.getSubject_id() 
-                      + " - " + sr.getRecord_date();
+        StringBuilder detail = new StringBuilder(sr.getStudy_id()).
+                                   append(" - ").append(sr.getSubject_id()).
+                                   append(" - ").append(sr.getRecord_date());
+//        String detail = sr.getStudy_id() + " - " + sr.getSubject_id() 
+//                      + " - " + sr.getRecord_date();
         String query = "UPDATE subject_record SET height = ?, weight = ?, "
                      + "sample_id = ?, dat = ? WHERE subject_id = ? "
                      + "AND record_date = ? AND study_id = ?";
@@ -244,7 +272,7 @@ public abstract class SubjectRecordDB {
             stm.executeUpdate();
             stm.close();
             
-            logger.debug("Update subject record: " + detail);
+            logger.info("Update subject record: " + detail);
         }
         catch (SQLException e) {
             result = Constants.NOT_OK;

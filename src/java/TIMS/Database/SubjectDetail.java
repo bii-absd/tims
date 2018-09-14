@@ -9,9 +9,11 @@ import TIMS.General.FileHelper;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+// Library for Trove
+import gnu.trove.map.hash.THashMap;
 
 /**
  * SubjectDetail is used to represent the subject_detail view in the database.
@@ -44,7 +46,7 @@ public class SubjectDetail {
     private String race, gender, height, weight, casecontrol, age_at_baseline;
     private LocalDate record_date, dob;
     private byte[] dat;
-    private HashMap<String, String> data_hashmap;
+    private Map<String, String> data_hashmap;
     
     // Construct the SubjectDetail object directly using the result set returned
     // from the database query.
@@ -84,7 +86,7 @@ public class SubjectDetail {
     // passed in.
     public boolean convertDataToHashMap(List<String> colNameL) {
         boolean result = Constants.OK;
-        data_hashmap = new HashMap<>();
+        data_hashmap = new THashMap<>(colNameL.size());
         List<String> datL = FileHelper.convertByteArrayToList(dat);
         Iterator<String> datItr = datL.iterator();
         
