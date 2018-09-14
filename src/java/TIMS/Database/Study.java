@@ -59,6 +59,8 @@ public class Study {
     private Date start_date, end_date;
     private Boolean finalized, closed;
     private byte[] data_col_name_list;
+    // ICD10DB object to return ICD description.
+    private static ICD10DB icd_db = new ICD10DB();
     
     // Construct the Study object directly using the result set returned from
     // the database query.
@@ -176,7 +178,7 @@ public class Study {
     
     // Return the ICD name for this study.
     public String getICDName() {
-        return ICD10DB.getICDDescription(icd_code);
+        return icd_db.getICDDescription(icd_code);
     }
     
     // Return the review title for each study.

@@ -51,35 +51,42 @@ public class FeatureManagementBean implements Serializable {
             getLogger(FeatureManagementBean.class.getName());
     private final String userName;
     private List<Feature> fteList;
-    private String visualizer_status;
+//    private String visualizer_status;
+    private final FeatureDB featureDB;
     
     public FeatureManagementBean() {
         userName = (String) getFacesContext().getExternalContext().
                 getSessionMap().get("User");
-        logger.debug("FeatureManagementBean created.");
+        featureDB = new FeatureDB();
         logger.info(userName + ": access Visualizer Management page.");
     }
     
     @PostConstruct
     public void init() {
-        fteList = FeatureDB.getAllFeatureStatus();
-        visualizer_status = FeatureDB.getFeatureStatus("Visualizer");
+        fteList = featureDB.getAllFeatureStatus();
+//        visualizer_status = featureDB.getFeatureStatus("Visualizer");
     }
     
     // Update the feature table in the database.
     public void onRowEdit(RowEditEvent event) {
         try {
             Feature fte = (Feature) event.getObject();
-            FeatureDB.updateFeature(fte);
+            featureDB.updateFeature(fte);
             // Record this feature setup activity into database.
-            String detail = fte.getFcode() + " - " + fte.getStatus();
-            ActivityLogDB.recordUserActivity(userName, Constants.SET_FTE, detail);
-            logger.info(userName + ": updated " + fte.getFcode() + " to " 
-                        + fte.getStatus());
+            StringBuilder detail = new StringBuilder(fte.getFcode()).
+                                       append(" - ").append(fte.getStatus());
+//            String detail = fte.getFcode() + " - " + fte.getStatus();
+            ActivityLogDB.recordUserActivity(userName, Constants.SET_FTE, detail.toString());
+            StringBuilder oper = new StringBuilder(userName).
+                    append(": updated ").append(fte.getFcode()).
+                    append(" to ").append(fte.getStatus());
+            logger.info(oper);
+//            logger.info(userName + ": updated " + fte.getFcode() + " to " 
+//                        + fte.getStatus());
             getFacesContext().addMessage(null, new FacesMessage(
                     FacesMessage.SEVERITY_INFO, "Visualizer setting updated.", ""));
             // Update feature list.
-            AuthenticationBean.setupFeatureList();
+            AuthenticationBean.setupFeatureList(featureDB.getAllFeatureStatusHash());
         }
         catch (SQLException|NamingException e) {
             logger.error("Fail to update visualizer setting!");
@@ -99,10 +106,12 @@ public class FeatureManagementBean implements Serializable {
     public List<Feature> getFteList() {
         return fteList;
     }
+    /* NOT IN USE!
     public String getVisualizer_status() {
         return visualizer_status;
     }
     public void setVisualizer_status(String visualizer_status) {
         this.visualizer_status = visualizer_status;
     }
+    */
 }

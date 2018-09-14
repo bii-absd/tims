@@ -137,8 +137,10 @@ public class MenuSelectionBean implements Serializable{
     
     // Setup the hash maps needed for raw data management.
     public void setupRawDataMgnt() {
+        PipelineDB plDB = new PipelineDB();
+        
         setupStudyList();
-        pipelineList = PipelineDB.getEditablePlHash();
+        pipelineList = plDB.getEditablePlHash();
     }
 
     // Setup the Study ID list for user selection to manage Meta and raw data.

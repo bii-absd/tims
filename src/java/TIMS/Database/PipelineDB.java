@@ -1,9 +1,10 @@
 /*
- * Copyright @2015-2017
+ * Copyright @2015-2018
  */
 package TIMS.Database;
 
 import TIMS.General.Constants;
+// Libraries for Java
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -18,8 +19,8 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 /**
- * PipelineDB is an abstract class and not mean to be instantiate, its main 
- * job is to perform SQL operations on the pipeline table in the database.
+ * PipelineDB is used to perform SQL operations on the pipeline table in the 
+ * database.
  * 
  * Author: Tay Wei Hong
  * Date: 5-Nov-2015
@@ -53,10 +54,11 @@ import org.apache.logging.log4j.LogManager;
  * passed in belongs to GATK Sequencing Pipeline family or not.
  */
 
-public abstract class PipelineDB {
+public class PipelineDB {
     // Get the logger for Log4j
     private final static Logger logger = LogManager.
             getLogger(PipelineDB.class.getName());
+    private String plName;
     // Define a common name for each pipeline here.
     public static final String METHYLATION = "meth-pipeline";
     public static final String GEX_AFFYMETRIX = "gex-affymetrix";
@@ -70,19 +72,25 @@ public abstract class PipelineDB {
     public static final String GATK_TAR_GERM = "gatk-tar-germ";
     public static final String GATK_TAR_SOMA = "gatk-tar-soma";
     
-    // Return true if this pipeline belongs to the GATK Sequencing Pipeline 
+    // Machine generated constructor.
+    public PipelineDB(String plName) {
+        this.plName = plName;
+    }
+    public PipelineDB() {}
+
+    // Return true if this pipeline belongs to the GATK Sequencing Pipeline
     // family.
     public static boolean isGATKPipeline(String pipeline_name) {
-        if (pipeline_name.equals(GATK_WG_GERM) || 
-            pipeline_name.equals(GATK_TAR_GERM) ||
-            pipeline_name.equals(GATK_WG_SOMA) || 
-            pipeline_name.equals(GATK_TAR_SOMA) )
+        if (pipeline_name.equals(GATK_WG_GERM) ||
+                pipeline_name.equals(GATK_TAR_GERM) ||
+                pipeline_name.equals(GATK_WG_SOMA) ||
+                pipeline_name.equals(GATK_TAR_SOMA) )
             return true;
         return false;
     }
     
     // Return the editable pipeline hash map (pipeline name -> description).
-    public static LinkedHashMap<String, String> getEditablePlHash() {
+    public LinkedHashMap<String, String> getEditablePlHash() {
         Connection conn = null;
         LinkedHashMap<String, String> plHash = new LinkedHashMap<>();
         String query = "SELECT name, description FROM pipeline "
@@ -96,11 +104,10 @@ public abstract class PipelineDB {
             while (rs.next()) {
                 plHash.put(rs.getString("description"), rs.getString("name"));
             }
-            
             stm.close();
         }
         catch (SQLException|NamingException e) {
-            logger.error("FAIL to query editable pipeline hash!");
+            logger.error("FAIL to retrieve editable pipeline!");
             logger.error(e.getMessage());
         }
         finally {
@@ -120,7 +127,7 @@ public abstract class PipelineDB {
     }
     
     // Helper function to retrieve one of the pipeline's attribute.
-    private static String getPlAttribute(String plName, String attr) {
+    private static String getPlAttribute(String pipeline_name, String attr) {
         Connection conn = null;
         String query = "SELECT * FROM pipeline WHERE name = ?";
         String attribute = null;
@@ -128,7 +135,7 @@ public abstract class PipelineDB {
         try {
             conn = DBHelper.getDSConn();
             PreparedStatement stm = conn.prepareStatement(query);
-            stm.setString(1, plName);
+            stm.setString(1, pipeline_name);
             ResultSet result = stm.executeQuery();
             
             if (result.next()) {
@@ -137,7 +144,10 @@ public abstract class PipelineDB {
             stm.close();
         }
         catch (SQLException|NamingException e) {
-            logger.error("FAIL to retrieve " + attr + " for pipeline " + plName);
+            StringBuilder err = new StringBuilder("FAIL to retrieve ").
+                    append(attr).append(" for pipeline ").append(pipeline_name);
+            logger.error(err);
+//            logger.error("FAIL to retrieve " + attr + " for pipeline " + plName);
             logger.error(e.getMessage());
         }
         finally {
@@ -148,8 +158,8 @@ public abstract class PipelineDB {
     }
     
     // Return the pipeline object for this pipeline.
-    public static Pipeline getPipeline(String pipeline_name) 
-            throws SQLException, NamingException {
+//    public static Pipeline getPipeline(String pipeline_name) 
+    public Pipeline getPipeline() throws SQLException, NamingException {
         Connection conn = null;
         Pipeline command = null;
         String query = "SELECT * FROM pipeline WHERE name = ?";
@@ -157,7 +167,7 @@ public abstract class PipelineDB {
         conn = DBHelper.getDSConn();
         PreparedStatement stm = conn.prepareStatement(query);
         
-        stm.setString(1, pipeline_name);
+        stm.setString(1, plName);
         ResultSet rs = stm.executeQuery();
         
         if (rs.next()) {
@@ -171,32 +181,36 @@ public abstract class PipelineDB {
     }
     
     // Return all the pipeline currently setup in the database.
-    public static List<Pipeline> getAllPipeline() 
-            throws SQLException, NamingException 
-    {
+    public List<Pipeline> getAllPipeline() {
         Connection conn = null;
-        int index = 0;
         List<Pipeline> plList = new ArrayList<>();
-        String query = "SELECT * FROM pipeline ORDER BY name";
-        
-        conn = DBHelper.getDSConn();
-        PreparedStatement stm = conn.prepareStatement(query);
-        ResultSet rs = stm.executeQuery();
-            
-        while (rs.next()) {
-            plList.add(index++, new Pipeline(rs));
-        }
 
-        stm.close();
-        DBHelper.closeDSConn(conn);
+        try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement
+                                    ("SELECT * FROM pipeline ORDER BY tid, name");
+            ResultSet rs = stm.executeQuery();
+            
+            while (rs.next()) {
+                plList.add(new Pipeline(rs));
+            }
+            stm.close();
+        }
+        catch (SQLException|NamingException e) {
+            logger.error("FAIL to retrieve pipeline info!");
+            logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
+        }
         
         return plList;
     }
     
     // Update the pipeline command in the database.
-    public static Boolean updatePipeline(Pipeline cmd) {
+    public boolean updatePipeline(Pipeline cmd) {
         Connection conn = null;
-        Boolean result = Constants.OK;
+        boolean result = Constants.OK;
         String query = "UPDATE pipeline SET description = ?, command = ?, "
                      + "parameter = ?, tid = ?, editable = ? WHERE name = ?";
         
@@ -211,12 +225,13 @@ public abstract class PipelineDB {
             stm.setString(6, cmd.getName());
             stm.executeUpdate();
             stm.close();
-            
-            logger.debug("Updated pipeline: " + cmd.getName());
         }
         catch (SQLException|NamingException e) {
             result = Constants.NOT_OK;
-            logger.error("FAIL to update pipeline: " + cmd.getName());
+            StringBuilder err = new StringBuilder("FAIL to update ").
+                                append(cmd.getName());
+            logger.error(err);
+//            logger.error("FAIL to update " + cmd.getName());
             logger.error(e.getMessage());
         }
         finally {
@@ -227,7 +242,7 @@ public abstract class PipelineDB {
     }
     
     // Insert the new pipeline into database.
-    public static Boolean insertPipeline(Pipeline cmd) {
+    public boolean insertPipeline(Pipeline cmd) {
         Connection conn = null;
         Boolean result = Constants.OK;
         String query = "INSERT INTO pipeline"
@@ -245,13 +260,13 @@ public abstract class PipelineDB {
             stm.setBoolean(6, cmd.isEditable());
             stm.executeUpdate();
             stm.close();
-            
-            logger.debug("New pipeline inserted into database: " + 
-                    cmd.getName());
         }
         catch (SQLException|NamingException e) {
             result = Constants.NOT_OK;
-            logger.error("FAIL to insert pipeline!");
+            StringBuilder err = new StringBuilder("FAIL to insert ").
+                                append(cmd.getName());
+            logger.error(err);
+//            logger.error("FAIL to insert " + cmd.getName());
             logger.error(e.getMessage());
         }
         finally {

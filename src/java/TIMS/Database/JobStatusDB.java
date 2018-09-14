@@ -1,5 +1,5 @@
 /*
- * Copyright @2015-2016
+ * Copyright @2015-2018
  */
 package TIMS.Database;
 
@@ -7,12 +7,14 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.LinkedHashMap;
 // Libraries for Java Extension
 import javax.naming.NamingException;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+// Libraries for Trove
+import gnu.trove.map.hash.TIntObjectHashMap;
+import gnu.trove.map.hash.TObjectIntHashMap;
 
 /**
  * JobStatusDB is an abstract class and not mean to be instantiate, its main 
@@ -41,8 +43,12 @@ public abstract class JobStatusDB {
     // Get the logger for Log4j
     private final static Logger logger = LogManager.
             getLogger(JobStatusDB.class.getName());
-    private static LinkedHashMap<Integer, String> jsIDHash = new LinkedHashMap<>();
-    private static LinkedHashMap<String, Integer> jsNameHash = new LinkedHashMap<>();
+    private static final TIntObjectHashMap<String> jsIDHash = 
+            new TIntObjectHashMap<String>();
+//    private static LinkedHashMap<Integer, String> jsIDHash = new LinkedHashMap<>();
+    private static final TObjectIntHashMap<String> jsNameHash = 
+            new TObjectIntHashMap<String>();
+//    private static LinkedHashMap<String, Integer> jsNameHash = new LinkedHashMap<>();
 
     // Return the job status name based on the status_id passed in.
     public static String getJobStatusName(int status_id) {
@@ -50,7 +56,7 @@ public abstract class JobStatusDB {
     }
     
     // Return the job status ID based on the status_name passed in.
-    public static int getJobStatusID(String status_name) {
+    private static int getJobStatusID(String status_name) {
         return jsNameHash.get(status_name);
     }
     
@@ -80,11 +86,11 @@ public abstract class JobStatusDB {
         // We will only build the job status list once.
         if (jsIDHash.isEmpty()) {
             Connection conn = null;
-            String query = "SELECT status_id, status_name FROM job_status";
             
             try {
                 conn = DBHelper.getDSConn();
-                PreparedStatement stm = conn.prepareStatement(query);
+                PreparedStatement stm = conn.prepareStatement
+                            ("SELECT status_id, status_name FROM job_status");
                 ResultSet rs = stm.executeQuery();
                 
                 while (rs.next()) {
@@ -93,7 +99,6 @@ public abstract class JobStatusDB {
                     jsIDHash.put(rs.getInt("status_id"), rs.getString("status_name"));
                     jsNameHash.put(rs.getString("status_name"), rs.getInt("status_id"));
                 }
-
                 stm.close();
             }
             catch (SQLException|NamingException e) {

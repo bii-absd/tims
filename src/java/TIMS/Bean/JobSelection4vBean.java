@@ -78,7 +78,7 @@ public class JobSelection4vBean implements Serializable {
         visualiser = (String) FacesContext.getCurrentInstance().
                 getExternalContext().getSessionMap().get("visualiser");
         user = UserAccountDB.getUserAct(userName);
-        logger.info(userName + " access Job Selection for " + visualiser);
+        logger.info(userName + " access Job Selection for Visualizer.");
         // Need to call the ResourceRetriever to get the 'msg' object before
         // passing the control to the cBioVisualizer thread.
         ResourceRetriever.getMsg("jobs-sel");
@@ -106,7 +106,7 @@ public class JobSelection4vBean implements Serializable {
             exportStatus = 
                     "No job has been selected for export.\n" +
                     "\nPlease select the job(s) to be export before proceeding.\n";
-            logger.debug("No job has been selected for export.");
+            logger.info("No job has been selected for export.");
         }
         else {
             exportStatus = "The following job(s) has been selected for export:\n";
@@ -181,10 +181,10 @@ public class JobSelection4vBean implements Serializable {
     
     // Build new lists based on the visualiser and study_id selected by user.
     private void buildLists() {
+        VisualProfileDB visual_profile = new VisualProfileDB(visualiser);
         int index = 0;
         // List of string to hold the profile and pipeline lists.
-        List<String> profList = VisualProfileDB.
-                                getProfileListForVisualiser(visualiser);
+        List<String> profList = visual_profile.getProfileListForVisualiser();
         List<FinalizingJobEntry> jobList;
         
         // For each profile, retrieve the list of pipelines group under it.
@@ -193,8 +193,7 @@ public class JobSelection4vBean implements Serializable {
                         (study_id, visualiser, profile);
             // Check to make sure there are completed jobs for this profile.
             if (!jobList.isEmpty()) {
-                profDescList.add(VisualProfileDB.
-                        getProfileDescription(visualiser, profile));
+                profDescList.add(visual_profile.getProfileDescription(profile));
                 jobEntryLists.add(index++, jobList);
             }
         }

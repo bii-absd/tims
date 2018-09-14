@@ -8,6 +8,7 @@ import TIMS.Database.GroupDB;
 import TIMS.Database.PieChartDataObject;
 import TIMS.Database.Study;
 import TIMS.Database.StudyDB;
+import TIMS.Database.StudySpecificFieldDB;
 import TIMS.Database.SubjectDB;
 import TIMS.Database.SubjectDetail;
 import TIMS.Database.UserAccount;
@@ -42,6 +43,8 @@ import org.primefaces.model.chart.BarChartModel;
 import org.primefaces.model.chart.ChartSeries;
 import org.primefaces.model.chart.HorizontalBarChartModel;
 import org.primefaces.model.chart.LegendPlacement;
+// Library for Trove
+import gnu.trove.map.hash.TObjectIntHashMap;
 
 /**
  * DashboardBean is the backing bean for the dashboard view.
@@ -78,8 +81,9 @@ public class DashboardBean implements Serializable {
     private PieChartModel piechartR, piechartL;
     private BarChartModel barchartL, barchartR;
     private HorizontalBarChartModel specificFieldsBarchart;
-    private HashMap<String, Integer> specific_fields_w_data, 
-                                     specific_fields_wo_data;
+    private TObjectIntHashMap<String> specific_fields_w_data, specific_fields_wo_data;
+    private SubjectDB subjects;
+    private StudySpecificFieldDB ss_fields;
     
     
     public DashboardBean() {
@@ -93,10 +97,10 @@ public class DashboardBean implements Serializable {
         specificFieldsBarchart = new HorizontalBarChartModel();
         categories = new ArrayList<>();
         subjectDetailList = new ArrayList<>();
-        specific_fields_w_data = new HashMap<>();
-        specific_fields_wo_data = new HashMap<>();
+        specific_fields_w_data = new TObjectIntHashMap<>();
+        specific_fields_wo_data = new TObjectIntHashMap<>();
         
-        logger.debug(userName + ": access dashboard.");
+        logger.info(userName + ": access dashboard.");
     }
     
     @PostConstruct
@@ -245,13 +249,14 @@ public class DashboardBean implements Serializable {
     // A new study has been selected by the user, need to rebuild the charts.
     public void studyChange() {
         if (study_id.compareTo("0") != 0) {
-            logger.info("Study ID: " + study_id);
             study_sel = StudyDB.getStudyObject(study_id);
+            subjects = new SubjectDB(study_id);
+            ss_fields = new StudySpecificFieldDB(study_id);
             // Clean up the specific fields data points hashmaps.
             specific_fields_w_data.clear();
             specific_fields_wo_data.clear();
             
-            subjectDetailList = SubjectDB.getSubtDetailList(study_id);
+            subjectDetailList = subjects.getSubtDetailList();
             List<String> colNameL = FileHelper.convertByteArrayToList
                                         (StudyDB.getColumnNameList(study_id));
             // Convert the meta data in each subject detail object from byte[]  
@@ -263,7 +268,7 @@ public class DashboardBean implements Serializable {
                     break;
                 }
             }
-            categories = StudyDB.getSpecificFieldCategoryFromStudy(study_id);
+            categories = ss_fields.getSpecificFieldCategory();
             // If categories is empty, it means study specific fields have not
             // been setup.
             if (!categories.isEmpty()) {
@@ -276,12 +281,12 @@ public class DashboardBean implements Serializable {
             }
             // The barchart at the left plot race against gender.
             barchartL = createBarChartModel(genBarChartDOFromDBColumnsXY
-                 ("race", "gender", study_id), "race", "Number of Subjects");
+                 ("race", "gender"), "race", "Number of Subjects");
             // Only show the y-axis i.e. number of subjects.
             barchartL.setDatatipFormat("%2$d");
             // The barchart at the right plot race against casecontrol.
             barchartR = createBarChartModel(genBarChartDOFromDBColumnsXY
-                 ("race", "casecontrol", study_id), "race", "Number of Subjects");
+                 ("race", "casecontrol"), "race", "Number of Subjects");
             // Only show the y-axis i.e. number of subjects.
             barchartR.setDatatipFormat("%2$d");
             // The piechart at the left plot the age group distribution chart.
@@ -301,8 +306,8 @@ public class DashboardBean implements Serializable {
         // Go through all the categories, and retrieve the list of specific 
         // fields.
         for (String category : categories) {
-            List<String> field_list = StudyDB.
-                getSpecificFieldListFromStudyCategory(study_id, category);
+            List<String> field_list = ss_fields.
+                getSpecificFieldListFromCategory(category);
             // Go through the specific fields and tally the data points.
             for (String field : field_list) {
                 with_data = wo_data = 0;
@@ -327,7 +332,7 @@ public class DashboardBean implements Serializable {
     // subject table.
     private PieChartDataObject genPieChartDOForAgeAtBaseline() {
         PieChartDataObject pco = new PieChartDataObject("Age Group Breakdown Chart");
-        List<Float> age_baseline_list = SubjectDB.getAgeAtBaselineList(study_id);
+        List<Float> age_baseline_list = subjects.getAgeAtBaselineList();
         // Make sure there is data available for further computation, else just
         // return a default piechart.
         if (age_baseline_list.isEmpty()) {
@@ -414,12 +419,12 @@ public class DashboardBean implements Serializable {
     // columns X and Y. Column X values will plot on the x-axis, and Y values
     // will be plot on the y-axis.
     private HashMap<String, BarChartDataObject> genBarChartDOFromDBColumnsXY
-        (String colX, String colY, String study) 
+        (String colX, String colY) 
     {
         // x_values will store the list of data name for this chart.
-        List<String> x_values = SubjectDB.getDistinctValueInColumn(colX, study);
+        List<String> x_values = subjects.getDistinctValueInColumn(colX);
         // series_set will store the list of series name for this chart.
-        List<String> series_set = SubjectDB.getDistinctValueInColumn(colY, study);
+        List<String> series_set = subjects.getDistinctValueInColumn(colY);
         // Create HashMap<String, List<String>> where the first string will
         // store the data name and the list of strings will store the series 
         // values.
@@ -427,8 +432,8 @@ public class DashboardBean implements Serializable {
                                                         new LinkedHashMap<>();
         for (String data_name : x_values) {
             // data_name - List of series values
-            x2yListValue_hashmap.put(data_name, SubjectDB.getColXBasedOnColYValue
-                                    (colY, colX, data_name, study));
+            x2yListValue_hashmap.put(data_name, subjects.getColXBasedOnColYValue
+                                    (colY, colX, data_name));
         }
         // data_object_hashmap will store the data object(s) for this chart.
         LinkedHashMap<String, BarChartDataObject> data_object_hashmap = 
@@ -464,8 +469,8 @@ public class DashboardBean implements Serializable {
     // Field category has changed, update the specific fields chart accordingly.
     public void updateSpecificFieldsBarchart() {
         // Retrieve the list of specific fields based on the category selected.
-        List<String> field_list = StudyDB.getSpecificFieldListFromStudyCategory
-                                    (study_id, specific_fields_selection);
+        List<String> field_list = ss_fields.getSpecificFieldListFromCategory
+                                    (specific_fields_selection);
         if (field_list.size() > 15) {
             // Limit the number of specific fields to 15 per chart.
             field_list = field_list.subList(0, 15);

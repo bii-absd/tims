@@ -137,6 +137,7 @@ public class MetaRecordStatusTracker {
     // NEW_VISIT_COMPLETED and DATA_CONSISTENT are considered as passed.
     public String getStatsForPassedRecords() {
         int count = 0;
+        StringBuilder oper = new StringBuilder();
         
         if (preliminary) {
             count = statistics.get(RecordStatusEnum.VALID).getNum_of_records()
@@ -149,18 +150,21 @@ public class MetaRecordStatusTracker {
                   + statistics.get(RecordStatusEnum.DATA_CONSISTENT).getNum_of_records();
         }
         
-        return  count + "/" + total_records + " (" +
-                nf.format((double)count/total_records) + ")";        
+        oper.append(count).append("/").append(total_records).append(" (").
+             append(nf.format((double)count/total_records)).append(")");
+        return oper.toString();
     }
     
     // Return the statistics of this status (with respect to the total_records.)
     public String getStatsForStatus(RecordStatusEnum status) {
+        StringBuilder oper = new StringBuilder();
+        
         if (statistics.containsKey(status)) {
             int count = statistics.get(status).getNum_of_records();
-            return  count + "/" + total_records + " (" +
-                    nf.format((double)count/total_records) + ")";
+            oper.append(count).append("/").append(total_records).append(" (").
+                 append(nf.format((double)count/total_records)).append(")");
         }
-        return "";        
+        return oper.toString();
     }
     
     // Return the message associated with this status.
@@ -203,12 +207,12 @@ public class MetaRecordStatusTracker {
     // static nested class.
     private static class StatusCounter {
         private int num_of_records;
-        private String message, sub_header;
+        private StringBuilder message, sub_header;
 
         public StatusCounter(String sub_header, String message) {
             this.num_of_records = 0;
-            this.message = message;
-            this.sub_header = sub_header;
+            this.message = new StringBuilder(message);
+            this.sub_header = new StringBuilder(sub_header);
         }
         // Increment the num_of_record by one.
         public void incNum_of_records() {
@@ -216,11 +220,11 @@ public class MetaRecordStatusTracker {
         }
         // Concatenate msg to message.
         public void concatMessage(String msg) {
-            message += msg;
+            message.append(msg);
         }
         // Concatenate msg to sub_header.
         public void concatSubHeader(String msg) {
-            sub_header += msg;
+            sub_header.append(msg);
         }
         // Machine generated code.
         public int getNum_of_records() {
@@ -230,16 +234,16 @@ public class MetaRecordStatusTracker {
             this.num_of_records = num_of_records;
         }
         public String getMessage() {
-            return message;
+            return message.toString();
         }
         public void setMessage(String message) {
-            this.message = message;
+            this.message = new StringBuilder(message);
         }
         public String getSub_header() {
-            return sub_header;
+            return sub_header.toString();
         }
         public void setSub_header(String sub_header) {
-            this.sub_header = sub_header;
+            this.sub_header = new StringBuilder(sub_header);
         }
     }
 }

@@ -1,9 +1,10 @@
 /*
- * Copyright @2015-2016
+ * Copyright @2015-2018
  */
 package TIMS.Database;
 
 import TIMS.General.Constants;
+// Libraries for Java
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -18,8 +19,8 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 /**
- * InputDataDB is an abstract class and not mean to be instantiate, its main job 
- * is to perform SQL operations on the input_data table in the database.
+ * InputDataDB is to perform SQL operations on the input_data table in the 
+ * database.
  * 
  * Author: Tay Wei Hong
  * Date: 16-Dec-2015
@@ -50,13 +51,13 @@ import org.apache.logging.log4j.LogManager;
  * updateDescAfterEdit and updateDescFilenameAfterEdit.
  */
 
-public abstract class InputDataDB {
+public class InputDataDB {
     // Get the logger for Log4j
     private final static Logger logger = LogManager.
             getLogger(InputDataDB.class.getName());
     
     // Insert the new input data detail into database.
-    public static boolean insertInputData(InputData idata) {
+    public boolean insertInputData(InputData idata) {
         Connection conn = null;
         boolean result = Constants.OK;
         String query = "INSERT INTO input_data(study_id,sn,create_uid,"
@@ -76,9 +77,13 @@ public abstract class InputDataDB {
             stm.setTimestamp(8, idata.getCreate_time());
             stm.executeUpdate();
             stm.close();
-            
-            logger.debug("New input data detail inserted into database: " +
-                        idata.getStudy_id() + " - SN: " + idata.getSn());
+            StringBuilder oper = new 
+                StringBuilder("New input data detail inserted into database: ").
+                    append(idata.getStudy_id()).append(" - SN: ").
+                    append(idata.getSn());
+            logger.info(oper);
+//            logger.debug("New input data detail inserted into database: " +
+//                        idata.getStudy_id() + " - SN: " + idata.getSn());
         }
         catch (SQLException|NamingException e) {
             result = Constants.NOT_OK;
@@ -93,7 +98,7 @@ public abstract class InputDataDB {
     }
     
     // Return the list of input data that belong to this study ID and pipeline.
-    public static List<InputData> getIpList(String studyID, String plName) {
+    public List<InputData> getIpList(String studyID, String plName) {
         Connection conn = null;
         List<InputData> ipList = new ArrayList<>();
         String query = "SELECT * FROM input_data WHERE study_id = ? AND "
@@ -109,9 +114,7 @@ public abstract class InputDataDB {
             while (rs.next()) {
                 ipList.add(new InputData(rs));
             }
-            
             stm.close();
-            logger.debug("Input data list retrieved.");
         }
         catch (SQLException|NamingException e) {
             logger.debug("FAIL to retrieve input data list!");
@@ -126,7 +129,7 @@ public abstract class InputDataDB {
     
     // Update description field in the input_data table after making changes in
     // the Raw Data Management page.
-    public static boolean updateDescAfterEdit(String study_id, int sn, 
+    public boolean updateDescAfterEdit(String study_id, int sn, 
             String desc, String update_uid, Timestamp update_time) 
     {
         Connection conn = null;
@@ -144,12 +147,19 @@ public abstract class InputDataDB {
             stm.setInt(5, sn);
             stm.executeUpdate();
             stm.close();
-            
-            logger.debug("Updated input data for study " + study_id + " serial no " + sn);
+            StringBuilder oper = new 
+                StringBuilder("Updated input data for study ").
+                    append(study_id).append(" serial no ").append(sn);
+            logger.info(oper);
+//            logger.debug("Updated input data for study " + study_id + " serial no " + sn);
         }
         catch (SQLException|NamingException e) {
             result = Constants.NOT_OK;
-            logger.error("FAIL to update input data for study " + study_id + " serial no " + sn);
+            StringBuilder err = new 
+                StringBuilder("FAIL to update input data for study ").
+                    append(study_id).append(" serial no ").append(sn);
+            logger.error(err);
+//            logger.error("FAIL to update input data for study " + study_id + " serial no " + sn);
             logger.error(e.getMessage());
         }
         finally {
@@ -161,7 +171,7 @@ public abstract class InputDataDB {
     
     // Update the description and filename fields in the input_data table after 
     // making changes in the Raw Data Management page.
-    public static boolean updateDescFilenameAfterEdit(String study_id, int sn, 
+    public boolean updateDescFilenameAfterEdit(String study_id, int sn, 
             String desc, String update_uid, Timestamp update_time, String filename) 
     {
         Connection conn = null;
@@ -180,12 +190,19 @@ public abstract class InputDataDB {
             stm.setInt(6, sn);
             stm.executeUpdate();
             stm.close();
-            
-            logger.debug("Updated input data for study " + study_id + " serial no " + sn);
+            StringBuilder oper = new 
+                StringBuilder("Updated input data for study ").
+                    append(study_id).append(" serial no ").append(sn);
+            logger.info(oper);
+//            logger.debug("Updated input data for study " + study_id + " serial no " + sn);
         }
         catch (SQLException|NamingException e) {
             result = Constants.NOT_OK;
-            logger.error("FAIL to update input data for study " + study_id + " serial no " + sn);
+            StringBuilder err = new 
+                StringBuilder("FAIL to update input data for study ").
+                    append(study_id).append(" serial no ").append(sn);
+            logger.error(err);
+//            logger.error("FAIL to update input data for study " + study_id + " serial no " + sn);
             logger.error(e.getMessage());
         }
         finally {
@@ -196,7 +213,7 @@ public abstract class InputDataDB {
     }
     
     // Return the next sn for the input data detail for this study.
-    public static int getNextSn(String studyID) throws SQLException, NamingException 
+    public int getNextSn(String studyID) throws SQLException, NamingException 
     {
         Connection conn = null;
         int nextSn = Constants.DATABASE_INVALID_ID;
@@ -218,6 +235,7 @@ public abstract class InputDataDB {
         return nextSn;
     }
     
+    /* NOT IN USE!
     // Return the description for this input data.
     public static String getInputDescription(String study_id, int sn) {
         Connection conn = null;
@@ -245,4 +263,5 @@ public abstract class InputDataDB {
         
         return inputDesc;
     }
+    */
 }

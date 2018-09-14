@@ -6,14 +6,14 @@ package TIMS.General;
 import TIMS.Database.MetaRecord;
 import TIMS.Database.SubjectRecordDB;
 // Libraries for Java
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Set;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
+// Library for Trove
+import gnu.trove.set.hash.THashSet;
+import gnu.trove.iterator.hash.TObjectHashIterator;
+import gnu.trove.map.hash.TObjectIntHashMap;
 
 /**
  * MetaRecordTester is used to test the validity of the Meta records that have 
@@ -45,17 +45,18 @@ public class MetaRecordTester {
     // Tally the uploaded visits with the existing visits found in
     // the database; to make sure there is no missing visit in this upload.
     // Return the list of missing visits (i.e. Subject ID=Date) if any.
-    public String checkForMissingVisit(LinkedHashMap<String, Boolean> visitsHM) {
-        String missing_visits = "";
+    public String checkForMissingVisit(THashSet<String> visitsHS) {
+        StringBuilder missing_visits = new StringBuilder();
         // Make sure all the visits are found in the current upload.
         for (MetaRecord record : recordsSet) {
             // Key is computed by joining subject ID and record date.
-            String key = record.getSubject_id() + SubjectRecordDB.joinStr 
-                       + record.getRecordDateAsyyyyMMdd();
-            if (visitsHM.containsKey(key)) 
+            StringBuilder key = new StringBuilder(record.getSubject_id()).
+                                append(SubjectRecordDB.joinStr).
+                                append(record.getRecordDateAsyyyyMMdd());
+            if (visitsHS.contains(key.toString())) 
             {
                 // Existing visit, remove this entry.
-                visitsHM.remove(key);
+                visitsHS.remove(key.toString());
             }
             else {
                 // New visit for this subject.
@@ -63,12 +64,14 @@ public class MetaRecordTester {
             }
         }
         
-        if (!visitsHM.isEmpty()) {
+        if (!visitsHS.isEmpty()) {
             // There is missing visit(s) in the current upload. Set all the
             // valid record(s) under the same subject ID to MISSING_VISIT.
-            for (Map.Entry<String, Boolean> visit : visitsHM.entrySet()) {
+            TObjectHashIterator<String> itr = visitsHS.iterator();
+            while (itr.hasNext()) {
+                String key = itr.next();
                 // Split the key (i.e. SubjectID=RecordDate)
-                String[] srd = visit.getKey().split(SubjectRecordDB.joinStr);
+                String[] srd = key.split(SubjectRecordDB.joinStr);
                 String subjectID = srd[0];
                 for (MetaRecord record : recordsSet) {
                     // Only interested in valid and new visit records.
@@ -78,22 +81,27 @@ public class MetaRecordTester {
                     }
                 }
                 // Store the list of missing visits (i.e. Subject ID=Date)
-                missing_visits += visit.getKey() + ", ";
+                missing_visits.append(key).append(", ");
             }
         }
-
-        return missing_visits;
+        
+        if (missing_visits.length() > 0) {
+            // Remove the last ',' before returning the string.
+            missing_visits.deleteCharAt(missing_visits.lastIndexOf(", "));
+        }
+        
+        return missing_visits.toString();
     }
     
     // Tally the uploaded subject IDs with the existing subject IDs found in 
     // the database; to make sure there is no missing subject in this upload.
-    public boolean checkForMissingSubject(HashMap<String, Boolean> IDsHM) {
+    public boolean checkForMissingSubject(TObjectIntHashMap<String> IDsHM) {
         boolean result = Constants.OK;
         // Make sure all the subjects are found in the current upload.
         for (MetaRecord record : recordsSet) {
             if (IDsHM.containsKey(record.getSubject_id())) {
-                // Existing subject ID, set status to true.
-                IDsHM.put(record.getSubject_id(), Boolean.TRUE);
+                // Existing subject ID, set status to true i.e. 1
+                IDsHM.put(record.getSubject_id(), 1);
             }
             else {
                 // New subject ID.
@@ -101,7 +109,7 @@ public class MetaRecordTester {
             }
         }
         
-        if (IDsHM.containsValue(Boolean.FALSE)) {
+        if (IDsHM.containsValue(0)) {
             // There is missing subject(s) in the current upload.
             result = Constants.NOT_OK;
         }

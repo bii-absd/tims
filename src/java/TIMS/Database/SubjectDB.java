@@ -11,7 +11,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 // Libraries for Java Extension
 import javax.naming.NamingException;
@@ -65,15 +64,22 @@ import org.apache.logging.log4j.LogManager;
  * Changes due to addition of new field age_at_baseline in Subject table.
  * 31-Jul-2018 - Bug fix: To check for empty string and non-float string at
  * method getAgeAtBaselineList().
+ * 30-Aug-2018 - Removed abstract class and static methods to save metaspace
+ * memory.
  */
 
-public abstract class SubjectDB {
+public class SubjectDB {
     // Get the logger for Log4j
     private final static Logger logger = LogManager.
             getLogger(SubjectDB.class.getName());
+    private final String study_id;
 
-    // Delete all the subjects belonging to this study.
-    public static void deleteAllSubjectsFromStudy(String study_id) {
+    public SubjectDB(String study_id) {
+        this.study_id = study_id;
+    }
+    
+    // Delete all subjects.
+    public void deleteAllSubjectsFromStudy() {
         Connection conn = null;
         String query = "DELETE FROM subject WHERE study_id = ?";
         
@@ -93,8 +99,23 @@ public abstract class SubjectDB {
         }
     }
     
-    // Return the subject object belonging to this study and subject id.
-    public static Subject getSubject(String study_id, String subject_id) {
+    // This express get method is used during consistency check in meta data 
+    // upload.
+    public Subject getSubject(PreparedStatement stm, String subject_id) 
+            throws SQLException 
+    {
+        Subject subjt = null;
+        stm.setString(1, study_id);
+        stm.setString(2, subject_id);
+        ResultSet rs = stm.executeQuery();
+        if (rs.next()) {
+            subjt = new Subject(rs);
+        }
+        return subjt;
+    }
+    
+    // Return the subject object belonging to this subject id.
+    public Subject getSubject(String subject_id) {
         Connection conn = null;
         Subject subjt = null;
         String query = "SELECT * FROM subject WHERE study_id = ? AND subject_id = ?";
@@ -123,7 +144,7 @@ public abstract class SubjectDB {
     }
     
     // Insert the new subject meta data into database
-    public static Boolean insertSubject(Subject subject, Connection conn) {
+    public Boolean insertSubject(Subject subject, Connection conn) {
         Boolean result = Constants.OK;
         String query = "INSERT INTO subject(subject_id,study_id,race,"
                 + "gender,dob,casecontrol,age_at_baseline) VALUES(?,?,?,?,?,?,?)";
@@ -156,10 +177,10 @@ public abstract class SubjectDB {
     // the transaction will only be committed if all the updates are successful.
     // For such cases, the caller will be passing in the connection (because
     // they will be controlling the time to commit at their ends.
-    public static boolean updateSubt(Subject subt, Connection conn) {
+    public boolean updateSubt(Subject subt, Connection conn) {
         return updateSubject(subt, conn);
     }
-    public static boolean updateSubt(Subject subt) {
+    public boolean updateSubt(Subject subt) {
         Connection conn = null;
         boolean result = Constants.OK;
         
@@ -179,7 +200,7 @@ public abstract class SubjectDB {
     
     // Update subject meta data in database.
     // Only allow changes to gender, race, dob, casecontrol and age_at_baseline.
-    private static boolean updateSubject(Subject subject, Connection conn) {
+    private boolean updateSubject(Subject subject, Connection conn) {
         boolean result = Constants.OK;
         String query = "UPDATE subject SET gender = ?, casecontrol = ?, "
                      + "race = ?, dob = ?, age_at_baseline = ? WHERE subject_id = ? "
@@ -212,10 +233,10 @@ public abstract class SubjectDB {
         return result;
     }
     
-    // Return the hashmap of subject ID belonging to this study. Exception
-    // thrown here need to be handle by the caller.
-    public static LinkedHashMap<String, String> 
-        getSubjectIDHashMap(String study_id) 
+    /* NO LONGER IN USE!
+    // Return the hashmap of subject ID. Exception thrown here need to be 
+    // handle by the caller.
+    public LinkedHashMap<String, String> getSubjectIDHashMap() 
         throws SQLException, NamingException 
     {
         Connection conn = DBHelper.getDSConn();
@@ -234,9 +255,10 @@ public abstract class SubjectDB {
         
         return subtIDHash;
     }
+    */
     
-    // Return the list of subject ID belonging to this study.
-    public static List<String> getSubjectIDsList(String study_id) {
+    // Return the list of subject ID.
+    public List<String> getSubjectIDsList() {
         Connection conn = null;
         List<String> subtIDsList = new ArrayList<>();
         String query = "SELECT * from subject WHERE study_id = ? ORDER BY subject_id";
@@ -263,8 +285,8 @@ public abstract class SubjectDB {
         return subtIDsList;
     }
     
-    // Return the list of subject details belonging to this study.
-    public static List<SubjectDetail> getSubtDetailList(String study_id) {
+    // Return the list of subject details.
+    public List<SubjectDetail> getSubtDetailList() {
         Connection conn = null;
         List<SubjectDetail> subtDetailList = new ArrayList<>();
         String query = "SELECT * from subject_detail WHERE study_id = ? "
@@ -292,8 +314,9 @@ public abstract class SubjectDB {
         return subtDetailList;
     }
     
-    // Return the list of subject belonging to this study.
-    public static List<Subject> getSubjectList(String study_id) {        
+    /* NO LONGER IN USE!
+    // Return the list of subject.
+    public List<Subject> getSubjectList() {
         Connection conn = null;
         List<Subject> subjectList = new ArrayList<>();
         String query = "SELECT * from subject WHERE study_id = ? ";
@@ -319,10 +342,11 @@ public abstract class SubjectDB {
         
         return subjectList;
     }
+    */
     
     // Retrieve the list of column X values where column Y is having y_value.
-    public static List<String> getColXBasedOnColYValue(String col_x, 
-            String col_y, String y_value, String study_id) {
+    public List<String> getColXBasedOnColYValue(String col_x, 
+            String col_y, String y_value) {
         Connection conn = null;
         List<String> list_colx = new ArrayList<>();
         String query = "SELECT " + col_x + " FROM subject WHERE study_id = ?"
@@ -351,8 +375,9 @@ public abstract class SubjectDB {
         return list_colx;
     }
     
-    // Check whether the subject exists for this study.
-    public static boolean isSubjectExistInStudy(String subject_id, String study_id)
+    /* NO LONGER IN USE!
+    // Check whether the subject exists.
+    public boolean isSubjectExistInStudy(String subject_id)
     {
         Connection conn = null;
         boolean isSubjectExist = Constants.NOT_OK;
@@ -379,10 +404,10 @@ public abstract class SubjectDB {
 
         return isSubjectExist;
     }
+    */
     
-    // Return the list of distinct(s) value found in this column under this study.
-    public static List<String> getDistinctValueInColumn(String column_name, 
-            String study_id) {
+    // Return the list of distinct(s) value found in this column.
+    public List<String> getDistinctValueInColumn(String column_name) {
         Connection conn = null;
         List<String> distinct_value = new ArrayList<>();
         String query = "SELECT DISTINCT " + column_name 
@@ -411,8 +436,8 @@ public abstract class SubjectDB {
         return distinct_value;
     }
     
-    // Return the list of age_at_baseline (converted to float) under this study.
-    public static List<Float> getAgeAtBaselineList(String study_id) {
+    // Return the list of age_at_baseline (converted to float).
+    public List<Float> getAgeAtBaselineList() {
         List<Float> age_at_baseline_list = new ArrayList<>();
         Connection conn = null;
         String query = "SELECT age_at_baseline FROM subject WHERE study_id = ? "

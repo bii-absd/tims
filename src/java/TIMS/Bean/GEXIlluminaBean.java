@@ -182,13 +182,13 @@ public class GEXIlluminaBean extends ConfigBean {
     @Override
     public void saveSampleFileDetail() {
         try {
-            input_sn = InputDataDB.getNextSn(studyID);
+            input_sn = inputDB.getNextSn(studyID);
             // Insert a new record into input_data table.
             InputData newdata = new InputData(studyID, userName, pipelineName,
                     inputFile.getInputFilename(), 
                     inputFile.getLocalDirectoryPath(),
                     inputFileDesc, input_sn, submitTimeInDB);
-            InputDataDB.insertInputData(newdata);
+            inputDB.insertInputData(newdata);
         }
         catch (SQLException|NamingException e) {
             logger.error("FAIL to insert input data detail!");

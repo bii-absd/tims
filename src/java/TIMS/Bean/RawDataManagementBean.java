@@ -72,6 +72,7 @@ public class RawDataManagementBean implements Serializable {
     private List<String> newSampleFiles, replaceSampleFiles;
     // Temporary directory to store the input files.
     String tmpDir;
+    private final InputDataDB inputDB;
     
     public RawDataManagementBean() {
         plName = (String) FacesContext.getCurrentInstance().
@@ -88,6 +89,8 @@ public class RawDataManagementBean implements Serializable {
         // Initialise the file upload beans.
         inputFile = new FileUploadBean(tmpDir);
         annotFile = new FileUploadBean(tmpDir);
+        inputDB = new InputDataDB();
+        
         if (getControlFileStatus()) {
             ctrlFile = new FileUploadBean(tmpDir);
         }
@@ -106,7 +109,7 @@ public class RawDataManagementBean implements Serializable {
     @PostConstruct
     public void init() {
         // Retrieve the input data list for this pipeline under this study.
-        inputDataList = InputDataDB.getIpList(studyID, plName);
+        inputDataList = inputDB.getIpList(studyID, plName);
     }
     
     @PreDestroy
@@ -137,13 +140,16 @@ public class RawDataManagementBean implements Serializable {
         // Release the file lists memory.
         newSampleFiles = replaceSampleFiles = null;
         
-        logger.debug(userName + ": did not confirm the changes to input data.");
+        logger.info(userName + ": did not proceed with the changes to input data.");
     }
     
     // Return the wording to be display at the link under the BreadCrumb in the
     // Raw Data Management page.
     public String getBreadCrumbLink() {
-        return "Study: " + studyID + "  Pipeline: " + ResourceRetriever.getMsg(plName);
+        StringBuilder info = new StringBuilder("Study: ").append(studyID).
+                append("  Pipeline: ").append(ResourceRetriever.getMsg(plName));
+        return info.toString();
+//        return "Study: " + studyID + "  Pipeline: " + ResourceRetriever.getMsg(plName);
     }
 
     // Return true if input package has been selected.
@@ -209,11 +215,11 @@ public class RawDataManagementBean implements Serializable {
         if (plName.compareTo(PipelineDB.GEX_ILLUMINA) == 0) {
             if (inputFile.isFilelistEmpty()) {
                 // No raw data has being uploaded.
-                InputDataDB.updateDescAfterEdit(studyID, selectedInput.getSn(), 
+                inputDB.updateDescAfterEdit(studyID, selectedInput.getSn(), 
                         inputFileDesc, userName, update_time);
             }
             else {
-                InputDataDB.updateDescFilenameAfterEdit(studyID, selectedInput.getSn(), 
+                inputDB.updateDescFilenameAfterEdit(studyID, selectedInput.getSn(), 
                         inputFileDesc, userName, update_time, inputFile.getInputFilename());
                 
                 if (replaceSampleFiles.isEmpty()) {
@@ -224,7 +230,7 @@ public class RawDataManagementBean implements Serializable {
             }
         }
         else {
-            InputDataDB.updateDescAfterEdit(studyID, selectedInput.getSn(), 
+            inputDB.updateDescAfterEdit(studyID, selectedInput.getSn(), 
                     inputFileDesc, userName, update_time);
         }
         
@@ -252,7 +258,7 @@ public class RawDataManagementBean implements Serializable {
                 // Move and rename the new control file.
                 FileHelper.moveFile(tmpDir + ctrlFile.getInputFilename(), 
                                     destDir + ctrlFilename);
-                logger.debug("New control file saved.");
+                logger.info("New control file saved.");
             }
         }
         // if a new interval file has been uploaded, backup the original 
@@ -268,7 +274,7 @@ public class RawDataManagementBean implements Serializable {
                 // Move and rename the new interval file.
                 FileHelper.moveFile(tmpDir + intFile.getInputFilename(), 
                                     destDir + intFilename);
-                logger.debug("New interval file saved.");
+                logger.info("New interval file saved.");
             }
         }
         // If a new annotation file has been uploaded, backup the original 
@@ -283,7 +289,7 @@ public class RawDataManagementBean implements Serializable {
             // Move and rename the new annotation file.
             FileHelper.moveFile(tmpDir + annotFile.getInputFilename(), 
                                 destDir + annotFilename);
-            logger.debug("New annotation file saved.");
+            logger.info("New annotation file saved.");
         }
         
         return Constants.MAIN_PAGE;

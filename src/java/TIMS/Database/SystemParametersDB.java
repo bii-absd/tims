@@ -1,18 +1,21 @@
 /*
- * Copyright @2017
+ * Copyright @2017-2018
  */
 package TIMS.Database;
 
+// Libraries for Java
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.LinkedHashMap;
+import java.util.Map;
 // Libraries for Java Extension
 import javax.naming.NamingException;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+// Library for Trove
+import gnu.trove.map.hash.THashMap;
 
 /**
  * SystemParametersDB is an abstract class and not mean to be instantiate, its
@@ -31,12 +34,15 @@ public abstract class SystemParametersDB {
     // Get the logger for Log4j
     private final static Logger logger = LogManager.
             getLogger(SystemParametersDB.class.getName());
-    private static LinkedHashMap<String, String> spHash = new LinkedHashMap<>();
+//    private static LinkedHashMap<String, String> spHash = new LinkedHashMap<>();
+    private static Map<String, String> spHash = new THashMap<>();
     
     // Load all the system parameters defined in the system_parameters table
     // and store them in the spHash.
     public static void loadSystemParameters() {
-        // We will only load the system parameters once.
+        // We will only load the system parameters once i.e. everytime there is
+        // any changes in the system parameters, TIMS need to restart in order 
+        // for the changes to take effect.
         if (spHash.isEmpty()) {
             Connection conn = null;
             String query = "SELECT sys_para_name, sys_para_value FROM system_parameters";
