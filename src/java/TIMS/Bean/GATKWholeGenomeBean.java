@@ -4,8 +4,9 @@
 package TIMS.Bean;
 
 // Libraries for Java Extension
-
+import javax.annotation.PostConstruct;
 import javax.inject.Named;
+// Library for omnifaces
 import org.omnifaces.cdi.ViewScoped;
 
 //import javax.faces.bean.ManagedBean;
@@ -35,6 +36,7 @@ public class GATKWholeGenomeBean extends GEXAffymetrixBean {
     }
     
     @Override
+    @PostConstruct
     public void initFiles() {
         init();
         // Raw data file extension for GATK Whole-Genome Sequencing pipelines.

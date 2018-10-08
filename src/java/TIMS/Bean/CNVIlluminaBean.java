@@ -9,6 +9,7 @@ import TIMS.General.Constants;
 import java.io.File;
 // Libraries for Java Extension
 import javax.inject.Named;
+import javax.annotation.PostConstruct;
 // Library for omnifaces
 import org.omnifaces.cdi.ViewScoped;
 //import javax.faces.bean.ManagedBean;
@@ -75,6 +76,7 @@ public class CNVIlluminaBean extends GEXAffymetrixBean {
     }
 
     @Override
+    @PostConstruct
     public void initFiles() {
         init();
         // Set the raw data file extension for this pipeline.

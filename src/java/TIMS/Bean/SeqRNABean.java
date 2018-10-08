@@ -10,6 +10,7 @@ import java.util.List;
 //import javax.faces.bean.ManagedBean;
 //import javax.faces.bean.ViewScoped;
 import javax.inject.Named;
+import javax.annotation.PostConstruct;
 // Library for omnifaces
 import org.omnifaces.cdi.ViewScoped;
 
@@ -38,6 +39,7 @@ public class SeqRNABean extends GEXAffymetrixBean {
     }
     
     @Override
+    @PostConstruct
     public void initFiles() {
         init();
         // Raw data file extension for RNA Sequencing pipeline.

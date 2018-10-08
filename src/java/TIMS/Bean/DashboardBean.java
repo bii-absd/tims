@@ -281,12 +281,12 @@ public class DashboardBean implements Serializable {
             }
             // The barchart at the left plot race against gender.
             barchartL = createBarChartModel(genBarChartDOFromDBColumnsXY
-                 ("race", "gender"), "race", "Number of Subjects");
+                 ("race", "gender"), "Ethnicity", "Number of Subjects");
             // Only show the y-axis i.e. number of subjects.
             barchartL.setDatatipFormat("%2$d");
             // The barchart at the right plot race against casecontrol.
             barchartR = createBarChartModel(genBarChartDOFromDBColumnsXY
-                 ("race", "casecontrol"), "race", "Number of Subjects");
+                 ("race", "casecontrol"), "Ethnicity", "Number of Subjects");
             // Only show the y-axis i.e. number of subjects.
             barchartR.setDatatipFormat("%2$d");
             // The piechart at the left plot the age group distribution chart.

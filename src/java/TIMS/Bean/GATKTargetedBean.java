@@ -9,6 +9,7 @@ import TIMS.General.ResourceRetriever;
 import java.io.File;
 // Libraries for Java Extension
 import javax.inject.Named;
+import javax.annotation.PostConstruct;
 //import javax.faces.bean.ManagedBean;
 //import javax.faces.bean.ViewScoped;
 // Library for omnifaces
@@ -39,6 +40,7 @@ public class GATKTargetedBean extends GEXAffymetrixBean {
     }
     
     @Override
+    @PostConstruct
     public void initFiles() {
         init();
         // Raw data file extension for GATK Targeted Sequencing.

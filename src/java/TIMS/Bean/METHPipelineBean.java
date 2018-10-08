@@ -7,6 +7,7 @@ import static TIMS.Bean.ConfigBean.logger;
 import java.util.List;
 // Libraries for Java Extension
 import javax.inject.Named;
+import javax.annotation.PostConstruct;
 //import javax.faces.bean.ManagedBean;
 //import javax.faces.bean.ViewScoped;
 // Library for omnifaces
@@ -68,6 +69,7 @@ public class METHPipelineBean extends GEXAffymetrixBean {
     }
     
     @Override
+    @PostConstruct
     public void initFiles() {
         init();
         // Raw data file extension for Methylation pipeline.
