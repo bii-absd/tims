@@ -191,6 +191,7 @@ public class DashboardBean implements Serializable {
         bcm.setLegendPosition("ne");
         bcm.setStacked(true);
         bcm.setShowPointLabels(true);
+        bcm.setBarWidth(40);
         bcm.getAxis(AxisType.X).setLabel(x_axis);
         bcm.getAxis(AxisType.Y).setLabel(y_axis);
         
@@ -230,6 +231,7 @@ public class DashboardBean implements Serializable {
         hbcm.setAnimate(true);
         // Set the default label for both the axis.
         hbcm.getAxis(AxisType.X).setLabel("Percentage of records");
+        hbcm.getAxis(AxisType.X).setMax(120);
         hbcm.getAxis(AxisType.Y).setLabel("Study Specific Fields");
         
         return hbcm;
