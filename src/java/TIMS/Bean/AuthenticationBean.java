@@ -120,6 +120,7 @@ import org.apache.logging.log4j.LogManager;
  * the string to be use for the Home Link.
  * 13-Jul-2018 - Director and HOD will now be directed to dashboard page when
  * they first login.
+ * 15-Oct-2018 - Fix: To check for super user in method getHomeStr().
  */
 
 @ManagedBean (name="authBean")
@@ -297,9 +298,12 @@ public class AuthenticationBean implements Serializable {
     // user's assgined role.
     public String getHomeStr() {
         String homeStr = "Home";
-        
-        if ( (userAcct.getRole_id() == UserRoleDB.director()) || 
-             (userAcct.getRole_id() == UserRoleDB.hod()) ) {
+
+        if (loginName.compareTo("super")==0) {
+            homeStr = "Super";
+        }
+        else if ( (userAcct.getRole_id() == UserRoleDB.director()) || 
+                  (userAcct.getRole_id() == UserRoleDB.hod()) ) {
             homeStr = "Home (Dashboard)";
         }
         else if ( (userAcct.getRole_id() == UserRoleDB.pi()) || 
