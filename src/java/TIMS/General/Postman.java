@@ -8,6 +8,8 @@ import TIMS.Database.UserAccount;
 import TIMS.Database.UserAccountDB;
 // Libraries for Java
 import java.util.Properties;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 // Libraries for Java Extension
 import javax.faces.context.FacesContext;
 import javax.mail.Message;
@@ -46,6 +48,8 @@ import org.apache.logging.log4j.LogManager;
  * 25-Aug-2016 - Enhanced sendDataUploadedEmail and sendJobStatusEmail; to show 
  * the pipeline description in the email subject and content.
  * 23-Apr-2018 - Added new method sendMetaDataUploadStatusEmail().
+ * 16-Oct-2018 - To include the IP address of the system in the email content
+ * (for easy identification.)
  */
 
 public abstract class Postman {
@@ -55,6 +59,7 @@ public abstract class Postman {
     // Get system properties
     private static final Properties properties = System.getProperties();
     private static Session session;
+    private static String ipAddress;
     
     // Get the logger for Log4j
     private final static Logger logger = LogManager.
@@ -66,6 +71,16 @@ public abstract class Postman {
         properties.setProperty("mail.smtp.host", host);
         // Get the default session object
         session = Session.getDefaultInstance(properties);
+        try {
+            // Get the IP address of the current system.
+            InetAddress ip = InetAddress.getLocalHost();
+            ipAddress = ip.getHostAddress();
+        } catch (UnknownHostException ex) {
+            logger.error("FAIL to get the IP address of the system.");
+            logger.error(ex.getMessage());
+            // Set the IP address to 'localhost'.
+            ipAddress = "localhost";
+        }
     }
     
     // Send a data uploaded status email to notify the admin that the raw data
@@ -91,7 +106,8 @@ public abstract class Postman {
             message.setText(
                     "Raw data for " + ResourceRetriever.getMsg(plName) + 
                     " under study " + studyID +
-                    " has been successfully uploaded to the following path:\n\n" + inputPath);
+                    " has been successfully uploaded to the following path:\n\n" + inputPath +
+                    "\n\n\nTIMS @" + ipAddress);
             // Send the message
             Transport.send(message);
             logger.debug("Data uploaded email sent.");
@@ -118,7 +134,8 @@ public abstract class Postman {
             message.addRecipients(Message.RecipientType.TO, adminEmails);
             message.setSubject("TIMS - User encountered Error.");
             message.setText(userName + " hit the Error page, "
-                    + "please help to take a look. Thank you!");
+                    + "please help to take a look. Thank you!"
+                    + "\n\nTIMS @" + ipAddress);
             // Send the message
             Transport.send(message);
             logger.debug("Exception email sent.");
@@ -156,7 +173,8 @@ public abstract class Postman {
                     "Dear " + user.getFirst_name() + ",\n\n" +
                     plDesc + " execution has completed.\n\n" +
                     "Output and report files are ready for download at Job Status page.\n\n\n" +
-                    "Please do not reply to this message.");
+                    "Please do not reply to this message." +
+                    "\n\n\nTIMS @" + ipAddress);
             }
             else {
                 // For failed case, BCC the email to the administrator(s).
@@ -170,7 +188,8 @@ public abstract class Postman {
                     "The team is looking at the root cause now.\n\n" +
                     "We will get back to you once we have any finding.\n\n" +
                     "Sorry for the inconvenience caused.\n\n\n" +
-                    "Please do not reply to this message.");
+                    "Please do not reply to this message." +
+                    "\n\n\nTIMS @" + ipAddress);
             }
             // Send the message
             Transport.send(message);
@@ -231,14 +250,16 @@ public abstract class Postman {
                 msg.setText(
                     "Dear " + user.getFirst_name() + ",\n\n" +
                     "Study " + study_id + " " + task + " has completed successfully." +
-                    content + "Please do not reply to this message.");
+                    content + "Please do not reply to this message." +
+                    "\n\n\nTIMS @" + ipAddress);
             }
             else {
                 msg.setSubject("Study " + study_id + " " + task + " failed to complete.");
                 msg.setText(
                     "Dear " + user.getFirst_name() + ",\n\n" +
                     "Study " + study_id + " " + task + " failed to complete.\n\n\n" +
-                    "Please do not reply to this message.");
+                    "Please do not reply to this message." +
+                    "\n\n\nTIMS @" + ipAddress);
             }
             // Send the message.
             Transport.send(msg);
