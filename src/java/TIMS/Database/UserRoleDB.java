@@ -46,6 +46,7 @@ import gnu.trove.map.hash.TObjectIntHashMap;
  * (Institution - Department - Group).
  * 07-Apr-2016 - Added new method, isLead() to check whether the role ID passed
  * in belong to a lead or not.
+ * 26-Nov-2018 - Added a new role 'Guest'.
  */
 
 public abstract class UserRoleDB implements Serializable {
@@ -126,6 +127,9 @@ public abstract class UserRoleDB implements Serializable {
     }
     public static int user() {
         return getRoleIDFromHash("User");
+    }
+    public static int guest() {
+        return getRoleIDFromHash("Guest");
     }
     
     // Return true if the role ID passed in is a Director/HOD/PI.

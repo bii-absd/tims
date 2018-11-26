@@ -4,6 +4,8 @@
 package TIMS.Bean;
 
 import TIMS.Database.BarChartDataObject;
+import TIMS.Database.DashboardConfig;
+import TIMS.Database.DashboardConfigDB;
 import TIMS.Database.GroupDB;
 import TIMS.Database.PieChartDataObject;
 import TIMS.Database.Study;
@@ -15,18 +17,16 @@ import TIMS.Database.UserAccount;
 import TIMS.Database.UserAccountDB;
 import TIMS.General.FileHelper;
 import TIMS.General.QueryStringGenerator;
+import TIMS.General.ResourceRetriever;
 // Libraries for Java
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 // Libraries for Java Extension
 import javax.annotation.PostConstruct;
-//import javax.faces.bean.ManagedBean;
-//import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
 import javax.faces.model.SelectItemGroup;
@@ -45,6 +45,9 @@ import org.primefaces.model.chart.HorizontalBarChartModel;
 import org.primefaces.model.chart.LegendPlacement;
 // Library for Trove
 import gnu.trove.map.hash.TObjectIntHashMap;
+import gnu.trove.iterator.TObjectIntIterator;
+import gnu.trove.map.hash.THashMap;
+import gnu.trove.set.hash.THashSet;
 
 /**
  * DashboardBean is the backing bean for the dashboard view.
@@ -61,9 +64,10 @@ import gnu.trove.map.hash.TObjectIntHashMap;
  * tool-tip when mouse-over.
  * 28-Aug-2018 - To replace JSF managed bean with CDI, and JSF ViewScoped with
  * omnifaces's ViewScoped.
+ * 19-Nov-2018 - Implemented dashboard data source configurable module; to allow
+ * admin to configure the data source for the pie chart and bar chart.
  */
 
-//@ManagedBean (name = "DBBean")
 @Named("DBBean")
 @ViewScoped
 public class DashboardBean implements Serializable {
@@ -82,8 +86,9 @@ public class DashboardBean implements Serializable {
     private BarChartModel barchartL, barchartR;
     private HorizontalBarChartModel specificFieldsBarchart;
     private TObjectIntHashMap<String> specific_fields_w_data, specific_fields_wo_data;
-    private SubjectDB subjects;
-    private StudySpecificFieldDB ss_fields;
+    private DashboardConfigDB dbc_db;
+    private SubjectDB subject_db;
+    private StudySpecificFieldDB ssf_db;
     
     
     public DashboardBean() {
@@ -118,7 +123,8 @@ public class DashboardBean implements Serializable {
         List<String> grpIdList = new ArrayList<>();
         // Retrieve the group IDs that come under this user (based on it's role)
         if (user.getRoleName().equals("Admin") || 
-            user.getRoleName().equals("User")) {
+            user.getRoleName().equals("User") ||
+            user.getRoleName().equals("Guest")) {
             grpIdList.add(user.getUnit_id());
         }
         else {
@@ -165,7 +171,7 @@ public class DashboardBean implements Serializable {
     
     // Create a bar chart model based on the hashmap of chart data objects
     // passed in.
-    private BarChartModel createBarChartModel(HashMap<String, BarChartDataObject> 
+    private BarChartModel createBarChartModel(LinkedHashMap<String, BarChartDataObject> 
             data_objects, String x_axis, String y_axis) {
         BarChartModel bcm = new BarChartModel();
         Map.Entry<String, BarChartDataObject> entry = 
@@ -252,13 +258,14 @@ public class DashboardBean implements Serializable {
     public void studyChange() {
         if (study_id.compareTo("0") != 0) {
             study_sel = StudyDB.getStudyObject(study_id);
-            subjects = new SubjectDB(study_id);
-            ss_fields = new StudySpecificFieldDB(study_id);
+            subject_db = new SubjectDB(study_id);
+            ssf_db = new StudySpecificFieldDB(study_id);
+            dbc_db = new DashboardConfigDB(study_id);
             // Clean up the specific fields data points hashmaps.
             specific_fields_w_data.clear();
             specific_fields_wo_data.clear();
             
-            subjectDetailList = subjects.getSubtDetailList();
+            subjectDetailList = subject_db.getSubtDetailList();
             List<String> colNameL = FileHelper.convertByteArrayToList
                                         (StudyDB.getColumnNameList(study_id));
             // Convert the meta data in each subject detail object from byte[]  
@@ -270,7 +277,7 @@ public class DashboardBean implements Serializable {
                     break;
                 }
             }
-            categories = ss_fields.getSpecificFieldCategory();
+            categories = ssf_db.getSpecificFieldCategory();
             // If categories is empty, it means study specific fields have not
             // been setup.
             if (!categories.isEmpty()) {
@@ -281,26 +288,95 @@ public class DashboardBean implements Serializable {
                 // Update study specific fields barchart.
                 updateSpecificFieldsBarchart();
             }
-            // The barchart at the left plot race against gender.
-            barchartL = createBarChartModel(genBarChartDOFromDBColumnsXY
-                 ("race", "gender"), "Ethnicity", "Number of Subjects");
-            // Only show the y-axis i.e. number of subjects.
-            barchartL.setDatatipFormat("%2$d");
-            // The barchart at the right plot race against casecontrol.
-            barchartR = createBarChartModel(genBarChartDOFromDBColumnsXY
-                 ("race", "casecontrol"), "Ethnicity", "Number of Subjects");
-            // Only show the y-axis i.e. number of subjects.
-            barchartR.setDatatipFormat("%2$d");
-            // The piechart at the left plot the age group distribution chart.
-            piechartL = createPieChartModel(genPieChartDOForAgeAtBaseline());
-            // The piechart at the right plot the distribution of visit type.
-            piechartR = createPieChartModel(genPieChartDOFromSpecificField
-                                ("ContacType", "Visit Type Breakdown Chart"));
+            // Setup the piechart and barchart.
+            barchartL = setupBarchart(ResourceRetriever.getMsg("barchartL"));
+            barchartR = setupBarchart(ResourceRetriever.getMsg("barchartR"));
+            piechartL = setupPiechart(ResourceRetriever.getMsg("piechartL"));
+            piechartR = setupPiechart(ResourceRetriever.getMsg("piechartR"));
             // Clear the current subject detail list to free up memory.
             subjectDetailList.clear();
         }
     }
 
+    // Setup and return the PieChartModel for this chart_id.
+    private PieChartModel setupPiechart(String chart_id) {
+        DashboardConfig bc_config = dbc_db.getDBCForChartID(chart_id);
+        PieChartModel model = new PieChartModel();
+        
+        if (bc_config.getData_source_x().equals("age")) {
+            // Pie chart for age grouping is being constructed differently.
+            model = createPieChartModel(genPieChartDOForAgeAtBaseline());
+        }
+        else {
+            if (bc_config.is_x_from_core_data()) {
+                model = createPieChartModel(genPieChartDOFromCoreData
+                        (bc_config.getData_source_x(), bc_config.getTitle()));
+            }
+            else {
+                model = createPieChartModel(genPieChartDOFromSpecificField
+                        (bc_config.getData_source_x(), bc_config.getTitle()));
+            }
+        }
+        
+        return model;
+    }
+    
+    // Setup and return the BarChartModel for this chart id.
+    private BarChartModel setupBarchart(String chart_id) {
+        DashboardConfig bc_config = dbc_db.getDBCForChartID(chart_id);
+        BarChartModel model = new BarChartModel();
+        // Currently y-axis is set to 'Number of Subjects' by default.
+        if (bc_config.is_y_from_core_data()) {
+            model = createBarChartModel(genBarChartDOFromDBColumnsXY
+                (bc_config.getData_source_x(), bc_config.getData_source_y()), 
+                 bc_config.get_x_label(), "Number of Subjects");
+        }
+        else {
+            // Core Data -> (Specific Field -> Count)
+            LinkedHashMap<String, TObjectIntHashMap<String>> data_hashmap = 
+                buildCoreDataVsSpecificFieldDataPoints
+                    (bc_config.getData_source_x(), bc_config.getData_source_y());
+            // Do we need a inverted chart i.e. specific field vs core data.
+            if (bc_config.isInverted()) {
+                // For inverted chart, the x-axis label will be empty.
+                model = createBarChartModel(genBarChartDOForSFVsCore(data_hashmap),
+                    "", "Number of Subjects");
+            }
+            else {
+                model = createBarChartModel(genBarChartDOForCoreVsSF(data_hashmap),
+                    bc_config.get_x_label(), "Number of Subjects");
+            }
+        }
+        // Only show the y-axis i.e. number of subjects.
+        model.setDatatipFormat("%2$d");
+        model.setTitle(bc_config.getTitle());
+
+        return model;
+    }
+    
+    // Build the data points based on core data vs specific field.
+    private LinkedHashMap<String, TObjectIntHashMap<String>> 
+        buildCoreDataVsSpecificFieldDataPoints(String cd_name, String sf_name) 
+    {
+        List<String> core_data_list = subject_db.getDistinctValueInColumn(cd_name);
+        // Core Data -> (Specific Field -> Count)
+        LinkedHashMap<String, TObjectIntHashMap<String>> data_hashmap = new LinkedHashMap<>();;
+        for (String cd : core_data_list) {
+            data_hashmap.put(cd, new TObjectIntHashMap<>());
+        }
+        // Fill up the data points.
+        for (SubjectDetail sd : subjectDetailList) {
+            if (sd.retrieveDataFromHashMap(sf_name) != null &&
+                !sd.retrieveDataFromHashMap(sf_name).isEmpty() ) 
+            {
+                data_hashmap.get(sd.getCoreData(cd_name)).adjustOrPutValue
+                    (sd.retrieveDataFromHashMap(sf_name), 1, 1);
+            }
+        }
+
+        return data_hashmap;
+    }
+    
     // Build the data points (i.e. with data, without data) for all the specific
     // fields in this study.
     private void buildSpecificFieldsDataPoints() {
@@ -308,7 +384,7 @@ public class DashboardBean implements Serializable {
         // Go through all the categories, and retrieve the list of specific 
         // fields.
         for (String category : categories) {
-            List<String> field_list = ss_fields.
+            List<String> field_list = ssf_db.
                 getSpecificFieldListFromCategory(category);
             // Go through the specific fields and tally the data points.
             for (String field : field_list) {
@@ -334,7 +410,7 @@ public class DashboardBean implements Serializable {
     // subject table.
     private PieChartDataObject genPieChartDOForAgeAtBaseline() {
         PieChartDataObject pco = new PieChartDataObject("Age Group Breakdown Chart");
-        List<Float> age_baseline_list = subjects.getAgeAtBaselineList();
+        List<Float> age_baseline_list = subject_db.getAgeAtBaselineList();
         // Make sure there is data available for further computation, else just
         // return a default piechart.
         if (age_baseline_list.isEmpty()) {
@@ -386,32 +462,41 @@ public class DashboardBean implements Serializable {
         return pco;
     }
     
+    // Generate the PieChartDataObject for this core data. Currently, only
+    // race, gender and case control data are available for plotting.
+    private PieChartDataObject genPieChartDOFromCoreData
+        (String core_data, String title) {
+        TObjectIntHashMap<String> series_tally = 
+                            subject_db.getDistinctValueCountInColumn(core_data);
+        PieChartDataObject pco = new PieChartDataObject(title);
+        // Iterate through the series tally and fill up the pie chart data object.
+        for (TObjectIntIterator it = series_tally.iterator(); it.hasNext();) {
+            it.advance();
+            // Add this series and its tally into piechart data object.
+            pco.addSeries((String) it.key(), it.value());            
+        }
+        
+        return pco;
+    }
+    
     // Generate the PieChartDataObject for this specific field in the hashmap of
     // the subject detail. The type of data should be category based e.g. the 
     // available data value should be limited.
     private PieChartDataObject genPieChartDOFromSpecificField
         (String field, String title) 
     {
-        LinkedHashMap<String, Integer> series_tally = new LinkedHashMap<>();
+        TObjectIntHashMap<String> series_tally = new TObjectIntHashMap<>();
         // Tally the count for each unique series name for this field.
         for (SubjectDetail subject : subjectDetailList) {
-            String series = subject.retrieveDataFromHashMap(field);
-            if (series_tally.containsKey(series)) {
-                // Series is already in the tally; increment by one.
-                series_tally.put(series, series_tally.get(series)+1);
-            }
-            else {
-                // This is a new series, add it to the tally with an intial
-                // count of 1.
-                series_tally.put(series, 1);
-            }
+            series_tally.adjustOrPutValue(subject.retrieveDataFromHashMap(field), 1, 1);
         }
         
         PieChartDataObject pco = new PieChartDataObject(title);
-        // Iterate through the series tally and fill up the piechart data object.
-        for (Map.Entry series : series_tally.entrySet()) {
+        // Iterate through the series tally and fill up the pie chart data object.
+        for (TObjectIntIterator it = series_tally.iterator(); it.hasNext();) {
+            it.advance();
             // Add this series and its tally into piechart data object.
-            pco.addSeries((String) series.getKey(), (int) series.getValue());
+            pco.addSeries((String) it.key(), it.value());            
         }
         
         return pco;
@@ -420,26 +505,26 @@ public class DashboardBean implements Serializable {
     // Generate the hashmap of BarChartDataObject using the values from database
     // columns X and Y. Column X values will plot on the x-axis, and Y values
     // will be plot on the y-axis.
-    private HashMap<String, BarChartDataObject> genBarChartDOFromDBColumnsXY
+    private LinkedHashMap<String, BarChartDataObject> genBarChartDOFromDBColumnsXY
         (String colX, String colY) 
     {
         // x_values will store the list of data name for this chart.
-        List<String> x_values = subjects.getDistinctValueInColumn(colX);
+        List<String> x_values = subject_db.getDistinctValueInColumn(colX);
         // series_set will store the list of series name for this chart.
-        List<String> series_set = subjects.getDistinctValueInColumn(colY);
-        // Create HashMap<String, List<String>> where the first string will
+        List<String> series_set = subject_db.getDistinctValueInColumn(colY);
+        // Create THashMap<String, List<String>> where the first string will
         // store the data name and the list of strings will store the series 
         // values.
-        LinkedHashMap<String, List<String>> x2yListValue_hashmap = 
-                                                        new LinkedHashMap<>();
+        THashMap<String, List<String>> x2yListValue = new THashMap<>();
+        
         for (String data_name : x_values) {
             // data_name - List of series values
-            x2yListValue_hashmap.put(data_name, subjects.getColXBasedOnColYValue
-                                    (colY, colX, data_name));
+            x2yListValue.put(data_name, subject_db.getColXBasedOnColYValue
+                            (colY, colX, data_name));
         }
-        // data_object_hashmap will store the data object(s) for this chart.
-        LinkedHashMap<String, BarChartDataObject> data_object_hashmap = 
-                                                        new LinkedHashMap<>();
+        // do_hashmap will store the data object(s) for this chart.
+        LinkedHashMap<String, BarChartDataObject> do_hashmap = new LinkedHashMap<>();
+        
         for (String data_name : x_values) {
             // Create the data object using the x_values as it's data_name.
             BarChartDataObject bco = new BarChartDataObject(data_name);
@@ -447,31 +532,85 @@ public class DashboardBean implements Serializable {
             for (String series : series_set) {
                 bco.addSeries(series);
             }
-            // Add this data object into the object hashmap.
-            data_object_hashmap.put(data_name, bco);
+            // Add this data object into the data object hashmap.
+            do_hashmap.put(data_name, bco);
         }
         // Tally the series count.
-        Iterator it = x2yListValue_hashmap.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry data = (Map.Entry)it.next();
-            @SuppressWarnings("unchecked")
-            List<String> series_values = (List<String>) data.getValue();
-            String data_name = (String) data.getKey();
-            
+        for (String data_name : x2yListValue.keySet()) {
+            List<String> series_values = x2yListValue.get(data_name);
             for (String series : series_values) {
-                // Loop through the series values of each data_name and 
-                // increment the respective series.
-                data_object_hashmap.get(data_name).increSeriesCount(series);
+                do_hashmap.get(data_name).increSeriesCount(series);
+            }
+        }
+
+        return do_hashmap;
+    }
+
+    // Generate the hashmap of BarChartDataObject using the values from core
+    // data and specific field. Core data values will be plot on the x-axis, and 
+    // specific field values will be plot on the y-axis.
+    private LinkedHashMap<String, BarChartDataObject> genBarChartDOForCoreVsSF
+        (LinkedHashMap<String, TObjectIntHashMap<String>> data_hashmap) 
+    {
+        LinkedHashMap<String, BarChartDataObject> do_hashmap = new LinkedHashMap<>();
+        
+        for (String core_data : data_hashmap.keySet()) {
+            BarChartDataObject dat = new BarChartDataObject(core_data);
+            for (TObjectIntIterator it = data_hashmap.get(core_data).iterator(); 
+                    it.hasNext(); ) 
+            {
+                it.advance();
+                dat.addSeries((String) it.key(), it.value());
+            }
+            if (dat.getNumOfSeriesDefined() > 0) {
+                do_hashmap.put(core_data, dat);
+            }
+        }
+
+        return do_hashmap;
+    }
+    
+    // Generate the hashmap of BarChartDataObject using the values from specific
+    // field and core data. Specific field values will be plot on the x-axis,
+    // and core data values will be plot on the y-axis.
+    private LinkedHashMap<String, BarChartDataObject> genBarChartDOForSFVsCore
+        (LinkedHashMap<String, TObjectIntHashMap<String>> data_hashmap) 
+    {
+        LinkedHashMap<String, BarChartDataObject> do_hashmap = new LinkedHashMap<>();
+        // Get all the unique specific fields.
+        Set<String> specific_fields = new THashSet<>();
+        
+        for (String core_data : data_hashmap.keySet()) {
+            for (TObjectIntIterator it = data_hashmap.get(core_data).iterator(); 
+                    it.hasNext(); ) 
+            {
+                it.advance();
+                specific_fields.add((String) it.key());
+            }
+        }
+        // Create the hashmap of BarChartDataObject based on the number of
+        // specific fields.
+        for (String sField : specific_fields) {
+            BarChartDataObject dat = new BarChartDataObject(sField);
+            do_hashmap.put(sField, dat);
+        }
+        // Fill in the BarChartDataObject's series and its value..
+        for (String core_data : data_hashmap.keySet()) {
+            for (TObjectIntIterator it = data_hashmap.get(core_data).iterator(); 
+                    it.hasNext(); ) 
+            {
+                it.advance();
+                do_hashmap.get((String) it.key()).addSeries(core_data, it.value());
             }
         }
         
-        return data_object_hashmap;
+        return do_hashmap;
     }
-
+    
     // Field category has changed, update the specific fields chart accordingly.
     public void updateSpecificFieldsBarchart() {
         // Retrieve the list of specific fields based on the category selected.
-        List<String> field_list = ss_fields.getSpecificFieldListFromCategory
+        List<String> field_list = ssf_db.getSpecificFieldListFromCategory
                                     (specific_fields_selection);
         if (field_list.size() > 15) {
             // Limit the number of specific fields to 15 per chart.

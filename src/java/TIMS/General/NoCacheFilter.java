@@ -1,9 +1,13 @@
 /*
- * Copyright @2015
+ * Copyright @2015-2018
  */
 package TIMS.General;
 
+import TIMS.Database.UserAccountDB;
+import TIMS.Database.UserRoleDB;
+// Library for Java
 import java.io.IOException;
+// Libraries for Java Extension
 import javax.faces.application.ResourceHandler;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -27,6 +31,7 @@ import javax.servlet.http.HttpSession;
  * 
  * Revision History
  * 11-Nov-2015 - Created with one override method doFilter().
+ * 26-Nov-2018 - Guest are only allowed to view the dashboard.
  */
 
 @WebFilter("/restricted/*")
@@ -64,7 +69,15 @@ public class NoCacheFilter implements Filter {
             response.sendRedirect(loginURL);
         }
         else {
-            chain.doFilter(req, res);            
+            // For guest, only allow them to view the dashboard.
+            if ( (UserAccountDB.getRoleID((String) session.getAttribute("User")) == UserRoleDB.guest()) &&
+                 (!request.getRequestURI().contains("/restricted/dashboard.xhtml")) ){
+                System.out.println("Redirect to dashboard.");
+                response.sendRedirect(request.getContextPath() + "/restricted/dashboard.xhtml");
+            }
+            else {
+                chain.doFilter(req, res);
+            }
         }
     }
 

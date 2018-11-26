@@ -38,6 +38,8 @@ import gnu.trove.map.hash.THashMap;
  * 13-Jul-2018 - Added two new methods, convertDataToHashMap and 
  * retrieveDataFromHashMap. Removed attributes remarks, event and event_date.
  * Added one new attribute age_at_baseline.
+ * 08-Nov-2018 - Added one new method, getCoreData(data_name) to return the 
+ * core data value (in upper case) for the data name passed in.
  */
 
 public class SubjectDetail {
@@ -113,6 +115,27 @@ public class SubjectDetail {
         else {
             return data_hashmap.get(column);
         }
+    }
+
+    // Return the core data (in upper case) base on the data name passed in.
+    // This method is used in dashboard module to support the chart of core
+    // data vs specific field. Currently only race, casecontrol and gender are
+    // supported.
+    public String getCoreData(String data_name) {
+	String core_data = "";
+	switch(data_name) {
+            case "race":
+                core_data = race;
+                break;
+            case "casecontrol":
+                core_data = casecontrol;
+		break;
+            case "gender":
+		core_data = gender;
+		break;
+	}
+        
+        return core_data.toUpperCase();
     }
     
     // Machine generated getters and setters.

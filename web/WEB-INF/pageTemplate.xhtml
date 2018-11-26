@@ -38,6 +38,9 @@
                         <p:menuitem value="#{msg['visual-mgnt']}" icon="fa fa-key" 
                                     url="visualizermanagement.xhtml" 
                                     rendered="#{authBean.administrator}"/>
+                        <p:menuitem value="#{msg['dashboard-config']}" icon="fa fa-cog" 
+                                    url="dashboardconfiguration.xhtml" 
+                                    rendered="#{authBean.administrator}"/>
                         <p:menuitem value="#{msg['job-mgnt']}" icon="fa fa-folder-open" 
                                     action="#{authBean.allUsersJobStatus}"
                                     rendered="#{authBean.administrator}"/>

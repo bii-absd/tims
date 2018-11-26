@@ -69,6 +69,7 @@
                                     <f:selectItem itemLabel="HOD" itemValue="3"/>
                                     <f:selectItem itemLabel="PI" itemValue="4"/>
                                     <f:selectItem itemLabel="User" itemValue="5"/>
+                                    <f:selectItem itemLabel="Guest" itemValue="6"/>
                                     <p:ajax listener="#{acctMgntBean.roleEditChange}" 
                                             update="unitID"/>
                                 </p:selectOneMenu>
@@ -175,6 +176,7 @@
                             <f:selectItem itemLabel="HOD" itemValue="3"/>
                             <f:selectItem itemLabel="PI" itemValue="4"/>
                             <f:selectItem itemLabel="User" itemValue="5"/>
+                            <f:selectItem itemLabel="Guest" itemValue="6"/>
                             <p:ajax listener="#{acctMgntBean.instRoleChange}" update="unit"/>
                         </p:selectOneMenu>
                         <h:message for="role" styleClass="errors"/>

@@ -4,6 +4,7 @@
 package TIMS.Bean;
 
 import TIMS.Database.ActivityLogDB;
+import TIMS.Database.DashboardConfigDB;
 import TIMS.Database.ICD10DB;
 import TIMS.Database.Institution;
 import TIMS.Database.Study;
@@ -20,8 +21,6 @@ import java.util.List;
 // Libraries for Java Extension
 import javax.annotation.PostConstruct;
 import javax.faces.application.FacesMessage;
-//import javax.faces.bean.ManagedBean;
-//import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
 import javax.faces.model.SelectItemGroup;
@@ -73,9 +72,10 @@ import org.omnifaces.cdi.ViewScoped;
  * grant information.
  * 28-Aug-2018 - To replace JSF managed bean with CDI, and JSF ViewScoped with
  * omnifaces's ViewScoped.
+ * 15-Nov-2018 - To create the dashboard data source configurations for all 
+ * newly created study.
  */
 
-//@ManagedBean (name="studyMgntBean")
 @Named("studyMgntBean")
 @ViewScoped
 public class StudyManagementBean implements Serializable {
@@ -261,6 +261,9 @@ public class StudyManagementBean implements Serializable {
                 String detail = "Study " + study_id;
                 ActivityLogDB.recordUserActivity(userName, Constants.CRE_ID, detail);
                 logger.info(userName + ": created " + detail);
+                // Create dashboard data source configurations for this new study.
+                DashboardConfigDB dbc = new DashboardConfigDB(study_id);
+                dbc.insertDBCsForNewStudy();
                 fc.addMessage(null, new FacesMessage(
                         FacesMessage.SEVERITY_INFO, 
                         "New Study ID created.", ""));

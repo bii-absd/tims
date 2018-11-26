@@ -1,0 +1,98 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition template="/WEB-INF/pageTemplate.xhtml"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    
+    <ui:define name="title">Dashboard Data Configuration</ui:define>
+    <ui:param name="link" value="#{msg['dashboard-config']}"/>
+    <ui:define name="content">
+    <p:growl id="dbcMsg"/>
+        <h:form id="dbcfgForm">
+            <p:panel id="ssPanel" rendered="#{authBean.administrator}">
+                <h:panelGrid columns="3">
+                    <p:selectOneMenu required="true" value="#{DBCFGBean.study_id}">
+                        <f:selectItem itemLabel="Select Study" itemValue="0"/>
+                        <f:selectItems value="#{DBCFGBean.study_list}"/>
+                        <p:ajax update="dbcPanel" listener="#{DBCFGBean.studyChange}" 
+                                onstart="PF('buiPanel').show()" 
+                                oncomplete="PF('buiPanel').hide()"/>
+                    </p:selectOneMenu>
+                </h:panelGrid>
+            </p:panel>
+            <p:blockUI block="ssPanel" widgetVar="buiPanel">
+                <p:graphicImage library="images" name="ajax-loader.gif"/>
+            </p:blockUI>
+        </h:form>
+        <p:panel id="dbcPanel" visible="#{DBCFGBean.studySelectedStatus}">
+            <h:form id="editDBCForm">
+                <p:dataTable var="dbc" rows="4" id="dbcTable" 
+                             value="#{DBCFGBean.dbc_list}" editable="true" 
+                             styleClass="table-odd-row table-even-row">
+                    <p:ajax event="rowEdit" listener="#{DBCFGBean.onDBCEdit}" 
+                            update="dbcMsg"/>
+                    <p:column headerText="Chart ID" styleClass="jssmallcol">
+                        <h:outputText value="#{dbc.chart_id}"/>
+                    </p:column>
+                    <p:column headerText="Title" styleClass="col300">
+                        <p:cellEditor>
+                            <f:facet name="output">
+                                <h:outputText value="#{dbc.title}"/>
+                            </f:facet>
+                            <f:facet name="input">
+                                <h:inputText value="#{dbc.title}" style="width: 100%"/>
+                            </f:facet>
+                        </p:cellEditor>
+                    </p:column>
+                    <p:column headerText="Data Source X" styleClass="jsmedcol">
+                        <p:cellEditor>
+                            <f:facet name="output">
+                                <h:outputText value="#{dbc.data_source_x}"/>
+                            </f:facet>
+                            <f:facet name="input">
+                                <p:selectOneMenu value="#{dbc.data_source_x}" 
+                                                 style="width: 100%">
+                                    <f:selectItems 
+                                        value="#{dbc.barchart?DBCFGBean.core_data_hashmap:DBCFGBean.data_source_w_age_hashmap}"/>
+                                </p:selectOneMenu>
+                            </f:facet>
+                        </p:cellEditor>
+                    </p:column>
+                    <p:column headerText="Data Source Y" styleClass="jsmedcol">
+                        <p:cellEditor rendered="#{dbc.barchart}">
+                            <f:facet name="output">
+                                <h:outputText value="#{dbc.data_source_y}"/>
+                            </f:facet>
+                            <f:facet name="input">
+                                <p:selectOneMenu value="#{dbc.data_source_y}" 
+                                                 style="width: 100%">
+                                    <f:selectItems 
+                                        value="#{dbc.barchart?DBCFGBean.data_source_hashmap:DBCFGBean.data_source_w_age_hashmap}"/>
+                                </p:selectOneMenu>
+                            </f:facet>
+                        </p:cellEditor>
+                    </p:column>
+                    <p:column headerText="Invert Data Source" style="width: 50px; text-align: center">
+                        <p:cellEditor rendered="#{dbc.barchart}">
+                            <f:facet name="output">
+                                <h:outputText value="#{dbc.inverted?'YES':'NO'}"/>
+                            </f:facet>
+                            <f:facet name="input">
+                                <p:selectOneMenu value="#{dbc.inverted}" style="width: 100%">
+                                    <f:selectItem itemLabel="YES" itemValue="true"/>
+                                    <f:selectItem itemLabel="NO" itemValue="false"/>
+                                </p:selectOneMenu>
+                            </f:facet>
+                        </p:cellEditor>
+                    </p:column>
+                    <p:column style="width: 32px">
+                        <p:rowEditor/>
+                    </p:column>
+                </p:dataTable>
+            </h:form>
+        </p:panel>
+    </ui:define>
+</ui:composition>

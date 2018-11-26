@@ -10,6 +10,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 // Libraries for Java Extension
 import javax.naming.NamingException;
@@ -28,6 +29,8 @@ import org.apache.logging.log4j.Logger;
  * 31-Aug-2018 - First baseline with 4 methods updateSSField, 
  * getSpecificFieldCategory, getSpecificFieldListFromCategory and 
  * deleteSpecificFields.
+ * 15-Nov-2018 - Added one new method getSpecificFieldHashMap() to return the
+ * hashmap of the all the specific field defined for this study.
  */
 
 public class StudySpecificFieldDB {
@@ -116,6 +119,36 @@ public class StudySpecificFieldDB {
         }
 
         return categories;
+    }
+    
+    // Return the hashmap of all the specific fields defined for this study.
+    public LinkedHashMap<String, String> getSpecificFieldHashMap() {
+        Connection conn = null;
+        LinkedHashMap<String, String> field_hashmap = new LinkedHashMap<>();
+        String query = "SELECT fields FROM study_specific_fields WHERE study_id = ? ORDER BY category";
+        
+        try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            stm.setString(1, study_id);
+            ResultSet rs = stm.executeQuery();
+            
+            while (rs.next()) {
+                for (String field : FileHelper.convertByteArrayToList(rs.getBytes("fields"))) {
+                    field_hashmap.put(field, field);
+                }
+            }
+            stm.close();
+        }
+        catch (SQLException|NamingException e) {
+            logger.error("FAIL to query study specific fields!");
+            logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
+        }
+
+        return field_hashmap;
     }
     
     // Return the list of specific fields under this category.

@@ -17,10 +17,12 @@ import javax.naming.NamingException;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+// Library for Trove
+import gnu.trove.map.hash.TObjectIntHashMap;
 
 /**
- * SubjectDB is an abstract class and not mean to be instantiate, its main job 
- * is to perform SQL operations on the subject table in the database.
+ * SubjectDB is used to perform SQL operations on the subject table in the 
+ * database.
  * 
  * Author: Tay Wei Hong
  * Date: 10-Dec-2015
@@ -59,13 +61,15 @@ import org.apache.logging.log4j.LogManager;
  * 06-Apr-2018 - Database version 2.0 changes. Added 3 new methods 
  * deleteAllSubjectsFromStudy, getSubject and getSubjectIDsList. Enhanced 
  * methods: insertSubject and updateSubject. Remove unused code.
- * 03-Jul-2018 - Added new method getDistinctValueInColumn(column_name, study_id) 
+ * 03-Jul-2018 - Added new method getDistinctValueInColumn(column_name) 
  * to return the list of distinct value found in this column under this study.
  * Changes due to addition of new field age_at_baseline in Subject table.
  * 31-Jul-2018 - Bug fix: To check for empty string and non-float string at
  * method getAgeAtBaselineList().
  * 30-Aug-2018 - Removed abstract class and static methods to save metaspace
  * memory.
+ * 08-Nov-2018 - Added new method getDistinctValueCountInColumn(column_name) to
+ * return the count of each distinct value in this column under this study.
  */
 
 public class SubjectDB {
@@ -144,8 +148,8 @@ public class SubjectDB {
     }
     
     // Insert the new subject meta data into database
-    public Boolean insertSubject(Subject subject, Connection conn) {
-        Boolean result = Constants.OK;
+    public boolean insertSubject(Subject subject, Connection conn) {
+        boolean result = Constants.OK;
         String query = "INSERT INTO subject(subject_id,study_id,race,"
                 + "gender,dob,casecontrol,age_at_baseline) VALUES(?,?,?,?,?,?,?)";
         
@@ -289,7 +293,7 @@ public class SubjectDB {
     public List<SubjectDetail> getSubtDetailList() {
         Connection conn = null;
         List<SubjectDetail> subtDetailList = new ArrayList<>();
-        String query = "SELECT * from subject_detail WHERE study_id = ? "
+        String query = "SELECT * FROM subject_detail WHERE study_id = ? "
                      + "ORDER BY subject_id, record_date";
         
         try {
@@ -405,6 +409,36 @@ public class SubjectDB {
         return isSubjectExist;
     }
     */
+    
+    // Return the count of each distinct value in this column.
+    public TObjectIntHashMap<String> getDistinctValueCountInColumn(String column_name) {
+        Connection conn = null;
+        TObjectIntHashMap<String> distinct_count_hashmap = new TObjectIntHashMap<>();
+        String query = "SELECT " + column_name 
+                     + ", COUNT(1) as tally FROM subject WHERE study_id = ? "
+                     + "GROUP BY " + column_name;
+        
+        try {
+            conn = DBHelper.getDSConn();
+            PreparedStatement stm = conn.prepareStatement(query);
+            stm.setString(1, study_id);
+            ResultSet rs = stm.executeQuery();
+            
+            while (rs.next()) {
+                distinct_count_hashmap.put(rs.getString(column_name), rs.getInt("tally"));
+            }
+            stm.close();
+        }
+        catch (SQLException|NamingException e) {
+            logger.error("FAIL to get distinct value count in column " + column_name);
+            logger.error(e.getMessage());
+        }
+        finally {
+            DBHelper.closeDSConn(conn);
+        }
+
+        return distinct_count_hashmap;
+    }
     
     // Return the list of distinct(s) value found in this column.
     public List<String> getDistinctValueInColumn(String column_name) {

@@ -118,6 +118,8 @@ import org.apache.logging.log4j.LogManager;
  * 07-Jun-2018 - Rename and redefine GROUP_MANAGEMENT to WORKUNIT_MANAGEMENT.
  * 06-Jul-2018 - Added five new constants DASHBOARD, UPL_SSF, UPL_CDT, DEL_CDT 
  * and DEL_SSF for Dashboard module.
+ * 19-Nov-2018 - Added one new constant UPD_DS for dashboard data source
+ * configurable module.
  */
 
 @ManagedBean (name = "constants")
@@ -147,6 +149,7 @@ public class Constants {
     public final static String CRE_ID = "Create ID";
     public final static String CHG_PWD = "Change Password";
     public final static String CHG_ID = "Update ID";
+    public final static String UPD_DS = "Update Data Source";
     public final static String UPL_MD = "Upload Meta Data";
     public final static String UPD_MD = "Update Meta Data";
     public final static String DEL_MD = "Delete Meta Data";
