@@ -39,7 +39,7 @@ import gnu.trove.map.hash.THashMap;
  * retrieveDataFromHashMap. Removed attributes remarks, event and event_date.
  * Added one new attribute age_at_baseline.
  * 08-Nov-2018 - Added one new method, getCoreData(data_name) to return the 
- * core data value (in upper case) for the data name passed in.
+ * core data value for the data name passed in.
  */
 
 public class SubjectDetail {
@@ -117,7 +117,7 @@ public class SubjectDetail {
         }
     }
 
-    // Return the core data (in upper case) base on the data name passed in.
+    // Return the core data based on the data name passed in.
     // This method is used in dashboard module to support the chart of core
     // data vs specific field. Currently only race, casecontrol and gender are
     // supported.
@@ -135,7 +135,8 @@ public class SubjectDetail {
 		break;
 	}
         
-        return core_data.toUpperCase();
+//        return core_data.toUpperCase();
+        return core_data;
     }
     
     // Machine generated getters and setters.

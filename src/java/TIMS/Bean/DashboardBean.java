@@ -25,6 +25,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.HashSet;
 // Libraries for Java Extension
 import javax.annotation.PostConstruct;
 import javax.faces.context.FacesContext;
@@ -66,6 +67,7 @@ import gnu.trove.set.hash.THashSet;
  * omnifaces's ViewScoped.
  * 19-Nov-2018 - Implemented dashboard data source configurable module; to allow
  * admin to configure the data source for the pie chart and bar chart.
+ * 29-Nov-2018 - Fix the bug found during UAT.
  */
 
 @Named("DBBean")
@@ -174,18 +176,29 @@ public class DashboardBean implements Serializable {
     private BarChartModel createBarChartModel(LinkedHashMap<String, BarChartDataObject> 
             data_objects, String x_axis, String y_axis) {
         BarChartModel bcm = new BarChartModel();
-        Map.Entry<String, BarChartDataObject> entry = 
-                data_objects.entrySet().iterator().next();
         LinkedHashMap<String, ChartSeries> cs_hashmap = new LinkedHashMap<>();
-        // Create the number of chart series defined.
-        for (String cs_name : entry.getValue().getSeriesName()) {
+        // Consolidate the number of distinct series name.
+        Set<String> distinct_series_name = new HashSet<>();
+        data_objects.forEach((key,bc_do) -> {
+            // For each BarChartDataObject, add the distinct series name to the set.
+            for (String series : bc_do.getSeriesName()) {
+                distinct_series_name.add(series);
+            }
+        });
+        // Create the number of ChartSeries based on the number of distinct 
+        // series name.
+        for (String cs_name : distinct_series_name) {
             ChartSeries cs = new ChartSeries();
             cs.setLabel(cs_name);
+            // Initialise the ChartSeries with object name and default value 0.
+            for (String object_name : data_objects.keySet()) {
+                cs.set(object_name, 0);
+            }
             cs_hashmap.put(cs_name, cs);
             // Add the chart series to the bar chart.
             bcm.addSeries(cs);
         }
-        // Now set the number for each data_name in each series.
+        // Update the value for each object in each ChartSeries.
         for (BarChartDataObject data_object : data_objects.values()) {
             for (String series_name : data_object.getSeriesName()) {
                 // Get the ChartSeries and setup its object and number.
@@ -371,6 +384,12 @@ public class DashboardBean implements Serializable {
             {
                 data_hashmap.get(sd.getCoreData(cd_name)).adjustOrPutValue
                     (sd.retrieveDataFromHashMap(sf_name), 1, 1);
+            }
+            else {
+                // For those specific field with no value; tally them too under
+                // tag "EMPTY".
+                data_hashmap.get(sd.getCoreData(cd_name)).adjustOrPutValue
+                    ("EMPTY", 1, 1);
             }
         }
 

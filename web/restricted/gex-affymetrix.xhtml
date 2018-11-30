@@ -83,9 +83,12 @@
                     <p:column>
                         <h:panelGrid columns="1">
                             <p:outputLabel value="#{msg['config-norm']}" styleClass="configlabel"/>
-                            <p:selectOneMenu id="normalization" required="true"
+                            <p:selectOneMenu id="normalization" required="true" title="#{msg['gex-affy-norm']}"
                                              value="#{gexAffyBean.normalization}">
-                                <f:selectItem itemLabel="RMA" itemValue="rma"/>
+                                <f:selectItem itemLabel="RMA" itemValue="RMA"/>
+                                <f:selectItem itemLabel="RMA-GC-SCALE" itemValue="RMA-GC-SCALE"/>
+                                <f:selectItem itemLabel="PLIER-MM" itemValue="PLIER-MM"/>
+                                <f:selectItem itemLabel="PLIER-GCBG" itemValue="PLIER-GCBG"/>
                             </p:selectOneMenu>
                         </h:panelGrid>
                     </p:column>
