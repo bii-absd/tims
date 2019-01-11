@@ -1,5 +1,5 @@
 /*
- * Copyright @2016-2018
+ * Copyright @2016-2019
  */
 package TIMS.General;
 
@@ -59,6 +59,7 @@ import org.apache.logging.log4j.LogManager;
  * be taken from the subject detail instead of the column data.
  * 10-Jul-2018 - Minor changes in method generateMetaDataList due to changes in
  * method SubjectDB.getSubtDetailList
+ * 04-Jan-2019 - Added 1 static method, generateTextFile.
  */
 
 public abstract class FileHelper {
@@ -190,14 +191,12 @@ public abstract class FileHelper {
             else {
                 Files.move(from, to);
             }
-//            logger.debug("File moved to " + dest);
             logger.info(oper);
         }
         catch (IOException ioe) {
             StringBuilder err = new StringBuilder("FAIL to move file. SRC: ").
                     append(src).append(" DEST: ").append(dest);
             result = Constants.NOT_OK;
-//            logger.error("FAIL to move file. SRC: " + src + " DEST: " + dest);
             logger.error(err);
             logger.error(ioe.getMessage());
         }
@@ -269,6 +268,26 @@ public abstract class FileHelper {
         return strBuilder.toString();
     }
     
+    // Helper function to generate a text file using the content found in the
+    // list of strings passed in.
+    public static boolean generateTextFile(List<String> content, String filepath) {
+        boolean status = Constants.NOT_OK;
+        
+        try {
+            PrintStream ps = new PrintStream(new File(filepath));
+            for (String line : content) {
+                ps.println(line);
+            }
+            ps.close();
+            status = Constants.OK;
+        } catch (IOException ioe) {
+            logger.error("FAIl to generate text file!");
+            logger.error(ioe.getMessage());
+        }
+        
+        return status;
+    }
+
     // Helper function to consolidate and generate the Meta data list for the
     // study ID passed in.
     public static boolean generateMetaDataList(String study_id, String filepath) {

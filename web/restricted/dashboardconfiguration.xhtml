@@ -56,7 +56,7 @@
                                 <p:selectOneMenu value="#{dbc.data_source_x}" 
                                                  style="width: 100%">
                                     <f:selectItems 
-                                        value="#{dbc.barchart?DBCFGBean.core_data_hashmap:DBCFGBean.data_source_w_age_hashmap}"/>
+                                        value="#{dbc.barchart?DBCFGBean.data_source_hashmap:DBCFGBean.data_source_w_age_hashmap}"/>
                                 </p:selectOneMenu>
                             </f:facet>
                         </p:cellEditor>
@@ -75,16 +75,13 @@
                             </f:facet>
                         </p:cellEditor>
                     </p:column>
-                    <p:column headerText="Invert Data Source" style="width: 50px; text-align: center">
+                    <p:column headerText="X-axis Label" styleClass="col140">
                         <p:cellEditor rendered="#{dbc.barchart}">
                             <f:facet name="output">
-                                <h:outputText value="#{dbc.inverted?'YES':'NO'}"/>
+                                <h:outputText value="#{dbc.label_x}"/>
                             </f:facet>
                             <f:facet name="input">
-                                <p:selectOneMenu value="#{dbc.inverted}" style="width: 100%">
-                                    <f:selectItem itemLabel="YES" itemValue="true"/>
-                                    <f:selectItem itemLabel="NO" itemValue="false"/>
-                                </p:selectOneMenu>
+                                <h:inputText value="#{dbc.label_x}" style="width: 100%"/>
                             </f:facet>
                         </p:cellEditor>
                     </p:column>

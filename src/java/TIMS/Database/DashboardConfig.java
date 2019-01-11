@@ -18,11 +18,12 @@ import java.util.List;
  * 
  * Revision History
  * 09-Nov-2018 - Created with all the standard getters and setters.
+ * 10-Dec-2018 - Changes in dashboard_config table; drop column inverted and add
+ * column label_x.
  */
 
 public class DashboardConfig {
-    private String chart_id, study_id, title, data_source_x, data_source_y;
-    private boolean inverted;
+    private String chart_id, study_id, title, label_x, data_source_x, data_source_y;
     private static final List<String> core_data_options = 
                             Arrays.asList("age","race","gender","casecontrol");
     
@@ -32,22 +33,21 @@ public class DashboardConfig {
         this.chart_id = rs.getString("chart_id");
         this.study_id = rs.getString("study_id");
         this.title = rs.getString("title");
+        this.label_x = rs.getString("label_x");
         this.data_source_x = rs.getString("data_source_x");
         this.data_source_y = rs.getString("data_source_y");
-        this.inverted = rs.getBoolean("inverted");
     }
     
     // Machine generated constructor
-    public DashboardConfig(String chart_id, String study_id, String title, 
-            String data_source_x, String data_source_y, boolean inverted) {
+    public DashboardConfig(String chart_id, String study_id, String label_x, 
+            String data_source_x, String data_source_y) {    
         this.chart_id = chart_id;
         this.study_id = study_id;
-        this.title = title;
+        this.label_x = label_x;
         this.data_source_x = data_source_x;
         this.data_source_y = data_source_y;
-        this.inverted = inverted;
     }
-    
+
     // Check for bar chart configuration type.
     public boolean isBarchart() {
         return (chart_id.equals("BARCL") || chart_id.equals("BARCR"));
@@ -60,20 +60,6 @@ public class DashboardConfig {
     // Check whether is data source y from core data.
     public boolean is_y_from_core_data() {
         return core_data_options.contains(data_source_y);
-    }
-    
-    // Return the label to be use for x-axis base on the data source for x.
-    public String get_x_label() {
-        String label = "";
-        
-        if (data_source_x.equals("race")) {
-            label = "ETHNICITY";
-        }
-        else {
-            label = data_source_x.toUpperCase();
-        }
-        
-        return label;
     }
     
     // Machine generated getters and setters
@@ -89,6 +75,10 @@ public class DashboardConfig {
     {   return title;       }
     public void setTitle(String title) 
     {   this.title = title; }
+    public String getLabel_x() 
+    {   return label_x;     }
+    public void setLabel_x(String label_x) 
+    {   this.label_x = label_x; }
     public String getData_source_x() 
     {   return data_source_x;   }
     public void setData_source_x(String data_source_x) 
@@ -97,8 +87,4 @@ public class DashboardConfig {
     {   return data_source_y;   }
     public void setData_source_y(String data_source_y) 
     {   this.data_source_y = data_source_y;     }
-    public boolean isInverted() 
-    {   return inverted;    }
-    public void setInverted(boolean inverted) 
-    {   this.inverted = inverted;   }
 }

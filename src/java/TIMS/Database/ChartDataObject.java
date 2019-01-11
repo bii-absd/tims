@@ -22,21 +22,23 @@ import org.apache.logging.log4j.Logger;
  * Revision History
  * 02-Jul-2018 - Added methods to manipulate the the series, series count and
  * series name.
+ * 20-Dec-2018 - Stored the series count as double instead of integer.
  */
 
 public abstract class ChartDataObject implements Serializable {
     protected Logger logger;
-    protected LinkedHashMap<String, Integer> data_series;
+//    protected LinkedHashMap<String, Integer> data_series;
+    protected LinkedHashMap<String, Double> data_series;
 
     protected void init() {
         this.data_series = new LinkedHashMap<>();
     }
     
     public void addSeries(String series_name) {
-        data_series.put(series_name, 0);
+        data_series.put(series_name, 0.0);
     }
     public void addSeries(String series_name, int number) {
-        data_series.put(series_name, number);
+        data_series.put(series_name, (double) number);
     }
     
     public boolean increSeriesCount(String series_name) {
@@ -49,7 +51,7 @@ public abstract class ChartDataObject implements Serializable {
     }
     
     // Return the series count for plotting.
-    public int getSeriesCount(String series_name) {
+    public double getSeriesCount(String series_name) {
         if (data_series.containsKey(series_name)) {
             return data_series.get(series_name);
         }

@@ -64,8 +64,20 @@
                                 <p:ajax update="SFchart" 
                                         listener="#{DBBean.updateSpecificFieldsBarchart}"/>
                             </p:selectOneRadio>
-                        </h:panelGrid>                        
+                            <p:spacer height="100"/>
+                            <p:commandButton icon="ui-icon-circle-arrow-s" value="Export" ajax="false" action="#{DBBean.downloadSsfContent}"/>
+                        </h:panelGrid>
                     </h:form>
+                    <script type="text/javascript">
+                        function sfBCExtender() {
+                            this.cfg.highlighter = {
+                                show: true,
+                                tooltipAxes: 'x',
+                                useAxesFormatters: false,
+                                tooltipFormatString: '%#.2f'
+                            };
+                        }
+                    </script>
                 </h:panelGrid>
 
                 <h:panelGrid columns="2" style="width: 900px">
@@ -73,8 +85,8 @@
                     <p:chart type="pie" model="#{DBBean.piechartR}" style="height:350px"/>
                 </h:panelGrid>
                 <h:panelGrid columns="2" style="width: 900px">
-                    <p:chart type="bar" model="#{DBBean.barchartL}" style="height:350px"/>
-                    <p:chart type="bar" model="#{DBBean.barchartR}" style="height:350px"/>
+                    <p:chart type="bar" model="#{DBBean.barchartL}" style="width: 400px; height:350px"/>
+                    <p:chart type="bar" model="#{DBBean.barchartR}" style="width: 400px; height:350px"/>
                 </h:panelGrid>
             </p:panelGrid>
         </p:panel>

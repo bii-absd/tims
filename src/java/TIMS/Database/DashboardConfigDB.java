@@ -27,6 +27,8 @@ import org.apache.logging.log4j.LogManager;
  * Revision History
  * 09-Nov-2018 - First baseline with 4 static methods, getDashboardConfigList(),
  * getDBCForChartID(chart_id), insertDBCsForNewStudy() and updateDBC(dbc).
+ * 10-Dec-2018 - Changes in dashboard_config table; drop column inverted and add
+ * column label_x.
  */
 
 public class DashboardConfigDB {
@@ -101,11 +103,11 @@ public class DashboardConfigDB {
     // Insert the new dashboard configuration into database.
     public void insertDBCsForNewStudy() {
         Connection conn = null;
-        String query = "INSERT INTO dashboard_config(chart_id,data_source_x,data_source_y,title,inverted,study_id) "
-                     + "VALUES(\'PIECL\',\'age\',\'\',\'Age Group Breakdown Chart\',false,\'" + study_id 
-                     + "\'),(\'PIECR\',\'race\',\'\',\'Ethnicity Group Breakdown Chart\',false,\'" + study_id
-                     + "\'),(\'BARCL\',\'race\',\'gender\',\'Ethnicity Breakdown by Gender Chart\',false,\'" + study_id
-                     + "\'),(\'BARCR\',\'race\',\'casecontrol\',\'Ethnicity Breakdown by Case Control Chart\',false,\'" + study_id + "\')";
+        String query = "INSERT INTO dashboard_config(chart_id,data_source_x,data_source_y,title,study_id) "
+                     + "VALUES(\'PIECL\',\'age\',\'\',\'Age Group Breakdown Chart\',\'" + study_id 
+                     + "\'),(\'PIECR\',\'race\',\'\',\'Ethnicity Group Breakdown Chart\',\'" + study_id
+                     + "\'),(\'BARCL\',\'race\',\'gender\',\'Ethnicity Breakdown by Gender Chart\',\'" + study_id
+                     + "\'),(\'BARCR\',\'race\',\'casecontrol\',\'Ethnicity Breakdown by Case Control Chart\',\'" + study_id + "\')";
         
         try {
             conn = DBHelper.getDSConn();
@@ -127,7 +129,7 @@ public class DashboardConfigDB {
         Connection conn = null;
         boolean result = Constants.OK;
         String query = "UPDATE dashboard_config SET title = ?, "
-                     + "data_source_x = ?, data_source_y = ?, inverted = ? "
+                     + "data_source_x = ?, data_source_y = ?, label_x = ? "
                      + "WHERE chart_id = ? AND study_id = ?";
         try {
             conn = DBHelper.getDSConn();
@@ -135,7 +137,7 @@ public class DashboardConfigDB {
             stm.setString(1, dbc.getTitle());
             stm.setString(2, dbc.getData_source_x());
             stm.setString(3, dbc.getData_source_y());
-            stm.setBoolean(4, dbc.isInverted());
+            stm.setString(4, dbc.getLabel_x());
             stm.setString(5, dbc.getChart_id());
             stm.setString(6, dbc.getStudy_id());
             stm.executeUpdate();

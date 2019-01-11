@@ -1,5 +1,5 @@
 /*
- * Copyright @2015-2018
+ * Copyright @2015-2019
  */
 package TIMS.Bean;
 
@@ -121,6 +121,8 @@ import org.apache.logging.log4j.LogManager;
  * 13-Jul-2018 - Director and HOD will now be directed to dashboard page when
  * they first login.
  * 15-Oct-2018 - Fix: To check for super user in method getHomeStr().
+ * 07-Jan-2019 - Added 2 new methods, isArrayProcessingON() and 
+ * isNgsProcessingON().
  */
 
 @ManagedBean (name="authBean")
@@ -292,6 +294,14 @@ public class AuthenticationBean implements Serializable {
     // Return true if the visualizer is set to None.
     public boolean isVisualizationON() {
         return !featureList.get("Visualizer").equals("None");
+    }
+    // Return true if array processing pipelines are available.
+    public boolean isArrayProcessingON() {
+        return featureList.get("Array Processing").equals("ON");
+    }
+    // Return true if NGS processing pipelines are available.
+    public boolean isNgsProcessingON() {
+        return featureList.get("NGS Processing").equals("ON");
     }
     
     // Return the home link to be display at the main page; depending on the

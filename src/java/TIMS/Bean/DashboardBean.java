@@ -1,8 +1,9 @@
 /*
- * Copyright @2018
+ * Copyright @2019
  */
 package TIMS.Bean;
 
+import TIMS.Database.ActivityLogDB;
 import TIMS.Database.BarChartDataObject;
 import TIMS.Database.DashboardConfig;
 import TIMS.Database.DashboardConfigDB;
@@ -15,6 +16,7 @@ import TIMS.Database.SubjectDB;
 import TIMS.Database.SubjectDetail;
 import TIMS.Database.UserAccount;
 import TIMS.Database.UserAccountDB;
+import TIMS.General.Constants;
 import TIMS.General.FileHelper;
 import TIMS.General.QueryStringGenerator;
 import TIMS.General.ResourceRetriever;
@@ -26,6 +28,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.ListIterator;
+import java.util.TreeSet;
 // Libraries for Java Extension
 import javax.annotation.PostConstruct;
 import javax.faces.context.FacesContext;
@@ -68,6 +72,11 @@ import gnu.trove.set.hash.THashSet;
  * 19-Nov-2018 - Implemented dashboard data source configurable module; to allow
  * admin to configure the data source for the pie chart and bar chart.
  * 29-Nov-2018 - Fix the bug found during UAT.
+ * 07-Jan-2018 - Allow bar chart to plot specific field vs specific field. Sort
+ * the data series of the pie chart. Reverse the data series of the horizontal 
+ * bar chart, so that they appear in the correct order. Show the data tip of the
+ * horizontal bar chart at 2 decimal points. When building the Specific Fields 
+ * data points, don't count those entries with "--" content.
  */
 
 @Named("DBBean")
@@ -78,6 +87,9 @@ public class DashboardBean implements Serializable {
             getLogger(DashboardBean.class.getName());
     // Store the user ID of the current user.
     private final String userName;
+    // This string represent the symbol for "Do Not Count' when building the
+    // specific fields data points.
+    private final String DNC = "--";
     private final UserAccount user;
     private String study_id, specific_fields_selection;
     private List<SubjectDetail> subjectDetailList;
@@ -91,7 +103,8 @@ public class DashboardBean implements Serializable {
     private DashboardConfigDB dbc_db;
     private SubjectDB subject_db;
     private StudySpecificFieldDB ssf_db;
-    
+    // Each string in this list store the specific fields content of each subject.
+    private List<String> subjects_ssf_content;
     
     public DashboardBean() {
         userName = (String) FacesContext.getCurrentInstance().
@@ -104,6 +117,7 @@ public class DashboardBean implements Serializable {
         specificFieldsBarchart = new HorizontalBarChartModel();
         categories = new ArrayList<>();
         subjectDetailList = new ArrayList<>();
+        subjects_ssf_content = new ArrayList<>();
         specific_fields_w_data = new TObjectIntHashMap<>();
         specific_fields_wo_data = new TObjectIntHashMap<>();
         
@@ -208,11 +222,12 @@ public class DashboardBean implements Serializable {
         }
         // Setup the bar chart using the series defined.
         bcm.setLegendPosition("ne");
+        bcm.setLegendPlacement(LegendPlacement.OUTSIDE);
         bcm.setStacked(true);
         bcm.setShowPointLabels(true);
         bcm.setBarWidth(40);
         bcm.getAxis(AxisType.X).setLabel(x_axis);
-        bcm.getAxis(AxisType.Y).setLabel(y_axis);
+//        bcm.getAxis(AxisType.Y).setLabel(y_axis);
         
         return bcm;
     }
@@ -248,6 +263,8 @@ public class DashboardBean implements Serializable {
         hbcm.setLegendPlacement(LegendPlacement.OUTSIDEGRID);
         hbcm.setShowPointLabels(true);
         hbcm.setAnimate(true);
+        // Set extender to use javascript function sfBCExtender for this chart.
+        hbcm.setExtender("sfBCExtender");
         // Set the default label for both the axis.
         hbcm.getAxis(AxisType.X).setLabel("Percentage of records");
         hbcm.getAxis(AxisType.X).setMax(120);
@@ -277,6 +294,8 @@ public class DashboardBean implements Serializable {
             // Clean up the specific fields data points hashmaps.
             specific_fields_w_data.clear();
             specific_fields_wo_data.clear();
+            // Clean up the specific field content for the subjects.
+            subjects_ssf_content.clear();
             
             subjectDetailList = subject_db.getSubtDetailList();
             List<String> colNameL = FileHelper.convertByteArrayToList
@@ -306,6 +325,11 @@ public class DashboardBean implements Serializable {
             barchartR = setupBarchart(ResourceRetriever.getMsg("barchartR"));
             piechartL = setupPiechart(ResourceRetriever.getMsg("piechartL"));
             piechartR = setupPiechart(ResourceRetriever.getMsg("piechartR"));
+            // Build the specific field content for all the subjects found in
+            // this study.
+            for (SubjectDetail subject : subjectDetailList) {
+                subjects_ssf_content.add(subject.getSsf_content());
+            }
             // Clear the current subject detail list to free up memory.
             subjectDetailList.clear();
         }
@@ -338,26 +362,39 @@ public class DashboardBean implements Serializable {
     private BarChartModel setupBarchart(String chart_id) {
         DashboardConfig bc_config = dbc_db.getDBCForChartID(chart_id);
         BarChartModel model = new BarChartModel();
+        LinkedHashMap<String, TObjectIntHashMap<String>> data_hashmap;
+        
         // Currently y-axis is set to 'Number of Subjects' by default.
-        if (bc_config.is_y_from_core_data()) {
-            model = createBarChartModel(genBarChartDOFromDBColumnsXY
-                (bc_config.getData_source_x(), bc_config.getData_source_y()), 
-                 bc_config.get_x_label(), "Number of Subjects");
-        }
-        else {
-            // Core Data -> (Specific Field -> Count)
-            LinkedHashMap<String, TObjectIntHashMap<String>> data_hashmap = 
-                buildCoreDataVsSpecificFieldDataPoints
-                    (bc_config.getData_source_x(), bc_config.getData_source_y());
-            // Do we need a inverted chart i.e. specific field vs core data.
-            if (bc_config.isInverted()) {
-                // For inverted chart, the x-axis label will be empty.
-                model = createBarChartModel(genBarChartDOForSFVsCore(data_hashmap),
-                    "", "Number of Subjects");
+        if (bc_config.is_x_from_core_data()) {
+            if (bc_config.is_y_from_core_data()) {
+                // Core data vs core data.
+                model = createBarChartModel(genBarChartDOFromDBColumnsXY
+                    (bc_config.getData_source_x(), bc_config.getData_source_y()), 
+                    bc_config.getLabel_x(), "Number of Subjects");
             }
             else {
+                // Core data vs specific field.
+                // Core Data -> (Specific Field -> Count)
+                data_hashmap = buildCoreDataVsSpecificFieldDataPoints
+                    (bc_config.getData_source_x(), bc_config.getData_source_y());
                 model = createBarChartModel(genBarChartDOForCoreVsSF(data_hashmap),
-                    bc_config.get_x_label(), "Number of Subjects");
+                    bc_config.getLabel_x(), "Number of Subjects");
+            }
+        }
+        else {
+            if (bc_config.is_y_from_core_data()) {
+                // Specific field vs core data i.e. inverted core data vs specific field.
+                data_hashmap = buildCoreDataVsSpecificFieldDataPoints
+                    (bc_config.getData_source_y(), bc_config.getData_source_x());
+                model = createBarChartModel(genBarChartDOForSFVsCore(data_hashmap),
+                    bc_config.getLabel_x(), "Number of Subjects");                
+            }
+            else {
+                // Specific field vs specific field.
+                data_hashmap = buildSF1VsSF2DataPoints
+                    (bc_config.getData_source_x(), bc_config.getData_source_y());
+                model = createBarChartModel(genBarChartDOForCoreVsSF(data_hashmap),
+                    bc_config.getLabel_x(), "Number of Subjects");
             }
         }
         // Only show the y-axis i.e. number of subjects.
@@ -367,6 +404,40 @@ public class DashboardBean implements Serializable {
         return model;
     }
     
+    // Build the data points based on specific field vs specific field.
+    private LinkedHashMap<String, TObjectIntHashMap<String>> 
+        buildSF1VsSF2DataPoints(String sf1, String sf2) 
+    {
+        Set<String> dist_sf1_set = new THashSet<>();
+        // Build the list of distinct value of specific field one.
+        for (SubjectDetail sd : subjectDetailList) {
+            dist_sf1_set.add(sd.retrieveDataFromHashMap(sf1));
+        }
+        // Specific Field 1 -> (Specific Field 2 -> Count)
+        LinkedHashMap<String, TObjectIntHashMap<String>> data_hashmap = 
+                                                        new LinkedHashMap<>();
+        for (String dist_sf1 : dist_sf1_set) {
+            data_hashmap.put(dist_sf1, new TObjectIntHashMap<>());
+        }
+        // Fill up the data points.
+        for (SubjectDetail sd : subjectDetailList) {
+            if (sd.retrieveDataFromHashMap(sf2) != null &&
+                !sd.retrieveDataFromHashMap(sf2).isEmpty() ) 
+            {
+                data_hashmap.get(sd.retrieveDataFromHashMap(sf1)).adjustOrPutValue
+                    (sd.retrieveDataFromHashMap(sf2), 1, 1);
+            }
+            else {
+                // For those specific field with no value; tally them too under
+                // tag "EMPTY".
+                data_hashmap.get(sd.retrieveDataFromHashMap(sf1)).adjustOrPutValue
+                    ("EMPTY", 1, 1);
+            }
+        }
+        
+        return data_hashmap;
+    }
+
     // Build the data points based on core data vs specific field.
     private LinkedHashMap<String, TObjectIntHashMap<String>> 
         buildCoreDataVsSpecificFieldDataPoints(String cd_name, String sf_name) 
@@ -400,6 +471,7 @@ public class DashboardBean implements Serializable {
     // fields in this study.
     private void buildSpecificFieldsDataPoints() {
         int with_data, wo_data;
+        StringBuilder ssf_header = new StringBuilder("Subject ID").append(SubjectDetail.FIELD_BREAKER);
         // Go through all the categories, and retrieve the list of specific 
         // fields.
         for (String category : categories) {
@@ -414,15 +486,24 @@ public class DashboardBean implements Serializable {
                         wo_data++;
                     }
                     else {
-                        with_data++;
+                        // If the data is DNC, don't count it.
+                        if (!subject.retrieveDataFromHashMap(field).equals(DNC)) {
+                            with_data++;
+                        }
                     }
+                    // Append this data into the specific field content.
+                    subject.appendSpecificField(subject.retrieveDataFromHashMap(field));
                 }
                 // Insert the data points for this specific field into the 
                 // hashmaps.
                 specific_fields_w_data.put(field, with_data);
                 specific_fields_wo_data.put(field, wo_data);
+                // Build the header of the specific field content.
+                ssf_header.append(field).append(SubjectDetail.FIELD_BREAKER);
             }
         }
+        // Add the header to the specific field content.
+        subjects_ssf_content.add(ssf_header.toString());
     }
     
     // Generate the PieChartDataObject for the age_at_baseline field in the
@@ -511,13 +592,16 @@ public class DashboardBean implements Serializable {
         }
         
         PieChartDataObject pco = new PieChartDataObject(title);
-        // Iterate through the series tally and fill up the pie chart data object.
-        for (TObjectIntIterator it = series_tally.iterator(); it.hasNext();) {
-            it.advance();
+        // Sort the series name before adding them to the piechart series.
+        Set<String> value_set = series_tally.keySet();
+        TreeSet<String> sorted_set = new TreeSet<>();
+        sorted_set.addAll(value_set);
+        // Loop through the sorted set and add them to the pie chart series.
+        for (String key : sorted_set) {
             // Add this series and its tally into piechart data object.
-            pco.addSeries((String) it.key(), it.value());            
+            pco.addSeries(key, series_tally.get(key));
         }
-        
+
         return pco;
     }
     
@@ -638,7 +722,12 @@ public class DashboardBean implements Serializable {
         // data_object_hashmap will store the data object(s) for this chart.
         LinkedHashMap<String, BarChartDataObject> data_object_hashmap = 
                                                         new LinkedHashMap<>();
-        for (String field : field_list) {
+        // Need to iterate through the specific field list in reverse, so that
+        // the list will appear in the correct order in the barchart.
+        ListIterator li = field_list.listIterator(field_list.size());
+        String field = "";
+        while (li.hasPrevious()) {
+            field = (String) li.previous();
             BarChartDataObject dat = new BarChartDataObject(field);
             dat.addSeries("Records with data", specific_fields_w_data.get(field));
             dat.addSeries("Records without data", specific_fields_wo_data.get(field));
@@ -651,6 +740,22 @@ public class DashboardBean implements Serializable {
         // Only show the x-axis i.e. percentage of records.
         specificFieldsBarchart.setDatatipFormat("%1$d");
         logger.info("Category: " + specific_fields_selection);
+    }
+    
+    // Build the specific field content for the subjects under this study; for
+    // user to download.
+    public void downloadSsfContent() {
+        StringBuilder ssf_file = new StringBuilder(Constants.getSYSTEM_PATH()).
+                append(Constants.getTMP_PATH()).append(study_id).
+                append("_SSF_").append(Constants.getDT_yyyyMMdd_HHmm()).
+                append(Constants.getOUTPUTFILE_EXT());
+        if (FileHelper.generateTextFile(subjects_ssf_content, ssf_file.toString())) {
+            ActivityLogDB.recordUserActivity(userName, Constants.DWL_FIL, 
+                                    "Specific field content of " + study_id);
+            FileHelper.download(ssf_file.toString());
+            // Delete the Meta Data List after download.
+            FileHelper.delete(ssf_file.toString());
+        }
     }
     
     // Check whether study specific fields have been setup or not; use to 

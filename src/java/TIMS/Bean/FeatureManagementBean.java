@@ -1,5 +1,5 @@
 /*
- * Copyright @2016-2018
+ * Copyright @2016-2019
  */
 package TIMS.Bean;
 
@@ -14,8 +14,6 @@ import java.util.List;
 // Libraries for Java Extension
 import javax.annotation.PostConstruct;
 import javax.faces.application.FacesMessage;
-//import javax.faces.bean.ManagedBean;
-//import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
 import javax.inject.Named;
 import javax.naming.NamingException;
@@ -28,7 +26,7 @@ import org.omnifaces.cdi.ViewScoped;
 import org.primefaces.event.RowEditEvent;
 
 /**
- * FeatureManagementBean is the backing bean for the visualizermanagement view.
+ * FeatureManagementBean is the backing bean for the featuremanagement view.
  * 
  * Author: Tay Wei Hong
  * Date: 18-Jul-2016
@@ -40,9 +38,9 @@ import org.primefaces.event.RowEditEvent;
  * (BOOLEAN) with status (TEXT).
  * 28-Aug-2018 - To replace JSF managed bean with CDI, and JSF ViewScoped with
  * omnifaces's ViewScoped.
+ * 07-Jan-2019 - Minor update to the faces message, and removed unused code.
  */
 
-//@ManagedBean (name="fteMgntBean")
 @Named("fteMgntBean")
 @ViewScoped
 public class FeatureManagementBean implements Serializable {
@@ -51,20 +49,18 @@ public class FeatureManagementBean implements Serializable {
             getLogger(FeatureManagementBean.class.getName());
     private final String userName;
     private List<Feature> fteList;
-//    private String visualizer_status;
     private final FeatureDB featureDB;
     
     public FeatureManagementBean() {
         userName = (String) getFacesContext().getExternalContext().
                 getSessionMap().get("User");
         featureDB = new FeatureDB();
-        logger.info(userName + ": access Visualizer Management page.");
+        logger.info(userName + ": access Feature Management page.");
     }
     
     @PostConstruct
     public void init() {
         fteList = featureDB.getAllFeatureStatus();
-//        visualizer_status = featureDB.getFeatureStatus("Visualizer");
     }
     
     // Update the feature table in the database.
@@ -75,25 +71,22 @@ public class FeatureManagementBean implements Serializable {
             // Record this feature setup activity into database.
             StringBuilder detail = new StringBuilder(fte.getFcode()).
                                        append(" - ").append(fte.getStatus());
-//            String detail = fte.getFcode() + " - " + fte.getStatus();
             ActivityLogDB.recordUserActivity(userName, Constants.SET_FTE, detail.toString());
             StringBuilder oper = new StringBuilder(userName).
                     append(": updated ").append(fte.getFcode()).
                     append(" to ").append(fte.getStatus());
             logger.info(oper);
-//            logger.info(userName + ": updated " + fte.getFcode() + " to " 
-//                        + fte.getStatus());
             getFacesContext().addMessage(null, new FacesMessage(
-                    FacesMessage.SEVERITY_INFO, "Visualizer setting updated.", ""));
+                    FacesMessage.SEVERITY_INFO, "Feature setting updated.", ""));
             // Update feature list.
             AuthenticationBean.setupFeatureList(featureDB.getAllFeatureStatusHash());
         }
         catch (SQLException|NamingException e) {
-            logger.error("Fail to update visualizer setting!");
+            logger.error("Fail to update feature setting!");
             logger.error(e.getMessage());
             getFacesContext().addMessage(null, new FacesMessage(
                     FacesMessage.SEVERITY_ERROR, 
-                    "Failed to update visualizer setting!", ""));            
+                    "Failed to update feature setting!", ""));            
         }
     }
     
@@ -106,12 +99,4 @@ public class FeatureManagementBean implements Serializable {
     public List<Feature> getFteList() {
         return fteList;
     }
-    /* NOT IN USE!
-    public String getVisualizer_status() {
-        return visualizer_status;
-    }
-    public void setVisualizer_status(String visualizer_status) {
-        this.visualizer_status = visualizer_status;
-    }
-    */
 }

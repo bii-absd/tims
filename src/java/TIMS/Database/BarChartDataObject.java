@@ -15,6 +15,8 @@ import org.apache.logging.log4j.LogManager;
  * 
  * Revision History
  * 05-Jul-2018 - Added one new method convertSeriesCountToPercentage().
+ * 20-Dec-2018 - Modified convertSeriesCountToPercentage(); round up the 
+ * percentage to 2 decimal points.
  */
 
 public class BarChartDataObject extends ChartDataObject {
@@ -37,8 +39,10 @@ public class BarChartDataObject extends ChartDataObject {
         }
         // Convert each series count as a percentage of the total.
         for (String series : data_series.keySet()) {
-            int percent = Math.round((data_series.get(series) * 100) / total);
-            data_series.put(series, percent);
+            double percent = (data_series.get(series) * 100.0) / total;
+            // Round the percentage to 2 decimal points.
+            double percentR2DP = Math.round(percent * 100.0) / 100.0;
+            data_series.put(series, percentR2DP);
         }
     }
     

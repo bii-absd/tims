@@ -1,5 +1,5 @@
 /*
- * Copyright @2016-2018
+ * Copyright @2016-2019
  */
 package TIMS.Database;
 
@@ -40,6 +40,9 @@ import gnu.trove.map.hash.THashMap;
  * Added one new attribute age_at_baseline.
  * 08-Nov-2018 - Added one new method, getCoreData(data_name) to return the 
  * core data value for the data name passed in.
+ * 04-Jan-2019 - Added one new attribute ssf_content to store the specific
+ * field content of this subject; to be used in generating the specific field
+ * report in the dashboard page.
  */
 
 public class SubjectDetail {
@@ -49,6 +52,9 @@ public class SubjectDetail {
     private LocalDate record_date, dob;
     private byte[] dat;
     private Map<String, String> data_hashmap;
+    // Store the specific field content of this subject detail.
+    private StringBuilder ssf_content;
+    public final static String FIELD_BREAKER = "|";
     
     // Construct the SubjectDetail object directly using the result set returned
     // from the database query.
@@ -65,6 +71,7 @@ public class SubjectDetail {
         this.casecontrol = rs.getString("casecontrol");
         this.age_at_baseline = rs.getString("age_at_baseline");
         this.dat = rs.getBytes("dat");
+        init();
     }
     
     // Machine generated constructor.
@@ -82,6 +89,21 @@ public class SubjectDetail {
         this.dob = dob;
         this.casecontrol = casecontrol;
         this.age_at_baseline = age_at_baseline;
+        init();
+    }
+
+    private void init() {
+        ssf_content = new StringBuilder(subject_id).append(FIELD_BREAKER);        
+    }
+    
+    // Append this field to the specific field content of this subject.
+    public void appendSpecificField(String field) {
+        ssf_content.append(field).append(FIELD_BREAKER);
+    }
+    
+    // Return the specific field content as a string.
+    public String getSsf_content() {
+        return ssf_content.toString();
     }
 
     // Convert the dat from byte[] to hashmap using the list of column name
