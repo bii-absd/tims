@@ -411,8 +411,15 @@ public class DashboardBean implements Serializable {
         Set<String> dist_sf1_set = new THashSet<>();
         // Build the list of distinct value of specific field one.
         for (SubjectDetail sd : subjectDetailList) {
-            dist_sf1_set.add(sd.retrieveDataFromHashMap(sf1));
+            if (sd.retrieveDataFromHashMap(sf1) != null &&
+                !sd.retrieveDataFromHashMap(sf1).isEmpty()) {
+                    dist_sf1_set.add(sd.retrieveDataFromHashMap(sf1));
+            }
         }
+        // Add a default category for empty field.
+        dist_sf1_set.add(Constants.EMPTY_STR);
+        // Remove DNC from specific field 1.
+        dist_sf1_set.remove(DNC);
         // Specific Field 1 -> (Specific Field 2 -> Count)
         LinkedHashMap<String, TObjectIntHashMap<String>> data_hashmap = 
                                                         new LinkedHashMap<>();
@@ -421,17 +428,24 @@ public class DashboardBean implements Serializable {
         }
         // Fill up the data points.
         for (SubjectDetail sd : subjectDetailList) {
-            if (sd.retrieveDataFromHashMap(sf2) != null &&
-                !sd.retrieveDataFromHashMap(sf2).isEmpty() ) 
-            {
-                data_hashmap.get(sd.retrieveDataFromHashMap(sf1)).adjustOrPutValue
-                    (sd.retrieveDataFromHashMap(sf2), 1, 1);
-            }
-            else {
-                // For those specific field with no value; tally them too under
-                // tag "EMPTY".
-                data_hashmap.get(sd.retrieveDataFromHashMap(sf1)).adjustOrPutValue
-                    ("EMPTY", 1, 1);
+            // Skip those DNC value in specific field 1.
+            if (!sd.retrieveDataFromHashMap(sf1).equals(DNC)) {
+                // Tally those empty specific field 1 under the tag EMPTY_STR.
+                String SF1 = sd.retrieveDataFromHashMap(sf1).isEmpty()?
+                        Constants.EMPTY_STR:sd.retrieveDataFromHashMap(sf1);
+                if (sd.retrieveDataFromHashMap(sf2) != null &&
+                    !sd.retrieveDataFromHashMap(sf2).isEmpty() ) 
+                {
+                    if (!sd.retrieveDataFromHashMap(sf2).equals(DNC)) {
+                        // Remove DNC from specific field 2.
+                        data_hashmap.get(SF1).adjustOrPutValue
+                            (sd.retrieveDataFromHashMap(sf2), 1, 1);
+                    }
+                }
+                else {
+                    data_hashmap.get(SF1).adjustOrPutValue
+                        (Constants.EMPTY_STR, 1, 1);
+                }
             }
         }
         
@@ -453,14 +467,16 @@ public class DashboardBean implements Serializable {
             if (sd.retrieveDataFromHashMap(sf_name) != null &&
                 !sd.retrieveDataFromHashMap(sf_name).isEmpty() ) 
             {
-                data_hashmap.get(sd.getCoreData(cd_name)).adjustOrPutValue
-                    (sd.retrieveDataFromHashMap(sf_name), 1, 1);
+                // Remove DNC from specific field.
+                if (!sd.retrieveDataFromHashMap(sf_name).equals(DNC)) {
+                    data_hashmap.get(sd.getCoreData(cd_name)).adjustOrPutValue
+                        (sd.retrieveDataFromHashMap(sf_name), 1, 1);
+                }
             }
             else {
-                // For those specific field with no value; tally them too under
-                // tag "EMPTY".
+                // Tally those empty specific field under the tag EMPTY_STR.
                 data_hashmap.get(sd.getCoreData(cd_name)).adjustOrPutValue
-                    ("EMPTY", 1, 1);
+                    (Constants.EMPTY_STR, 1, 1);
             }
         }
 
@@ -588,7 +604,11 @@ public class DashboardBean implements Serializable {
         TObjectIntHashMap<String> series_tally = new TObjectIntHashMap<>();
         // Tally the count for each unique series name for this field.
         for (SubjectDetail subject : subjectDetailList) {
-            series_tally.adjustOrPutValue(subject.retrieveDataFromHashMap(field), 1, 1);
+            if (!subject.retrieveDataFromHashMap(field).equals(DNC)) {
+                // Remove DNC.
+                series_tally.adjustOrPutValue(subject.
+                        retrieveDataFromHashMap(field), 1, 1);
+            }
         }
         
         PieChartDataObject pco = new PieChartDataObject(title);

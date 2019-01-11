@@ -1,5 +1,5 @@
 /*
- * Copyright @2015-2018
+ * Copyright @2015-2019
  */
 package TIMS.General;
 
@@ -120,6 +120,8 @@ import org.apache.logging.log4j.LogManager;
  * and DEL_SSF for Dashboard module.
  * 19-Nov-2018 - Added one new constant UPD_DS for dashboard data source
  * configurable module.
+ * 11-Jan-2019 - Added one new constant EMPTY_STR for empty field in dashboard
+ * module.
  */
 
 @ManagedBean (name = "constants")
@@ -139,6 +141,7 @@ public class Constants {
     public final static String FALSE = "false";
     public final static String NONE = "none";
     public final static String FAILED = "FAILED";
+    public final static String EMPTY_STR = "EMPTY";
     // Categories of activity.
     public final static String LOG_IN = "Login";
     public final static String LOG_OFF = "Logoff";
