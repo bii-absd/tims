@@ -1,12 +1,14 @@
 /*
- * Copyright @2017-2018
+ * Copyright @2017-2019
  */
 package TIMS.Bean;
 
+import TIMS.Database.PipelineDB;
 import TIMS.General.Constants;
 import TIMS.General.ResourceRetriever;
 // Library for Java
 import java.io.File;
+import java.util.List;
 // Libraries for Java Extension
 import javax.inject.Named;
 import javax.annotation.PostConstruct;
@@ -27,9 +29,10 @@ import org.omnifaces.cdi.ViewScoped;
  * retrieveRawDataFileList() methods, and created a new method getIntFileName().
  * 28-Aug-2018 - To replace JSF managed bean with CDI, and JSF ViewScoped with
  * omnifaces's ViewScoped.
+ * 18-Jan-2019 - Added method getAllFilenameFromAnnot(), as for Somatic 
+ * pipeline, there are 2 sample files for each subject.
  */
 
-//@ManagedBean (name="GatkTarBean")
 @Named("GatkTarBean")
 @ViewScoped
 public class GATKTargetedBean extends GEXAffymetrixBean {
@@ -39,6 +42,15 @@ public class GATKTargetedBean extends GEXAffymetrixBean {
         logger.debug("GATKTargetedBean created.");
     }
     
+    @Override
+    public List<String> getAllFilenameFromAnnot() {
+        if (pipelineName.equals(PipelineDB.GATK_TAR_SOMA)) {
+            return getFilenamePairsFromAnnot();
+        } else {
+            return super.getAllFilenameFromAnnot();
+        }
+    }
+
     @Override
     @PostConstruct
     public void initFiles() {

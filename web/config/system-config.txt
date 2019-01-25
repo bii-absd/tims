@@ -37,6 +37,8 @@ CONTROL_FILE_NAME CONTROL_PROBE
 CONTROL_FILE_EXT .txt
 INTERVAL_FILE_NAME INTERVAL
 INTERVAL_FILE_EXT .bed
+GTF_FILE_NAME GTF_FILE
+GTF_FILE_EXT .gtf
 # The below defines the server name, database name and database driver.
 # Naming convention for the DB if using DataSource to get the DB connection.
 SERVER_NAME localhost

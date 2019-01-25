@@ -8,6 +8,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 // Library for Java-Prolog Interface
 import org.jpl7.Query;
+import org.jpl7.Term;
 
 /**
  * PrologHelper is an abstract class and not mean to be instantiate, its main 
@@ -63,9 +64,8 @@ public abstract class PrologHelper {
     // to be run first before user can query the Prolog database.
     public static boolean createMetaRecordValidationDatabase() {
         String create = "assert";
-        // TESTING!
-//        Term swi = Query.oneSolution("current_prolog_flag(version_data,Swi)").get("Swi");
-//        logger.info("swipl.version = " + swi.arg(1) + "." + swi.arg(2) + "." + swi.arg(3));
+        Term swi = Query.oneSolution("current_prolog_flag(version_data,Swi)").get("Swi");
+        logger.info("swipl.version = " + swi.arg(1) + "." + swi.arg(2) + "." + swi.arg(3));
         
         return Query.hasSolution(create + rule_1) && Query.hasSolution(create + fact_1) && 
                Query.hasSolution(create + fact_2) && Query.hasSolution(create + fact_3) && 

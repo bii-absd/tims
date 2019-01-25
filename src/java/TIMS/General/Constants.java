@@ -122,6 +122,8 @@ import org.apache.logging.log4j.LogManager;
  * configurable module.
  * 11-Jan-2019 - Added one new constant EMPTY_STR for empty field in dashboard
  * module.
+ * 24-Jan-2019 - Added two new constants GTF_FILE_NAME and GTF_FILE_EXT for GTF
+ * file uploaded in RNA Seq pipeline.
  */
 
 @ManagedBean (name = "constants")
@@ -219,6 +221,8 @@ public class Constants {
     private static String CONTROL_FILE_EXT = null;
     private static String INTERVAL_FILE_NAME = null;
     private static String INTERVAL_FILE_EXT = null;
+    private static String GTF_FILE_NAME = null;
+    private static String GTF_FILE_EXT = null;
     // Constants used in server and database setup
     private static String SERVER_NAME = null;
     private static String DATABASE_NAME = null;
@@ -293,6 +297,8 @@ public class Constants {
             CONTROL_FILE_EXT = setup.get("CONTROL_FILE_EXT");
             INTERVAL_FILE_NAME = setup.get("INTERVAL_FILE_NAME");
             INTERVAL_FILE_EXT = setup.get("INTERVAL_FILE_EXT");
+            GTF_FILE_NAME = setup.get("GTF_FILE_NAME");
+            GTF_FILE_EXT = setup.get("GTF_FILE_EXT");
             SERVER_NAME = setup.get("SERVER_NAME");
             DATABASE_NAME = setup.get("DATABASE_NAME");
             DATABASE_DRIVER = setup.get("DATABASE_DRIVER");
@@ -364,6 +370,8 @@ public class Constants {
     public static String getCONTROL_FILE_EXT() { return CONTROL_FILE_EXT; }
     public static String getINTERVAL_FILE_NAME() { return INTERVAL_FILE_NAME; }
     public static String getINTERVAL_FILE_EXT() { return INTERVAL_FILE_EXT; }
+    public static String getGTF_FILE_NAME() { return GTF_FILE_NAME; }
+    public static String getGTF_FILE_EXT() { return GTF_FILE_EXT; }
     public static String getSERVER_NAME() { return SERVER_NAME; }
     public static String getDATABASE_NAME() { return DATABASE_NAME; }
     public static String getDATABASE_DRIVER() { return DATABASE_DRIVER; }

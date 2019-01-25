@@ -16,7 +16,7 @@
                 <p:fileUpload mode="advanced" multiple="true"
                               update="uploadStatus" sequential="true"
                               label="#{msg['config-selsam']}"
-                              allowTypes="/(\.|\/)(txt)$/" onstart="b4upload()"
+                              allowTypes="/(\.|\/)(bam)$/" onstart="b4upload()"
                               fileUploadListener="#{seqrnaBean.inputFile.multipleFileUploadListener}"/>
                 <p:inputText id="inputdescription" 
                              value="#{seqrnaBean.inputFileDesc}" 
@@ -27,6 +27,12 @@
             </p:panel>
             <p:separator styleClass="configsep"/>
 
+            <p:panel id="gtfFile" visible="#{seqrnaBean.haveNewData}" header="#{msg['config-ulgtf']}">
+                <p:fileUpload mode="advanced" update="uploadStatus" 
+                              label="#{msg['config-selgtf']}" 
+                              allowTypes="/(\.|\/)(gtf)$/"
+                              fileUploadListener="#{seqrnaBean.gtfFile.singleFileUploadListener}"/>
+            </p:panel>
             <p:panel id="annotfile" visible="#{seqrnaBean.haveNewData}" header="#{msg['config-ulannot']}">
                 <p:fileUpload mode="advanced" update="uploadStatus"
                               label="#{msg['config-selannot']}"
@@ -183,6 +189,10 @@
                                   value="#{msg['revcfg-annot']}"/>
                     <h:outputText rendered="#{seqrnaBean.haveNewData}" 
                                   value="#{seqrnaBean.sampleFile.inputFilename}"/>
+                    <h:outputText rendered="#{seqrnaBean.haveNewData}" 
+                                  value="#{msg['revcfg-gtf']}"/>
+                    <h:outputText rendered="#{seqrnaBean.haveNewData}" 
+                                  value="#{seqrnaBean.gtfFile.inputFilename}"/>
                     <h:outputText value="#{msg['revcfg-norm']}"/>
                     <h:outputText value="#{seqrnaBean.normalization}"/>
                 </p:panelGrid>

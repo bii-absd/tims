@@ -1,5 +1,5 @@
 /*
- * Copyright @2016-2018
+ * Copyright @2016-2019
  */
 package TIMS.Bean;
 
@@ -21,8 +21,6 @@ import java.util.List;
 // Libraries for Java Extension
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
-//import javax.faces.bean.ManagedBean;
-//import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
 import javax.inject.Named;
 // Libraries for Log4j
@@ -51,9 +49,9 @@ import org.omnifaces.cdi.ViewScoped;
  * 14-Jul-2017 - Changes due to the addition of GATK Sequencing Pipelines.
  * 28-Aug-2018 - To replace JSF managed bean with CDI, and JSF ViewScoped with
  * omnifaces's ViewScoped.
+ * 24-Jan-2019 - Added GTF file for RNA Seq pipeline.
  */
 
-//@ManagedBean (name="RDMgntBean")
 @Named("RDMgntBean")
 @ViewScoped
 public class RawDataManagementBean implements Serializable {
@@ -65,7 +63,7 @@ public class RawDataManagementBean implements Serializable {
     private List<InputData> inputDataList = new ArrayList<>();
     private InputData selectedInput = null;
     // Input files that will be uploaded by the users.
-    private final FileUploadBean inputFile, ctrlFile, intFile, annotFile;
+    private final FileUploadBean inputFile, ctrlFile, intFile, gtfFile, annotFile;
     // Input file description.
     private String inputFileDesc;
     // Sample file(s) list for new and replace.
@@ -103,6 +101,13 @@ public class RawDataManagementBean implements Serializable {
         else {
             intFile = null;
         }
+        if (getGtfFileStatus()) {
+            gtfFile = new FileUploadBean(tmpDir);
+        }
+        else {
+            gtfFile = null;
+        }
+        
         logger.debug(userName + ": access Raw Data Management page.");
     }
     
@@ -171,6 +176,10 @@ public class RawDataManagementBean implements Serializable {
         if (getIntervalFileStatus()) {
             intFile.resetFileBean();
         }
+        if (getGtfFileStatus()) {
+            gtfFile.resetFileBean();
+        }
+        
         // Delete all the uploaded files.
         deleteTempDir();
     }
@@ -277,6 +286,21 @@ public class RawDataManagementBean implements Serializable {
                 logger.info("New interval file saved.");
             }
         }
+        // if a new gtf file has been uploaded, backup the original gtf file, 
+        // move and rename the new gtf file to the input data directory.
+        if (getGtfFileStatus()) {
+            if (!gtfFile.isFilelistEmpty()) {
+                String gtfFilename = Constants.getGTF_FILE_NAME()
+                                   + Constants.getGTF_FILE_EXT();
+                // Backup the original gtf file.
+                FileHelper.moveFile(destDir + gtfFilename, 
+                                    destDir + gtfFilename + ext);
+                // Move and rename the new gtf file.
+                FileHelper.moveFile(tmpDir + gtfFile.getInputFilename(), 
+                                    destDir + gtfFilename);
+                logger.info("New gtf file saved.");
+            }
+        }        
         // If a new annotation file has been uploaded, backup the original 
         // annotation file, move and rename the new annotation file to the input
         // data directory.
@@ -312,6 +336,7 @@ public class RawDataManagementBean implements Serializable {
             case PipelineDB.GATK_TAR_SOMA:
             case PipelineDB.GATK_WG_GERM:
             case PipelineDB.GATK_WG_SOMA:
+            case PipelineDB.SEQ_RNA:
                 filter = "/(\\.|\\/)(bam)$/";
                 break;
         }
@@ -329,6 +354,11 @@ public class RawDataManagementBean implements Serializable {
     public boolean getControlFileStatus() {
         return (plName.equals(PipelineDB.CNV_ILLUMINA) || 
                 plName.equals(PipelineDB.GEX_ILLUMINA));
+    }
+    
+    // Return true if this pipeline has GTF file, else return false.
+    public boolean getGtfFileStatus() {
+        return plName.equals(PipelineDB.SEQ_RNA);
     }
     
     // Called the respective listener based on the pipeline type.
@@ -365,6 +395,9 @@ public class RawDataManagementBean implements Serializable {
     }
     public FileUploadBean getIntFile() {
         return intFile;
+    }
+    public FileUploadBean getGtfFile() {
+        return gtfFile;
     }
     public FileUploadBean getAnnotFile() {
         return annotFile;

@@ -142,8 +142,6 @@ public class MetaDataManagementBean implements Serializable {
     // Store the study's subject record that we are managing.
     private List<SubjectDetail> subtDetailList, filteredSubtDetailList;
     private final String userName, study_id;
-    // Store the Excel sheet column name into colNameTM to get it sorted.
-//    private TreeMap<String, String> colNameTM = new TreeMap<>();
     // Keep the unsorted column name list for later processing.
     private List<String> unsortedColNameL = new ArrayList<>();
     // Tracker for data quality status during data upload.
@@ -282,6 +280,7 @@ public class MetaDataManagementBean implements Serializable {
             // error message.
             throw new java.lang.RuntimeException("Fail to create meta records from Excel File!");
         }
+        logger.debug("Total records uploaded: " + recordsLHS.size());
     }
     
     // Core data will be stored and display separately; remove them from the 
@@ -368,9 +367,6 @@ public class MetaDataManagementBean implements Serializable {
     public void ssFieldsUpload(FileUploadEvent event) {
         UploadedFile uFile = event.getFile();
         LinkedHashMap<String, List<String>> ssFields_hashmap = new LinkedHashMap<>();
-//        String localDir = Constants.getSYSTEM_PATH() 
-//                        + Constants.getTMP_PATH() 
-//                        + uFile.getFileName();
         StringBuilder localDir = new StringBuilder(Constants.getSYSTEM_PATH()).
                 append(Constants.getTMP_PATH()).append(uFile.getFileName());
 
@@ -456,27 +452,14 @@ public class MetaDataManagementBean implements Serializable {
                 throw new java.lang.RuntimeException("Missing core data columns!");
             }
             
-            // Reset colNameTM before constructing.
-//            colNameTM.clear();
-            // Store the column name as sorted, so that the order of the column
-            // will not matter.
-//            for (String colData : unsortedColNameL) {
-//                colNameTM.put(colData, colData);
-//            }
-            
             // 3. Create the Meta Records using data from the Excel sheet.
             createMetaRecordsFromExcel(localDir.toString());
             // Remove core data column ID from the list.
             cleanupColNameL();
             // AFTER HERE, UNSORTEDCOLNAMEL IS NO LONGER IN USE!
 
-            // Remove core data from the column name since they will be stored 
-            // and display separately.
-//            colNameTM = removeCoreData(colNameTM);
-
             // 4. Compare the column name from current upload with the one
             // stored in database.
-//            List<String> sortedColNameL = new ArrayList<>(colNameTM.keySet());
             List<String> sortedColNameL = new ArrayList<>(unsortedColNameL);
             Collections.sort(sortedColNameL);
             // Retrieve the column name list from database.
@@ -595,7 +578,6 @@ public class MetaDataManagementBean implements Serializable {
         List<String> sortedColNameL = null;
         
         if (FIRST_UPLOAD) {
-//            sortedColNameL = new ArrayList<>(colNameTM.keySet());
             sortedColNameL = new ArrayList<>(unsortedColNameL);
             Collections.sort(sortedColNameL);
         }
@@ -727,29 +709,6 @@ public class MetaDataManagementBean implements Serializable {
     private RequestContext getRequestContext() {
         return RequestContext.getCurrentInstance();
     }
-    
-    /* NOT IN USE!
-    // Return true if the string represent a number, else return false.
-    private boolean isInteger(String str) {
-        try {
-            Integer.parseInt(str);
-            return true;
-        }
-        catch (NumberFormatException nfe) {
-            return false;
-        }
-    }
-    // Return true if the string represent a float, else return false.
-    private boolean isFloat(String str) {
-        try {
-            Float.parseFloat(str);
-            return true;
-        }
-        catch (NumberFormatException nfe) {
-            return false;
-        }        
-    }
-    */
     
     // Return the wording to be display at the link under the BreadCrumb in the
     // Clinical Data Management page.

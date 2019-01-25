@@ -1,5 +1,5 @@
 /*
- * Copyright @2015-2018
+ * Copyright @2015-2019
  */
 package TIMS.Bean;
 
@@ -137,6 +137,7 @@ import org.apache.logging.log4j.LogManager;
  * job status to failed.
  * 15-May-2018 - Don't create the dummy files for pipeline output and detail
  * after submitting jobs.
+ * 24-Jan-2019 - Added GTF file for RNA Seq pipeline.
  */
 
 public abstract class ConfigBean implements Serializable {
@@ -167,8 +168,8 @@ public abstract class ConfigBean implements Serializable {
     private boolean jobSubmissionStatus;
     // Pipeline output, report and config filename
     protected String pipelineOutput, detailOutput, pipelineReport, pipelineConfig;
-    // Pipeline input, control, interval and sample annotation filename
-    protected String input, ctrl, interval, sample;
+    // Pipeline input, control, interval, gtf and sample annotation filename
+    protected String input, ctrl, interval, gtf, sample;
     // List of input data belonging to the study, that are available for reuse.
     private List<InputData> inputDataList = new ArrayList<>();
     protected InputData selectedInput;
@@ -498,6 +499,7 @@ public abstract class ConfigBean implements Serializable {
                      "\nCTRL_FILE\t=\t" + ctrl +
                      "\nSAMPLES_ANNOT_FILE\t=\t" + sample + 
                      "\nINTERVAL_FILE\t=\t" + interval +
+                     "\nGTF_FILE\t=\t" + gtf +
                      "\nEXCLUDE_FILES\t=\t" + exclFileSB.toString() + "\n\n");
 
             fw.write("### PROCESSING parameters\n" +
@@ -739,8 +741,8 @@ public abstract class ConfigBean implements Serializable {
         return (selectedInput == null);
     }
     
-    // Helper function to exclude the annotation, control and interval files 
-    // from the raw data file list.
+    // Helper function to exclude the annotation, control, interval and gtf 
+    // files from the raw data file list.
     protected void filterRawDataFileList() {
         File[] fList = FileHelper.getFilesWithExt(selectedInput.getFilepath(), rdFileExt);
         List<String> fNameList = new ArrayList<>();
@@ -762,7 +764,9 @@ public abstract class ConfigBean implements Serializable {
                 filename.equals(Constants.getCONTROL_FILE_NAME() + 
                                 Constants.getCONTROL_FILE_EXT()) ||
                 filename.equals(Constants.getINTERVAL_FILE_NAME() +
-                                Constants.getINTERVAL_FILE_EXT())) ) {
+                                Constants.getINTERVAL_FILE_EXT()) ||
+                filename.equals(Constants.getGTF_FILE_NAME() + 
+                                Constants.getGTF_FILE_EXT())) ) {
                 fileList.add(new ExcludeFileName(index++, filename));
             }
         }

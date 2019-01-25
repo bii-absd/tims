@@ -65,6 +65,12 @@
                               allowTypes="/(\.|\/)(bed)$/" 
                               label="#{msg['config-selint']}" 
                               fileUploadListener="#{RDMgntBean.intFile.singleFileUploadListener}"/>
+                <p:separator styleClass="configsep" rendered="#{RDMgntBean.gtfFileStatus}"/>
+                <p:fileUpload mode="advanced" update="uploadStatus" 
+                              rendered="#{RDMgntBean.gtfFileStatus}"
+                              allowTypes="/(\.|\/)(gtf)$/" 
+                              label="#{msg['config-selgtf']}" 
+                              fileUploadListener="#{RDMgntBean.gtfFile.singleFileUploadListener}"/>
                 <p:separator styleClass="configsep" rendered="#{RDMgntBean.inputSelectedStatus}"/>
                 <p:fileUpload mode="advanced" update="uploadStatus" label="#{msg['config-selannot']}" 
                               fileUploadListener="#{RDMgntBean.annotFile.singleFileUploadListener}"/>
@@ -108,7 +114,11 @@
                     <h:outputText rendered="#{RDMgntBean.intervalFileStatus}" 
                                   value="Replacing Interval File"/>
                     <h:outputText rendered="#{RDMgntBean.intervalFileStatus}" 
-                                  value="#{RDMgntBean.intFile.inputFilenameForRDM}"/>                    
+                                  value="#{RDMgntBean.intFile.inputFilenameForRDM}"/>
+                    <h:outputText rendered="#{RDMgntBean.gtfFileStatus}" 
+                                  value="Replacing Transcript Annotation File"/>
+                    <h:outputText rendered="#{RDMgntBean.gtfFileStatus}" 
+                                  value="#{RDMgntBean.gtfFile.inputFilenameForRDM}"/>
                     <h:outputText value="Replacing Annotation File"/>
                     <h:outputText value="#{RDMgntBean.annotFile.inputFilenameForRDM}"/>
                 </p:panelGrid>
