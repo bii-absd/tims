@@ -5,6 +5,12 @@
                  presentation of the xhtml web pages found in the application.
 */
 
+/* Style defined for the dock position to be fixed.
+*/
+.ui-dock-bottom {
+    position: fixed !important;
+}
+
 /* Style defined for displaying the datalist items in the dialog for both
    gex-affymetrix and gex-illumina views.
 */

@@ -310,7 +310,7 @@ public abstract class FileHelper {
                 line.delete(0, line.length());
                 // Write the record for each subject.
                 for (SubjectDetail subj : subjectDetailList) {
-                    List<String> record = FileHelper.convertByteArrayToList(subj.getDat());
+                    List<String> record = convertByteArrayToList(subj.getDat());
                     
                     line.append(subj.getSubject_id()).append("|").
                          append(subj.getDob()).append("|").

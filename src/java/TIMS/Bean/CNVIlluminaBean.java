@@ -63,6 +63,7 @@ import org.omnifaces.cdi.ViewScoped;
  * 08-Feb-2017 - Renamed from CNVPipelineBean to CNVIlluminaBean.
  * 28-Aug-2018 - To replace JSF managed bean with CDI, and JSF ViewScoped with
  * omnifaces's ViewScoped.
+ * 31-Jan-2019 - To use a common input directory for all newly uploaded raw data.
  */
 
 //@ManagedBean (name="cnvIlluBean")
@@ -83,10 +84,7 @@ public class CNVIlluminaBean extends GEXAffymetrixBean {
         rdFileExt = "txt";
         
         if (haveNewData) {
-            String dir = Constants.getSYSTEM_PATH() + Constants.getINPUT_PATH() 
-                       + studyID + File.separator 
-                       + submitTimeInFilename + File.separator;
-            ctrlFile = new FileUploadBean(dir);            
+            ctrlFile = new FileUploadBean(inputDir);
         }
     }
 

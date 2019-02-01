@@ -31,6 +31,7 @@ import org.omnifaces.cdi.ViewScoped;
  * omnifaces's ViewScoped.
  * 18-Jan-2019 - Added method getAllFilenameFromAnnot(), as for Somatic 
  * pipeline, there are 2 sample files for each subject.
+ * 31-Jan-2019 - To use a common input directory for all newly uploaded raw data.
  */
 
 @Named("GatkTarBean")
@@ -61,10 +62,7 @@ public class GATKTargetedBean extends GEXAffymetrixBean {
         variantDepth = 10;
         
         if (haveNewData) {
-            String dir = Constants.getSYSTEM_PATH() + Constants.getINPUT_PATH() 
-                       + studyID + File.separator 
-                       + submitTimeInFilename + File.separator;
-            intFile = new FileUploadBean(dir);
+            intFile = new FileUploadBean(inputDir);
         }
     }
     

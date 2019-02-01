@@ -14,7 +14,7 @@
     <p:accordionPanel id="acPanel" rendered="#{authBean.administrator}">
         <p:tab id="editStudyMI" title="Edit Study Main Info" titleStyleClass="tab-title">
         <h:form id="editStudyMIForm">
-            <p:dataTable var="study" rows="10" id="studyTable" 
+            <p:dataTable var="study" rows="5" id="studyTable" 
                          value="#{studyMgntBean.studyList}" paginator="true"
                          paginatorTemplate="{FirstPageLink} {PreviousPageLink}
                          {CurrentPageReport} {NextPageLink} {LastPageLink}"
@@ -110,7 +110,7 @@
                title="Edit Study Description|Background|Grant Information (aka DBGI)" 
                titleStyleClass="tab-title">
             <h:form id="editStudyDBGIForm">
-                <p:dataTable var="study" rows="10" id="studyDBGITable" 
+                <p:dataTable var="study" rows="5" id="studyDBGITable" 
                              value="#{studyMgntBean.studyList}" paginator="true"
                              paginatorTemplate="{FirstPageLink} {PreviousPageLink}
                              {CurrentPageReport} {NextPageLink} {LastPageLink}"

@@ -235,7 +235,7 @@ public class DataDepositor extends Thread {
                 String zipFile = Constants.getSYSTEM_PATH() + 
                                  Constants.getSTUDIES_PATH() + 
                                  study_id + File.separator +
-                                 Constants.getDETAIL_FILE_NAME() + 
+                                 "finalized_detail" + 
                                  Constants.getZIPFILE_EXT();
                 String[] srcFiles = new String[jobList.size()];
                 int count = 0;

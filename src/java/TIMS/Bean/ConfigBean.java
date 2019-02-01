@@ -138,6 +138,7 @@ import org.apache.logging.log4j.LogManager;
  * 15-May-2018 - Don't create the dummy files for pipeline output and detail
  * after submitting jobs.
  * 24-Jan-2019 - Added GTF file for RNA Seq pipeline.
+ * 31-Jan-2019 - To use a common input directory for all newly uploaded raw data.
  */
 
 public abstract class ConfigBean implements Serializable {
@@ -170,6 +171,8 @@ public abstract class ConfigBean implements Serializable {
     protected String pipelineOutput, detailOutput, pipelineReport, pipelineConfig;
     // Pipeline input, control, interval, gtf and sample annotation filename
     protected String input, ctrl, interval, gtf, sample;
+    // Store the input directory for the newly uploaded raw data.
+    protected String inputDir;
     // List of input data belonging to the study, that are available for reuse.
     private List<InputData> inputDataList = new ArrayList<>();
     protected InputData selectedInput;
@@ -222,11 +225,12 @@ public abstract class ConfigBean implements Serializable {
         createJobTimestamp();
         
         if (haveNewData) {
-            String dir = Constants.getSYSTEM_PATH() + Constants.getINPUT_PATH() 
+            inputDir = Constants.getSYSTEM_PATH() + Constants.getINPUT_PATH() 
                        + studyID + File.separator 
+                       + pipelineName + "_"
                        + submitTimeInFilename + File.separator;
-            inputFile = new FileUploadBean(dir);
-            sampleFile = new FileUploadBean(dir);
+            inputFile = new FileUploadBean(inputDir);
+            sampleFile = new FileUploadBean(inputDir);
         }
         else {
             inputDataList = inputDB.getIpList(studyID, pipelineName);

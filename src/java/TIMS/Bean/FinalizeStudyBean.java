@@ -6,6 +6,7 @@ package TIMS.Bean;
 import TIMS.Database.ActivityLogDB;
 import TIMS.Database.DataDepositor;
 import TIMS.Database.FinalizingJobEntry;
+import TIMS.Database.PipelineDB;
 import TIMS.Database.StudyDB;
 import TIMS.Database.SubjectRecordDB;
 import TIMS.Database.SubmittedJobDB;
@@ -18,6 +19,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -89,6 +91,8 @@ import org.omnifaces.cdi.ViewScoped;
  * data will be break off.
  * 28-Aug-2018 - To replace JSF managed bean with CDI, and JSF ViewScoped with
  * omnifaces's ViewScoped.
+ * 29-Jan-2019 - GATK pipelines output are not ready for finalizing yet; remove
+ * them for the selection list.
  */
 
 //@ManagedBean (name="finalizedBean")
@@ -112,7 +116,11 @@ public class FinalizeStudyBean implements Serializable {
     private Boolean allowToProceed;
     // Store the user ID of the current PI.
     private final String userName;
-        
+    // GATK pipelines.
+    private final List<String> gatk_pipelines = Arrays.asList
+        (PipelineDB.GATK_TAR_GERM, PipelineDB.GATK_TAR_SOMA, 
+         PipelineDB.GATK_WG_GERM, PipelineDB.GATK_WG_SOMA);
+    
     public FinalizeStudyBean() {
         userName = (String) FacesContext.getCurrentInstance().
                 getExternalContext().getSessionMap().get("User");
@@ -305,6 +313,9 @@ public class FinalizeStudyBean implements Serializable {
     private void buildLists() {
         int index = 0;
         plList = SubmittedJobDB.getCompletedPlNameInStudy(study_id);
+        // GATK pipelines output are not ready for finalizing yet; remove them.
+        plList.removeAll(gatk_pipelines);
+        logger.debug("Filter pipeline list: " + plList.toString());
         
         for (String pipeline : plList) {
             jobEntryLists.add(index++, SubmittedJobDB.

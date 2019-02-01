@@ -28,6 +28,7 @@ import org.omnifaces.cdi.ViewScoped;
  * 18-Jan-2018 - Removed method getAllFilenameFromAnnot(); no longer needed as
  * each subject will only have one sample file. Sample file extension changed
  * to bam. Added GTF file for RNA Seq pipeline.
+ * 31-Jan-2019 - To use a common input directory for all newly uploaded raw data.
  */
 
 //@ManagedBean (name="seqrnaBean")
@@ -48,10 +49,7 @@ public class SeqRNABean extends GEXAffymetrixBean {
         rdFileExt = "bam";
         
         if (haveNewData) {
-            String dir = Constants.getSYSTEM_PATH() + Constants.getINPUT_PATH() 
-                       + studyID + File.separator 
-                       + submitTimeInFilename + File.separator;
-            gtfFile = new FileUploadBean(dir);
+            gtfFile = new FileUploadBean(inputDir);
         }
     }
     
