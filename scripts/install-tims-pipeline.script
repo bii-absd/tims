@@ -1,0 +1,607 @@
+#!/bin/bash
+
+### Copyright (C) 2017 A*STAR
+
+### TIMS (Translation Informatics Management System) is an software effort
+### by the ABSD (Analytics of Biological Sequence Data) team in the
+### Bioinformatics Institute (BII), Agency of Science, Technology and Research
+### (A*STAR), Singapore.
+
+### This file is part of TIMS.
+
+### TIMS is free software: you can redistribute it and/or modify
+### it under the terms of the GNU Affero General Public License as
+### published by the Free Software Foundation, either version 3 of the
+### License, or (at your option) any later version.
+
+### This program is distributed in the hope that it will be useful,
+### but WITHOUT ANY WARRANTY; without even the implied warranty of
+### MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+### GNU Affero General Public License for more details.
+
+### You should have received a copy of the GNU Affero General Public License
+### along with this program.  If not, see <http://www.gnu.org/licenses/>
+
+#set -x
+
+date
+
+echo "This installation will take approximately 3 hours...".
+
+sudo apt-get update
+sudo apt-get upgrade
+
+X_PKG=$(dpkg-query -W --showformat='${Status}\n' software-properties-common | grep "install ok installed")
+echo Checking for software-properties-common: $X_PKG
+if [ "" == "$X_PKG" ]; then
+  echo "software-properties-common has not been installed"
+  sudo apt-get -y install software-properties-common
+else
+  echo "Skipping install software-properties-common"
+fi
+
+X_PKG=$(dpkg-query -W --showformat='${Status}\n' python-software-properties | grep "install ok installed")
+echo Checking for python-software-properties: $X_PKG
+if [ "" == "$X_PKG" ]; then
+  echo "python-software-properties has not been installed"
+  sudo apt-get -y install python-software-properties
+else
+  echo "Skipping install python-software-properties"
+fi
+
+X_PKG=$(dpkg-query -W --showformat='${Status}\n' libdb5.3-dev | grep "install ok installed")
+echo Checking for libdb5.3-dev: $X_PKG
+if [ "" == "$X_PKG" ]; then
+  echo "libdb5.3-dev has not been installed"
+  sudo apt-get -y install libdb5.3-dev
+else
+  echo "Skipping install libdb5.3-dev"
+fi
+
+X_PKG=$(dpkg-query -W --showformat='${Status}\n' libxml2 | grep "install ok installed")
+echo Checking for libxml2: $X_PKG
+if [ "" == "$X_PKG" ]; then
+  echo "libxml2 has not been installed"
+  sudo apt-get -y install libxml2
+else
+  echo "Skipping install libxml2"
+fi
+
+X_PKG=$(dpkg-query -W --showformat='${Status}\n' libxml2-dev | grep "install ok installed")
+echo Checking for libxml2-dev: $X_PKG
+if [ "" == "$X_PKG" ]; then
+  echo "libxml2-dev has not been installed"
+  sudo apt-get -y install libxml2-dev
+else
+  echo "Skipping install libxml2-dev"
+fi
+
+X_PKG=$(dpkg-query -W --showformat='${Status}\n' libexpat1 | grep "install ok installed")
+echo Checking for libexpat1: $X_PKG
+if [ "" == "$X_PKG" ]; then
+  echo "libexpat1 has not been installed"
+  sudo apt-get -y install libexpat1
+else
+  echo "Skipping install libexpat1"
+fi
+
+X_PKG=$(dpkg-query -W --showformat='${Status}\n' libexpat1-dev | grep "install ok installed")
+echo Checking for libexpat1-dev: $X_PKG
+if [ "" == "$X_PKG" ]; then
+  echo "libexpat1-dev has not been installed"
+  sudo apt-get -y install libexpat1-dev
+else
+  echo "Skipping install libexpat1-dev"
+fi
+
+X_PKG=$(dpkg-query -W --showformat='${Status}\n' libssl-dev | grep "install ok installed")
+echo Checking for libssl-dev: $X_PKG
+if [ "" == "$X_PKG" ]; then
+  echo "libssl-dev has not been installed"
+  sudo apt-get -y install libssl-dev
+else
+  echo "Skipping install libssl-dev"
+fi
+
+X_PKG=$(dpkg-query -W --showformat='${Status}\n' libcurl4-openssl-dev | grep "install ok installed")
+echo Checking for libcurl4-openssl-dev: $X_PKG
+if [ "" == "$X_PKG" ]; then
+  echo "libcurl4-openssl-dev has not been installed"
+  sudo apt-get -y install libcurl4-openssl-dev
+else
+  echo "Skipping install libcurl4-openssl-dev"
+fi
+
+X_PKG=$(dpkg-query -W --showformat='${Status}\n' libmysqlclient-dev | grep "install ok installed")
+echo Checking for libmysqlclient-dev: $X_PKG
+if [ "" == "$X_PKG" ]; then
+  echo "libmysqlclient-dev has not been installed"
+  sudo apt-get -y install libmysqlclient-dev
+else
+  echo "Skipping install libmysqlclient-dev"
+fi
+
+X_PKG=$(dpkg-query -W --showformat='${Status}\n' graphviz | grep "install ok installed")
+echo Checking for graphviz: $X_PKG
+if [ "" == "$X_PKG" ]; then
+  echo "graphviz has not been installed"
+  sudo apt-get -y install graphviz
+else
+  echo "Skipping install graphviz"
+fi
+
+### Get userid and usergroup
+SUDO_ID=$(id -u -n)
+SUDO_GID=$(id -g -n)
+
+### Create /var/pipelines
+if [ ! -d "/var/pipelines" ]; then
+	sudo mkdir /var/pipelines/
+	echo "Created /var/pipelines/"
+fi
+
+### Change the owner of /var/pipelines/ to "current userid:usergroup"
+sudo chown "$SUDO_ID:$SUDO_GID" /var/pipelines/
+
+
+### Preparing Directories ###
+BASEDIR=/var/pipelines
+WORKDIR=$(echo ~)/tmp_install/
+
+if [ ! -d "$WORKDIR" ]; then
+	mkdir $WORKDIR/
+fi
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd $DIR
+wget http://mendel.bii.a-star.edu.sg/SEQUENCES/TIMS/pipelines.tar.gz
+
+cp $DIR/pipelines.tar.gz $WORKDIR/
+cd $WORKDIR/
+#############################
+
+if [ ! -d "$BASEDIR/TIMS" ]; then
+	mkdir $BASEDIR/TIMS/
+	echo "Creating $BASEDIR/TIMS/ ..."
+	mkdir $BASEDIR/TIMS/bin/
+	echo "Creating $BASEDIR/TIMS/bin/ ..."
+	mkdir $BASEDIR/TIMS/programs/
+	echo "Creating $BASEDIR/TIMS/programs/ ..."
+fi
+
+if [ ! -d "$BASEDIR/TIMS/bin" ]; then
+	mkdir $BASEDIR/TIMS/bin/
+	echo "Creating $BASEDIR/TIMS/bin/ ..."
+fi
+
+if [ ! -d "$BASEDIR/TIMS/programs" ]; then
+	mkdir $BASEDIR/TIMS/programs/
+	echo "Creating $BASEDIR/TIMS/programs/ ..."
+fi
+
+if [ ! -d "$BASEDIR/TIMS/TestData" ]; then
+	mkdir $BASEDIR/TIMS/TestData/
+	echo "Creating $BASEDIR/TIMS/TestData/ ..."
+fi
+
+if [ ! -d "$BASEDIR/TIMS/genome-libraries" ]; then
+	mkdir $BASEDIR/TIMS/genome-libraries/
+	echo "Creating $BASEDIR/TIMS/genome-libraries/ ..."
+fi
+
+
+TIMS_HOME=$BASEDIR/TIMS
+
+
+### Temporarily extract the pipeline's scripts
+cd $WORKDIR/
+tar -xvzf pipelines.tar.gz
+
+### Checking whether curl is installed
+CURL_PKG=$(dpkg-query -W --showformat='${Status}\n' curl | grep "install ok installed")
+echo Checking for curl: $CURL_PKG
+if [ "" == "$CURL_PKG" ]; then
+  echo "curl has not been installed"
+  sudo apt-get -y install curl
+else
+  echo "Skipping install curl"
+fi
+
+### Installing libXp.so
+libxp6_OK=$(dpkg-query -W --showformat='${Status}\n' libxp6 | grep "install ok installed")
+echo Checking for libxp6: $libxp6_OK
+if [ "" == "$libxp6_OK" ]; then
+  echo "libxp6 has not been installed"
+  echo "deb http://security.ubuntu.com/ubuntu precise-security main" > a.txt
+  cat /etc/apt/sources.list a.txt > b.txt
+  sudo mv b.txt /etc/apt/sources.list
+  rm a.txt
+  sudo apt-get install libxp6
+else
+  echo "Skipping install libxp6"
+fi
+
+### Checking whether R is installed
+R_PKG_OK=$(dpkg-query -W --showformat='${Status}\n' r-base | grep "install ok installed")
+echo Checking for R: $R_PKG_OK
+if [ "" == "$R_PKG_OK" ]; then
+  type=$(lsb_release -a | grep ^Codename | perl -ne '{chomp; @f=split(/\t/); print $f[1], "\n";}')
+  echo "R has not been installed"
+  #sudo sh -c 'echo "deb http://cran.rstudio.com/bin/linux/ubuntu $type/"' >> /etc/apt/sources.list
+  echo "deb http://cran.rstudio.com/bin/linux/ubuntu $type/" > a.txt
+  cat /etc/apt/sources.list a.txt > b.txt
+  sudo mv b.txt /etc/apt/sources.list
+  rm a.txt
+  gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys E084DAB9
+  gpg -a --export E084DAB9 | sudo apt-key add -
+  sudo apt-get update
+  sudo apt-get -y install r-base
+else
+  echo "Skipping install r-base"
+fi
+
+### Checking if R can be run
+R_BASE=$(which R)
+testcommand=$($R_BASE --no-save --silent < test/test-Rscript.R)
+if [ $? -eq 0 ]; then
+  echo "Testing R is okay"
+else
+  echo "Testing R failed"
+  exit -1
+fi
+
+### Install R packages
+RSCRIPT_BASE=$(which Rscript)
+sudo -E $RSCRIPT_BASE install-Rpackages.Rscript
+
+### Check R packages are installed successfully
+testcommand=$($R_BASE --no-save --silent < test/test-R-packages.R)
+if [ $? -eq 0 ]; then
+  echo "Testing R packages is okay"
+else
+  echo "Testing R packages failed"
+  exit -1
+fi
+
+### Install PERL5.22.2
+TIMS_PERL_BASE="$BASEDIR/TIMS/perl"
+mkdir -p $TIMS_PERL_BASE
+cd $TIMS_PERL_BASE/
+
+if [ -d $TIMS_PERL_BASE ]; then
+	if [ -f $TIMS_PERL_BASE/perl-5.22.2/bin/perl ]; then
+		echo "perl5.22.2 has been installed... Skipped."
+	else
+		INSTALL_PERL=1
+	fi
+else
+	INSTALL_PERL=1
+fi
+
+if [ $INSTALL_PERL ]; then
+	curl --create-dirs -L -o src/perl-5.22.2.tar.gz http://www.cpan.org/src/5.0/perl-5.22.2.tar.gz
+	cd src/
+	tar -zxf perl-5.22.2.tar.gz
+
+	cd perl-5.22.2/
+	./Configure -des -Dprefix=$TIMS_PERL_BASE/perl-5.22.2 -Dotherlibdirs=$TIMS_PERL_BASE/perl-5.22.2/lib/perl5
+	make
+	make install
+else
+	echo "Skipping installing PERL..."
+fi
+
+### Test if PERL5.22.2 is installed and can be run properly
+PERL_CMD=$TIMS_PERL_BASE/perl-5.22.2/bin/perl
+testcommand=$($PERL_CMD -e '{print "OK\n";}')
+if [ $? -eq 0 ]; then
+  echo "Testing PERL is okay"
+else
+  echo "Testing PERL failed"
+  exit -1
+fi
+
+### Install Docker-CE
+sudo apt-get -y install apt-transport-https ca-certificates
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+sudo apt-key fingerprint 0EBFCD88
+sudo add-apt-repository \
+	"deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+	$(lsb_release -cs) \
+	stable"
+
+sudo apt-get update
+sudo apt-get -y install docker-ce
+
+### Adding userID to the docker group
+sudo usermod -aG docker $SUDO_ID
+
+### Checking if pdflatex has been installed
+LATEX_OK=$(dpkg-query -W --showformat='${Status}\n' texlive-latex-base | grep "install ok installed")
+echo Checking for texlive-latex-base: $LATEX_OK
+if [ "" == "$LATEX_OK" ]; then
+  echo "texlive-latex-base has not been installed"
+  sudo apt-get -y install texlive-latex-base
+else
+  echo "Skipping install texlive-latex-base"
+fi
+
+LATEX_OK=$(dpkg-query -W --showformat='${Status}\n' texlive-fonts-recommended | grep "install ok installed")
+echo Checking for texlive-fonts-recommended: $LATEX_OK
+if [ "" == "$LATEX_OK" ]; then
+  echo "texlive-fonts-recommended has not been installed"
+  sudo apt-get --force-yes --yes install texlive-fonts-recommended
+else
+  echo "Skipping install texlive-fonts-recommended"
+fi
+
+LATEX_OK=$(dpkg-query -W --showformat='${Status}\n' texlive-fonts-extra | grep "install ok installed")
+echo Checking for texlive-fonts-extra: $LATEX_OK
+if [ "" == "$LATEX_OK" ]; then
+  echo "texlive-fonts-extra has not been installed"
+  sudo apt-get --force-yes --yes install texlive-fonts-extra
+else
+  echo "Skipping install texlive-fonts-extra"
+fi
+
+LATEX_OK=$(dpkg-query -W --showformat='${Status}\n' texlive-latex-extra | grep "install ok installed")
+echo Checking for texlive-latex-extra: $LATEX_OK
+if [ "" == "$LATEX_OK" ]; then
+  echo "texlive-latex-extra has not been installed"
+  sudo apt-get --force-yes --yes install texlive-latex-extra
+else
+  echo "Skipping install texlive-latex-extra"
+fi
+
+### Install dependencies for Ensembl API, VEP, OncoKB and other tools used at MSKCC
+$TIMS_PERL_BASE/perl-5.22.2/bin/cpan CGI
+$TIMS_PERL_BASE/perl-5.22.2/bin/cpan DBI
+$TIMS_PERL_BASE/perl-5.22.2/bin/cpan URI
+$TIMS_PERL_BASE/perl-5.22.2/bin/cpan Test::Base
+$TIMS_PERL_BASE/perl-5.22.2/bin/cpan App::cpanminus
+$TIMS_PERL_BASE/perl-5.22.2/bin/cpan IO::Socket::SSL
+$TIMS_PERL_BASE/perl-5.22.2/bin/cpan JSON::Parse
+$TIMS_PERL_BASE/perl-5.22.2/bin/cpan XML::Parser
+$TIMS_PERL_BASE/perl-5.22.2/bin/cpan XML::Simple
+$TIMS_PERL_BASE/perl-5.22.2/bin/cpan LWP
+$TIMS_PERL_BASE/perl-5.22.2/bin/cpan LWP::Simple
+$TIMS_PERL_BASE/perl-5.22.2/bin/cpan LWP::Protocol::https
+$TIMS_PERL_BASE/perl-5.22.2/bin/cpan Archive::Extract
+$TIMS_PERL_BASE/perl-5.22.2/bin/cpan Archive::Tar
+$TIMS_PERL_BASE/perl-5.22.2/bin/cpan Archive::Zip
+$TIMS_PERL_BASE/perl-5.22.2/bin/cpan Time::HiRes
+$TIMS_PERL_BASE/perl-5.22.2/bin/cpan DBD::mysql
+$TIMS_PERL_BASE/perl-5.22.2/bin/cpan Encode
+$TIMS_PERL_BASE/perl-5.22.2/bin/cpan File::Copy::Recursive
+$TIMS_PERL_BASE/perl-5.22.2/bin/cpan Perl::OSType
+$TIMS_PERL_BASE/perl-5.22.2/bin/cpan Module::Metadata
+$TIMS_PERL_BASE/perl-5.22.2/bin/cpan Statistics::Lite
+$TIMS_PERL_BASE/perl-5.22.2/bin/cpan Tie::Autotie
+$TIMS_PERL_BASE/perl-5.22.2/bin/cpan Tie::IxHash
+$TIMS_PERL_BASE/perl-5.22.2/bin/cpan Log::Log4perl
+$TIMS_PERL_BASE/perl-5.22.2/bin/cpan FindBin::Real
+$TIMS_PERL_BASE/perl-5.22.2/bin/cpan Getopt::Long
+$TIMS_PERL_BASE/perl-5.22.2/bin/cpan Catalyst::Runtime
+$TIMS_PERL_BASE/perl-5.22.2/bin/cpan Catalyst::Devel
+$TIMS_PERL_BASE/perl-5.22.2/bin/cpan List::Util
+$TIMS_PERL_BASE/perl-5.22.2/bin/cpan Test::XML::Simple
+$TIMS_PERL_BASE/perl-5.22.2/bin/cpan Test::XPath
+$TIMS_PERL_BASE/perl-5.22.2/bin/cpan IO::String
+##$TIMS_PERL_BASE/perl-5.22.2/bin/cpan Bio::Perl
+$TIMS_PERL_BASE/perl-5.22.2/bin/cpan version
+
+### Install Bio::Root::Version
+$TIMS_PERL_BASE/perl-5.22.2/bin/cpan Bio::Root::Version
+
+### Install some perl packages needed for TIMS pipeline
+$TIMS_PERL_BASE/perl-5.22.2/bin/cpan File::Type
+$TIMS_PERL_BASE/perl-5.22.2/bin/cpan File::Basename
+$TIMS_PERL_BASE/perl-5.22.2/bin/cpan DB_File
+$TIMS_PERL_BASE/perl-5.22.2/bin/cpan Set::IntervalTree
+$TIMS_PERL_BASE/perl-5.22.2/bin/cpan Filesys::Df
+$TIMS_PERL_BASE/perl-5.22.2/bin/cpan Linux::MemInfo
+$TIMS_PERL_BASE/perl-5.22.2/bin/cpan Parallel::ForkManager
+
+######################################
+### Download Database and Programs ###
+######################################
+cd $WORKDIR
+wget http://mendel.bii.a-star.edu.sg/SEQUENCES/TIMS/programs.tar.gz
+wget http://mendel.bii.a-star.edu.sg/SEQUENCES/TIMS/resources.tar.gz
+wget http://mendel.bii.a-star.edu.sg/SEQUENCES/TIMS/docker-resources.tar
+tar -xvzf programs.tar.gz
+tar -xvzf resources.tar.gz
+tar -xvf docker-resources.tar
+
+### Installing Docker Images
+DOCKER_PKG=$(sg docker -c "docker images" | grep broadinstitute/gatk | grep 4.0.8.1)
+echo Checking for broadinstitute/gatk:4.0.8.1: $DOCKER_PKG
+if [ -z "$DOCKER_PKG" ]; then
+	echo "Docker broadinstitute/gatk:4.0.8.1 is not available. Loading..."
+	sg docker -c "docker load -i gatk4.0.8.1.tar.gz"
+else
+	echo "Docker image broadinstitute/gatk:4.0.8.1 is available. Skipping..."
+fi
+
+DOCKER_PKG=$(sg docker -c "docker images" | grep broadinstitute/genomes-in-the-cloud | grep 2.3.0-1501082129)
+echo Checking for broadinstitute/genomes-in-the-cloud:2.3.0-1501082129: $DOCKER_PKG
+if [ -z "$DOCKER_PKG" ]; then
+	echo "Docker broadinstitute/genomes-in-the-cloud:2.3.0-1501082129 is not available. Loading..."
+	sg docker -c "docker load -i gotc-2.3.0.tar.gz"
+else
+	echo "Docker image broadinstitute/genomes-in-the-cloud:2.3.0-1501082129 is available. Skipping..."
+fi
+
+DOCKER_PKG=$(sg docker -c "docker images" | grep python | grep 2.7)
+echo Checking for python2.7: $DOCKER_PKG
+if [ -z "$DOCKER_PKG" ]; then
+	echo "Docker python2.7 is not available. Loading..."
+	sg docker -c "docker load -i python2.7.tar.gz"
+else
+	echo "Docker image python2.7 is available. Skipping..."
+fi
+
+### Installing VEP and .VEP at $BASEDIR
+if [ ! -d "$TIMS_HOME/vep" ]; then
+	mkdir $TIMS_HOME/vep/
+	echo "Creating $TIMS_HOME/vep/ ..."
+fi
+if [ ! -d "$TIMS_HOME/.vep" ]; then
+	mkdir $TIMS_HOME/.vep/
+	echo "Creating $TIMS_HOME/.vep/ ..."
+fi
+
+cd $WORKDIR
+echo "Moving ExAC_nonTCGA.r0.3.1.sites.vep.vcf.gz to $TIMS_HOME/.vep/ ..."
+mv sources/ExAC_nonTCGA.r0.3.1.sites.vep.vcf.gz $TIMS_HOME/.vep/
+echo "Moving ExAC_nonTCGA.r0.3.1.sites.vep.vcf.gz.tbi to $TIMS_HOME/.vep/ ..."
+mv sources/ExAC_nonTCGA.r0.3.1.sites.vep.vcf.gz.tbi $TIMS_HOME/.vep/
+echo "Moving homo_sapiens_86_GRCh37.tar.gz to $TIMS_HOME/.vep/ ..."
+mv sources/homo_sapiens_86_GRCh37.tar.gz $TIMS_HOME/.vep/
+echo "Extracting homo_sapiens_86_GRCh37.tar.gz at $TIMS_HOME/.vep/ ..."
+cd $TIMS_HOME/.vep/
+tar -xvzf homo_sapiens_86_GRCh37.tar.gz
+rm homo_sapiens_86_GRCh37.tar.gz
+
+### Back to $WORKDIR
+cd $WORKDIR
+
+### Moving programs
+echo "Moving picard.jar to $TIMS_HOME/programs/ ..."
+mv sources/picard.jar $TIMS_HOME/programs/
+echo "Moving gatk-package-4.0.8.1-local.jar to $TIMS_HOME/programs/ ..."
+mv sources/gatk-package-4.0.8.1-local.jar $TIMS_HOME/programs/
+echo "Moving vcf2maf-1.6.12.tar.gz to $TIMS_HOME/programs/ ..."
+mv sources/vcf2maf-1.6.12.tar.gz $TIMS_HOME/programs/
+echo "Moving vep.tar.gz to $TIMS_HOME/ ..."
+mv sources/vep.tar.gz $TIMS_HOME/
+echo "Moving cromwell-34.jar to $TIMS_HOME/programs/ ..."
+mv sources/cromwell-34.jar $TIMS_HOME/programs/
+echo "Moving apt-probeset-summarize to $TIMS_HOME/programs/ ..."
+mv sources/apt-probeset-summarize $TIMS_HOME/programs/
+echo "Moving apt-copynumber-workflow to $TIMS_HOME/programs/ ..."
+mv sources/apt-copynumber-workflow $TIMS_HOME/programs/
+echo "Moving rsem-1.2.21.tar.gz to $TIMS_HOME/programs/ ..."
+mv sources/rsem-1.2.21.tar.gz $TIMS_HOME/programs/
+echo "Moving HTSeq-0.6.1p1.tar.gz to $TIMS_HOME/programs/ ..."
+mv sources/HTSeq-0.6.1p1.tar.gz $TIMS_HOME/programs/
+
+### Extracting programs
+echo "Extracting vcf2maf-1.6.12.tar.gz to $TIMS_HOME/programs/vcf2maf-1.6.12/ ..."
+cd $TIMS_HOME/programs/
+tar -xvzf vcf2maf-1.6.12.tar.gz
+echo "Extracting vep.tar.gz to $TIMS_HOME/vep/ ..."
+cd $TIMS_HOME/
+tar -xvzf vep.tar.gz
+rm vep.tar.gz
+echo "Extracting RSEM to $TIMS_HOME/programs/ ..."
+cd $TIMS_HOME/programs/
+tar -xvzf rsem-1.2.21.tar.gz
+rm rsem-1.2.21.tar.gz
+echo "Extracting HTSeq-0.6.1p1 to $TIMS_HOME/programs/ ..."
+cd $TIMS_HOME/programs/
+tar -xvzf HTSeq-0.6.1p1.tar.gz
+rm HTSeq-0.6.1p1.tar.gz
+
+echo "Moving $TIMS_HOME/vep/htslib/ to $TIMS_HOME/programs/ ..."
+mv $TIMS_HOME/vep/htslib/ $TIMS_HOME/programs/
+echo "Moving $TIMS_HOME/vep/samtools to $TIMS_HOME/programs/ ..."
+mv $TIMS_HOME/vep/samtools/ $TIMS_HOME/programs/
+
+### Add environment variables
+cd $WORKDIR
+./addenv ~/.profile PATH="$""\PATH":$TIMS_HOME/programs/samtools/bin:$TIMS_HOME/programs/htslib/:$TIMS_HOME/vep/bin:$TIMS_HOME/vep:$TIMS_HOME/programs/rsem-1.2.21/:$TIMS_HOME/programs/HTSeq-0.6.1p1/bin/:
+PATH=$(echo $PATH)
+./addenv ~/.profile PATH="$""\PATH":$TIMS_PERL_BASE/perl-5.22.2/bin:.
+./addenv ~/.profile TIMS_HOME=$TIMS_HOME
+
+echo PATH=$PATH
+source ~/.profile
+
+### Testing if vcf2maf is executable
+testcommand=$($PERL_CMD $TIMS_HOME/programs/vcf2maf-1.6.12/vcf2maf.pl --help)
+if [ $? -eq 0 ]; then
+  echo "Testing vcf2maf.pl is okay"
+else
+  echo "Testing vcf2maf.pl failed"
+  exit -1
+fi
+
+### Copying pipelines/
+cd $WORKDIR
+echo "Copying sources/pipelines/ to $TIMS_HOME/bin/ ..."
+cp -R sources/pipelines/* $TIMS_HOME/bin/
+
+if [ $? -eq 0 ]; then
+  echo "Copying pipelines is done..."
+else
+  echo "Copying pipelines failed..."
+  exit -1
+fi
+
+### Moving affy-lib/
+echo "Moving sources/affy-lib/ to $TIMS_HOME/ ..."
+mv sources/affy-lib/ $TIMS_HOME/
+if [ $? -eq 0 ]; then
+  echo "Copying affy-lib is done..."
+else
+  echo "Copying affy-lib failed..."
+  exit -1
+fi
+
+
+### Copying genome-libraries/
+cd $WORKDIR
+echo "Moving sources/genome-libraries/ to $TIMS_HOME/ ..."
+mv sources/genome-libraries/ $TIMS_HOME/
+
+if [ $? -eq 0 ]; then
+  echo "Copying genome-libraries is done..."
+else
+  echo "Copying genome-libraries failed..."
+  exit -1
+fi
+
+echo "PROCESS = $?"
+
+
+
+./addenv ~/.profile PATH="$""\PATH":$TIMS_HOME/bin/seq-pipelines
+./addenv ~/.profile PATH="$""\PATH":$TIMS_HOME/bin/array-pipelines
+./addenv ~/.profile PERL5LIB=$PERL5LIB:$TIMS_HOME/bin/perl-lib/
+
+source ~/.profile
+
+### Create a soft-link to $TIMS_HOME/genome-libraries/ at /genome-libraries/
+cd /
+sudo ln -s $TIMS_HOME/genome-libraries/
+
+### Configure parameters.conf
+cd $WORKDIR
+R_BASE=$(which R)
+R_HOME=$(dirname $R_BASE)
+JAVA_HOME=$(which java)
+PYTHON_HOME=$(which python)
+./replacevalue $TIMS_HOME/bin/conf-files/ngs-parameters.conf TIMS_HOME $TIMS_HOME > $TIMS_HOME/bin/conf-files/parameters.conf.1
+mv $TIMS_HOME/bin/conf-files/parameters.conf.1 $TIMS_HOME/bin/conf-files/ngs-parameters.conf
+./replacevalue $TIMS_HOME/bin/conf-files/ngs-parameters.conf MY_R_HOME $R_HOME > $TIMS_HOME/bin/conf-files/parameters.conf.1
+mv $TIMS_HOME/bin/conf-files/parameters.conf.1 $TIMS_HOME/bin/conf-files/ngs-parameters.conf
+./replacevalue $TIMS_HOME/bin/conf-files/ngs-parameters.conf MY_JAVA_HOME $JAVA_HOME > $TIMS_HOME/bin/conf-files/parameters.conf.1
+mv $TIMS_HOME/bin/conf-files/parameters.conf.1 $TIMS_HOME/bin/conf-files/ngs-parameters.conf
+./replacevalue $TIMS_HOME/bin/conf-files/ngs-parameters.conf MY_PYTHON_HOME $PYTHON_HOME > $TIMS_HOME/bin/conf-files/parameters.conf.1
+mv $TIMS_HOME/bin/conf-files/parameters.conf.1 $TIMS_HOME/bin/conf-files/ngs-parameters.conf
+
+./replacevalue $TIMS_HOME/bin/conf-files/array-parameters.conf TIMS_HOME $TIMS_HOME > $TIMS_HOME/bin/conf-files/array-parameters.conf.1
+mv $TIMS_HOME/bin/conf-files/array-parameters.conf.1 $TIMS_HOME/bin/conf-files/array-parameters.conf
+./replacevalue $TIMS_HOME/bin/conf-files/array-parameters.conf MY_R_HOME $R_HOME > $TIMS_HOME/bin/conf-files/array-parameters.conf.1
+mv $TIMS_HOME/bin/conf-files/array-parameters.conf.1 $TIMS_HOME/bin/conf-files/array-parameters.conf
+
+### Removing all temporarily extracted files
+rm -rf sources/ test/ addenv replacevalue install-Rpackages.Rscript
+cd ~/
+rm -rf tmp_install/
+
+sudo chown -R "$SUDO_ID:$SUDO_GID" /var/pipelines/
+source ~/.profile
+
+date

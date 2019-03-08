@@ -1,6 +1,26 @@
-/*
- * Copyright @2015-2017
- */
+// Copyright (C) 2019 A*STAR
+//
+// TIMS (Translation Informatics Management System) is an software effort 
+// by the ABSD (Analytics of Biological Sequence Data) team in the 
+// Bioinformatics Institute (BII), Agency of Science, Technology and Research 
+// (A*STAR), Singapore.
+//
+
+// This file is part of TIMS.
+// 
+// TIMS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as 
+// published by the Free Software Foundation, either version 3 of the 
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
 package TIMS.Database;
 
 import TIMS.General.Constants;
@@ -11,61 +31,6 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-
-/**
- * SubmittedJob is used to represent the submitted_job table in the database.
- * It contain one extra variable, status_name, which contains the status name
- * of this job.
- * 
- * Author: Tay Wei Hong
- * Date: 01-Oct-2015
- * 
- * Revision History
- * 01-Oct-2015 - Created with all the standard getters and setters.
- * 02-Oct-2015 - Added in one extra variable status_name, and method 
- * getStatus_name.
- * 07-Oct-2015 - Added Log4j2 for this class.
- * 12-Oct-2015 - Added job_id field.
- * 23-Oct-2015 - Added report field.
- * 30-Oct-2015 - Added one new function getAvailable.
- * 30-Nov-2015 - Implementation for database 2.0
- * 05-Jan-2015 - Changes in submitted_job table, removed ctrl_file and annot_
- * file fields. Added input_path field.
- * 12-Jan-2016 - Fix the static variable issues in AuthenticationBean.
- * 14-Jan-2016 - To allow users to download the output and report from 
- * finalized job.
- * 18-Jan-2016 - Changed the type of variable sample_average from String to
- * Boolean.
- * 21-Jan-2016 - Added one new method, getPlDescription() to return the text 
- * description for this pipeline.
- * 03-Feb-2016 - Download link for report will also be enabled for failed job.
- * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
- * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
- * (Institution - Department - Group).
- * 24-Mar-2016 - Added one new attribute complete_time, to record the time when
- * the pipeline completed it's execution.
- * 29-Mar-2016 - Instead of storing the input path, the system will store the 
- * input SN.
- * 11-Apr-2016 - Changes due to the removal of attributes (sample_average, 
- * standardization, region and probe_select) from submitted_job table.
- * 12-Apr-2016 - Changes due to the removal of attributes (probe_filtering and
- * phenotype_column) from submitted_job table. Added 3 methods to check for the
- * availability of chip type, normalization and summarization info.
- * 14-Apr-2016 - Change type for submit_time and complete_time to Timestamp.
- * 19-May-2016 - Added one new attribute detail_output, to store the filepath
- * of the detail output file.
- * 20-Jun-2016 - Added one new attribute cbio_target, to keep track which job
- * output has been exported to cBioPortal for visualization. Added a new
- * Constructor that takes in the ResultSet directly from the database query.
- * 01-Sep-2016 - Implementation for database 3.6 Part II. Removed unused code.
- * Removed method getInputDescrition().
- * 14-Sep-2016 - To check the chip_type, normalization and summarization against
- * null when testing whether is it available. Removed parameter job_id in the 
- * full constructor for pipeline beans.
- * 13-Feb-2017 - To consolidate all the pipeline parameters (i.e. chip_type, 
- * normalization and summarization) into one field (i.e. parameters) in the 
- * database.
- */
 
 public class SubmittedJob implements Serializable {
     private int job_id, status_id, input_sn;

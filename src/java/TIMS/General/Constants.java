@@ -1,6 +1,26 @@
-/*
- * Copyright @2015-2019
- */
+// Copyright (C) 2019 A*STAR
+//
+// TIMS (Translation Informatics Management System) is an software effort 
+// by the ABSD (Analytics of Biological Sequence Data) team in the 
+// Bioinformatics Institute (BII), Agency of Science, Technology and Research 
+// (A*STAR), Singapore.
+//
+
+// This file is part of TIMS.
+// 
+// TIMS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as 
+// published by the Free Software Foundation, either version 3 of the 
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
 package TIMS.General;
 
 import TIMS.Bean.FileUploadBean;
@@ -19,112 +39,6 @@ import javax.faces.bean.ManagedBean;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
-/**
- * Constants is a helper class that store all the constant variables used in the
- * system. The configuration file used to setup the variables will be passed
- * in the setup method.
- * 
- * Author: Tay Wei Hong
- * Date: 18-Sep-2015
- * 
- * Revision History
- * 18-Sep-2015 - Created with all the standard getters and setters.
- * 22-Sep-2015 - Added in the constants for input file, config file and 
- * database. Allow flexible configuration coming from setup file.
- * 28-Sep-2015 - Added in 2 new constants CHECK_VALID and CHECK_INVALID; to be
- * use by authentication process. Defined general constants for success and
- * failure.
- * 30-Sep-2015 - Reading in more constants for array pipeline.
- * 01-Oct-2015 - Added 2 new constants LOGOFF and OUTPUTFILE_PATH.
- * 06-Oct-2015 - Added in comments for the code. Added Log4j2 for this class.
- * 08-Oct-2015 - Changed the scope of this class to application, hence we only
- * need to load from the setup file once only. Added 2 new boolean constants 
- * OK and NOT_OK.
- * 14-Oct-2015 - Using annotation for JSF. Added one new constant ERROR. Moved 
- * the initialization code out of the Constructor.
- * 15-Oct-2015 - Critical error handling.
- * 27-Oct-2015 - Ported to JSF 2.2
- * 30-Oct-2015 - Add 2 new String constants, TRUE and FALSE.
- * 02-Nov-2015 - Changes in the naming convention for all file related 
- * constants. Added one new constant, DIRECTORY_SEPARATOR.
- * 03-Nov-2015 - Added in one new method, getDateTime to return the current date
- * and time. Added one new constant NONE.
- * 04-Nov-2015 - Added one new constant, ACCOUNT_MANAGEMENT.
- * 06-Nov-2015 - Removed COMMAND and DIRECTORY_SEPARATOR constants.
- * 09-Nov-2015 - Added in faces-redirect = true for all the navigation strings.
- * Removed ILLUMINA and AFFYMETRIX constants.
- * 11-Nov-2015 - Added two new constants PAGES_DIR and ACCOUNT_MANAGEMENT_STAY. 
- * Changed the return type of setup method. Changed the value of LOGIN_PAGE.
- * 16-Nov-2015 - Added two new constants PIPELINE_COMMAND_MANAGEMENT and 
- * ITEM_LIST_MANAGEMENT, and deleted constant ACCOUNT_MANAGEMENT_STAY.
- * 01-Dec-2015 - Changed the value of DATABASE_INVALID_STR from null to "NOT
- * FOUND!".
- * 02-Dec-2015 - Implemented the changes in the input folder directory.
- * 07-Dec-2015 - Added one new constant, STUDY_MANAGEMENT. Deleted six 
- * constants, INSERT_SUCCESS, INSERT_FAIL, SUCCESS, FAILURE, CHECK_VALID and 
- * CHECK_INVALID.
- * 14-Dec-2015 - Added one new constant, CLINICAL_DATA_MANAGEMENT.
- * 16-Dec-2015 - Added two new constants, ANNOT_FILE_NAME and ANNOT_FILE_EXT.
- * 22-Dec-2015 - Added two new constants, CONTROL_FILE_NAME and CONTROL_FILE_EXT.
- * 24-Dec-2015 - Added 3 new constants, FINALIZE_PATH, FINALIZE_FILE_NAME and
- * FINALIZE_FILE_EXT.
- * 28-Dec-2015 - Added 2 new constants, FINALIZE_STUDY and COMPLETED_STUDY_OUTPUT.
- * 06-Jan-2016 - Added one new constant, SUMMARY_FILE_EXT. Renamed 
- * FINALIZE_FILE_NAME to SUMMARY_FILE_NAME. Standardize the setup for all 
- * system paths.
- * 11-Jan-2016 - Added 2 new constants, METH_PIPELINE and METH_PIPELINE_PAGE.
- * 19-Jan-2016 - Added 2 new constants, CNV_PIPELINE and CNV_PIPELINE_PAGE.
- * 20-Jan-2016 - Removed all pipeline related constants.
- * 26-Jan-2016 - Added the constants for categories of activity.
- * 29-Jan-2016 - To use a common system setup file for both Windows and Linux OS.
- * 01-Feb-2016 - Added one new constant, JOB_STATUS.
- * 12-Feb-2016 - Added one new constant, EXE_UNFIN.
- * 19-Feb-2016 - Added one new constant, PIC_PATH.
- * 23-Feb-2016 - Changed constant name from ITEM_LIST_MANAGEMENT to 
- * GROUP_MANAGEMENT.
- * 24-Feb-2016 - Added one new constant, STUDIES_REVIEW for studies review page.
- * 01-Mar-2016 - All the system directories will be created during system
- * parameters setup (instead of during user login).
- * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
- * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
- * (Institution - Department - Group).
- * 14-Mar-2016 - Added one new constant, EXE_CLSTUDY; activity code for closing
- * study.
- * 30-Mar-2016 - Renamed CLINICAL_DATA_MANAGEMENT to META_DATA_MANAGEMENT.
- * 13-May-2016 - Added two new constants, TMP_PATH and ZIPFILE_EXT.
- * 19-May-2016 - Added one new constant, DETAIL_FILE_NAME.
- * 04-Jul-2016 - Added 5 new constants, CBIO_PATH, CBIO_CASES, EXP_DAT, VIS_DAT 
- * and FAILED.
- * 21-Jul-2016 - Added one new constant, SET_FTE (i.e. Setup Feature).
- * 25-Aug-2016 - Added one new constant, RAW_DATA_MANAGEMENT.
- * 30-Aug-2016 - Added one new constant CHG_RD, and one new method 
- * getDT_yyyyMMdd_HHmm(). Renamed method getDateTime() to getStandardDT().
- * 05-Sep-2016 - Shorten the name of the constants for annotation file/ext and
- * control file/ext.
- * 22-Sep-2016 - Added one new constant CUS_RD for Raw Data Customization.
- * 23-Nov-2016 - Added one new constant CBIOPORTAL_URL for cBioPortal URL at
- * the UAT/PROD environment.
- * 08-Dec-2016 - Added one new constant UPL_RD for Raw Data Upload.
- * 02-Feb-2017 - Removed constant CBIOPORTAL_URL.
- * 20-Apr-2017 - Added one new constant SERVER_NAME.
- * 17-Jul-2017 - Added two new constants INTERVAL_FILE_NAME and 
- * INTERVAL_FILE_EXT.
- * 06-Oct-2017 - Deleted constant NGS_PAGE. Added one new constant
- * JOB_SELECTION_4V.
- * 23-Apr-2018 - Added 6 new constants STUDIES_PATH, META_QUALITY_FILE_NAME, 
- * META_QUALITY_FILE_EXT, UPL_MD, UPD_MD and DEL_MD. Deleted one
- * constant FINALIZE_PATH.
- * 07-Jun-2018 - Rename and redefine GROUP_MANAGEMENT to WORKUNIT_MANAGEMENT.
- * 06-Jul-2018 - Added five new constants DASHBOARD, UPL_SSF, UPL_CDT, DEL_CDT 
- * and DEL_SSF for Dashboard module.
- * 19-Nov-2018 - Added one new constant UPD_DS for dashboard data source
- * configurable module.
- * 11-Jan-2019 - Added one new constant EMPTY_STR for empty field in dashboard
- * module.
- * 24-Jan-2019 - Added two new constants GTF_FILE_NAME and GTF_FILE_EXT for GTF
- * file uploaded in RNA Seq pipeline.
- */
 
 @ManagedBean (name = "constants")
 @ApplicationScoped

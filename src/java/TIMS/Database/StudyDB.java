@@ -1,6 +1,26 @@
-/*
- * Copyright @2015-2018
- */
+// Copyright (C) 2019 A*STAR
+//
+// TIMS (Translation Informatics Management System) is an software effort 
+// by the ABSD (Analytics of Biological Sequence Data) team in the 
+// Bioinformatics Institute (BII), Agency of Science, Technology and Research 
+// (A*STAR), Singapore.
+//
+
+// This file is part of TIMS.
+// 
+// TIMS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as 
+// published by the Free Software Foundation, either version 3 of the 
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
 package TIMS.Database;
 
 import TIMS.General.Constants;
@@ -20,83 +40,6 @@ import javax.naming.NamingException;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
-/**
- * StudyDB is an abstract class and not mean to be instantiate, its main job 
- * is to perform SQL operations on the study table in the database.
- * 
- * Author: Tay Wei Hong
- * Date: 07-Dec-2015
- * 
- * Revision History
- * 07-Dec-2015 - First baseline with two static methods, insertStudy and 
- * getAnnotHashMap.
- * 11-Dec-2015 - Changed to abstract class. Added 4 methods, updateStudy, 
- * getStudyList, queryStudy and clearStudyList().
- * 17-Dec-2015 - Added new method getStudyAnnotVer, to return the Annotation Version
- * used in the study.
- * 23-Dec-2015 - To close the ResultSet after use. Added 3 new methods, 
- * updateStudyToCompleted, updateStudyFinalizedFile and getFinalizableStudyHash.
- * 30-Dec-2015 - Updated the query in method getStudyHash, to return only
- * uncompleted study.
- * 05-Jan-2016 - Minor changes to method updateStudyCompletedStatus.
- * 07-Jan-2016 - Changes due to 2 addition attributes in Study class. Added
- * new method queryCompletedStudy. Implemented the module for downloading of
- * study's consolidated output and finalized summary.
- * 13-Dec-2016 - Removed all the static variables in Study and ItemList
- * management modules.
- * 19-Jan-2016 - To cater for adhoc study creation i.e. where the study is 
- * created with completed flag set to true.
- * 20-Jan-2016 - Updated study table in database; added one new variable closed, 
- * and renamed completed to finalized.
- * 23-Feb-2016 - Implementation for database 3.0 (Part 1).
- * 24-Feb-2016 - Implemented studies review module.
- * 29-Feb-2016 - Implementation of Data Source pooling. To use DataSource to 
- * get the database connection instead of using DriverManager.
- * 01-Mar-2016 - Changes due to one addition attribute (i.e. title) in Study
- * class.
- * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
- * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
- * (Institution - Department - Group).
- * 14-Mar-2016 - Do not allow user to change the study's closed status directly.
- * Changed method queryAllFinalizedStudies(), to return only those studies that  
- * are finalized and not closed.
- * 22-Mar-2016 - Changes due to the addition field (i.e. icd_code) in the study
- * table.
- * 23-Mar-2016 - Separated the update function for study record; one for the
- * main info and one for the description|background|grant information.
- * 04-Apr-2016 - Implemented one helper function that build the studies hash map
- * for pipeline execution and subject meta data management.
- * 07-Apr-2016 - For subject meta data management, the method used to build the
- * studies hash map will be split into 2 (one for users one for PI).
- * 12-Apr-2016 - Added new method getAllStudyHash(), to return all the unclosed
- * Study ID for administrator selection during raw data upload.
- * 13-May-2016 - Added one new method, zipFinalizedOutput().
- * 19-May-2016 - Changes due to the addition attribute (i.e. detail_files) in
- * Study table.
- * 22-Jun-2016 - Removed unused code. Updated method getFinalizableStudyHash().
- * Added method getVisualizableStudyHash().
- * 04-Jul-2016 - Added 3 new methods, updateStudyCbioUrl(), getCbioURL() and 
- * updateStudyVisualTime(). Renamed updateGeneratedFile() to updateStudyField(). 
- * Enhanced all the updating methods to make use of the helper function. 
- * Updated method getVisualizableStudyHash() to exclude closed study.
- * 07-Jul-2016 - Updated getVisualizableStudyHash(), only allow the study to be 
- * export for visualization once every hour. Added one new method, 
- * resetStudyCbioUrl() to reset the cbio_url to NULL.
- * 25-Aug-2016 - Changed the access level modifier for the helper functions 
- * (i.e. getStudyHash, queryFinalizedStudies & getStudyPropValue) from public
- * to private. Removed unused code. Changed all Boolean variables to boolean.
- * 24-Apr-2017 - Meta data management will be allowed for all studies that are
- * not closed.
- * 06-Apr-2018 - Database version 2.0 changes. Added 2 new columns in study 
- * table; meta_quality_report and data_col_name_list. Added 4 new methods 
- * updateMetaQualityReport, getMetaQualityReportPath, getColumnNameList and 
- * updateStudyColumnNameList. Removed unused code.
- * 19-Jul-2018 - Added one new method getStudyListUnderGroup. Added a group of 
- * methods for study_specific_fields and meta_data_tag tables.
- * 08-Aug-2018 - Added one auto-increment column id in study_specific_fields.
- * 23-Aug-2018 - To allow update to study specific fields.
- */
 
 public abstract class StudyDB {
     // Get the logger for Log4j

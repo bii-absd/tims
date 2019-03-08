@@ -1,21 +1,27 @@
-/*
- * Copyright @2015-2017
- */
-package TIMS.Database;
+// Copyright (C) 2019 A*STAR
+//
+// TIMS (Translation Informatics Management System) is an software effort 
+// by the ABSD (Analytics of Biological Sequence Data) team in the 
+// Bioinformatics Institute (BII), Agency of Science, Technology and Research 
+// (A*STAR), Singapore.
+//
 
-/**
- * OutputItems is used by DataRetriever to generate the consolidated pipeline
- * output during finalization.
- * 
- * Author: Tay Wei Hong
- * Date: 04-Dec-2015
- * 
- * Revision History
- * 04-Dec-2015 - Created with the necessary methods implemented.
- * 22-Jan-2016 - Changed the variable name from tid to pipeline.
- * 28-Mar-2016 - Added one new variable, grp_id.
- * 21-Apr-2017 - Subject Meta data management enhancement. Removed grp_id.
- */
+// This file is part of TIMS.
+// 
+// TIMS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as 
+// published by the Free Software Foundation, either version 3 of the 
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+package TIMS.Database;
 
 public class OutputItems {
     private String subject_id, pipeline;

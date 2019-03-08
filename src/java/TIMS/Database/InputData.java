@@ -1,6 +1,26 @@
-/*
- * Copyright @2015-2016
- */
+// Copyright (C) 2019 A*STAR
+//
+// TIMS (Translation Informatics Management System) is an software effort 
+// by the ABSD (Analytics of Biological Sequence Data) team in the 
+// Bioinformatics Institute (BII), Agency of Science, Technology and Research 
+// (A*STAR), Singapore.
+//
+
+// This file is part of TIMS.
+// 
+// TIMS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as 
+// published by the Free Software Foundation, either version 3 of the 
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
 package TIMS.Database;
 
 import java.io.Serializable;
@@ -9,27 +29,6 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-
-/**
- * InputData is used to represent the input_data table in the database.
- * 
- * Author: Tay Wei Hong
- * Date: 16-Dec-2015
- * 
- * Revision History
- * 16-Dec-2015 - Created with all the standard getters and setters.
- * 30-Dec-2015 - To implement Serializable else will encounter 
- * IllegalStateException : InstantiationException.
- * 13-Jan-2016 - One new field user_id added in the input_data table; to 
- * identify the user who has uploaded this input data.
- * 21-Jan-2016 - Added one new field pipeline_name in the input_data table; to
- * associate this input_data with the respective pipeline.
- * 14-Apr-2016 - Change type for date to Timestamp.
- * 25-Aug-2016 - Added new method getUpdateTimeString(), and renamed method 
- * getDateString() to getCreateTimeString(). To construct the InputData object
- * directly from the ResultSet returned from the database. Implementation for 
- * database 3.6 Part I.
- */
 
 public class InputData implements Serializable {
     // input_data table attributes

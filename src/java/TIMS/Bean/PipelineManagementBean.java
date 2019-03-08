@@ -1,6 +1,26 @@
-/*
- * Copyright @2015-2018
- */
+// Copyright (C) 2019 A*STAR
+//
+// TIMS (Translation Informatics Management System) is an software effort 
+// by the ABSD (Analytics of Biological Sequence Data) team in the 
+// Bioinformatics Institute (BII), Agency of Science, Technology and Research 
+// (A*STAR), Singapore.
+//
+
+// This file is part of TIMS.
+// 
+// TIMS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as 
+// published by the Free Software Foundation, either version 3 of the 
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
 package TIMS.Bean;
 
 import TIMS.Database.ActivityLogDB;
@@ -9,16 +29,12 @@ import TIMS.Database.PipelineDB;
 import TIMS.General.Constants;
 // Libraries for Java
 import java.io.Serializable;
-import java.sql.SQLException;
 import java.util.List;
 // Libraries for Java Extension
 import javax.annotation.PostConstruct;
 import javax.faces.application.FacesMessage;
-//import javax.faces.bean.ManagedBean;
-//import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
 import javax.inject.Named;
-import javax.naming.NamingException;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -26,30 +42,6 @@ import org.omnifaces.cdi.ViewScoped;
 // Libraries for PrimeFaces
 import org.primefaces.event.RowEditEvent;
 
-/**
- * PipelineManagementBean is the backing bean for the pipelinemanagement view.
- * 
- * Author: Tay Wei Hong
- * Date: 06-Nov-2015
- * 
- * Revision History
- * 06-Nov-2015 - Created with all the standard getters and setters. Added
- * method onRowEdit to handle pipeline command updating.
- * 16-Nov-2015 - Added one new method createNewPipelineCommand, to allow user
- * to create new pipeline command.
- * 24-Nov-2015 - Changed variable name from command_id to plName. Added
- * one variable tid (Technology ID).
- * 12-Jan-2016 - Fix the static variable issues in AuthenticationBean.
- * 13-Jan-2016 - Removed all the static variables in Pipeline Management module.
- * 26-Jan-2016 - Implemented audit data capture module.
- * 29-Feb-2016 - Implementation of Data Source pooling. To use DataSource to 
- * get the database connection instead of using DriverManager.
- * 25-Aug-2016 - Implementation for database 3.6 Part I.
- * 28-Aug-2018 - To replace JSF managed bean with CDI, and JSF ViewScoped with
- * omnifaces's ViewScoped.
- */
-
-//@ManagedBean (name="plMgntBean")
 @Named("plMgntBean")
 @ViewScoped
 public class PipelineManagementBean implements Serializable {

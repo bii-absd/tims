@@ -1,6 +1,26 @@
-/*
- * Copyright @2016-2019
- */
+// Copyright (C) 2019 A*STAR
+//
+// TIMS (Translation Informatics Management System) is an software effort 
+// by the ABSD (Analytics of Biological Sequence Data) team in the 
+// Bioinformatics Institute (BII), Agency of Science, Technology and Research 
+// (A*STAR), Singapore.
+//
+
+// This file is part of TIMS.
+// 
+// TIMS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as 
+// published by the Free Software Foundation, either version 3 of the 
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
 package TIMS.General;
 
 import TIMS.Database.StudyDB;
@@ -36,31 +56,6 @@ import javax.faces.context.FacesContext;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
-/**
- * FileHelper is an abstract class and not mean to be instantiate, its main job
- * is to perform general file operations.
- * 
- * Author: Tay Wei Hong
- * Date: 06-Jan-2016
- * 
- * Revision History
- * 06-Jan-2016 - Created with one method, download.
- * 12-Jan-2016 - Fix the static variable issues in AuthenticationBean.
- * 19-May-2016 - Rename class name from FileLoader to FileHelper. Added 2 static
- * methods, delete and zipFiles.
- * 25-Aug-2016 - Added 2 static methods, fileExist and deleteDirectory.
- * 30-Aug-2016 - Added 2 static methods, moveFile and getFilesWithExt.
- * 25-Apr-2017 - Added 1 static method, generateMetaDataList.
- * 12-Apr-2017 - Added 4 static methods; copyUploadedFileToLocalDirectory, 
- * convertByteArrayToList, convertObjectToByteArray and convertStrListToStr. 
- * Modified method generateMetaDataList.
- * 15-May-2018 - When generating the meta data list, the core data values will
- * be taken from the subject detail instead of the column data.
- * 10-Jul-2018 - Minor changes in method generateMetaDataList due to changes in
- * method SubjectDB.getSubtDetailList
- * 04-Jan-2019 - Added 1 static method, generateTextFile.
- */
 
 public abstract class FileHelper {
     // Get the logger for Log4j

@@ -1,6 +1,26 @@
-/*
- * Copyright @2015-2018
- */
+// Copyright (C) 2019 A*STAR
+//
+// TIMS (Translation Informatics Management System) is an software effort 
+// by the ABSD (Analytics of Biological Sequence Data) team in the 
+// Bioinformatics Institute (BII), Agency of Science, Technology and Research 
+// (A*STAR), Singapore.
+//
+
+// This file is part of TIMS.
+// 
+// TIMS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as 
+// published by the Free Software Foundation, either version 3 of the 
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
 package TIMS.Bean;
 
 import TIMS.Database.ActivityLogDB;
@@ -25,8 +45,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 // Libraries for Java Extension
 import javax.annotation.PostConstruct;
-//import javax.faces.bean.ManagedBean;
-//import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
 import javax.inject.Named;
 import javax.naming.NamingException;
@@ -36,66 +54,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.omnifaces.cdi.ViewScoped;
 
-/**
- * FinalizeStudyBean is the backing bean for the finalizestudy view.
- * 
- * Author: Tay Wei Hong
- * Date: 22-Dec-2015
- * 
- * Revision History
- * 22-Dec-2015 - Created with all the standard getters and setters. Implemented
- * the module for finalizing study.
- * 23-Dec-2015 - Added 3 group of methods for supporting the 3 datatable in the
- * finalizestudy view.
- * 28-Dec-2015 - Completed the module for finalizing study. Added 5 new 
- * attributes dept_id, subMDAvailableStatus, selectedJob0, selectedJob1 & 
- * selectedJob2. Added 3 new methods proceedForFinalization, 
- * checkSubMDAvailability & cancelFinalization.
- * 30-Dec-2015 - Added one new attribute allowToProceed, which set the condition
- * for allowing the user to proceed with the finalization or not. Improved
- * method prepareForFinalization; to check whether the user has selected at
- * least one job for finalization.
- * 05-Jan-2016 - Changes due to the change in method 
- * StudyDB.updateStudyCompletedStatus().
- * 08-Jan-2016 - To setup the Astar and Bii logo before starting the 
- * DataDepositor thread.
- * 12-Jan-2016 - Fix the static variable issues in AuthenticationBean.
- * 13-Jan-2016 - Removed all the static variables in Job Status module.
- * 20-Jan-2016 - Updated study table in database; added one new variable closed, 
- * and renamed completed to finalized.
- * 22-Jan-2016 - Study finalization logic change; finalization will be 
- * performed for each pipeline instead of each technology. Added one more
- * data table to support the 4th pipeline.
- * 26-Jan-2016 - Implemented audit data capture module.
- * 27-Jan-2016 - Bug fixes: To handle the case whereby the output file is empty,
- * and the case whereby none of the subject meta data is available in the 
- * database.
- * 26-Feb-2016 - Bug fix: When preparing for finalization, need to check whether
- * job3 is selected too.
- * 29-Feb-2016 - Implementation of Data Source pooling. To use DataSource to 
- * get the database connection instead of using DriverManager.
- * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
- * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
- * (Institution - Department - Group).
- * 04-Apr-2016 - When checking for subject Meta data availability, the system
- * will now check against the new study_subject table.
- * 13-May-2016 - Minor changes as the pipeline output file will now be zipped.
- * 03-Jun-2016 - Enhanced method getStudySelectedStatus() to handle the case
- * whereby the study has been un-selected.
- * 22-Jun-2016 - Changes due to function name change in SubmittedJobDB class.
- * 12-Dec-2016 - Removed one debug log from proceedForFinalization().
- * 10-Feb-2017 - To allow jobs from up to 5 pipelines to be selected for 
- * finalization.
- * 19-Apr-2017 - Subject's meta data will now be own by study, and the study 
- * will be own by group i.e. the direct link between group and subject's meta 
- * data will be break off.
- * 28-Aug-2018 - To replace JSF managed bean with CDI, and JSF ViewScoped with
- * omnifaces's ViewScoped.
- * 29-Jan-2019 - GATK pipelines output are not ready for finalizing yet; remove
- * them for the selection list.
- */
-
-//@ManagedBean (name="finalizedBean")
 @Named("finalizedBean")
 @ViewScoped
 public class FinalizeStudyBean implements Serializable {

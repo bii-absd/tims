@@ -1,6 +1,26 @@
-/*
- * Copyright @2016-2018
- */
+// Copyright (C) 2019 A*STAR
+//
+// TIMS (Translation Informatics Management System) is an software effort 
+// by the ABSD (Analytics of Biological Sequence Data) team in the 
+// Bioinformatics Institute (BII), Agency of Science, Technology and Research 
+// (A*STAR), Singapore.
+//
+
+// This file is part of TIMS.
+// 
+// TIMS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as 
+// published by the Free Software Foundation, either version 3 of the 
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
 package TIMS.Bean;
 
 import TIMS.Database.ActivityLogDB;
@@ -16,8 +36,6 @@ import java.io.Serializable;
 import java.util.List;
 // Libraries for Java Extension
 import javax.annotation.PostConstruct;
-//import javax.faces.bean.ManagedBean;
-//import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
 import javax.inject.Named;
 // Libraries for Log4j
@@ -26,32 +44,6 @@ import org.apache.logging.log4j.LogManager;
 // Library for omnifaces
 import org.omnifaces.cdi.ViewScoped;
 
-/**
- * StudiesReviewBean is the backing bean for the studiesreview and 
- * completedstudyoutput view.
- * 
- * Author: Tay Wei Hong
- * Date: 06-Jan-2016
- * 
- * Revision History
- * 06-Jan-2016 - Implemented the module for downloading of study's consolidated 
- * output and finalized summary.
- * 12-Jan-2016 - Fix the static variable issues in AuthenticationBean.
- * 20-Jan-2016 - Updated study table in database; added one new variable closed, 
- * and renamed completed to finalized.
- * 26-Jan-2016 - Implemented audit data capture module.
- * 24-Feb-2016 - Implemented studies review module.
- * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
- * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
- * (Institution - Department - Group).
- * 19-May-2016 - To allow user to download the detail output file.
- * 22-Jun-2016 - Updated init() to use the query string generation function 
- * in QueryStringGenerator.
- * 28-Aug-2018 - To replace JSF managed bean with CDI, and JSF ViewScoped with
- * omnifaces's ViewScoped.
- */
-
-//@ManagedBean (name = "StudiesBean")
 @Named("StudiesBean")
 @ViewScoped
 public class StudiesReviewBean implements Serializable {

@@ -1,6 +1,26 @@
-/*
- * Copyright @2015-2018
- */
+// Copyright (C) 2019 A*STAR
+//
+// TIMS (Translation Informatics Management System) is an software effort 
+// by the ABSD (Analytics of Biological Sequence Data) team in the 
+// Bioinformatics Institute (BII), Agency of Science, Technology and Research 
+// (A*STAR), Singapore.
+//
+
+// This file is part of TIMS.
+// 
+// TIMS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as 
+// published by the Free Software Foundation, either version 3 of the 
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
 package TIMS.Bean;
 
 import TIMS.Database.ActivityLogDB;
@@ -17,8 +37,6 @@ import java.util.List;
 // Libraries for Java Extension
 import javax.annotation.PostConstruct;
 import javax.faces.application.FacesMessage;
-//import javax.faces.bean.ManagedBean;
-//import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
 import javax.inject.Named;
 // Libraries for PrimeFaces
@@ -30,41 +48,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.omnifaces.cdi.ViewScoped;
 
-/**
- * WorkUnitManagementBean is the backing bean for the workunitmanagement view.
- * 
- * Author: Tay Wei Hong
- * Date: 16-Nov-2015
- 
- * Revision History
- * 06-Nov-2015 - Created with all the standard getters and setters. Added new
- * method createNewInstitution() for creating new institution.
- * 18-Nov-2015 - Added one new method onInstRowEdit() to allow user to edit
- * the institution's information.
- * 09-Dec-2015 - Added in the module for adding and updating department info.
- * 12-Jan-2016 - Fix the static variable issues in AuthenticationBean.
- * 13-Dec-2016 - Removed all the static variables in Study and ItemList
- * management modules.
- * 26-Jan-2016 - Implemented audit data capture module.
- * 23-Feb-2016 - Rename class name from ItemListManagementBean to 
- * GroupManagementBean.
- * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
- * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
- * (Institution - Department - Group).
- * 15-Mar-2016 - Changes due to a new field (i.e. active) added in the grp table.
- * 05-Apr-2016 - To show the institution, department, group and PI hierarchy 
- * structure. PI in-charge for each group will be selected from the group of 
- * eligible PIs under the institution that the department/group belongs to.
- * 07-Apr-2016 - During creation/updating of group, the department ID and PI IDs
- * hashmap will be build using the institution selected as a filtering criteria.
- * 03-Jun-2016 - Remove unused code.
- * 07-Jun-2018 - Renamed class name from GroupManagementBean to 
- * WorkUnitManagementBean.
- * 28-Aug-2018 - To replace JSF managed bean with CDI, and JSF ViewScoped with
- * omnifaces's ViewScoped.
- */
-
-//@ManagedBean (name="grpMgntBean")
 @Named("grpMgntBean")
 @ViewScoped
 public class WorkUnitManagementBean implements Serializable {

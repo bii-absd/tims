@@ -1,6 +1,26 @@
-/*
- * Copyright @2016-2017
- */
+// Copyright (C) 2019 A*STAR
+//
+// TIMS (Translation Informatics Management System) is an software effort 
+// by the ABSD (Analytics of Biological Sequence Data) team in the 
+// Bioinformatics Institute (BII), Agency of Science, Technology and Research 
+// (A*STAR), Singapore.
+//
+
+// This file is part of TIMS.
+// 
+// TIMS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as 
+// published by the Free Software Foundation, either version 3 of the 
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
 package TIMS.Database;
 
 import TIMS.General.Constants;
@@ -20,34 +40,6 @@ import javax.naming.NamingException;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
-/**
- * VaultKeeper read in the processed data from the pipeline output and 
- * stored them into the vault.
- * 
- * Author: Tay Wei Hong
- * Date: 14-Mar-2016
- * 
- * Revision History
- * 14-Mar-2016 - Created with the necessary methods implemented. Implemented 
- * the module to close study.
- * 22-Mar-2016 - Changes due to the addition field (i.e. icd_code) in the 
- * vault_record table.
- * 04-Apr-2016 - When checking for subject Meta data availability, the system
- * will now check against the new study_subject table. The system will now store
- * the study ID (instead of icd_code) into the finalized_record.
- * 13-May-2016 - Minor changes as the pipeline output file will now be zipped.
- * 19-May-2016 - To delete those temporary files generated during closure
- * of study.
- * 10-Aug-2016 - In method storePlDataIntoVault(), use the try-with-resource
- * statement to create the BufferedReader object. Performed code refactoring on
- * method storePlDataIntoVault().
- * 12-Dec-2016 - Add in the semaphore control during insertion of data into 
- * vault_data table. Removed unused code.
- * 19-Apr-2017 - Subject's meta data will now be own by study, and the study 
- * will be own by group i.e. the direct link between group and subject's meta 
- * data will be break off.
- */
 
 public class VaultKeeper extends Thread {
     // Get the logger for Log4j

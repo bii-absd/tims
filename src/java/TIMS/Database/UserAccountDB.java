@@ -1,6 +1,26 @@
-/*
- * Copyright @2015-2016
- */
+// Copyright (C) 2019 A*STAR
+//
+// TIMS (Translation Informatics Management System) is an software effort 
+// by the ABSD (Analytics of Biological Sequence Data) team in the 
+// Bioinformatics Institute (BII), Agency of Science, Technology and Research 
+// (A*STAR), Singapore.
+//
+
+// This file is part of TIMS.
+// 
+// TIMS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as 
+// published by the Free Software Foundation, either version 3 of the 
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
 package TIMS.Database;
 
 import TIMS.General.Constants;
@@ -18,50 +38,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 // Library for password hashing
 import org.mindrot.jbcrypt.BCrypt;
-
-/**
- * UserAccountDB is an abstract class and not mean to be instantiate, its main 
- * job is to perform SQL operations on the user_account table in the database.
- * 
- * Author: Tay Wei Hong
- * Date: 09-Oct-2015
- * 
- * Revision History
- * 09-Oct-2015 - First baseline with two static methods (checkPwd and 
- * insertAccount) created.
- * 13-Oct-2015 - Added new method getEmailAddress that return the email address
- * of the job requestor.
- * 04-Nov-2015 - Added the following new methods:
- * I. updateLastLogin to update the last login of the user.
- * II. updatePassword to allow user to change his/her password.
- * 05-Nov-2015 - Added new method getUser that return the user account of the
- * job requestor.
- * 06-Nov-2015 - Added the following methods to support the 'update user 
- * account' module:
- * 1. getAllUser()
- * 2. updateAccount(UserAccount user)
- * 13-Nov-2015 - Added one new variable userIDHash and one new method 
- * getAllUserID().
- * 30-Nov-2015 - Implementation for database 2.0
- * 14-Dec-2015 - Changed the class to abstract. Added new method, getDeptID.
- * 22-Dec-2015 - To close the ResultSet after use.
- * 11-Jan-2016 - Fix the static variable issues in AuthenticationBean.
- * 13-Jan-2016 - Removed all the static variables in Account Management module.
- * 18-Jan-2016 - Added new method, getAdminEmails() to retrieve all the 
- * administrator email addresses.
- * 19-Feb-2016 - To support user account with picture uploaded.
- * 23-Feb-2016 - Added new method getPiIDHash(), to return the user ID of all
- * the PIs in the system.
- * 29-Feb-2016 - Implementation of Data Source pooling. To use DataSource to 
- * get the database connection instead of using DriverManager.
- * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
- * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
- * (Institution - Department - Group).
- * 28-Mar-2016 - Added new method getInstUserIDHash, to return the list of
- * users that belong to this institution.
- * 05-Apr-2016 - Added new method getInstPiIDHash, to return the list of 
- * eligible PIs that belong to this institution.
- */
 
 public abstract class UserAccountDB {
     // Get the logger for Log4j

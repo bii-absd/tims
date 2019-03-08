@@ -1,6 +1,26 @@
-/*
- * Copyright @2016-2018
- */
+// Copyright (C) 2019 A*STAR
+//
+// TIMS (Translation Informatics Management System) is an software effort 
+// by the ABSD (Analytics of Biological Sequence Data) team in the 
+// Bioinformatics Institute (BII), Agency of Science, Technology and Research 
+// (A*STAR), Singapore.
+//
+
+// This file is part of TIMS.
+// 
+// TIMS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as 
+// published by the Free Software Foundation, either version 3 of the 
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
 package TIMS.General;
 
 import TIMS.Database.SubmittedJobDB;
@@ -21,36 +41,6 @@ import javax.mail.internet.MimeMessage;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
-/**
- * Postman is an abstract class and not mean to be instantiate, its main job 
- * is to send job status email and exception email to the users and 
- * administrators.
- *
- * Author: Tay Wei Hong
- * Date: 18-Jan-2016
- * 
- * Revision History
- * 18-Jan-2016 - Initial creation with 3 methods, setupMailServer(), 
- * sendJobStatusEmail and sendExceptionEmail().
- * 01-Mar-2016 - Change in from: email address, due to change in application
- * name.
- * 14-Mar-2016 - Added 3 new methods sendStudyClosureStatusEmail(), 
- * sendFinalizationStatusEmail() and sendTaskStatusEmail().
- * 12-Apr-2016 - Added new method sendDataUploadedEmail(), to send the input
- * data path to the administrator after raw data upload.
- * 25-Apr-2016 - To include the study ID and pipeline name in the subject title
- * when sending out the data uploaded status email.
- * 03-Jun-2016 - Added new method sendUnFinalizationStatusEmail().
- * 04-Jul-2016 - Added new method sendExportDataStatusEmail().
- * 10-Aug-2016 - Enhanced method sendTaskStatusEmail; to allow customization 
- * of email content.
- * 25-Aug-2016 - Enhanced sendDataUploadedEmail and sendJobStatusEmail; to show 
- * the pipeline description in the email subject and content.
- * 23-Apr-2018 - Added new method sendMetaDataUploadStatusEmail().
- * 16-Oct-2018 - To include the IP address of the system in the email content
- * (for easy identification.)
- */
 
 public abstract class Postman {
     private static final String from = "TIMS@bii.a-star.edu.sg";

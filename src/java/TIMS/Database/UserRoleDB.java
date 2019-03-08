@@ -1,6 +1,26 @@
-/*
- * Copyright @2015-2018
- */
+// Copyright (C) 2019 A*STAR
+//
+// TIMS (Translation Informatics Management System) is an software effort 
+// by the ABSD (Analytics of Biological Sequence Data) team in the 
+// Bioinformatics Institute (BII), Agency of Science, Technology and Research 
+// (A*STAR), Singapore.
+//
+
+// This file is part of TIMS.
+// 
+// TIMS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as 
+// published by the Free Software Foundation, either version 3 of the 
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
 package TIMS.Database;
 
 import TIMS.General.Constants;
@@ -18,36 +38,6 @@ import org.apache.logging.log4j.LogManager;
 // Libraries for Trove
 import gnu.trove.map.hash.TIntObjectHashMap;
 import gnu.trove.map.hash.TObjectIntHashMap;
-
-/**
- * UserRoleDB is an abstract class and not mean to be instantiate, its main 
- * job is to perform SQL operations on the user_role table in the database.
- * 
- * Author: Tay Wei Hong
- * Date: 23-Sep-2015
- * 
- * Revision History
- * 23-Sep-2015 - Created with all the standard getters and setters.
- * 25-Sep-2015 - Added in two methods (getRoleID and getRole).
- * 07-Oct-2015 - Changed dbHandle to static. Added comment for the code. 
- * Added Log4j2 for this class. Changed to connection based for database access.
- * 23-Oct-2015 - Added new function that return the list of Role setup in the
- * database. Added 2 Hash Map to store the list of Role and Role ID settings.
- * 04-Nov-2015 - Port to JSF 2.2
- * 06-Nov-2015 - Updated the query statement for getRoleList.
- * 13-Nov-2015 - Changes the class name from UserRole to UserRoleDB.
- * 30-Nov-2015 - Implementation for database 2.0
- * 11-Dec-2015 - Changed to abstract class. Removed unused code.
- * 22-Dec-2015 - To close the ResultSet after use.
- * 29-Feb-2016 - Implementation of Data Source pooling. To use DataSource to 
- * get the database connection instead of using DriverManager.
- * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
- * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
- * (Institution - Department - Group).
- * 07-Apr-2016 - Added new method, isLead() to check whether the role ID passed
- * in belong to a lead or not.
- * 26-Nov-2018 - Added a new role 'Guest'.
- */
 
 public abstract class UserRoleDB implements Serializable {
     // Get the logger for Log4j

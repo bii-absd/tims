@@ -1,6 +1,26 @@
-/*
- * Copyright @2018
- */
+// Copyright (C) 2019 A*STAR
+//
+// TIMS (Translation Informatics Management System) is an software effort 
+// by the ABSD (Analytics of Biological Sequence Data) team in the 
+// Bioinformatics Institute (BII), Agency of Science, Technology and Research 
+// (A*STAR), Singapore.
+//
+
+// This file is part of TIMS.
+// 
+// TIMS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as 
+// published by the Free Software Foundation, either version 3 of the 
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
 package TIMS.General;
 
 import TIMS.Database.MetaRecord;
@@ -21,19 +41,6 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.DataFormatter;
 // Library for stream reader
 import com.monitorjbl.xlsx.StreamingReader;
-
-/**
- * ExcelHelper is used to perform general read operation on Excel file.
- * 
- * Author: Tay Wei Hong
- * Date: 30-Apr-2018
- * 
- * Revision History
- * 30-Apr-2018 - Created with methods convertRowToStrList and readNextRow().
- * 18-May-2018 - Enhanced the way we read in Date Formatted cell i.e. to
- * handle DateTime, Time and Date cell value.
- * 17-Aug-2018 - If the time is 12:20 AM, it is a date cell.
- */
 
 public class ExcelHelper {
     // Get the logger for Log4j

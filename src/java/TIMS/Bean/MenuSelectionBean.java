@@ -1,6 +1,26 @@
-/*
- * Copyright @2015-2018
- */
+// Copyright (C) 2019 A*STAR
+//
+// TIMS (Translation Informatics Management System) is an software effort 
+// by the ABSD (Analytics of Biological Sequence Data) team in the 
+// Bioinformatics Institute (BII), Agency of Science, Technology and Research 
+// (A*STAR), Singapore.
+//
+
+// This file is part of TIMS.
+// 
+// TIMS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as 
+// published by the Free Software Foundation, either version 3 of the 
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
 package TIMS.Bean;
 
 import TIMS.Database.PipelineDB;
@@ -13,8 +33,6 @@ import java.io.Serializable;
 import java.util.LinkedHashMap;
 // Libraries for Java Extension
 import javax.annotation.PostConstruct;
-//import javax.faces.bean.ManagedBean;
-//import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
 import javax.inject.Named;
 // Libraries for Log4j
@@ -23,70 +41,6 @@ import org.apache.logging.log4j.LogManager;
 // Library for omnifaces
 import org.omnifaces.cdi.ViewScoped;
 
-/**
- * MenuSelectionBean is used as the backing bean for the main view.
- * 
- * Author: Tay Wei Hong
- * Date: 23-Oct-2015
- * 
- * Revision History
- * 23-Oct-2015 - Created with all the standard getters and setters.
- * 27-Oct-2015 - Added 2 functions (gexPipeline and ngsPipeline) that will help
- * to setup the pipeline backing bean.
- * 28-Oct-2015 - Split the gexPipeline function into 2 new functions, 
- * gexIllumina and gexAffymetrix.
- * 13-Nov-2015 - Changes to methods, gexIllumina() and gexAffymetrix() after 
- * refactoring ArrayConfigBean.
- * 25-Nov-2015 - Implementation for database 2.0
- * 15-Dec-2015 - Changed from RequestScoped to ViewScoped. Removed param 
- * command. Implemented the new workflow (i.e. User to select Study ID before 
- * proceeding to pipeline configuration. To construct the Study List during
- * PostConstruct phase.
- * 22-Dec-2015 - Added one attribute haveNewData, to indicate whether user
- * have new data to upload or not.
- * 30-Dec-2015 - Updated proceedToConfig method to use the method setup from
- * ConfigBean to setup the pipeline configuration.
- * 11-Jan-2016 - Added the support for METH pipeline.
- * 12-Jan-2016 - Fix the static variable issues in AuthenticationBean.
- * 14-Jan-2016 - Removed all the static variables in Pipeline Configuration
- * Management module.
- * 19-Jan-2016 - Added the support for CNV pipeline.
- * 20-Jan-2016 - To streamline the navigation flow and passing of pipeline name
- * from main menu to pipeline configuration pages.
- * 01-Feb-2016 - When retrieving submitted jobs, there are now 2 options 
- * available i.e. to retrieve for single user or all users (enable for 
- * administrator only).
- * 18-Feb-2016 - Moved method userJobStatus() to AuthenticationBean.
- * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
- * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
- * (Institution - Department - Group).
- * 30-Mar-2016 - Added a dialog for user to select the Study; to manage it's 
- * Meta data.
- * 04-Apr-2016 - Only 'opened' studies (i.e. not finalized) will be available 
- * for user selection when managing subject Meta data.
- * 07-Apr-2016 - Only build the study and open study list when the user click
- * on the pipeline or subject meta data management link.
- * 12-Apr-2016 - The Study ID list for administrator will be the full list of
- * unclosed Study ID; to be selected for raw data uploading.
- * 19-Apr-2016 - Bug Fix: When the user entered Main Menu page, the Single User
- * Mode should be set to True.
- * 25-Aug-2016 - Added 2 new methods, setupRawDataMgnt() and 
- * proceedToRawDataMgnt() to support Raw Data Management module Part I.
- * 13-Dec-2016 - Raw data management should be allowed for finalized study 
- * (i.e. ad-hoc study).
- * 24-Apr-2017 - Meta data management will be allowed for all studies that are
- * not closed.
- * 13-Jul-2017 - Changes due to the addition of GATK Sequencing Pipelines.
- * 06-Oct-2017 - Remove unused code. Added a dialog for user to select the
- * visualiser to use when viewing their pipeline output.
- * 20-Apr-2018 - Minor update to method proceedToMetaDataMgnt().
- * 08-May-2018 - Standardise the study list for both pipeline configuration
- * page and raw data management page.
- * 28-Aug-2018 - To replace JSF managed bean with CDI, and JSF ViewScoped with
- * omnifaces's ViewScoped.
- */
-
-//@ManagedBean (name="menuSelBean")
 @Named("menuSelBean")
 @ViewScoped
 public class MenuSelectionBean implements Serializable{

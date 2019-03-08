@@ -1,6 +1,26 @@
-/*
- * Copyright @2015-2018
- */
+// Copyright (C) 2019 A*STAR
+//
+// TIMS (Translation Informatics Management System) is an software effort 
+// by the ABSD (Analytics of Biological Sequence Data) team in the 
+// Bioinformatics Institute (BII), Agency of Science, Technology and Research 
+// (A*STAR), Singapore.
+//
+
+// This file is part of TIMS.
+// 
+// TIMS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as 
+// published by the Free Software Foundation, either version 3 of the 
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
 package TIMS.Bean;
 
 import TIMS.General.Constants;
@@ -23,64 +43,6 @@ import org.primefaces.model.UploadedFile;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
-/**
- * FileUploadBean is the backing bean for all the uploaded file.
- * 
- * Author: Tay Wei Hong
- * Date: 27-Oct-2015
- * 
- * Revision History
- * 27-Oct-2015 - Created with the main function fileUploadListener, that is 
- * able to handle multiple uploaded files at one time.
- * 28-Oct-2015 - Changed to allow this class to handle both single and multiple
- * file upload.
- * 02-Nov-2015 - Added one new variable, localDirectoryPath and it's getter and 
- * setter methods. Added one new method, createAllSystemDirectories.
- * 05-Nov-2015 - Changed the localDirectoryPath to be static. Created individual
- * file upload listener for single and multiple files upload.
- * 06-Nov-2015 - Changed the way the localDirectoryPath is being setup, and 
- * display an error message when the file failed to get uploaded.
- * 11-Nov-2015 - The file directory will only be created after the user 
- * uploaded a file.
- * 02-Dec-2015 - Implemented the changes in the input folder directory.
- * 15-Dec-2015 - Added new method createStudyDirectory, to create level two
- * system directory for each Study. Modified method setFileDirectory to 
- * construct the directory name using the Study ID and Submission time.
- * 16-Dec-2015 - Added new method renameAnnotFile(), to rename the sample
- * annotation file to a common name.
- * 22-Dec-2015 - Added new method renameCtrlProbeFile(), to rename the control
- * probe file to a common name.
- * 24-Dec-2015 - Updated method createSystemDirectories, to create the 
- * directory for finalize_output too.
- * 12-Jan-2016 - Fix the static variable issues in AuthenticationBean.
- * 14-Jan-2016 - Removed all the static variables in Pipeline Configuration
- * Management module.
- * 22-Jan-2016 - Added new method getFilesCount(), to return the no of input
- * files uploaded (i.e. as an indicator to the user during config review).
- * 05-Feb-2016 - Enhance the input files directory creation sequence, so as to
- * avoid race condition from happening when multiple files are being uploaded
- * at the same time.
- * 18-Feb-2016 - To check the input files received with the filename listed in
- * the annotation file. List out the missing files (if any) and notice the user
- * during pipeline configuration review.
- * 19-Feb-2016 - Enhanced this class to make it reusable for all file upload.
- * Combined the methods, renameAnnotFile() and renameCtrlProbeFile(), into a 
- * generic method, renameFilename.
- * 23-Feb-2016 - Enhanced the method renameFilename.
- * 01-Mar-2016 - The images directory has been moved from TIMS/user/images to
- * TIMS/images.
- * 13-May-2016 - To create the tmp folder in method createSystemDirectories().
- * 04-Jul-2016 - Removed unused code. Updated methods createSystemDirectories()
- * and createStudyDirectory(), to create directory for cBioPortal application.
- * 30-Aug-2016 - Added 3 new methods, getInputFilenameForRDM(), resetFileBean() 
- * and getFilename. Enhanced method renameFilename. Change all Boolean 
- * variables to boolean.
- * 24-Apr-2018 - Changes in the system directory format; all the study related
- * output/report will be stored in the studies/study_id/ directory. The 
- * studies/study_id/ directory will be created whenever a new study ID is being
- * created.
- */
 
 public class FileUploadBean implements Serializable {
     // Get the logger for Log4j

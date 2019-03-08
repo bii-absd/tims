@@ -1,6 +1,26 @@
-/*
- * Copyright @2016-2018
- */
+// Copyright (C) 2019 A*STAR
+//
+// TIMS (Translation Informatics Management System) is an software effort 
+// by the ABSD (Analytics of Biological Sequence Data) team in the 
+// Bioinformatics Institute (BII), Agency of Science, Technology and Research 
+// (A*STAR), Singapore.
+//
+
+// This file is part of TIMS.
+// 
+// TIMS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as 
+// published by the Free Software Foundation, either version 3 of the 
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
 package TIMS.Visualizers;
 
 import TIMS.Bean.FileUploadBean;
@@ -40,53 +60,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 // Library for password hashing
 import org.mindrot.jbcrypt.BCrypt;
-
-/**
- * cBioVisualizer export the pipeline data from the selected job(s) to 
- * cBioPortal database.
- * 
- * Author: Tay Wei Hong
- * Date: 22-Jun-2016
- * 
- * Revision History
- * 04-Jul-2015 - Implemented the integration with cBioPortal application.
- * 10-Aug-2016 - Fixed the following bugs reported in UAT:
- * 1. The study failed to get created at cBioPortal if the study description 
- * is more than 1024 characters.
- * 2. CNV column offset should be 2 instead of 4.
- * 3. Only one thread can restart the tomcat application server at one time.
- * 4. The stable_id in the meta file need to end in pre-defined code.
- * 5. To convert the data values from Affymetrix pipeline to z-score format.
- * 12-Aug-2016 - To make sure the Affymetrix z-score result is exactly 2 
- * decimal places.
- * 30-Aug-2016 - Enhanced method recordVisualTime(), to call the helper function
- * in Constants class.
- * 01-Sep-2016 - Changes due to change in method name in FinalizingJobEntry 
- * class.
- * 27-Sep-2016 - Minor update to method createCbioUrl(), due to changes in the
- * IP address of TIMS server.
- * 07-Oct-2016 - Minor update to method createCbioUrl(), due to changes in the
- * IP address of TIMS server.
- * 23-Nov-2016 - To read in the system environment variables for tomcat and 
- * cbioportal. To retrieve the cbioportal url from system config file.
- * 01-Feb-2017 - Update the study visual time only if the exporting of data 
- * is successfully. Send the failed notification email to user if the system 
- * failed to create the cBioPortal directory or the system failed to export 
- * the study to cBioPortal.
- * 02-Feb-2017 - cBioPortal url will be retrieve from database.
- * 06-Feb-2017 - Added the handling for RNA Sequencing pipeline.
- * 08-Feb-2017 - Added the handling for CNV Affymetrix pipeline.
- * 21-Feb-2017 - Bug fix: In order to export both the CNV Illumina and 
- * Affymetrix to cBioPortal, the stable ID code for them need to be unique.
- * 17-Jul-2017 - Changes due to the addition of GATK Sequencing Pipelines.
- * 29-Aug-2017 - Updated with a newer version of cBioPortal (1.4.0). To restart
- * the cBioPortal application instead of the Tomcat server after each data 
- * import. To import the icd code to cBioPortal only when it is being used.
- * 01-Feb-2018 - Fix the bug found when identifying the unique subject ID to 
- * export to cBioPortal.
- * 11-Jun-2018 - Do not replace the original data file with the z-score file;
- * instead just update the datafile with the path of the z-score file.
- */
 
 public class cBioVisualizer extends Thread {
     // Get the logger for Log4j

@@ -1,6 +1,26 @@
-/*
- * Copyright @2015-2018
- */
+// Copyright (C) 2019 A*STAR
+//
+// TIMS (Translation Informatics Management System) is an software effort 
+// by the ABSD (Analytics of Biological Sequence Data) team in the 
+// Bioinformatics Institute (BII), Agency of Science, Technology and Research 
+// (A*STAR), Singapore.
+//
+
+// This file is part of TIMS.
+// 
+// TIMS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as 
+// published by the Free Software Foundation, either version 3 of the 
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
 package TIMS.Database;
 
 import TIMS.General.Constants;
@@ -12,44 +32,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-
-/**
- * Study is used to represent the study table in the database.
- * 
- * Author: Tay Wei Hong
- * Date: 07-Dec-2015
- * 
- * Revision History
- * 07-Dec-2015 - Created with all the standard getters and setters.
- * 09-Dec-2015 - Added one attribute, dept_id.
- * 06-Jan-2016 - Added two attributes, finalized_output and summary.
- * 11-Jan-2016 - Added methods to disable/enable the download links for
- * output and summary.
- * 14-Jan-2016 - Bug Fix: To make sure the finalized_output / summary is not
- * null before checking whether the file is ready for download.
- * 20-Jan-2016 - Updated study table in database; added one new variable closed, 
- * and renamed completed to finalized.
- * 23-Feb-2016 - Implementation for database 3.0 (Part 1).
- * 24-Feb-2016 - Added one new method, getReviewTitle() to return the title
- * for each study in the studies review page.
- * 01-Mar-2016 - Added one attribute, title.
- * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
- * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
- * (Institution - Department - Group).
- * 22-Mar-2016 - Added one attribute icd_code, to identify the disease under
- * study.
- * 19-May-2016 - Added one attribute detail_files, to store the filepath of the
- * zipped detail output files (i.e. detail output files retrieved from the
- * pipelines selected during finalization). Update the constructor to receive 
- * the Study parameters directly from the database.
- * 20-Jun-2016 - Added one attribute cbio_url, to store the url of the 
- * cBioPortal (with the data for the respective study setup for visualization).
- * 04-Jul-2016 - Added one new method getCBioDisableStatus().
- * 07-Jul-2016 - Added one new method getExportedJobsDetail() to return the list 
- * of job detail that have exported to the visualizer.
- * 06-Apr-2018 - Database version 2.0 changes to support meta data upload
- * through Excel.
- */
 
 public class Study {
     // study table attributes

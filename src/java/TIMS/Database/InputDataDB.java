@@ -1,6 +1,26 @@
-/*
- * Copyright @2015-2018
- */
+// Copyright (C) 2019 A*STAR
+//
+// TIMS (Translation Informatics Management System) is an software effort 
+// by the ABSD (Analytics of Biological Sequence Data) team in the 
+// Bioinformatics Institute (BII), Agency of Science, Technology and Research 
+// (A*STAR), Singapore.
+//
+
+// This file is part of TIMS.
+// 
+// TIMS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as 
+// published by the Free Software Foundation, either version 3 of the 
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
 package TIMS.Database;
 
 import TIMS.General.Constants;
@@ -17,39 +37,6 @@ import javax.naming.NamingException;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
-/**
- * InputDataDB is to perform SQL operations on the input_data table in the 
- * database.
- * 
- * Author: Tay Wei Hong
- * Date: 16-Dec-2015
- * 
- * Revision History
- * 16-Dec-2015 - First baseline with three static methods, insertInputData, 
- * getIpList and getNextSn.
- * 30-Dec-2015 - Updated getIpList to handle any SQLException thrown by
- * the query.
- * 31-Dec-2015 - Removed attribute ipList, and updated getIpList to always 
- * query the database for the input_data details.
- * 08-Jan-2016 - To sort the list of input data in descending order.
- * 13-Jan-2016 - One new field user_id added in the input_data table; to 
- * identify the user who has uploaded this input data.
- * 21-Jan-2016 - Added one new field pipeline_name in the input_data table; to
- * associate this input_data with the respective pipeline.
- * 29-Feb-2016 - Implementation of Data Source pooling. To use DataSource to 
- * get the database connection instead of using DriverManager.
- * 29-Mar-2016 - Added one new method, getInputDescription() to return the
- * input data description.
- * 14-Apr-2016 - Changes due to the type change (i.e. to Timestamp) for date
- * in submitted_job table.
- * 25-Aug-2016 - Added one new method, updateInputDataFields. Implementation 
- * for database 3.6 Part I.
- * 30-Aug-2016 - Enhanced method updateFieldsAfterEdit, to also update the 
- * filename field.
- * 20-Sep-2016 - Split the method updateFieldsAfterEdit into 2 methods,
- * updateDescAfterEdit and updateDescFilenameAfterEdit.
- */
 
 public class InputDataDB {
     // Get the logger for Log4j

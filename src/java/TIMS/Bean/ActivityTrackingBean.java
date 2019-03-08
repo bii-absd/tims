@@ -1,6 +1,26 @@
-/*
- * Copyright @2016-2018
- */
+// Copyright (C) 2019 A*STAR
+//
+// TIMS (Translation Informatics Management System) is an software effort 
+// by the ABSD (Analytics of Biological Sequence Data) team in the 
+// Bioinformatics Institute (BII), Agency of Science, Technology and Research 
+// (A*STAR), Singapore.
+//
+
+// This file is part of TIMS.
+// 
+// TIMS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as 
+// published by the Free Software Foundation, either version 3 of the 
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
 package TIMS.Bean;
 
 import TIMS.Database.ActivityLog;
@@ -15,8 +35,6 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 // Libraries for Java Extension
-//import javax.faces.bean.ManagedBean;
-//import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
 import javax.inject.Named;
 // Libraries for Log4j
@@ -25,28 +43,6 @@ import org.apache.logging.log4j.LogManager;
 // Library for omnifaces
 import org.omnifaces.cdi.ViewScoped;
 
-/**
- * ActivityTrackingBean is the backing bean for the activitytracking view.
- * 
- * Author: Tay Wei Hong
- * Date: 26-Jan-2016
- * 
- * Revision History
- * 26-Jan-2016 - Implemented the module for tracking user activities, and 
- * specific activity.
- * 29-Jan-2016 - Joined the methods for tracking user activities and specific
- * activity into one method.
- * 01-Feb-2016 - Further enhanced the query logic by combing the 4 query methods
- * into one, and to include the time (from and/or to) for user selection.
- * 28-Mar-2016 - Director is only allow to view the activities of the users 
- * from his/her institution.
- * 27-Apr-2016 - To build and supply the list of activity for selection in the
- * activity tracking page.
- * 28-Aug-2018 - To replace JSF managed bean with CDI, and JSF ViewScoped with
- * omnifaces's ViewScoped.
- */
-
-//@ManagedBean (name = "actiBean")
 @Named("actiBean")
 @ViewScoped
 public class ActivityTrackingBean implements Serializable {

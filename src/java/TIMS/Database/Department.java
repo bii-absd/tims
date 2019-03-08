@@ -1,27 +1,27 @@
-/*
- * Copyright @2015-2018
- */
-package TIMS.Database;
+// Copyright (C) 2019 A*STAR
+//
+// TIMS (Translation Informatics Management System) is an software effort 
+// by the ABSD (Analytics of Biological Sequence Data) team in the 
+// Bioinformatics Institute (BII), Agency of Science, Technology and Research 
+// (A*STAR), Singapore.
+//
 
-/**
- * Department is used to represent the dept table in the database.
- * 
- * Author: Tay Wei Hong
- * Date: 13-Nov-2015
- * 
- * Revision History
- * 13-Nov-2015 - Created with all the standard getters and setters.
- * 01-Dec-2015 - Implementation for database 2.0
- * 09-Dec-2015 - Added new attribute, inst_name.
- * 13-Dec-2016 - Removed all the static variables in Study and ItemList
- * management modules.
- * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
- * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
- * (Institution - Department - Group).
- * 28-Mar-2016 - To retrieve the institution name from the DepartmentDB class
- * instead of InstitutionDB class.
- * 08-Apr-2016 - Bug fix: inst_name being setup with institution ID value.
- */
+// This file is part of TIMS.
+// 
+// TIMS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as 
+// published by the Free Software Foundation, either version 3 of the 
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+package TIMS.Database;
 
 public class Department {
     // dept table fields

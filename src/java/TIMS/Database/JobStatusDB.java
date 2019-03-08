@@ -1,6 +1,26 @@
-/*
- * Copyright @2015-2018
- */
+// Copyright (C) 2019 A*STAR
+//
+// TIMS (Translation Informatics Management System) is an software effort 
+// by the ABSD (Analytics of Biological Sequence Data) team in the 
+// Bioinformatics Institute (BII), Agency of Science, Technology and Research 
+// (A*STAR), Singapore.
+//
+
+// This file is part of TIMS.
+// 
+// TIMS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as 
+// published by the Free Software Foundation, either version 3 of the 
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
 package TIMS.Database;
 
 import java.sql.Connection;
@@ -15,29 +35,6 @@ import org.apache.logging.log4j.LogManager;
 // Libraries for Trove
 import gnu.trove.map.hash.TIntObjectHashMap;
 import gnu.trove.map.hash.TObjectIntHashMap;
-
-/**
- * JobStatusDB is an abstract class and not mean to be instantiate, its main 
- * job is to return the job status name based on the status_id.
- * 
- * Author: Tay Wei Hong
- * Date: 2-Oct-2015
- * 
- * Revision History
- * 02-Oct-2015 - First baseline with two static methods (getJobStatusName and 
- * getJobStatusDef) created.
- * 06-Oct-2015 - Added a check at getJobStatusDef to prevent the query from 
- * being run multiple times. Added Log4j2 for this class.
- * 07-Oct-2015 - Changed to connection based for database access.
- * 11-Dec-2015 - Changed to abstract class. Change class name from JobStatus to
- * JobStatusDB. Improve the method getJobStatusDef.
- * 22-Dec-2015 - To close the ResultSet after use.
- * 29-Feb-2016 - Implementation of Data Source pooling. To use DataSource to 
- * get the database connection instead of using DriverManager.
- * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
- * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
- * (Institution - Department - Group).
- */
 
 public abstract class JobStatusDB {
     // Get the logger for Log4j

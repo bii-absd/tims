@@ -1,6 +1,26 @@
-/*
- * Copyright @2015-2017
- */
+// Copyright (C) 2019 A*STAR
+//
+// TIMS (Translation Informatics Management System) is an software effort 
+// by the ABSD (Analytics of Biological Sequence Data) team in the 
+// Bioinformatics Institute (BII), Agency of Science, Technology and Research 
+// (A*STAR), Singapore.
+//
+
+// This file is part of TIMS.
+// 
+// TIMS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as 
+// published by the Free Software Foundation, either version 3 of the 
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
 package TIMS.Database;
 
 import java.sql.ResultSet;
@@ -8,35 +28,6 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-
-/**
- * FinalizingJobEntry is used to represent the job_id, pipeline technology 
- * (i.e. tid), pipeline name and submission time that will be retrieved from
- * database when the user is ready to finalize the study.
- * 
- * Author: Tay Wei Hong
- * Date: 22-Dec-2015
- * 
- * Revision History
- * 22-Dec-2015 - Created with the necessary methods implemented.
- * 24-Dec-2015 - Added one method, toString() to return a string representation
- * of the object.
- * 22-Jan-2016 - Added one new field, user_id and one new method getUserName().
- * 08-Apr-2016 - Added new fields; input_sn, study_id, chip_type and 
- * normalization, and one new method getInputDesc().
- * 12-Apr-2016 - Added one new field, summarization.
- * 14-Apr-2016 - Change type for submit_time to Timestamp.
- * 19-May-2016 - Added one attribute detail_output. Update the constructor to
- * receive the FinalizingJobEntry parameters directly from the database.
- * 22-Jun-2016 - Removed unused code. Added one attribute cbio_target; to 
- * indicate whether this job had been selected for export to cBioPortal.
- * 01-Sep-2016 - Added one attribute input_desc. Removed method getInputDesc().
- * 13-Feb-2017 - To consolidate all the pipeline parameters (i.e. chip_type, 
- * normalization and summarization) into one field (i.e. parameters) in the 
- * database.
- * 10-Oct-2017 - Added one new method getPipelineText(). Enhanced the 
- * constructor to just take in the ResultSet parameter.
- */
 
 public class FinalizingJobEntry {
     private int job_id, input_sn;

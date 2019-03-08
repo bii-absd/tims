@@ -1,6 +1,26 @@
-/*
- * Copyright @2015-2018
- */
+// Copyright (C) 2019 A*STAR
+//
+// TIMS (Translation Informatics Management System) is an software effort 
+// by the ABSD (Analytics of Biological Sequence Data) team in the 
+// Bioinformatics Institute (BII), Agency of Science, Technology and Research 
+// (A*STAR), Singapore.
+//
+
+// This file is part of TIMS.
+// 
+// TIMS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as 
+// published by the Free Software Foundation, either version 3 of the 
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
 package TIMS.Database;
 
 import TIMS.General.Constants;
@@ -17,42 +37,6 @@ import javax.naming.NamingException;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
-/**
- * PipelineDB is used to perform SQL operations on the pipeline table in the 
- * database.
- * 
- * Author: Tay Wei Hong
- * Date: 5-Nov-2015
- * 
- * Revision History
- * 05-Nov-2015 - First baseline with two static methods (getCommand and 
- * getAllCommand) created.
- * 06-Nov-2015 - Added one new method updateCommand to update the pipeline
- * command in database.
- * 16-Nov-2015 - Added one new method insertPipelineCommand to insert a new
- * pipeline command into database. Updated the name for all methods i.e. from
- * Command to Pipeline.
- * 24-Nov-2015 - Changed variable name from command_id to name. Added one
- * variable tid (Technology ID).
- * 25-Nov-2015 - Added one new method getPipelineTechnology.
- * 01-Dec-2015 - Implementation for database 2.0
- * 10-Dec-2015 - Changed to abstract class.
- * 13-Jan-2016 - Removed all the static variables in Pipeline Management module.
- * 29-Feb-2016 - Implementation of Data Source pooling. To use DataSource to 
- * get the database connection instead of using DriverManager.
- * 04-Jul-2016 - Added 4 constant strings to store the name of the pipelines.
- * 25-Aug-2016 - Passed the ResultSet directly to the Pipeline constructor
- * during creation of Pipeline object. Implementation for database 3.6 Part I.
- * Added 3 new methods getEditablePlHash, getPipelineDescription & 
- * getPlAttribute.
- * 06-Feb-2017 - Added 2 new constants strings for RNA and DNA Sequencing 
- * pipelines.
- * 08-Feb-2017 - Removed constant CNV. Added 2 new constants strings for CNV
- * Illumina and CNV Affymetrix.
- * 13-Jul-2017 - Added new method isGATKPipeline() to check whether the pipeline
- * passed in belongs to GATK Sequencing Pipeline family or not.
- */
 
 public class PipelineDB {
     // Get the logger for Log4j
