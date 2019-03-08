@@ -1,6 +1,26 @@
-/*
- * Copyright @2019
- */
+// Copyright (C) 2019 A*STAR
+//
+// TIMS (Translation Informatics Management System) is an software effort 
+// by the ABSD (Analytics of Biological Sequence Data) team in the 
+// Bioinformatics Institute (BII), Agency of Science, Technology and Research 
+// (A*STAR), Singapore.
+//
+
+// This file is part of TIMS.
+// 
+// TIMS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as 
+// published by the Free Software Foundation, either version 3 of the 
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
 package TIMS.Bean;
 
 import TIMS.Database.ActivityLogDB;
@@ -53,31 +73,6 @@ import gnu.trove.map.hash.TObjectIntHashMap;
 import gnu.trove.iterator.TObjectIntIterator;
 import gnu.trove.map.hash.THashMap;
 import gnu.trove.set.hash.THashSet;
-
-/**
- * DashboardBean is the backing bean for the dashboard view.
- * 
- * Author: Tay Wei Hong
- * Created on: 25-Jun-2018
- * 
- * Revision History
- * 25-Jun-2018 - Implemented Dashboard module.
- * 13-Aug-2018 - Re-design the way the specific fields barchart is being 
- * generated. The subjectDetailList will be clear once it is no longer needed 
- * (to free up memory space). To check for empty age_at_baseline data in method 
- * genPieChartDOForAgeAtBaseline(). To hide the series info from the barchart
- * tool-tip when mouse-over.
- * 28-Aug-2018 - To replace JSF managed bean with CDI, and JSF ViewScoped with
- * omnifaces's ViewScoped.
- * 19-Nov-2018 - Implemented dashboard data source configurable module; to allow
- * admin to configure the data source for the pie chart and bar chart.
- * 29-Nov-2018 - Fix the bug found during UAT.
- * 07-Jan-2018 - Allow bar chart to plot specific field vs specific field. Sort
- * the data series of the pie chart. Reverse the data series of the horizontal 
- * bar chart, so that they appear in the correct order. Show the data tip of the
- * horizontal bar chart at 2 decimal points. When building the Specific Fields 
- * data points, don't count those entries with "--" content.
- */
 
 @Named("DBBean")
 @ViewScoped

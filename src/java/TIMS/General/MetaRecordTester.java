@@ -1,6 +1,26 @@
-/*
- * Copyright @2018
- */
+// Copyright (C) 2019 A*STAR
+//
+// TIMS (Translation Informatics Management System) is an software effort 
+// by the ABSD (Analytics of Biological Sequence Data) team in the 
+// Bioinformatics Institute (BII), Agency of Science, Technology and Research 
+// (A*STAR), Singapore.
+//
+
+// This file is part of TIMS.
+// 
+// TIMS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as 
+// published by the Free Software Foundation, either version 3 of the 
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
 package TIMS.General;
 
 import TIMS.Database.MetaRecord;
@@ -14,20 +34,6 @@ import org.apache.logging.log4j.LogManager;
 import gnu.trove.set.hash.THashSet;
 import gnu.trove.iterator.hash.TObjectHashIterator;
 import gnu.trove.map.hash.TObjectIntHashMap;
-
-/**
- * MetaRecordTester is used to test the validity of the Meta records that have 
- * been uploaded by the user, and to display the preliminary data quality of
- * the uploaded data.
- * 
- * Author: Tay Wei Hong
- * Date: 27-Mar-2018
- * 
- * Revision History
- * 06-Apr-2018 - Created with the following methods: checkForMissingVisit,
- * checkForMissingSubject and validateMetaRecords.
- * 21-May-2018 - Minor changes in method validateMetaRecords().
- */
 
 public class MetaRecordTester {
     // Get the logger for Log4j

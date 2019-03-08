@@ -1,6 +1,26 @@
-/*
- * Copyright @2015-2018
- */
+// Copyright (C) 2019 A*STAR
+//
+// TIMS (Translation Informatics Management System) is an software effort 
+// by the ABSD (Analytics of Biological Sequence Data) team in the 
+// Bioinformatics Institute (BII), Agency of Science, Technology and Research 
+// (A*STAR), Singapore.
+//
+
+// This file is part of TIMS.
+// 
+// TIMS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as 
+// published by the Free Software Foundation, either version 3 of the 
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
 package TIMS.Database;
 
 import TIMS.General.Constants;
@@ -33,92 +53,6 @@ import org.apache.pdfbox.pdmodel.edit.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.graphics.xobject.PDJpeg;
-
-/**
- * DataDepositor read in the processed data from the pipeline output and 
- * stored them into the database.
- * 
- * Author: Tay Wei Hong
- * Date: 19-Nov-2015
- * 
- * Revision History
- * 19-Nov-2015 - Created with the necessary methods implemented.
- * 24-Nov-2015 - DataDepositor will be run as a thread.
- * 03-Dec-2015 - Retrieve all the necessary info from the database.
- * 17-Dec-2015 - Group all the SQL statements as one transaction (i.e. 
- * autoCommit is set to off). Improve on the logic to insert gene value into
- * data array. Big improvement in the timing for inserting 22 records of 
- * 18,210/34,694 gene values; from 178 sec to 56 sec.
- * 23-Dec-2015 - Instead of receiving a single job_id, the constructor will
- * receive a list of job entries. This class will then process all those job_id
- * found in the list of job entries.
- * 28-Dec-2015 - Moved method subjectExistInDB to SubjectDB. Improve on the 
- * code in method insertFinalizedDataIntoDB().
- * 07-Jan-2016 - Continue to generate the consolidated output after the data
- * insertion has completed successfully. Generated the summary report after 
- * finalization.Removed unused code.
- * 08-Jan-2016 - Generate the PDF version of the summary report.
- * 12-Jan-2016 - Fix the static variable issues in AuthenticationBean.
- * 20-Jan-2016 - Updated study table in database; added one new variable closed, 
- * and renamed completed to finalized.
- * 22-Jan-2016 - Study finalization logic change; finalization will be 
- * performed for each pipeline instead of each technology. Changed the format
- * of the summary report.
- * 26-Jan-2016 - Implemented audit data capture module.
- * 27-Jan-2016 - To revert the submitted job status back to completed if 
- * finalization failed.
- * 26-Feb-2016 - Implementation for database 3.0 (Part 3).
- * 29-Feb-2016 - Implementation of Data Source pooling. To use DataSource to 
- * get the database connection instead of using DriverManager.
- * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
- * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
- * (Institution - Department - Group).
- * 14-Mar-2016 - Minor changes to the summary report.
- * 22-Mar-2016 - Changes due to the addition field (i.e. icd_code) in the 
- * finalized_record table.
- * 24-Mar-2016 - To improve on the generation of summary report i.e. the ability
- * to generate multiple pages, have a set of gene available versus stored 
- * information for each pipeline, etc.
- * 28-Mar-2016 - Added in a checkpoint debug message before starting the gene
- * data processing; to make sure the thread is still alive.
- * 04-Apr-2016 - When checking for subject Meta data availability, the system
- * will now check against the new study_subject table. The system will now store
- * the study ID (instead of icd_code) into the finalized_record.
- * 13-Apr-2016 - Only send out the finalization status email here if the 
- * finalization has failed, else let DataRetriever send out the status email
- * after all the pipeline output have been consolidated.
- * 14-Apr-2016 - Changes due to the type change (i.e. to Timestamp) for 
- * submit_time and complete_time in submitted_job table.
- * 13-May-2016 - Bug fix: To ensure the summary report has enough space to hold 
- * the last section of the report. Minor changes as the pipeline output file 
- * will now be zipped.
- * 19-May-2016 - To delete those temporary files generated during finalization
- * of study. To zip all the detail output file(s) into a single zip file.
- * 03-Jun-2016 - Reduce the top spacing of the summary report (for page 2 and
- * beyond).
- * 22-Jul-2016 - Fix the bug where empty string get printed in section B when 
- * generating the summary report.
- * 10-Aug-2016 - In method insertFinalizedDataIntoDB(), use the 
- * try-with-resource statement to create the BufferedReader object. Performed
- * code refactoring on method insertFinalizedDataIntoDB().
- * 30-Aug-2016 - Changes due to change in method name in Constants class. 
- * Removed unused code.
- * 12-Dec-2016 - Add in the semaphore control during insertion of data into
- * data_depository table. Removed unused code.
- * 13-Feb-2017 - To include the parameters setup during pipeline execution into
- * the summary report.
- * 20-Feb-2017 - To revert all the submitted jobs and study status if during
- * finalization, exception occurred. Re-index the annotation index on data 
- * depositor table after successful finalization. To include the subject record
- * stored information in the summary report. Added 2 private methods 
- * revertStudyStatus() and reindexDataDepositoryIndex().
- * 19-Apr-2017 - Subject's meta data will now be own by study, and the study 
- * will be own by group i.e. the direct link between group and subject's meta 
- * data will be break off. Changes due to table name change in database (i.e.
- * from finalized_output to finalized_record.)
- * 24-Apr-2018 - Changes in the system directory format; all the study related
- * output/report will be stored in the studies/study_id/ directory.
- */
 
 public class DataDepositor extends Thread {
     // Get the logger for Log4j

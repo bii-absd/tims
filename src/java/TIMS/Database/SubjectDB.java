@@ -1,6 +1,26 @@
-/*
- * Copyright @2015-2018
- */
+// Copyright (C) 2019 A*STAR
+//
+// TIMS (Translation Informatics Management System) is an software effort 
+// by the ABSD (Analytics of Biological Sequence Data) team in the 
+// Bioinformatics Institute (BII), Agency of Science, Technology and Research 
+// (A*STAR), Singapore.
+//
+
+// This file is part of TIMS.
+// 
+// TIMS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as 
+// published by the Free Software Foundation, either version 3 of the 
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
 package TIMS.Database;
 
 import TIMS.General.Constants;
@@ -19,58 +39,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 // Library for Trove
 import gnu.trove.map.hash.TObjectIntHashMap;
-
-/**
- * SubjectDB is used to perform SQL operations on the subject table in the 
- * database.
- * 
- * Author: Tay Wei Hong
- * Date: 10-Dec-2015
- * 
- * Revision History
- * 10-Dec-2015 - First baseline with 3 static methods, insertSubject, 
- * querySubject and clearSubList().
- * 14-Dec-2015 - Added new method, updateSubject.
- * 28-Dec-2015 - Added new method, isSubjectExistInDept.
- * 04-Jan-2016 - Fix the bug in updateSubject (i.e. to setup the 6th parameter).
- * 13-Jan-2016 - Removed all the static variables in Clinical Data Management
- * module.
- * 25-Feb-2016 - Implementation for database 3.0 (Part 2).
- * 29-Feb-2016 - Implementation of Data Source pooling. To use DataSource to 
- * get the database connection instead of using DriverManager.
- * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
- * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
- * (Institution - Department - Group).
- * 28-Mar-2016 - Added new method, buildStudySubjectMD() to retrieve and build
- * the study subject Meta data.
- * 30-Mar-2016 - Added the handling for 3 new attributes in subject
- * (i.e. remarks, event and event_date).
- * 31-Mar-2016 - getSubtDetailList() will return a list of SubjectDetail instead
- * of Subject. buildStudySubjectMD() will query from subject_detail view. 
- * Changes due to the movement of some attributes from Subject to StudySubject.
- * 04-Apr-2016 - Enhanced buildStudySubjectMD() method; to return the subject 
- * class, remarks, event and event date.
- * 17-Apr-2017 - Subject's meta data will now be own by study, and the study
- * will be own by group i.e. the direct link between group and subject's meta
- * data will be break off. Removed grp_id, and added study_id and subtype_code
- * in subject DB table.
- * 28-Apr-2017 - Added new method getSubjectIDHashMap() to retrieve the hashmap
- * of subject IDs that belong to a study.
- * 29-May-2017 - Changes due to change in Subject table (i.e. age_at_baseline
- * changed to float type.)
- * 06-Apr-2018 - Database version 2.0 changes. Added 3 new methods 
- * deleteAllSubjectsFromStudy, getSubject and getSubjectIDsList. Enhanced 
- * methods: insertSubject and updateSubject. Remove unused code.
- * 03-Jul-2018 - Added new method getDistinctValueInColumn(column_name) 
- * to return the list of distinct value found in this column under this study.
- * Changes due to addition of new field age_at_baseline in Subject table.
- * 31-Jul-2018 - Bug fix: To check for empty string and non-float string at
- * method getAgeAtBaselineList().
- * 30-Aug-2018 - Removed abstract class and static methods to save metaspace
- * memory.
- * 08-Nov-2018 - Added new method getDistinctValueCountInColumn(column_name) to
- * return the count of each distinct value in this column under this study.
- */
 
 public class SubjectDB {
     // Get the logger for Log4j

@@ -1,6 +1,26 @@
-/*
- * Copyright @2015-2017
- */
+// Copyright (C) 2019 A*STAR
+//
+// TIMS (Translation Informatics Management System) is an software effort 
+// by the ABSD (Analytics of Biological Sequence Data) team in the 
+// Bioinformatics Institute (BII), Agency of Science, Technology and Research 
+// (A*STAR), Singapore.
+//
+
+// This file is part of TIMS.
+// 
+// TIMS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as 
+// published by the Free Software Foundation, either version 3 of the 
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
 package TIMS.Database;
 
 import TIMS.General.Constants;
@@ -15,35 +35,6 @@ import javax.servlet.ServletContext;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.postgresql.ds.PGConnectionPoolDataSource;
-
-/**
- * DBHelper is a helper class that provide the postgresSQL database connection 
- * to those classes that needed to access the database. 
- * 
- * Author: Tay Wei Hong
- * Date: 28-Sep-2015
- * 
- * Revision History
- * 28-Sep-2015 - First baseline with 3 methods (getDBConn, runQuery and
- * getServletContext) created.
- * 29-Sep-2015 - Hard-coded the database dirver and database name due to the
- * difficulty in maintaining the values at Constants class.
- * 02-Oct-2015 - Added in the comments for the code.
- * 07-Oct-2015 - Added Log4j2 for this class. Changed to connection based for 
- * database access.
- * 15-Oct-2015 - Critical error handling. All the exceptions encountered
- * while getting the database connection should be handle by the caller.
- * 17-Dec-2015 - Added 2 static methods, setDBTransactionIsolation and
- * checkDBTransactionIsolation().
- * 26-Feb-2016 - According to Java SE 7 document, applications no longer need to
- * explictly load JDBC drivers using Class.forName(). Removed that code.
- * 29-Feb-2016 - Implementation of Data Source pooling. To use DataSource to 
- * get the database connection instead of using DriverManager.
- * 25-Apr-2016 - Increased the maximum allowed database connections to 16.
- * 12-Dec-2016 - Provide the token to proceed for finalization and closure of 
- * study.
- * 19-Apr-2017 - Changes due to PostgreSQL JDBC driver upgrade.
- */
 
 @ApplicationScoped
 public abstract class DBHelper {

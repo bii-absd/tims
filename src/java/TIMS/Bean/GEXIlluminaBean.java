@@ -1,89 +1,40 @@
-/*
- * Copyright @2015-2018
- */
+// Copyright (C) 2019 A*STAR
+//
+// TIMS (Translation Informatics Management System) is an software effort 
+// by the ABSD (Analytics of Biological Sequence Data) team in the 
+// Bioinformatics Institute (BII), Agency of Science, Technology and Research 
+// (A*STAR), Singapore.
+//
+
+// This file is part of TIMS.
+// 
+// TIMS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as 
+// published by the Free Software Foundation, either version 3 of the 
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
 package TIMS.Bean;
 
 import static TIMS.Bean.ConfigBean.logger;
 import TIMS.Database.InputData;
-import TIMS.Database.InputDataDB;
 import TIMS.General.Constants;
 // Libraries for Java
-import java.io.File;
 import java.sql.SQLException;
 // Libraries for Java Extension
 import javax.annotation.PostConstruct;
 import javax.inject.Named;
-//import javax.faces.bean.ManagedBean;
-//import javax.faces.bean.ViewScoped;
 import javax.naming.NamingException;
 // Library for omnifaces
 import org.omnifaces.cdi.ViewScoped;
 
-/**
- * GEXIlluminaBean is used as the backing bean for the gex-illumina view.
- * 
- * Author: Tay Wei Hong
- * Date: 13-Nov-2015
- * 
- * Revision History
- * 13-Nov-2015 - Initial creation by refactoring from ArrayConfigBean.
- * 18-Nov-2015 - override the abstract method updateJobSubmissionStatus(), and 
- * removed the abstract method allowToSubmitJob().
- * 25-Nov-2015 - Renamed pipelineType to pipelineTech. Implementation for 
- * database 2.0
- * 02-Dec-2015 - Streamline the createConfigFile method.
- * 16-Dec-2015 - Implemented the new abstract method saveSampleFileDetail(). 
- * Sample annotation file will be having the same common name for all pipelines.
- * 22-Dec-2015 - Control probe file will be having the same common name for all
- * pipelines.
- * 31-Dec-2015 - Implemented the module for reusing the input data.
- * 05-Jan-2015 - Changes in submitted_job table, removed ctrl_file and annot_
- * file fields. Added input_path field.
- * 06-Jan-2016 - Fixed the bug caused by the introduction of input_path field.
- * 12-Jan-2016 - Fix the static variable issues in AuthenticationBean.
- * 13-Jan-2016 - One new field user_id added in the input_data table; to 
- * identify the user who has uploaded this input data.
- * 14-Jan-2016 - Removed all the static variables in Pipeline Configuration
- * Management module.
- * 14-Jan-2016 - Deleted method getTypeList(). The pipeline type list will be 
- * retrieved from MenuBean.
- * 18-Jan-2016 - Changed the type of variable sample_average from String to
- * boolean.
- * 19-Jan-2016 - Initialize the variable probeFilters in the constructor. 
- * 20-Jan-2016 - To streamline the navigation flow and passing of pipeline name
- * from main menu to pipeline configuration pages.
- * 21-Jan-2016 - Added one new field pipeline_name in the input_data table; to
- * associate this input_data with the respective pipeline.
- * 19-Feb-2016 - To use the new generic method renameFilename in FileUploadBean
- * class when renaming annotation and control files. To use the new generic
- * constructor in FileUploadBean class when creating new object.
- * 29-Feb-2016 - Implementation of Data Source pooling. To use DataSource to 
- * get the database connection instead of using DriverManager.
- * 24-Mar-2016 - Changes due to the new attribute (i.e. complete_time) added in
- * submitted_job table.
- * 29-Mar-2016 - Instead of storing the input path, the system will store the 
- * input SN.
- * 11-Apr-2016 - Changes due to the removal of attributes (sample_average, 
- * standardization, region and probe_select) from submitted_job table.
- * 12-Apr-2016 - Changes due to the removal of attributes (probe_filtering and
- * phenotype_column) from submitted_job table.
- * 14-Apr-2016 - Changes due to the type change (i.e. to Timestamp) for 
- * submit_time and complete_time in submitted_job table.
- * 19-May-2016 - Changes due to the addition attribute (i.e. detail_output) in 
- * submitted_job table.
- * 25-Aug-2016 - Changes due to method name (i.e. getCreateTimeString) change 
- * in InputData class.
- * 01-Sep-2016 - Changes due to the addition attribute (i.e. input_desc) in 
- * submitted_job table.
- * 05-Sep-2016 - Changes due to change in constant name.
- * 14-Sep-2016 - Implemented Raw Data Customization module. Removed method 
- * insertJob().
- * 28-Aug-2018 - To replace JSF managed bean with CDI, and JSF ViewScoped with
- * omnifaces's ViewScoped.
- * 31-Jan-2019 - To use a common input directory for all newly uploaded raw data.
- */
-
-//@ManagedBean (name="gexIlluBean")
 @Named("gexIlluBean")
 @ViewScoped
 public class GEXIlluminaBean extends ConfigBean {

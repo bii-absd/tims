@@ -1,39 +1,32 @@
-/*
- * Copyright @2015-2018
- */
+// Copyright (C) 2019 A*STAR
+//
+// TIMS (Translation Informatics Management System) is an software effort 
+// by the ABSD (Analytics of Biological Sequence Data) team in the 
+// Bioinformatics Institute (BII), Agency of Science, Technology and Research 
+// (A*STAR), Singapore.
+//
+
+// This file is part of TIMS.
+// 
+// TIMS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as 
+// published by the Free Software Foundation, either version 3 of the 
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
 package TIMS.Database;
 
 // Libraries for Java
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
-
-/**
- * Subject is used to represent the subject table in the database.
- * 
- * Author: Tay Wei Hong
- * Date: 10-Dec-2015
- * 
- * Revision History
- * 10-Dec-2015 - Created with all the standard getters and setters.
- * 14-Dec-2015 - Override the method toString() to return the string
- * representation of the subject meta data.
- * 25-Feb-2016 - Implementation for database 3.0 (Part 2).
- * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
- * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
- * (Institution - Department - Group).
- * 30-Mar-2016 - Added 3 new attributes i.e. remarks, event and event_date.
- * 31-Mar-2016 - Only keep attributes subject_id, grp_id, country_code, race
- * and gender in this class. Move the rest to StudySubject Class.
- * 18-Apr-2017 - Removed grp_id, and added study_id, subtype_code and
- * age_at_baseline.
- * 29-May-2017 - Variable age_at_baseline changed from integer to float type.
- * 06-Apr-2018 - Database version 2.0 changes to support meta data upload
- * through Excel.
- * 15-May-2018 - Removed method getCaseControlInInt, because casecontrol will
- * be represented by case or control (instead of 0 and 1).
- * 13-Jul-2018 - Added one new field age_at_baseline in Subject table.
- */
 
 public class Subject {
     private String subject_id, study_id, race, gender, casecontrol, 

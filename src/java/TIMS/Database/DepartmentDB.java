@@ -1,6 +1,26 @@
-/*
- * Copyright @2015-2018
- */
+// Copyright (C) 2019 A*STAR
+//
+// TIMS (Translation Informatics Management System) is an software effort 
+// by the ABSD (Analytics of Biological Sequence Data) team in the 
+// Bioinformatics Institute (BII), Agency of Science, Technology and Research 
+// (A*STAR), Singapore.
+//
+
+// This file is part of TIMS.
+// 
+// TIMS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as 
+// published by the Free Software Foundation, either version 3 of the 
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
 package TIMS.Database;
 
 import TIMS.General.Constants;
@@ -18,41 +38,6 @@ import javax.naming.NamingException;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
-/**
- * DepartmentDB is an abstract class and not mean to be instantiate, its main 
- * job is to perform SQL operations on the dept table in the database.
- * 
- * Author: Tay Wei Hong
- * Date: 13-Nov-2015
- * 
- * Revision History
- * 13-Nov-2015 - Created with all the standard getters and setters.
- * 16-Nov-2015 - Added 2 new methods, getDeptList() to get the full 
- * department list and getDeptHashMap(inst_code) to get the department list 
- * for the respective institution.
- * 30-Nov-2015 - Implementation for database 2.0
- * 09-Dec-2015 - Added new method getDeptIDList, to return the list of dept_id 
- * setup under the specific institution. Added in the module for adding and
- * updating department info.
- * 11-Dec-2015 - Added new attribute deptHash, that stores the full list of
- * Department ID that have been setup in the system.
- * 22-Dec-2015 - Changed the class to abstract. To close the ResultSet after 
- * use.
- * 13-Dec-2016 - Removed all the static variables in Study and ItemList
- * management modules.
- * 18-Feb-2016 - Added new method getDeptInstID, to retrieve the institution ID 
- * from the dept table.
- * 29-Feb-2016 - Implementation of Data Source pooling. To use DataSource to 
- * get the database connection instead of using DriverManager.
- * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
- * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
- * (Institution - Department - Group).
- * 07-Apr-2016 - Implemented the general function for building the hashmap of 
- * the department IDs setup in the system.
- * 13-Apr-2016 - Changed method updateDepartment() to allow update to the 
- * department name only.
- */
 
 public class DepartmentDB implements Serializable {
     // Get the logger for Log4j

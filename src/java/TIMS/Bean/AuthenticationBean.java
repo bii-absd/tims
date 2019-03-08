@@ -1,6 +1,26 @@
-/*
- * Copyright @2015-2019
- */
+// Copyright (C) 2019 A*STAR
+//
+// TIMS (Translation Informatics Management System) is an software effort 
+// by the ABSD (Analytics of Biological Sequence Data) team in the 
+// Bioinformatics Institute (BII), Agency of Science, Technology and Research 
+// (A*STAR), Singapore.
+//
+
+// This file is part of TIMS.
+// 
+// TIMS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as 
+// published by the Free Software Foundation, either version 3 of the 
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
 package TIMS.Bean;
 
 import TIMS.Database.ActivityLogDB;
@@ -30,100 +50,6 @@ import javax.faces.bean.ManagedBean;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
-/**
- * AuthenticationBean is the backing bean for the login view.
- * 
- * Author: Tay Wei Hong
- * Created on: 18-Sep-2015
- * 
- * Revision History
- * 18-Sep-2015 - Created with all the standard getters and setters.
- * 23-Sep-2015 - Moved the configuration setting outside of application.
- * 25-Sep-2015 - Read in the setup file from the context-param setup in web.xml
- * 28-Sep-2015 - Added the code for authentication in login method. to use
- * general constants for success and failure.
- * 29-Sep-2015 - Added the logout method.
- * 01-Oct-2015 - Changed the return value of the logout method.
- * 06-Oct-2015 - Added comment for the code. Added Log4j2 for this class. 
- * 07-Oct-2015 - Changed to connection based for database access; only one
- * DBHelper will be created for the whole system. Classes that need to access
- * the database will get a connection from the DBHelper class.
- * 09-Oct-2015 - Added 2 new methods (getHeaderInstDept and getHeaderFullName)
- * to support the header.jsp view. Added a new variable userAcct. To use the
- * new class UserAccountDB for checking of user password.
- * 12-Oct-2015 - Added support for super user.
- * 13-Oct-2015 - Added new method getAdminRight, to provide basic access control
- * to command/link.
- * 15-Oct-2015 - Critical error handling.
- * 21-Oct-2015 - To create user directory once successfully login.
- * 22-Oct-2015 - Added one String variable to store the user home directory.
- * 23-Oct-2015 - To create system directory once successfully login.
- * 27-Oct-2015 - Created 2 new functions setupConstants and setupMenuList, to
- * handle the setting up of systems constants and parameters.
- * 02-Nov-2015 - To create all the user system directories once successfully 
- * login.
- * 03-Nov-2015 - Setup will be loaded base on the Operating System the 
- * application is hosted on.
- * 04-Nov-2015 - To update the last login time of the user once he/she 
- * successfully login to the system.
- * 09-Nov-2015 - Added one static method isAdministrator() to check whether is
- * the current user a administrator.
- * 11-Nov-2015 - To add the credential upon user successful login, and to 
- * remove the credential upon user logout. Changed the return type of 
- * setupConstants() and setupMenuList() methods. To have a common exit point
- * for login() method.
- * 16-Nov-2015 - To retrieve institution list from database after login.
- * 01-Dec-2015 - Implementation for database 2.0
- * 02-Dec-2015 - Implemented the changes in the input folder directory.
- * 28-Dec-2015 - Added 2 new methods, isSupervisor() and isClinical().
- * 07-Jan-2016 - Added one new method, getFullName() to be used during 
- * generation of study's summary report.
- * 12-Jan-2016 - Fix the static variable issues in AuthenticationBean.
- * 13-Dec-2016 - Removed all the static variables in Study and ItemList
- * management modules.
- * 14-Jan-2016 - Deleted method setupMenuList. The menu item list will be setup
- * in MenuBean.
- * 15-Jan-2016 - Enhanced the error handling during login.
- * 26-Jan-2016 - Implemented audit data capture module.
- * 29-Jan-2016 - To use a common system setup file for both Windows and Linux OS.
- * 17-Feb-2016 - To alert the user one minute before session timeout, and to 
- * allow the user to extend the session.
- * 18-Feb-2016 - Added 2 new methods, allUsersJobStatus() and 
- * singleUserJobStatus(), to set the single user mode in the session map.
- * 19-Feb-2016 - To support user account with picture uploaded.
- * 23-Feb-2016 - Implementation for database 3.0 (Part 1).
- * 24-Feb-2016 - To direct user to different page based on their role. Fix the 
- * bug where the application crashed because the user's photo has been removed 
- * from the directory.
- * 29-Feb-2016 - Implementation of Data Source pooling. To use DataSource to 
- * get the database connection instead of using DriverManager.
- * 01-Mar-2016 - System and user working directories will only be created during
- * system parameters setup and user account creation (instead of during user 
- * login).
- * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
- * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
- * (Institution - Department - Group).
- * 14-Mar-2016 - Added one new method, isLead() to check whether the user is a
- * Director|HOD|PI.
- * 14-Mar-2016 - Fix the null pointer exception when the system is first setup.
- * 22-Mar-2016 - To build the ICD code HashMap once user login.
- * 08-Apr-2016 - To build the Institution ID HashMap once user login.
- * 21-Jul-2016 - To retrieve and build the feature active status list from 
- * the database. Added 2 new methods, isCBioPortalON() and isVisualizationON().
- * 25-Aug-2016 - Renamed the method isPI() to isAdminPILead(), and changed it's 
- * implementation.
- * 30-Aug-2016 - Changes due to change in method name in Constants class.
- * 02-Feb-2017 - Load the system parameters from database after login.
- * 11-Jun-2018 - Changes due to update in feature table; replaced active 
- * (BOOLEAN) with status (TEXT). Added one new method, getHomeStr() that return
- * the string to be use for the Home Link.
- * 13-Jul-2018 - Director and HOD will now be directed to dashboard page when
- * they first login.
- * 15-Oct-2018 - Fix: To check for super user in method getHomeStr().
- * 07-Jan-2019 - Added 2 new methods, isArrayProcessingON() and 
- * isNgsProcessingON().
- */
 
 @ManagedBean (name="authBean")
 @SessionScoped

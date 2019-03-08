@@ -1,24 +1,32 @@
-/*
- * Copyright @2016
- */
+// Copyright (C) 2019 A*STAR
+//
+// TIMS (Translation Informatics Management System) is an software effort 
+// by the ABSD (Analytics of Biological Sequence Data) team in the 
+// Bioinformatics Institute (BII), Agency of Science, Technology and Research 
+// (A*STAR), Singapore.
+//
+
+// This file is part of TIMS.
+// 
+// TIMS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as 
+// published by the Free Software Foundation, either version 3 of the 
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
 package TIMS.General;
 
 import TIMS.Database.UserAccount;
 // Libraries for Log4j
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-/**
- * QueryStringGenerator is an abstract class and not mean to be instantiate, 
- * its main job is to create general string for database query. 
- * 
- * Author: Tay Wei Hong
- * Date: 20-Jun-2016
- * 
- * Revision History
- * 22-Jun-2016 - Created with two methods, genGrpQuery4Visualize() and 
- * genGrpQuery4Review().
- */
 
 public abstract class QueryStringGenerator {
     // Get the logger for Log4j

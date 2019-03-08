@@ -1,6 +1,26 @@
-/*
- * Copyright @2018
- */
+// Copyright (C) 2019 A*STAR
+//
+// TIMS (Translation Informatics Management System) is an software effort 
+// by the ABSD (Analytics of Biological Sequence Data) team in the 
+// Bioinformatics Institute (BII), Agency of Science, Technology and Research 
+// (A*STAR), Singapore.
+//
+
+// This file is part of TIMS.
+// 
+// TIMS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as 
+// published by the Free Software Foundation, either version 3 of the 
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
 package TIMS.Database;
 
 import TIMS.General.Constants;
@@ -20,31 +40,6 @@ import java.util.regex.Pattern;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
-/**
- * MetaRecord is used to implement the stage transition flow for the uploaded 
- * record status. It will also perform basic validation for the record date and 
- * dob, and to generate the prolog query to validate the other data of 
- * interests.
- * 
- * Author: Tay Wei Hong
- * Date: 23-Mar-2018
- * 
- * Revision History
- * 06-Apr-2018 - Created with the implementation for the stage transition flow,
- * and basic validation for the core data.
- * 15-May-2018 - Add in addition check to make sure that the year is 4 digits 
- * in dod and record_date. Validate the height and weight if they are present.
- * Fix the initial re-assignment of record status in the constructor i.e. to
- * follow what is being shown in the flowchart. casecontrol is a core data
- * now i.e. it cannot be null and it needs to pass the validation.
- * 08-Jun-2018 - Height and weight if present, will be round off to 2 decimal
- * places.
- * 13-Jul-2018 - Added one new field age_at_baseline. This is not a compulsory 
- * field and will only be added to the Subject table if it is available.
- * 14-Aug-2018 - Include the validation and formating (1 decimal) for 
- * age_at_baseline.
- */
 
 public class MetaRecord {
     // Get the logger for Log4j

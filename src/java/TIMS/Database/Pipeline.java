@@ -1,27 +1,31 @@
-/*
- * Copyright @2015-2016
- */
+// Copyright (C) 2019 A*STAR
+//
+// TIMS (Translation Informatics Management System) is an software effort 
+// by the ABSD (Analytics of Biological Sequence Data) team in the 
+// Bioinformatics Institute (BII), Agency of Science, Technology and Research 
+// (A*STAR), Singapore.
+//
+
+// This file is part of TIMS.
+// 
+// TIMS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as 
+// published by the Free Software Foundation, either version 3 of the 
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
 package TIMS.Database;
 
 import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
-/**
- * Pipeline is used to represent the pipeline table in the database.
- * 
- * Author: Tay Wei Hong
- * Date: 5-Nov-2015
- * 
- * Revision History
- * 05-Nov-2015 - Created with all the standard getters and setters. Added one 
- * method toString.
- * 24-Nov-2015 - Changed variable name from command_id to name. Added one
- * variable tid (Technology ID).
- * 01-Dec-2015 - Implementation for database 2.0
- * 25-Aug-2016 - Update the constructor to receive the Pipeline parameters 
- * directly from the database. Implementation for database 3.6 Part I.
- */
 
 public class Pipeline implements Serializable {
     private String name, description, tid, command, parameter;

@@ -1,6 +1,26 @@
-/*
- * Copyright @2016-2018
- */
+// Copyright (C) 2019 A*STAR
+//
+// TIMS (Translation Informatics Management System) is an software effort 
+// by the ABSD (Analytics of Biological Sequence Data) team in the 
+// Bioinformatics Institute (BII), Agency of Science, Technology and Research 
+// (A*STAR), Singapore.
+//
+
+// This file is part of TIMS.
+// 
+// TIMS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as 
+// published by the Free Software Foundation, either version 3 of the 
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
 package TIMS.Database;
 
 import TIMS.General.Constants;
@@ -18,29 +38,6 @@ import javax.naming.NamingException;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
-/**
- * GroupDB is an abstract class and not mean to be instantiate, its main 
- * job is to perform SQL operations on the grp table in the database.
- * 
- * Author: Tay Wei Hong
- * Date: 04-Mar-2016
- * 
- * Revision History
- * 04-Mar-2016 - Created with all the standard getters and setters.
- * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
- * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
- * (Institution - Department - Group).
- * 15-Mar-2016 - Changes due to a new field (i.e. active) added in the grp 
- * table. For Study management queries, only return those groups which are 
- * active and have pi setup.
- * 05-Apr-2016 - Added new method getInstDeptGrpList(), that return the list of 
- * group hierarchy structure (together with its leading PI).
- * 08-Apr-2016 - Added new method getInstGrpHash, to retrieve the HashMap of 
- * all the group IDs setup under a specific institution.
- * 12-Jul-2018 - Added new method getGrpIDList, to return the list of group IDs
- * setup in the system using the query passed in.
- */
 
 public class GroupDB implements Serializable {
     // Get the logger for Log4j

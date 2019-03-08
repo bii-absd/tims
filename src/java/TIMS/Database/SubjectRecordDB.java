@@ -1,6 +1,26 @@
-/*
- * Copyright @2016-2018
- */
+// Copyright (C) 2019 A*STAR
+//
+// TIMS (Translation Informatics Management System) is an software effort 
+// by the ABSD (Analytics of Biological Sequence Data) team in the 
+// Bioinformatics Institute (BII), Agency of Science, Technology and Research 
+// (A*STAR), Singapore.
+//
+
+// This file is part of TIMS.
+// 
+// TIMS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as 
+// published by the Free Software Foundation, either version 3 of the 
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
 package TIMS.Database;
 
 import TIMS.General.Constants;
@@ -20,30 +40,6 @@ import javax.naming.NamingException;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
-/**
- * SubjectRecordDB is an abstract class and not mean to be instantiate, its main 
- job is to perform SQL operations on the subject_record table in the database.
- * 
- * Author: Tay Wei Hong
- * Date: 31-Mar-2016
- * 
- * Revision History
- * 31-Mar-2016 - First baseline with 4 static methods, insertSS, getSSList, 
- * updateSS and isSSExist.
- * 13-Apr-2016 - Added new method updatePartialSS(), to exclude event and
- * event date during updating of subject_record table.
- * 17-Apr-2017 - Subject's meta data will now be own by study, and the study
- * will be own by group i.e. the direct link between group and subject's meta
- * data will be break off. Rename to SubjectRecordDB.
- * 28-Apr-2017 - Changes due to removal of age_at_diagnosis from subject_record 
- * database table.
- * 06-Apr-2018 - Database version 2.0 changes. Added 3 new methods: 
- * deleteAllSubjectRecordsFromStudy, getSubjectRecord and 
- * getSubjectRecordDateList. Enhanced 2 methods: insertSR and 
- * updatePartialSubjectRecord.
- * 13-Jul-2018 - Changes due to changes in subject_record table.
- */
 
 public abstract class SubjectRecordDB {
     // Get the logger for Log4j

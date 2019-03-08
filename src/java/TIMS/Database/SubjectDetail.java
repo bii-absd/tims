@@ -1,6 +1,26 @@
-/*
- * Copyright @2016-2019
- */
+// Copyright (C) 2019 A*STAR
+//
+// TIMS (Translation Informatics Management System) is an software effort 
+// by the ABSD (Analytics of Biological Sequence Data) team in the 
+// Bioinformatics Institute (BII), Agency of Science, Technology and Research 
+// (A*STAR), Singapore.
+//
+
+// This file is part of TIMS.
+// 
+// TIMS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as 
+// published by the Free Software Foundation, either version 3 of the 
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
 package TIMS.Database;
 
 import TIMS.General.Constants;
@@ -14,36 +34,6 @@ import java.util.List;
 import java.util.Map;
 // Library for Trove
 import gnu.trove.map.hash.THashMap;
-
-/**
- * SubjectDetail is used to represent the subject_detail view in the database.
- * The objects from this class will be used to present the full detail of the
- * subjects in the metadatamanagement page.
- * 
- * Author: Tay Wei Hong
- * Date: 31-Mar-2016
- * 
- * Revision History
- * 31-Mar-2016 - Created with all the standard getters and setters.
- * 18-Apr-2017 - Removed grp_id, and added record_date.
- * 28-Apr-2017 - Change of attribute name from age_at_diagnosis to 
- * age_at_baseline. Add new constructor that build the object directly from
- * the result set returned from database query.
- * 29-May-2017 - Changes due to change in Subject table (i.e. age_at_baseline
- * changed to float type.)
- * 06-Apr-2018 - Database version 2.0 changes to support meta data upload
- * through Excel.
- * 15-May-2018 - Removed method getCaseControlInInt, because casecontrol will
- * be represented by case or control (instead of 0 and 1).
- * 13-Jul-2018 - Added two new methods, convertDataToHashMap and 
- * retrieveDataFromHashMap. Removed attributes remarks, event and event_date.
- * Added one new attribute age_at_baseline.
- * 08-Nov-2018 - Added one new method, getCoreData(data_name) to return the 
- * core data value for the data name passed in.
- * 04-Jan-2019 - Added one new attribute ssf_content to store the specific
- * field content of this subject; to be used in generating the specific field
- * report in the dashboard page.
- */
 
 public class SubjectDetail {
     // subject_detail view attributes

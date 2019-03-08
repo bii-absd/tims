@@ -1,6 +1,26 @@
-/*
- * Copyright @2015-2018
- */
+// Copyright (C) 2019 A*STAR
+//
+// TIMS (Translation Informatics Management System) is an software effort 
+// by the ABSD (Analytics of Biological Sequence Data) team in the 
+// Bioinformatics Institute (BII), Agency of Science, Technology and Research 
+// (A*STAR), Singapore.
+//
+
+// This file is part of TIMS.
+// 
+// TIMS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as 
+// published by the Free Software Foundation, either version 3 of the 
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
 package TIMS.Database;
 
 import TIMS.General.Constants;
@@ -21,45 +41,6 @@ import javax.naming.NamingException;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
-/**
- * DataRetriever read in the finalized data from the database and output them
- * to a text file.
- * 
- * Author: Tay Wei Hong
- * Date: 04-Dec-2015
- * 
- * Revision History
- * 04-Dec-2015 - Created with the necessary methods implemented.
- * 07-Dec-2015 - Added in the code for time logging.
- * 17-Dec-2015 - Improve on the logic to retrieve the finalized data and output
- * them to a text file. Using StringBuilder to build the data line for each 
- * record. Big improvement in the timing for retrieving and outputting 44 
- * records of 26,424 gene values; from 304 sec to 12 sec.
- * 22-Jan-2016 - Study finalization logic change; finalization will be 
- * performed for each pipeline instead of each technology.
- * 29-Feb-2016 - Implementation of Data Source pooling. To use DataSource to 
- * get the database connection instead of using DriverManager.
- * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
- * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
- * (Institution - Department - Group).
- * 28-Mar-2016 - To retrieve and include the subject's age, gender, race, height 
- * and weight in the consolidated output.
- * 04-Apr-2016 - To retrieve and include the subject class, remarks, event and
- * event date in the consolidated output.
- * 13-Apr-2016 - To send the finalization completed status email to user once
- * all the pipeline output have been consolidated.
- * 13-May-2016 - To zip the finalized output file once it has been generated. 
- * To delete the original output file after it has been zipped.
- * 10-Aug-2016 - In method consolidateFinalizedData(), use the try-with-resource
- * statement to create the PrintStream object. Removed unused code.
- * 19-Apr-2017 - Subject's meta data will now be own by study, and the study 
- * will be own by group i.e. the direct link between group and subject's meta 
- * data will be break off. The subject record and pipeline output will be 
- * separated into 2 files.
- * 24-Apr-2018 - Changes in the system directory format; all the study related
- * output/report will be stored in the studies/study_id/ directory.
- */
 
 public class DataRetriever extends Thread {
     // Get the logger for Log4j

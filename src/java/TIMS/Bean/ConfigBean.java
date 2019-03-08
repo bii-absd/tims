@@ -1,6 +1,26 @@
-/*
- * Copyright @2015-2019
- */
+// Copyright (C) 2019 A*STAR
+//
+// TIMS (Translation Informatics Management System) is an software effort 
+// by the ABSD (Analytics of Biological Sequence Data) team in the 
+// Bioinformatics Institute (BII), Agency of Science, Technology and Research 
+// (A*STAR), Singapore.
+//
+
+// This file is part of TIMS.
+// 
+// TIMS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as 
+// published by the Free Software Foundation, either version 3 of the 
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
 package TIMS.Bean;
 
 import TIMS.Database.ActivityLogDB;
@@ -42,104 +62,6 @@ import javax.naming.NamingException;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
-/**
- * ConfigBean is an abstract class, and it will be extended by all the pipeline
- * configuration beans.
- * 
- * Author: Tay Wei Hong
- * Date: 13-Nov-2015
- * 
- * Revision History
- * 13-Nov-2015 - Initial creation by refactoring from ArrayConfigBean.
- * 18-Nov-2015 - Removed one abstract method allowToSubmitJob(), added one 
- * variable jobSubmissionStatus, and one abstract method 
- * updateJobSubmissionStatus() to resolve the issues surrounding the job
- * submission's readiness status.
- * 25-Nov-2015 - Renamed pipelineType to pipelineTech. Implementation for 
- * database 2.0
- * 02-Dec-2015 - Streamline the createConfigFile method. Implemented the changes
- * in the input folder directory.
- * 07-Dec-2015 - Recreate the annotationList every time a new sample annotation
- * file is uploaded.
- * 11-Dec-2015 - Added method getStudyList that return the list of Study ID 
- * setup for the user's department.
- * 15-Dec-2015 - Shifted method getStudyList to Class MenuSelectionBean. 
- * Removed the submission time from study id (in the config file). Implemented 
- * the new workflow (i.e. User to select Study ID before proceeding to pipeline 
- * configuration.
- * 16-Dec-2015 - Added one attribute inputFileDesc, and one abstract method
- * saveSampleFileDetail(). To save the sample file detail to database, and
- * rename the sample annotation file before executing the pipeline.
- * 22-Dec-2015 - Added one abstract method renameAnnotCtrlFiles(), to rename
- * the sample annotation file (and control probe file) to a common name for all
- * pipelines. Added one attribute, haveNewData.
- * 31-Dec-2015 - Implemented the module for reusing the input data.
- * 06-Jan-2016 - Added new method, getInputPath().
- * 12-Jan-2016 - Fix the static variable issues in AuthenticationBean.
- * 12-Jan-2016 - To include the study ID into the config filename.
- * 14-Jan-2016 - Removed all the static variables in Pipeline Configuration
- * Management module.
- * 18-Jan-2016 - Changed the type of variable sample_average from String to
- * boolean.
- * 20-Jan-2016 - To streamline the navigation flow and passing of pipeline name
- * from main menu to pipeline configuration pages.
- * 21-Jan-2016 - Added one new field pipeline_name in the input_data table; to
- * associate this input_data with the respective pipeline.
- * 26-Jan-2016 - Implemented audit data capture module.
- * 28-Jan-2016 - Added the pipeline name into the config file content and 
- * filename. Added the seconds timing into the filename.
- * 18-Feb-2016 - To check the input files received with the filename listed in
- * the annotation file. List out the missing files (if any) and notice the user
- * during pipeline configuration review.
- * 19-Feb-2016 - To use the new generic method renameFilename in FileUploadBean
- * class when renaming annotation and control files. To use the new generic
- * constructor in FileUploadBean class when creating new object.
- * 29-Feb-2016 - Implementation of Data Source pooling. To use DataSource to 
- * get the database connection instead of using DriverManager.
- * 29-Mar-2016 - Instead of storing the input path, the system will store the 
- * input SN.
- * 11-Apr-2016 - Changes due to the removal of attributes (sample_average, 
- * standardization, region and probe_select) from submitted_job table.
- * 12-Apr-2016 - Changes due to the removal of attributes (probe_filtering and
- * phenotype_column) from submitted_job table. Allow administrator to upload 
- * raw data through the UI.
- * 14-Apr-2016 - Changes due to the type change (i.e. to Timestamp) for 
- * submit_time and complete_time in submitted_job table.
- * 25-Apr-2016 - Commented out some unnecessary comments.
- * 13-May-2016 - Minor changes; to rename some of the variables.
- * 19-May-2016 - Changes due to the addition attribute (i.e. detail_output) in 
- * submitted_job table.
- * 25-Aug-2016 - Changes due to attribute name change in Pipeline table, and 
- * method name (i.e. getCreateTimeString) change in InputData class. Removed 
- * unused code.
- * 05-Sep-2016 - Added method downloadAnnot, to allow user to download the
- * annotation file from the input package.
- * 14-Sep-2016 - Implemented Raw Data Customization module. Defined nested 
- * class ExcludeFileName. Code refactoring for the method insertJob().
- * 20-Sep-2016 - Enhanced method retrieveRawDataFileList() to make sure the 
- * filename is sorted before storing them into the file list.
- * 22-Sep-2016 - To record the raw data customization activity into the 
- * database.
- * 29-Nov-2016 - To include the annotation version in the config file.
- * 08-Dec-2016 - To record user activity after uploading of new raw data. To 
- * check the correctness of the annotation file format.
- * 06-Feb-2017 - Added helper functions getFilenamePairs() and 
- * filterRawDataFileList().
- * 08-Feb-2017 - Enhanced getAllFilenameFromAnnot(), so that it could handle
- * empty line in annotation file. Renamed method getFilenamePairs() to 
- * getFilenamePairsFromAnnot().
- * 13-Feb-2017 - To consolidate all the pipeline parameters (i.e. chip_type, 
- * normalization and summarization) into one field (i.e. parameters) in the 
- * database.
- * 13-Jul-2017 - Changes due to the addition of GATK Sequencing Pipelines.
- * 25-Sep-2017 - If the pipeline process failed to start, need to update the
- * job status to failed.
- * 15-May-2018 - Don't create the dummy files for pipeline output and detail
- * after submitting jobs.
- * 24-Jan-2019 - Added GTF file for RNA Seq pipeline.
- * 31-Jan-2019 - To use a common input directory for all newly uploaded raw data.
- */
 
 public abstract class ConfigBean implements Serializable {
     // Get the logger for Log4j

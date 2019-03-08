@@ -1,6 +1,26 @@
-/*
- * Copyright @2015-2016
- */
+// Copyright (C) 2019 A*STAR
+//
+// TIMS (Translation Informatics Management System) is an software effort 
+// by the ABSD (Analytics of Biological Sequence Data) team in the 
+// Bioinformatics Institute (BII), Agency of Science, Technology and Research 
+// (A*STAR), Singapore.
+//
+
+// This file is part of TIMS.
+// 
+// TIMS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as 
+// published by the Free Software Foundation, either version 3 of the 
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
 package TIMS.General;
 
 import TIMS.Database.SubmittedJobDB;
@@ -10,34 +30,6 @@ import java.util.EventListener;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
-/**
- * ProcessListener is used to update the job status once the pipeline has 
- * completed it's execution.
- * 
- * Author: Tay Wei Hong
- * Date: 12-Oct-2015
- * 
- * Revision History
- * 12-Oct-2015 - Created with one method processFinished.
- * 13-Oct-2015 - Added new method sendEmail that send a email to notify the 
- * user of the completion of pipeline execution.
- * 14-Oct-2015 - For failed case, CC the email to the support team for 
- * investigation.
- * 02-Nov-2015 - Port to JSF 2.2
- * 05-Nov-2015 - To receive the study ID of this job, and to retrieve the user
- * account of the job requestor. Personalize the email sent to the user.
- * 11-Jan-2015 - To include the pipeline name in the subject title of the email.
- * 13-Jan-2016 - Removed all the static variables in Account Management module.
- * 18-Jan-2016 - Moved the sendMail method to Postman class.
- * 24-Mar-2016 - To record into database, the pipeline execution completion time.
- * 14-Apr-2016 - Changes due to the type change (i.e. to Timestamp) for 
- * submit_time and complete_time in submitted_job table.
- * 13-May-2016 - To zip the output file once it has been generated. To delete
- * the original output file after it has been zipped.
- * 19-May-2016 - To zip the detail output file once it has been generated. To
- * delete the original detail output file after it has been zipped.
- */
 
 public class ExitListener implements EventListener {
     // Get the logger for Log4j

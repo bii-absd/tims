@@ -1,6 +1,26 @@
-/*
- * Copyright @2015-2017
- */
+// Copyright (C) 2019 A*STAR
+//
+// TIMS (Translation Informatics Management System) is an software effort 
+// by the ABSD (Analytics of Biological Sequence Data) team in the 
+// Bioinformatics Institute (BII), Agency of Science, Technology and Research 
+// (A*STAR), Singapore.
+//
+
+// This file is part of TIMS.
+// 
+// TIMS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as 
+// published by the Free Software Foundation, either version 3 of the 
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
 package TIMS.Database;
 
 import TIMS.General.Constants;
@@ -24,101 +44,6 @@ import javax.naming.NamingException;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
-/**
- * SubmittedJobDB is an abstract class and not mean to be instantiate, its 
- * main job is to perform SQL operations on the submitted_job table in the 
- * database.
- * 
- * Author: Tay Wei Hong
- * Date: 02-Oct-2015
- * 
- * Revision History
- * 02-Oct-2015 - First baseline with two static methods (insertJob and 
- * querySubmittedJob) created.
- * 05-Oct-2015 - Added 2 new variables queryOrderBy and orderIn, and the usual
- * getters and setters. Added the code to allow the query to be order by
- * different column.
- * 06-Oct-2015 - Added method getLastInsertedJob to return the job_id of the
- * most recent insert job request. Added a check at querySubmittedJob to prevent
- * the query from being run multiple times. Added Log4j2 to this class.
- * 07-Oct-2015 - Changed to connection based for database access.
- * 08-Oct-2015 - Add methods to update the status_id of submitted job.
- * 12-Oct-2015 - Added job_id field during query. Log the exception message.
- * 23-Oct-2015 - Added report field during query.
- * 30-Nov-2015 - Commented out unused code. Implementation for database 2.0
- * 04-Dec-2015 - Removed unused code. Modify method insertJob() to return the
- * job_id of the newly inserted job. Fix: querySubmittedJob should not return
- * those jobs that are either finalizing or finalized.
- * 10-Dec-2015 - Changed to abstract class. Removed unused code. Improve the
- * method getLastInsertedJob().
- * 23-Dec-2015 - To close the ResultSet after use. Added 2 new methods, 
- * queryTIDUsedInStudy and queryCompletedJobsInStudy to support the finalize
- * study module.
- * 24-Dec-2015 - Added one method, getOutputPath to retrieve the output 
- * filepath of the submitted job.
- * 30-Dec-2015 - Changed the query in method querySubmittedJob; to include
- * jobs that are in finalized stage.
- * 05-Jan-2015 - Changes in submitted_job table, removed ctrl_file and annot_
- * file fields. Added input_path field.
- * 11-Jan-2015 - Added new method, getPipelineName to retrieve the name of the
- * pipeline executed for the job.
- * 12-Jan-2016 - Fix the static variable issues in AuthenticationBean.
- * 13-Jan-2016 - Removed all the static variables in Job Status module.
- * 18-Jan-2016 - Changed the type of variable sample_average from String to
- * Boolean.
- * 21-Jan-2016 - Added 3 new methods; getJobsFullDetail to return the list of
- * full detail SubmittedJob objects, getPipelineExeInStudy to return the
- * list of pipeline executed in the study, and updateJobStatusToWaiting.
- * 22-Jan-2016 - Study finalization logic change; finalization will be 
- * performed for each pipeline instead of each technology.
- * 01-Feb-2016 - When retrieving submitted jobs, there are now 2 options 
- * available i.e. to retrieve for single user or all users (enable for 
- * administrator only).
- * 15-Feb-2016 - Added one new method getFinalizedJobIDs, to return all the
- * finalized job ID for the respective study ID.
- * 29-Feb-2016 - Implementation of Data Source pooling. To use DataSource to 
- * get the database connection instead of using DriverManager.
- * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
- * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
- * (Institution - Department - Group).
- * 14-Mar-2016 - To fetch the condition for the query in method 
- * getFinalizedJobIDs from JobStatusDB class, instead of hard-coding it.
- * 24-Mar-2016 - Changes due to the new attribute (i.e. complete_time) added in
- * submitted_job table.
- * 29-Mar-2016 - Changes due to the removal of input_path and the addition of
- * input_sn in submitted_job table.
- * 08-Apr-2016 - Changes due to addition fields defined in FinalizingJobEntry
- * class.
- * 11-Apr-2016 - Changes due to the removal of attributes (sample_average, 
- * standardization, region and probe_select) from submitted_job table.
- * 12-Apr-2016 - Changes due to the removal of attributes (probe_filtering and
- * phenotype_column) from submitted_job table. Changes due to addition one field
- * (i.e. summarization) defined in FinalizingJobEntry.
- * 14-Apr-2016 - Changes due to the type change (i.e. to Timestamp) for 
- * submit_time and complete_time in submitted_job table.
- * 13-May-2016 - Added 3 new methods, updateOutputPath(), zipOutputFile() and
- * unzipOutputFile().
- * 19-May-2016 - Implemented the module for Pipeline Detail Output File.
- * 20-Jun-2016 - Removed unused code, and updated method getJobsFullDetail().
- * 22-Jun-2016 - Renamed methods getPipelineExeInStudy() to 
- * getCompletedPlNameInStudy(), and updateFilePath() to updateSJField(). 
- * Changed the query condition in methods getCompletedPlJobsInStudy() and 
- * getCompletedPlNameInStudy() to include both completed and finalized jobs.
- * Added methods setCbioTarget4Job() and resetCbioTarget4Study() to update the
- * cbio_target status at job and study level.
- * Enhanced methods updateJobInputSN(), updateDetailOutputPath and 
- * updateOutputPath() to make use of the helper function updateSJField().
- * 04-Jul-2016 - Updated the comments for method unzipOutputFile().
- * 07-Jul-2016 - Removed unused code. Added one new method, 
- * getcBioExportedJobs().
- * 01-Sep-2016 - Implementation for database 3.6 Part II.
- * 13-Feb-2017 - To consolidate all the pipeline parameters (i.e. chip_type, 
- * normalization and summarization) into one field (i.e. parameters) in the 
- * database.
- * 10-Oct-2017 - Added new method getCompletedProfileJobsInStudy() to return
- * the list of completed jobs for this visualiser's profile.
- */
 
 public abstract class SubmittedJobDB {
     // Get the logger for Log4j

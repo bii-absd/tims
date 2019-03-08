@@ -1,72 +1,36 @@
-/*
- * Copyright @2016-2018
- */
+// Copyright (C) 2019 A*STAR
+//
+// TIMS (Translation Informatics Management System) is an software effort 
+// by the ABSD (Analytics of Biological Sequence Data) team in the 
+// Bioinformatics Institute (BII), Agency of Science, Technology and Research 
+// (A*STAR), Singapore.
+//
+
+// This file is part of TIMS.
+// 
+// TIMS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as 
+// published by the Free Software Foundation, either version 3 of the 
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
 package TIMS.Bean;
 
 import static TIMS.Bean.ConfigBean.logger;
 import TIMS.General.Constants;
-// Library for Java
-import java.io.File;
 // Libraries for Java Extension
 import javax.inject.Named;
 import javax.annotation.PostConstruct;
 // Library for omnifaces
 import org.omnifaces.cdi.ViewScoped;
-//import javax.faces.bean.ManagedBean;
-//import javax.faces.bean.ViewScoped;
 
-/**
- * CNVIlluminaBean is used as the backing bean for the cnv-pipeline view.
- * 
- * Author: Tay Wei Hong
- * Date: 19-Jan-2016
- * 
- * Revision History
- * 19-Jan-2016 - Initial creation by extending GEXIlluminaBean. Override the
- * insertJob method.
- * 20-Jan-2016 - Changed from extending GEXIlluminaBean to GEXAffymetrixBean
- * because CNV need to support multiple input files upload.
- * 20-Jan-2016 - To streamline the navigation flow and passing of pipeline name
- * from main menu to pipeline configuration pages.
- * 18-Feb-2016 - To check the input files received with the filename listed in
- * the annotation file. List out the missing files (if any) and notice the user
- * during pipeline configuration review.
- * 19-Feb-2016 - To use the new generic method renameFilename in FileUploadBean
- * class when renaming annotation and control files. To use the new generic
- * constructor in FileUploadBean class when creating new object.
- * 29-Feb-2016 - Implementation of Data Source pooling. To use DataSource to 
- * get the database connection instead of using DriverManager.
- * 24-Mar-2016 - Changes due to the new attribute (i.e. complete_time) added in
- * submitted_job table.
- * 29-Mar-2016 - Instead of storing the input path, the system will store the 
- * input SN.
- * 11-Apr-2016 - Changes due to the removal of attributes (sample_average, 
- * standardization, region and probe_select) from submitted_job table.
- * 12-Apr-2016 - Changes due to the removal of attributes (probe_filtering and
- * phenotype_column) from submitted_job table.
- * 14-Apr-2016 - Changes due to the type change (i.e. to Timestamp) for 
- * submit_time and complete_time in submitted_job table.
- * 19-May-2016 - Changes due to the addition attribute (i.e. detail_output) in 
- * submitted_job table.
- * 25-Aug-2016 - Changes due to method name (i.e. getCreateTimeString) change 
- * in InputData class.
- * 01-Sep-2016 - Changes due to the addition attribute (i.e. input_desc) in 
- * submitted_job table.
- * 05-Sep-2016 - Changes due to change in constant name.
- * 14-Sep-2016 - Implemented Raw Data Customization module. Removed method 
- * insertJob().
- * 21-Sep-2016 - Enhanced method retrieveRawDataFileList() to make sure the 
- * filename is sorted before storing them into the file list. Removed unused
- * code.
- * 06-Feb-2017 - Enhanced method retrieveRawDataFileList() to use the helper
- * function filterRawDataFileList().
- * 08-Feb-2017 - Renamed from CNVPipelineBean to CNVIlluminaBean.
- * 28-Aug-2018 - To replace JSF managed bean with CDI, and JSF ViewScoped with
- * omnifaces's ViewScoped.
- * 31-Jan-2019 - To use a common input directory for all newly uploaded raw data.
- */
-
-//@ManagedBean (name="cnvIlluBean")
 @Named("cnvIlluBean")
 @ViewScoped
 public class CNVIlluminaBean extends GEXAffymetrixBean {

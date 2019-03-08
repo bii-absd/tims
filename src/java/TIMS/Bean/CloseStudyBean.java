@@ -1,6 +1,26 @@
-/*
- * Copyright @2016-2018
- */
+// Copyright (C) 2019 A*STAR
+//
+// TIMS (Translation Informatics Management System) is an software effort 
+// by the ABSD (Analytics of Biological Sequence Data) team in the 
+// Bioinformatics Institute (BII), Agency of Science, Technology and Research 
+// (A*STAR), Singapore.
+//
+
+// This file is part of TIMS.
+// 
+// TIMS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as 
+// published by the Free Software Foundation, either version 3 of the 
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
 package TIMS.Bean;
 
 import TIMS.Database.ActivityLogDB;
@@ -15,8 +35,6 @@ import java.util.ArrayList;
 import java.util.List;
 // Libraries for Java Extension
 import javax.annotation.PostConstruct;
-//import javax.faces.bean.ManagedBean;
-//import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
 import javax.inject.Named;
 import javax.naming.NamingException;
@@ -25,21 +43,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.omnifaces.cdi.ViewScoped;
 
-/**
- * CloseStudyBean is the backing bean for the closestudy view.
- * 
- * Author: Tay Wei Hong
- * Date: 14-Mar-2016
- * 
- * Revision History
- * 14-Mar-2016 - Created with all the standard getters and setters. Implemented 
- * the module to close study.
- * 28-Aug-2018 - To replace JSF managed bean with CDI, and JSF ViewScoped with
- * omnifaces's ViewScoped.
- */
-
 @Named("clstudyBean")
-//@ManagedBean (name="clstudyBean")
 @ViewScoped
 public class CloseStudyBean implements Serializable {
     // Get the logger for Log4j

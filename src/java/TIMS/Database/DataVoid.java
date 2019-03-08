@@ -1,6 +1,26 @@
-/*
- * Copyright @2016-2017
- */
+// Copyright (C) 2019 A*STAR
+//
+// TIMS (Translation Informatics Management System) is an software effort 
+// by the ABSD (Analytics of Biological Sequence Data) team in the 
+// Bioinformatics Institute (BII), Agency of Science, Technology and Research 
+// (A*STAR), Singapore.
+//
+
+// This file is part of TIMS.
+// 
+// TIMS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as 
+// published by the Free Software Foundation, either version 3 of the 
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
 package TIMS.Database;
 
 import TIMS.General.Constants;
@@ -17,31 +37,6 @@ import javax.naming.NamingException;
 // Libraries for Log4j
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
-/**
- * DataVoid perform the unfinalization process on selected Study. It will void
- * the records in the finalized output table (i.e. by setting job ID to 0 and 
- * subject ID to VOID), and set the data to VOID in the data depository table.
- * 
- * Author: Tay Wei Hong
- * Date: 15-Feb-2016
- * 
- * Revision History
- * 15-Feb-2016 - Implemented the module to unfinalize study..
- * 29-Feb-2016 - Implementation of Data Source pooling. To use DataSource to 
- * get the database connection instead of using DriverManager.
- * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
- * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
- * (Institution - Department - Group).
- * 19-May-2016 - To delete the consolidated output, detail output, and report 
- * summary once the un-finalization has completed.
- * 03-Jun-2016 - To send the un-finalization status email to user once the
- * process has completed.
- * 10-Aug-2016 - In method getArrayIndexes(), use the try-with-resource 
- * statement to create the ResultSet object.
- * 19-Apr-2017 - Changes due to change of table name in database (i.e. from
- * finalized_output to finalized_record.)
- */
 
 public class DataVoid extends Thread {
     // Get the logger for Log4j

@@ -1,6 +1,26 @@
-/*
- * Copyright @2015-2018
- */
+// Copyright (C) 2019 A*STAR
+//
+// TIMS (Translation Informatics Management System) is an software effort 
+// by the ABSD (Analytics of Biological Sequence Data) team in the 
+// Bioinformatics Institute (BII), Agency of Science, Technology and Research 
+// (A*STAR), Singapore.
+//
+
+// This file is part of TIMS.
+// 
+// TIMS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as 
+// published by the Free Software Foundation, either version 3 of the 
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
 package TIMS.Bean;
 
 import TIMS.Database.ActivityLogDB;
@@ -38,8 +58,6 @@ import java.util.Collections;
 // Libraries for Java Extension
 import javax.annotation.PostConstruct;
 import javax.faces.application.FacesMessage;
-//import javax.faces.bean.ManagedBean;
-//import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
 import javax.inject.Named;
 // Libraries for Log4j
@@ -62,77 +80,6 @@ import gnu.trove.set.hash.THashSet;
 import gnu.trove.set.hash.TLinkedHashSet;
 import gnu.trove.map.hash.TObjectIntHashMap;
 
-/**
- * MetaDataManagementBean is the backing bean for the metadatamanagement view.
- * 
- * Author: Tay Wei Hong
- * Date: 14-Dec-2015
- *
- * Revision History
- * 14-Dec-2015 - Created with all the standard getters and setters. Added 3 new
- * methods insertMetaData(), metaDataUpload and onRowEdit.
- * 04-Jan-2016 - Added new method buildSubjectList(). Improved the method 
- * metaDataUpload.
- * 13-Jan-2016 - Removed all the static variables in Clinical Data Management
- * module.
- * 26-Jan-2016 - Implemented audit data capture module.
- * 25-Feb-2016 - Implementation for database 3.0 (Part 2). Bug fix: To check
- * that the strings read in from the meta data uploaded represent valid integer
- * and float values.
- * 29-Feb-2016 - Implementation of Data Source pooling. To use DataSource to 
- * get the database connection instead of using DriverManager.
- * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
- * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
- * (Institution - Department - Group).
- * 30-Mar-2016 - Changed the class name from ClinicalDataManagementBean to 
- * MetaDataManagementBean. Added the handling for 3 new attributes in subject
- * (i.e. remarks, event and event_date).
- * 31-Mar-2016 - Subject meta data will be split into 2 tables (i.e. Subject 
- * and SubjectRecord), to handle the scenario whereby the subjects are involved
- * in more than one study and their attributes (i.e. height, weight, etc) might
- * have change across those studies. During data upload/entry, perform database
- * insert/update according to whether the subject exist in database or not.
- * 04-Apr-2016 - For new subject record entry, only allow new record insertion
- * i.e. no update allowed.
- * 12-Apr-2016 - To include remarks field during Meta data upload. To refine 
- * the logic for new subject record entry; allow update to subject record BUT 
- * only allow insertion for study_subject record.
- * 14-Apr-2016 - For remarks and event fields, if there are empty, store them
- * as null value.
- * 19-Apr-2016 - Bug Fix: Subject(s) uploaded or created should be pack under
- * the owner of the study.
- * 12-Apr-2017 - The fixed attributes (i.e. gender, race and nationality) can 
- * only be changed through UI manually (not through meta file upload). Log the 
- * user who change the fixed attributes. Subject's meta data will now be own 
- * by study, and the study will be own by group i.e. the direct link between 
- * group and subject's meta data will be break off.
- * 25-Apr-2017 - Added the functionality for user to download the Meta data list
- * for the respective study.
- * 28-Apr-2017 - Renamed method insertMetaData() to insertNewMeasurement().
- * Fixed the bugs found during demo.
- * 19-May-2017 - To display error message if the date format is incorrect
- * during Meta data file upload. During Meta data file upload or insert new
- * measurement, only check for the special character '|' in the event and 
- * remark fields.
- * 29-May-2017 - Changes due to change in Subject table (i.e. age_at_baseline
- * changed to float type.)
- * 06-Apr-2018 - Database version 2.0 changes. Implemented the module for 
- * uploading of meta data through Excel file, and the validation and consistency
- * checks on the uploaded data.
- * 15-May-2018 - Removed the core data from the data column value; the core data
- * will be stored and displayed separately. Add in a check to make sure all the
- * core data columns are available before proceeding to create the meta records.
- * 17-Jul-2018 - Commented out unused code. Implemented the Dashboard module. 
- * Tagging of core data fields to column ID can be done through Excel file;
- * instead of hard coding the column ID.
- * 14-Aug-2018 - Removed unused code. Remove Height, Weight and DateOfBirth data
- * in method removeCoreData().
- * 23-Aug-2018 - To allow update to study specific fields.
- * 28-Aug-2018 - To replace JSF managed bean with CDI, and JSF ViewScoped with
- * omnifaces's ViewScoped.
- */
-
-//@ManagedBean (name="MDMgntBean")
 @Named("MDMgntBean")
 @ViewScoped
 public class MetaDataManagementBean implements Serializable {

@@ -1,6 +1,26 @@
-/*
- * Copyright @2015-2018
- */
+// Copyright (C) 2019 A*STAR
+//
+// TIMS (Translation Informatics Management System) is an software effort 
+// by the ABSD (Analytics of Biological Sequence Data) team in the 
+// Bioinformatics Institute (BII), Agency of Science, Technology and Research 
+// (A*STAR), Singapore.
+//
+
+// This file is part of TIMS.
+// 
+// TIMS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as 
+// published by the Free Software Foundation, either version 3 of the 
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
 package TIMS.Bean;
 
 import TIMS.Database.ActivityLogDB;
@@ -18,8 +38,6 @@ import java.util.List;
 // Libraries for Java Extension
 import javax.annotation.PostConstruct;
 import javax.faces.application.FacesMessage;
-//import javax.faces.bean.ManagedBean;
-//import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
 import javax.inject.Named;
 import javax.naming.NamingException;
@@ -35,59 +53,6 @@ import org.primefaces.util.ComponentUtils;
 import org.primefaces.context.RequestContext;
 import org.primefaces.event.TabChangeEvent;
 
-/**
- * AccountManagementBean is the backing bean for the accountmanagement view.
- * 
- * Author: Tay Wei Hong
- * Date: 28-Sep-2015
- * 
- * Revision History
- * 28-Sep-2015 - Created with all the standard getters and setters.
- * 06-Oct-2015 - Added in the comments for the code. Added Log4j2 for this 
- * class.
- * 23-Oct-2015 - Role will be inputted by the user during account creation i.e.
- * no longer defaulted to 'User'.
- * 04-Nov-2015 - Port to JSF 2.2. Added new method changePassword to allow user
- * to change his/her password.  Added 2 new variables, new_pwd and cfm_pwd.
- * 09-Nov-2015 - Added the following methods to support the 'update user
- * account' module:
- * 1. init()
- * 2. getUserAcctList()
- * 3. onRowEdit
- * 13-Nov-2015 - Allowing administrator to change the password of other user.
- * Added one new method getAllUserID() that return all the user ID in the system.
- * 01-Dec-2015 - Implementation for database 2.0
- * 22-Dec-2015 - Updated due to changes in some of the method name from 
- * Database Classes.
- * 11-Jan-2016 - Fix the static variable issues in AuthenticationBean.
- * 13-Jan-2016 - Removed all the static variables in Account Management module.
- * 26-Jan-2016 - Implemented audit data capture module.
- * 19-Feb-2016 - To support user account with picture uploaded.
- * 23-Feb-2016 - To allow user to update their picture ID.
- * 29-Feb-2016 - Implementation of Data Source pooling. To use DataSource to 
- * get the database connection instead of using DriverManager.
- * 01-Mar-2016 - User working directories will be created once the user account
- * has been successfully inserted into the database (instead of during user 
- * login).
- * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
- * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
- * (Institution - Department - Group).
- * 14-Mar-2016 - Added one new method onRowEditCancel, to display a message 
- * when the user cancel the account update.
- * 15-Mar-2016 - During account creation, if the new account is a PI, then
- * automatically update the group's pi field with the new user_id if the field
- * is not setup yet.
- * 29-Mar-2016 - Added one new method onRowEditInit() to handle the rowEditInit 
- * event; to build the unit ID Hash according to the user role at the selected 
- * row.
- * 08-Apr-2016 - Added in the logic to prevent user from switching from one
- * institution to another institution during updating of user account. Added in
- * the institution selection during account creation.
- * 28-Aug-2018 - To replace JSF managed bean with CDI, and JSF ViewScoped with
- * omnifaces's ViewScoped.
- */
-
-//@ManagedBean (name="acctMgntBean")
 @Named("acctMgntBean")
 @ViewScoped
 public class AccountManagementBean implements Serializable {

@@ -1,6 +1,26 @@
-/*
- * Copyright @2018
- */
+// Copyright (C) 2019 A*STAR
+//
+// TIMS (Translation Informatics Management System) is an software effort 
+// by the ABSD (Analytics of Biological Sequence Data) team in the 
+// Bioinformatics Institute (BII), Agency of Science, Technology and Research 
+// (A*STAR), Singapore.
+//
+
+// This file is part of TIMS.
+// 
+// TIMS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as 
+// published by the Free Software Foundation, either version 3 of the 
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
 package TIMS.General;
 
 // Libraries for Java
@@ -13,19 +33,6 @@ import java.util.Map;
 // Libraries for Log4j
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-/**
- * MetaRecordStatusTracker is used to track the status of the uploaded records.
- * It will hold the record count and message associated with each record status.
- * 
- * Author: Tay Wei Hong
- * Date: 26-Apr-2018
- * 
- * Revision History
- * 26-Apr-2018 - Created with the following methods: createFinalTracker,
- * createPreliminaryTracker, createCommonCounter, generateQualityReport,
- * getStatsForPassedRecords, etc. And a static class StatusCounter.
- */
 
 public class MetaRecordStatusTracker {
     // Get the logger for Log4j

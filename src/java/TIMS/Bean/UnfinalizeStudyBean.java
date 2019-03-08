@@ -1,6 +1,26 @@
-/*
- * Copyright @2016-2018
- */
+// Copyright (C) 2019 A*STAR
+//
+// TIMS (Translation Informatics Management System) is an software effort 
+// by the ABSD (Analytics of Biological Sequence Data) team in the 
+// Bioinformatics Institute (BII), Agency of Science, Technology and Research 
+// (A*STAR), Singapore.
+//
+
+// This file is part of TIMS.
+// 
+// TIMS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as 
+// published by the Free Software Foundation, either version 3 of the 
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
 package TIMS.Bean;
 
 import TIMS.Database.ActivityLogDB;
@@ -17,8 +37,6 @@ import java.util.ArrayList;
 import java.util.List;
 // Libraries for Java Extension
 import javax.annotation.PostConstruct;
-//import javax.faces.bean.ManagedBean;
-//import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
 import javax.inject.Named;
 import javax.naming.NamingException;
@@ -28,26 +46,6 @@ import org.apache.logging.log4j.LogManager;
 // Library for omnifaces
 import org.omnifaces.cdi.ViewScoped;
 
-/**
- * UnfinalizeStudyBean is the backing bean for the unfinalizestudy view.
- * 
- * Author: Tay Wei Hong
- * Date: 15-Feb-2016
- * 
- * Revision History
- * 15-Feb-2016 - Created with all the standard getters and setters. Implemented 
- * the module to unfinalize study.
- * 29-Feb-2016 - Implementation of Data Source pooling. To use DataSource to 
- * get the database connection instead of using DriverManager.
- * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
- * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
- * (Institution - Department - Group).
- * 14-Dec-2016 - Do nothing for ad-hoc study.
- * 28-Aug-2018 - To replace JSF managed bean with CDI, and JSF ViewScoped with
- * omnifaces's ViewScoped.
- */
-
-//@ManagedBean (name="unfinBean")
 @Named("unfinBean")
 @ViewScoped
 public class UnfinalizeStudyBean implements Serializable {

@@ -1,6 +1,26 @@
-/*
- * Copyright @2016-2018
- */
+// Copyright (C) 2019 A*STAR
+//
+// TIMS (Translation Informatics Management System) is an software effort 
+// by the ABSD (Analytics of Biological Sequence Data) team in the 
+// Bioinformatics Institute (BII), Agency of Science, Technology and Research 
+// (A*STAR), Singapore.
+//
+
+// This file is part of TIMS.
+// 
+// TIMS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as 
+// published by the Free Software Foundation, either version 3 of the 
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
 package TIMS.Bean;
 
 import TIMS.Database.ActivityLogDB;
@@ -22,8 +42,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 // Libraries for Java Extension
 import javax.annotation.PostConstruct;
-//import javax.faces.bean.ManagedBean;
-//import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
 import javax.inject.Named;
 // Libraries for Log4j
@@ -32,25 +50,6 @@ import org.apache.logging.log4j.Logger;
 // Library for omnifaces
 import org.omnifaces.cdi.ViewScoped;
 
-/**
- * JobSelection4vBean is the backing bean for the jobselection4v view.
- * 
- * Author: Tay Wei Hong
- * Date: 20-Jun-2016
- * 
- * Revision History
- * 22-Jun-2016 - Created with all the standard getters and setters. Implemented
- * the UI for Job Selection during Exporting in the Visualization Module.
- * 04-Jul-2016 - Implemented the integration with cBioPortal application.
- * 07-Jul-2016 - To reset the cbio_url to NULL before starting the export.
- * 10-Feb-2017 - To allow jobs from up to 5 pipelines to be selected for export.
- * 09-Oct-2017 - The grouping of pipeline jobs will be based on the profile from
- * visualiser (i.e. it is no longer based on pipeline.)
- * 28-Aug-2018 - To replace JSF managed bean with CDI, and JSF ViewScoped with
- * omnifaces's ViewScoped.
- */
-
-//@ManagedBean (name="js4vBean")
 @Named("js4vBean")
 @ViewScoped
 public class JobSelection4vBean implements Serializable {

@@ -1,28 +1,27 @@
-/*
- * Copyright @2015-2017
- */
-package TIMS.Database;
+// Copyright (C) 2019 A*STAR
+//
+// TIMS (Translation Informatics Management System) is an software effort 
+// by the ABSD (Analytics of Biological Sequence Data) team in the 
+// Bioinformatics Institute (BII), Agency of Science, Technology and Research 
+// (A*STAR), Singapore.
+//
 
-/**
- * FinalizedRecord is used to represent the finalized_record table in the 
- * database.
- * 
- * Author: Tay Wei Hong
- * Date: 02-Dec-2015
- * 
- * Revision History
- * 02-Dec-2015 - Created with all the standard getters and setters.
- * 03-Dec-2015 - Added in one new attribute annot_ver.
- * 26-Feb-2016 - Implementation for database 3.0 (Part 3).
- * 09-Mar-2016 - Implementation for database 3.0 (final). User role expanded
- * (Admin - Director - HOD - PI - User). Grouping hierarchy expanded 
- * (Institution - Department - Group).
- * 22-Mar-2016 - Added in one new attribute icd_code, to identify the disease 
- * under study.
- * 04-Apr-2016 - Instead of storing the icd_code, the finalized_record table
- * will store the study_id.
- * 19-Apr-2017 - Removed grp_id. Rename to FinalizedRecord.
- */
+// This file is part of TIMS.
+// 
+// TIMS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as 
+// published by the Free Software Foundation, either version 3 of the 
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+package TIMS.Database;
 
 public class FinalizedRecord {
     String annot_ver, subject_id, study_id;
