@@ -539,8 +539,7 @@ public class cBioVisualizer extends Thread {
             // Need to trim the title to be less than or equal to 255 characters.
             fw.write("name: " + trimString(study.getTitle(), 255) + "\n");
             fw.write("short_name: " + studyID + "\n");
-            // Need to trim the description to less than or equal to 1024 characters.
-            fw.write("description: " + trimString(study.getDescription(), 1024) + "\n");
+            fw.write("description: " + study.getTitle() + "\n");
             fw.write("add_global_case_list: true");
             // Update the result with the absolute path of the meta_study file.
             result = meta_study.getAbsolutePath();
