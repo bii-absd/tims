@@ -223,7 +223,7 @@ public class MetaDataManagementBean implements Serializable {
         recordsLHS = new TLinkedHashSet<>();
         // Store the record's value into a TreeMap to get it sorted.
         TreeMap<String, String> recordTM = new TreeMap<>();
-        
+
         try (Workbook wb = StreamingReader.builder()
                 .rowCacheSize(100)
                 .bufferSize(4096)
@@ -245,7 +245,12 @@ public class MetaDataManagementBean implements Serializable {
                     // Because the excel sheet might have empty value for some
                     // of the columns, hence need to handle them here.
                     if (colDataItr.hasNext()) {
-                        recordTM.put(unsortedColNameL.get(i), colDataItr.next());
+                        String prev = (String) recordTM.put(unsortedColNameL.get(i), colDataItr.next());
+                        if (prev != null) {
+                            // Duplicated column name detected.
+                            throw new java.lang.RuntimeException
+                                ("Duplicated column name detected: " + unsortedColNameL.get(i));
+                        }
                     }
                     else {
                         // This column has empty value; need to put in ""
@@ -447,6 +452,10 @@ public class MetaDataManagementBean implements Serializable {
             // column will be used in the drop-down list for user to map the 
             // data of interests.
             unsortedColNameL = exHelper.readNextRow();
+            // Check to make sure that there is no empty column.
+            if (unsortedColNameL.contains("")) {
+                throw new java.lang.RuntimeException("Corrupted data file; Empty column detected!");
+            }
             // Check to make sure all the core data columns are available.
             if (!unsortedColNameL.containsAll(core_data_tag.values())) {
                 throw new java.lang.RuntimeException("Missing core data columns!");
