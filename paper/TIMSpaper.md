@@ -25,10 +25,10 @@ bibliography: TIMSpaper.bib
 
 # Summary
 
-With the maturation of sequencing technology over the past decade, the cost  associated to an OMICS based clinical study is no longer a limiting factor even for large cohorts e.g. the UK's 100K genomes project [@gaia]. However, the real cost of such study goes beyond sequencing or data generation in general [@astropy]; The amount of raw sequencing data per sample can be quite sizable and quickly amass to quite a collection even for a modest cohort in contrast to the 
+With the maturation of sequencing technology over the past decade, the cost  associated to an OMICS based clinical study is no longer a limiting factor even for large cohorts e.g. the UK's 100K genomes project [@Samuel et.al. 2017]. However, the real cost of such study goes beyond sequencing or data generation in general [@Muir et.al. 2016]; The amount of raw sequencing data per sample can be quite sizable and quickly amass to quite a collection even for a modest cohort in contrast to the 
 array based technology that it has inevitably displaced.
 
-Often, a poorly tackled area in the post data production of cohort studies is the concerted management of the clinical meta-information (e.g., subjects' demographics, multiple records of domain specific clinical measures and other information) and the associated OMICS datasets over the course of these studies and eventually their long-term curation after their publication. In particular, these voluminous OMICS datasets require heavy preprocessing to obtain analysis-ready format (e.g., gene count quantification, genetic variants and mutations) prior to any phenotype genotype analysis. Another important consideration is the ability to re-process the OMICS datasets with alternative or updated algorithms where multiple datasets may be aggregated to perform analysis to test new hypotheses or to simply affirm the reproducibility [3] of the clinical results in a larger set. Although heavier systems (e.g. SysMO SEEK, DIPSBC, openBIS, Gaggle/BRM) do exist, they are not necessarily open source freeware and they often require complex deployment and distributed IT infrastructure [4].
+Often, a poorly tackled area in the post data production of cohort studies is the concerted management of the clinical meta-information (e.g., subjects' demographics, multiple records of domain specific clinical measures and other information) and the associated OMICS datasets over the course of these studies and eventually their long-term curation after their publication. In particular, these voluminous OMICS datasets require heavy preprocessing to obtain analysis-ready format (e.g., gene count quantification, genetic variants and mutations) prior to any phenotype genotype analysis. Another important consideration is the ability to re-process the OMICS datasets with alternative or updated algorithms where multiple datasets may be aggregated to perform analysis to test new hypotheses or to simply affirm the reproducibility [@Fanelli 2018] of the clinical results in a larger set. Although heavier systems (e.g. SysMO SEEK, DIPSBC, openBIS, Gaggle/BRM) do exist, they are not necessarily open source freeware and they often require complex deployment and distributed IT infrastructure [@Wruck et.al. 2014].
 
 Specifically, we refer to an OMICS based clinical data management open-source software that curates study-related clinical information, manages the raw processing of diverse OMICS datasets to a preprocessed analysis ready state and finally visualizes the clinical information and processed output in a single access-controlled and audit trailed environment. Most importantly, this data management system should provide the skeletal  software framework for which any appropriate OMICS pipelines and visualizers can be integrated seamlessly in a scaleable fashion. For this purpose, the Translational Informatics Management System, herein TIMS software suite was built.
 
@@ -42,14 +42,6 @@ By functionality, TIMS implements 4 main functions : audit trail (activity track
 
 The software is distributed under a GNU General Public License v3.0 is available at https://github.com/bii-absd/tims, together with the installation guide and tutorials. The demo datasets used in the tutorial are available for download at http://mendel.bii.a-star.edu.sg/SEQUENCES/TIMS/. A live demo version of TIMS is available at https://tims.bii.a-star.edu.sg/TIMS/login.xhtml.
 
-# References
-
-
-For a quick reference, the following citation commands can be used:
-- `@author:2001`  ->  "Author et al. (2001)"
-- `[@author:2001]` -> "(Author et al., 2001)"
-- `[@author1:2001; @author2:2001]` -> "(Author1 et al., 2001; Author2 et al., 2002)"
-
 # Figures
 
 Figure 1: TIMS functionality, workflow and user/group structure ![](TIMS-figure.png)
@@ -61,3 +53,9 @@ Table Figure 2: OMICs pipeline tools available in TIMS ![](TIMS-Table-Figure2.pn
 We acknowledge contributions from Joanne Lee for the testing and documentation of TIMS during the genesis of this project.
 
 # References
+
+For a quick reference, the following citation commands can be used:
+- `@Samuel et.al. 2017`  ->  "Samuel GN, Farsides B: The UK's 100,000 Genomes Project: manifesting policymakers' expectations. New Genet Soc 2017, 36:336-353."
+- `@Muir et.al. 2016` -> "Muir P, Li S, Lou S, Wang D, Spakowicz DJ, Salichos L, Zhang J, Weinstock GM, Isaacs F, Rozowsky J et al.: The real cost of sequencing: scaling computation to keep pace with data generation. Genome Biol 2016, 17:53."
+- `@Fanelli 2018` -> "Fanelli D: Opinion: Is science really facing a reproducibility crisis, and do we need it to? Proc Natl Acad Sci U S A 2018, 115:2628-2631."
+- `@Wruck et.al. 2014` -> "Wruck W, Peuker M, Regenbrecht CR: Data management strategies for multinational large-scale systems biology projects. Brief Bioinform 2014, 15:65-78."
