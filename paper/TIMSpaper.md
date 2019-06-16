@@ -20,7 +20,7 @@ affiliations:
  - name: Bioinformatics Institute (BII), Agency for Science, Technology and Research  (A*STAR), 30 Biopolis Street, #07-01, Matrix, Singapore 138671
    index: 1
 date: 14 June 2019
-bibliography: paper.bib
+bibliography: TIMSpaper.bib
 ---
 
 # Summary
