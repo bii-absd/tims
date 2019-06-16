@@ -54,7 +54,7 @@ We acknowledge contributions from Joanne Lee for the testing and documentation o
 
 # References
 
-- `@Samuel et.al. 2017`  ->  "Samuel GN, Farsides B: The UK's 100,000 Genomes Project: manifesting policymakers' expectations. New Genet Soc 2017, 36:336-353."
-- `@Muir et.al. 2016` -> "Muir P, Li S, Lou S, Wang D, Spakowicz DJ, Salichos L, Zhang J, Weinstock GM, Isaacs F, Rozowsky J et al.: The real cost of sequencing: scaling computation to keep pace with data generation. Genome Biol 2016, 17:53."
-- `@Fanelli 2018` -> "Fanelli D: Opinion: Is science really facing a reproducibility crisis, and do we need it to? Proc Natl Acad Sci U S A 2018, 115:2628-2631."
-- `@Wruck et.al. 2014` -> "Wruck W, Peuker M, Regenbrecht CR: Data management strategies for multinational large-scale systems biology projects. Brief Bioinform 2014, 15:65-78."
+- `@Samuel:2017`  ->  "Samuel GN, Farsides B: The UK's 100,000 Genomes Project: manifesting policymakers' expectations. New Genet Soc 2017, 36:336-353."
+- `@Muir:2016` -> "Muir P, Li S, Lou S, Wang D, Spakowicz DJ, Salichos L, Zhang J, Weinstock GM, Isaacs F, Rozowsky J et al.: The real cost of sequencing: scaling computation to keep pace with data generation. Genome Biol 2016, 17:53."
+- `@Fanelli:2018` -> "Fanelli D: Opinion: Is science really facing a reproducibility crisis, and do we need it to? Proc Natl Acad Sci U S A 2018, 115:2628-2631."
+- `@Wruck:2014` -> "Wruck W, Peuker M, Regenbrecht CR: Data management strategies for multinational large-scale systems biology projects. Brief Bioinform 2014, 15:65-78."
