@@ -10,4 +10,4 @@ TIMS is an OMICS based clinical data management open-source software that curate
 Please refer to `Manual & Guide` folder for documentation on TIMS.
 
 ## Availability of datasets
-The datasets used in the manual and quick guide are available for download at http://mendel.bii.a-star.edu.sg/SEQUENCES/TIMS/. 
+The datasets used in TIMS documentation are available for download at http://mendel.bii.a-star.edu.sg/SEQUENCES/TIMS/. 
