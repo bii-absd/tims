@@ -5,7 +5,7 @@ tags:
   - OMICS
 authors:
   - name: Weihong Tay
-    orcid: 0000-0000-0000-0000
+    orcid: 0000-0003-1892-6437
     affiliation: 1
   - name: Erwin Tantoso
     orcid: 0000-0000-0000-0000
