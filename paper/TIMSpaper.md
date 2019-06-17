@@ -8,7 +8,7 @@ authors:
     orcid: 0000-0003-1892-6437
     affiliation: 1
   - name: Erwin Tantoso
-    orcid: 0000-0000-0000-0000
+    orcid: 0000-0002-7946-6297
     affiliation: 1
   - name: Frank Eisenhaber
     orcid: 0000-0002-9599-5420
