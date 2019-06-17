@@ -8,7 +8,7 @@ Please refer to `paper` folder for full manuscript.
 
 - Via installation : Refer to guide (`TIMS-Automated-Installation-Guide-V0.7.pdf`) and shell script (`TIMS_Installation.sh`) in `Installation` folder.
 
-- Via Live Demo : Available at https://tims.bii.a-star.edu.sg/TIMS/login.xhtml. Please download the quick guide (?.pdf) from the `Manual & Guide` folder for instructions.
+- Via Live Demo : Available at https://tims.bii.a-star.edu.sg/TIMS/login.xhtml. Please download the quick guide (`?.pdf`) from the `Manual & Guide` folder for instructions.
 
 ## TIM Instructions
 Please refer to `Manual & Guide` folder for documentation on TIMS.
