@@ -4,7 +4,7 @@ TIMS is an OMICS based clinical data management open-source software that curate
 Please refer to `paper` folder for full manuscript. 
 
 ## Trying out TIMS
-- Minimum System requirements : Intel i7 processor, 32GB of RAM and at least 500GB of storage space on Ubuntu Linux LTS 16.0.4.
+Minimum System requirements : Intel i7 processor, 32GB of RAM and at least 500GB of storage space on Ubuntu Linux LTS 16.0.4.
 
 - Via installation : Refer to guide (`TIMS-Automated-Installation-Guide-V0.7.pdf`) and shell script (`TIMS_Installation.sh`) in `Installation` folder.
 
