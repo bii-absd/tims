@@ -44,9 +44,9 @@ The software is distributed under a GNU General Public License v3.0 is available
 
 # Figures
 
-Figure 1: TIMS functionality, workflow and user/group structure ![](TIMS-figure.png){ width=595px }
-Table Figure 1: Java libraries used in TIMS ![](TIMS-Table-Figure1.png){ width=595px }
-Table Figure 2: OMICs pipeline tools available in TIMS ![](TIMS-Table-Figure2.png){ width=595px }
+Figure 1: TIMS functionality, workflow and user/group structure ![](TIMS-figure.png)
+Table Figure 1: Java libraries used in TIMS ![](TIMS-Table-Figure1.png)
+Table Figure 2: OMICs pipeline tools available in TIMS ![](TIMS-Table-Figure2.png)
 
 # Acknowledgements
 
