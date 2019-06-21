@@ -46,9 +46,9 @@ Thirdly, the workflow tracking function is implemented as a job management modul
 
 Lastly, the tools function contains tools for pipelines and visualizers. The current pipeline tools are OMICs-centric and convert RAW data to its preprocessed format (see Figure 3 for complete list). Meanwhile, the current visualizer in TIMS (cBioPortal) allows for visualization and query of the preprocessed OMICs data.
 
-![Java libraries used in TIMS ](TIMS-Table-Figure1.png)
-![TIMS functionality, workflow and user/group structure](TIMS-figure.png)
-![OMICs pipeline tools available in TIMS](TIMS-Table-Figure2.png)
+![Figure 1. Java libraries used in TIMS ](TIMS-Table-Figure1.png)
+![Figure 2. TIMS functionality, workflow and user/group structure](TIMS-figure.png)
+![Figure 3. OMICs pipeline tools available in TIMS](TIMS-Table-Figure2.png)
 
 # Availability
 
