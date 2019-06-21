@@ -36,8 +36,6 @@ Specifically, we refer to an OMICS-based clinical data management open-source so
 
 The Translational Informatics Management System (TIMS) describes a server-side clinical data management and OMICS production system for human research. From a technical overview, its central design is based on a Model-View-Controller (MVC) design pattern and implemented in Java server Faces (JSF) supplemented by general open source software packages as listed in Table 1. In particular, GNU trove library and Ominfaces offer higher performance data structures (e.g., map, set, trees) and additional utilities compared with the native Java libraries. Meanwhile, the overall graphical user interface (GUI) is written in JSF with enhanced graphical modules from the PrimeFaces.
 
-![Table 1. Java libraries used in TIMS ](TIMS-Table-Figure1.png)
-
 TIMS implements four main functions: audit trail (activity tracking), access control (accounts/group management, study management), and workflow tracking (job management) and tools (pipeline, visualization); Refer to Figure 1.
 
 Firstly, the audit trail function captures all users' activities in the system, which includes job submissions, data processing, and any system activities. These information are pushed onto the backend relational database (PostgresSQL) as the system's data store.
@@ -49,7 +47,7 @@ Thirdly, the workflow tracking function is implemented as a job management modul
 Lastly, the tools function contains tools for pipelines and visualizers. The current pipeline tools are OMICs-centric and convert RAW data to its preprocessed format (see Table 2 for complete list). Meanwhile, the current visualizer in TIMS (cBioPortal) allows for visualization and query of the preprocessed OMICs data.
 
 ![Figure 1. TIMS functionality, workflow and user/group structure](TIMS-figure.png)
-
+![Table 1. Java libraries used in TIMS ](TIMS-Table-Figure1.png)
 ![Table 2. OMICs pipeline tools available in TIMS](TIMS-Table-Figure2.png)
 
 # Availability
