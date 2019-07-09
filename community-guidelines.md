@@ -6,7 +6,7 @@ Coming soon...
 ...
 
 ## Reporting issues/problems
-Bugs can be raised via [Github issues](https://guides.github.com/features/issues/). In the bug report, please create a [bug report] (https://github.com/atom/.github/blob/master/.github/ISSUE_TEMPLATE/bug_report.md) accordingly. Do provide the following information for us to reproduce the bug.
+Bugs can be raised via [Github issues](https://guides.github.com/features/issues/). In the bug report, please create a [bug report](https://github.com/atom/.github/blob/master/.github/ISSUE_TEMPLATE/bug_report.md) accordingly. Do provide the following information for us to reproduce the bug.
 
 - Use a clear and descriptive title for the issue to identify the problem.
 - Provide the detail steps that produces the problem.
