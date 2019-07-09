@@ -12,4 +12,4 @@ Bugs can be raised via [Github issues](https://guides.github.com/features/issues
 - Point out what exactly is the step where the unexpected behavior appears.
 
 ## Seeking support
-Coming soon...
+Please email absd@bii.a-star.edu.sg
