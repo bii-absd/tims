@@ -1,4 +1,4 @@
-# Community guidelines for TIMS - Translational Informatics Management System
+# Community guidelines for TIMS
 
 ## Contributing to the code
 Thank you for your interest in TIMS. 
