@@ -1,7 +1,7 @@
 # Community guidelines for TIMS - Translational Informatics Management System
 
 ## Contributing to the code
-Thank your for your interest in TIMS. 
+Thank you for your interest in TIMS. 
 
 - Local development : TIMS can be developed locally. We strongly encourage the community to clone/download TIMS for your further exploration.
 - For bug fixes : Do open a new GitHub pull request with the patch. Do describe clearly the problem and the solution.
