@@ -3,7 +3,7 @@
 ## Contributing to the code
 Thank you for your interest in TIMS. 
 
-- Local development : TIMS can be developed locally. We strongly encourage the community to clone/download TIMS for your further exploration.
+- Local development : TIMS software packages can be developed locally. We strongly encourage the community to clone/download TIMS for your further exploration.
 - For bug fixes : Do open a new GitHub pull request with the patch. Do describe clearly the problem and the solution.
 - For a new feature or changes to an existing one: Please email to absd@bii.a-star.edu.sg
 
