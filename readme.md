@@ -15,3 +15,6 @@ Please refer to `Manual & Guide` folder for documentation on TIMS.
 
 ## Availability of datasets
 The datasets used in TIMS documentation are available for download at http://mendel.bii.a-star.edu.sg/SEQUENCES/TIMS/. 
+
+## Community guidelines
+Please refer to `CONTRIBUTING.md`.
