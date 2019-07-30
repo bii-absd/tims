@@ -10,9 +10,11 @@
 	- On the command prompt, please type: 
 		sudo visudo
 	- Please change the line:
-		Defaults `env_reset` To Defaults `env_reset,timestamp_timeout=300`  [Note: if you never want a password prompt, you can change the timestamp_timeout to -1, but this is not recommended]
+		Defaults `env_reset` To Defaults `env_reset,timestamp_timeout=300`\s\s
+		[Note: if you never want a password prompt, you can change the timestamp_timeout to -1, but this is not recommended]
 	- Press Ctrl+X and then Y to finish editing and save changes. 
-	- Please exit the Terminal and reopen it.  [Note: after finish installation, you may want to change back the timestamp_timeout to default]
+	- Please exit the Terminal and reopen it.\s\s
+	  [Note: after finish installation, you may want to change back the timestamp_timeout to default]
 
 5.	Run the script from your home directory: ./TIMS_Installation.sh |& tee output.txt
 
