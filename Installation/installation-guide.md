@@ -41,7 +41,7 @@ http://your-machine-ipaddress:8081/TIMS/login.xhtml
 14.	Below is a screenshot of TIMS:
 ![Figure 1. TIMS login page](TIMS-login.png)
 
-##Initial setup at TIMS
+## Initial setup at TIMS
 1.	A user (tims-admin) with administrative right has been created for you. Please login to TIMS using the default password (i.e. password).
 
 2.	The following institution, department and group have been created for you:
