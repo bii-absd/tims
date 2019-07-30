@@ -14,7 +14,7 @@ Minimum System requirements : Intel i7 processor, 32GB of RAM and at least 500GB
 Please refer to `Manual & Guide` folder for documentation on TIMS.
 
 ## Availability of datasets
-The datasets used in TIMS documentation are available for download at http://mendel.bii.a-star.edu.sg/SEQUENCES/TIMS/. 
+The datasets used in TIMS documentation are available for download at https://figshare.com/articles/TestData_tar/9083936. 
 
 ## Community guidelines
 Please refer to `CONTRIBUTING.md`.
