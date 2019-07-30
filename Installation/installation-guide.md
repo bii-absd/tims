@@ -39,3 +39,16 @@ Your_IP_Address	Your_Hostname
 http://your-machine-ipaddress:8081/TIMS/login.xhtml
 
 14.	Below is a screenshot of TIMS:
+![Figure 1. TIMS login page](TIMS-login.png)
+
+##Initial setup at TIMS
+1.	A user (tims-admin) with administrative right has been created for you. Please login to TIMS using the default password (i.e. password).
+
+2.	The following institution, department and group have been created for you:
+	- a. TIMS Institute
+ 	- b. TIMS Department
+	- c. TIMS Group
+
+3.	A PI (tims-pi) in-charge of TIMS Group has been created for you. Please login using the default password (i.e. password).
+
+4.	You may proceed to create a study under TIMS Group; a study needs to be created before you could upload any data and run the pipelines in TIMS.
