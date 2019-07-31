@@ -59,16 +59,16 @@ http://your-machine-ipaddress:8081/TIMS/login.xhtml
 2)	The file TestData.tar contains test data for the five different pipelines, i.e.
 	* a) Gene Expression Pipeline (Affymetrix)
   	  * i) Folder name: GEx
-		  (1)	Raw files inside "CEL-files" folder
-		  (2)	Samples' annotation file: samples-annot-GEx.txt
+		  * (1)	Raw files inside "CEL-files" folder
+		  * (2)	Samples' annotation file: samples-annot-GEx.txt
 	* b) Methylation Pipeline
 	  * i) Folder name: Methylation
-		  (1)	Raw files inside "idat-files" folder
-		  (2)	Samples' annotation file: samples-annot-Methylation.txt
+		  * (1)	Raw files inside "idat-files" folder
+		  * (2)	Samples' annotation file: samples-annot-Methylation.txt
 	* c) GATK Whole-Genome Sequencing (Germline Mutation) OR GATK Targeted Sequencing (Germline Mutation) 
 	  * i) Folder name: DNAseq-Germline
-		  (1)	Raw files inside "BAM-files" folder
-		  (2)	Samples' annotation file: samples-annot-Exome.txt
+		  * (1)	Raw files inside "BAM-files" folder
+		  * (2)	Samples' annotation file: samples-annot-Exome.txt
 
 (3)	Interval file: interval.bed
 d)	GATK Whole-Genome Sequencing (Somatic Mutation) OR GATK Targeted Sequencing (Somatic Mutation) 
