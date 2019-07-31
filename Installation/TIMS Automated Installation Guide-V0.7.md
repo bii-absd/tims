@@ -45,9 +45,9 @@ http://your-machine-ipaddress:8081/TIMS/login.xhtml
 1.	A user (tims-admin) with administrative right has been created for you. Please login to TIMS using the default password (i.e. password).
 
 2.	The following institution, department and group have been created for you:
-	- TIMS Institute
- 	- TIMS Department
-	- TIMS Group
+	- TIMS `Institute`
+ 	- TIMS `Department`
+	- TIMS `Group`
 
 3.	A PI (tims-pi) in-charge of TIMS Group has been created for you. Please login using the default password (i.e. password).
 
@@ -102,3 +102,36 @@ The installation instruction is available at: `ftp://ftp.broadinstitute.org/pub/
 Currently, the pipeline is tested for GISTIC v2.0.22. 
 
 The GISTIC installation directory should be on /var/pipelines/TIMS/programs/GISTIC2.0/. In order to run GISTIC, you will need to install Matlab compiler runtime which come together with the GISTIC package. Please install the Matlab compiler runtime at the default directory which is at "/opt/MATLAB/Matlab_Compiler_Runtime/".
+
+## Software installed by the script
+1.	TIMS 2.05
+2.	Git
+3.	openjdk-8-jdk
+4.	SWI-Prolog
+5.	Ant
+6.	PostgreSQL 9.4
+7.	GlassFish 4.1
+8.	cBioPortal 1.15
+9.	Tomcat 8.0.45
+10.	MySQL 5.6
+11.	Perl5.22.2
+12.	R
+13.	Docker-CE
+14.	pdflatex
+15.	Pipelines' programs and packages:
+	* a.	apt-tools (version 1.17.0):
+	  * i.	apt-probeset-summarize
+	  * ii.	apt-copynumber-workflow 
+	* b.	picard.jar version 2.6.0
+	* c.	vcf2maf-1.6.12
+	* d.	vep version 86
+	* e.	GATK4.0.8.1
+	* f.	Cromwell version 34
+	* g.	Rsem version 1.2.21
+	* h.	HTSeq version 0.6.1p1
+	* i.	samtools version 1.3.1
+	* j.	tabix version 1.3.2
+	* k.	Docker images:
+	  * i.	Gatk4.0.8.1
+	  * ii.	Gotc-2.3.0
+	  * iii.	Python2.7
