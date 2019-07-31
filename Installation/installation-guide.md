@@ -38,7 +38,7 @@ Your_IP_Address	Your_Hostname
 13.	You can now access TIMS through the following link:
 http://your-machine-ipaddress:8081/TIMS/login.xhtml
 
-14.	Below is a screenshot of TIMS:
+14.	Below is a screenshot of TIMS:<br/>
 ![Figure 1. TIMS login page](TIMS-login.png)
 
 ## Initial setup at TIMS
