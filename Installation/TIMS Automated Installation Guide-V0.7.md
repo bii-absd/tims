@@ -119,19 +119,19 @@ The GISTIC installation directory should be on /var/pipelines/TIMS/programs/GIST
 13.	Docker-CE
 14.	pdflatex
 15.	Pipelines' programs and packages:
-	* a.	apt-tools (version 1.17.0):
-	  * i.	apt-probeset-summarize
-	  * ii.	apt-copynumber-workflow 
-	* b.	picard.jar version 2.6.0
-	* c.	vcf2maf-1.6.12
-	* d.	vep version 86
-	* e.	GATK4.0.8.1
-	* f.	Cromwell version 34
-	* g.	Rsem version 1.2.21
-	* h.	HTSeq version 0.6.1p1
-	* i.	samtools version 1.3.1
-	* j.	tabix version 1.3.2
-	* k.	Docker images:
-	  * i.	Gatk4.0.8.1
-	  * ii.	Gotc-2.3.0
-	  * iii.	Python2.7
+	* apt-tools (version 1.17.0):
+	  * apt-probeset-summarize
+	  * apt-copynumber-workflow 
+	* picard.jar version 2.6.0
+	* vcf2maf-1.6.12
+	* vep version 86
+	* GATK4.0.8.1
+	* Cromwell version 34
+	* Rsem version 1.2.21
+	* HTSeq version 0.6.1p1
+	* samtools version 1.3.1
+	* tabix version 1.3.2
+	* Docker images:
+	  * Gatk4.0.8.1
+	  * Gotc-2.3.0
+	  * Python2.7
