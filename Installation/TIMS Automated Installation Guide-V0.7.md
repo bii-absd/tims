@@ -65,12 +65,12 @@ http://your-machine-ipaddress:8081/TIMS/login.xhtml
 	  * Folder name: Methylation
 		* Raw files inside "idat-files" folder
 		* Samples' annotation file: samples-annot-Methylation.txt
-	* `GATK Whole-Genome Sequencing (Germline Mutation) OR GATK Targeted Sequencing (Germline Mutation)` 
+	* `GATK Whole-Genome Sequencing (Germline Mutation)` OR `GATK Targeted Sequencing (Germline Mutation)` 
 	  * Folder name: DNAseq-Germline
 	    * Raw files inside "BAM-files" folder
 	    * Samples' annotation file: samples-annot-Exome.txt
 	    * Interval file: interval.bed
-	* `GATK Whole-Genome` Sequencing (Somatic Mutation) OR GATK Targeted Sequencing (Somatic Mutation)`
+	* `GATK Whole-Genome Sequencing (Somatic Mutation)` OR `GATK Targeted Sequencing (Somatic Mutation)`
 	  * Folder name: DNAseq-Somatic
 		* Raw files inside "BAM-files" folder
 		* Samples' annotation file: samples-annot-Exome.txt
