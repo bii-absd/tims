@@ -8,7 +8,7 @@ Minimum System requirements : Intel i7 processor, 32GB of RAM and at least 500GB
 
 - Via installation : Refer to guide (`TIMS-Automated-Installation-Guide-V0.7.pdf`) and shell script (`TIMS_Installation.sh`) in `Installation` folder.
 
-- Via Live Demo : Available at https://tims.bii.a-star.edu.sg/TIMS/login.xhtml. Please download the quick guide (`TIMS-Quick-Start-Guide-release-1.0.pdf`) from the `Manual & Guide` folder for instructions.
+- Via Live Demo : Available at https://tims.bii.a-star.edu.sg/TIMS/login.xhtml. Please download the quick guide (`TIMS-v2.05-Quick-Start-Guide.pdf`) from the `Manual & Guide` folder for instructions.
 
 ## TIM Instructions
 Please refer to `Manual & Guide` folder for documentation on TIMS.
