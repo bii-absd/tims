@@ -54,7 +54,7 @@ Lastly, the tools function contains tools for pipelines and visualizers. The cur
 
 # Availability
 
-The software, distributed under the GNU General Public License v3.0, is available at https://github.com/bii-absd/tims, together with the installation guide and tutorials. The demo datasets used in the tutorial are available for download at http://mendel.bii.a-star.edu.sg/SEQUENCES/TIMS/. A live demo version of TIMS is available at https://tims.bii.a-star.edu.sg/TIMS/login.xhtml.
+The software, distributed under the GNU General Public License v3.0, is available at https://github.com/bii-absd/tims, together with the installation guide and tutorials. The demo datasets used in the tutorial are available for download at https://figshare.com/articles/TestData_tar/9083936. A live demo version of TIMS is available at https://tims.bii.a-star.edu.sg/TIMS/login.xhtml.
 
 # Acknowledgements
 
