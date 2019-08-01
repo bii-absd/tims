@@ -38,19 +38,19 @@ The Translational Informatics Management System (TIMS) describes a server-side c
 
 ![Figure 1. Java libraries used in TIMS ](TIMS-Table-Figure1.png)
 
-TIMS implements four main functions: audit trail (activity tracking), access control (accounts/group management, study management), and workflow tracking (job management) and tools (pipeline, visualization); Refer to Figure 2.
+TIMS implements four main functions: audit trail (activity tracking), access control (accounts/group management, study management), and workflow tracking (job management) and tools (pipeline, visualization); see Figure 2.
 
 Firstly, the audit trail function captures all users' activities in the system, which includes job submissions, data processing, and any system activities. These information are pushed onto the backend relational database (PostgresSQL) as the system's data store.
 
 Secondly, the access control function manages the users' access privilege based on a hierarchical structure of role/work unit (e.g., Director/Institute, Head/Department, Principal Investigator/Group, User/Group) through the accounts/group management module. Meanwhile, the study management module organizes both clinical and OMICS data into individualized cohort studies which are then assigned to users; all study data sets (both subjects' meta information and preprocessed OMICS datasets) are stored in the PostgresSQL database. Finally, the level of data access is dependent on the specific user's privilege set by the accounts/group management module.
 
-Thirdly, the workflow tracking function is implemented as a job management module to track data production (i.e., from raw data to preprocessed/analysis ready data) of OMICs datasets. Any data production task submission via the appropriate OMICs pipeline will appear as a job under this module with its status (complete, on going) appropriately reflected.
+Thirdly, the workflow tracking function is implemented as a job management module to track data production (i.e., from raw data to preprocessed/analysis ready data) of OMICS datasets. Any data production task submission via the appropriate OMICS pipeline will appear as a job under this module with its status (complete, on going) appropriately reflected.
 
-Lastly, the tools function contains tools for pipelines and visualizers. The current pipeline tools are OMICs-centric and convert RAW data to its preprocessed format (see Figure 3 for complete list). Meanwhile, the current visualizer in TIMS (cBioPortal) allows for visualization and query of the preprocessed OMICs data.
+Lastly, the tools function contains tools for pipelines and visualizers. The current pipeline tools are OMICS-centric and convert RAW data to its preprocessed format (see Figure 3 for complete list). Meanwhile, the current visualizer in TIMS (cBioPortal) allows for visualization and query of the preprocessed OMICS data.
 
 ![Figure 2. TIMS functionality, workflow and user/group structure](TIMS-figure.png)
 
-![Figure 3. OMICs pipeline tools available in TIMS](TIMS-Table-Figure2.png)
+![Figure 3. OMICS pipeline tools available in TIMS](TIMS-Table-Figure2.png)
 
 # Availability
 
