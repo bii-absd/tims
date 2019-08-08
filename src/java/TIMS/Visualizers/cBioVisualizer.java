@@ -435,8 +435,8 @@ public class cBioVisualizer extends Thread {
         String target = dummyStr.substring(0, 30) + studyID.substring(0, 5) 
                       + dummyStr.substring(30) + studyID.substring(5);
         
-        return "http://" + ipAddress + ":8080/cbioportal/?sid=" + target;
-        
+//        return "http://" + ipAddress + ":8080/cbioportal/?sid=" + target;
+        return target;
     }
     
     // Create the log file.

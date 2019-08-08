@@ -103,9 +103,10 @@
                             <p:outputLabel value="#{msg['config-norm']}" styleClass="configlabel"/>
                             <p:selectOneMenu id="normalization" required="true"
                                              value="#{seqrnaBean.normalization}">
-                                <f:selectItem itemLabel="TPM" itemValue="TPM"/>
-                                <f:selectItem itemLabel="FPKM" itemValue="FPKM"/>
-                                <f:selectItem itemLabel="EXPECTED_COUNT" itemValue="EXPECTED_COUNT"/>
+                                <f:selectItem itemLabel="RSEM.TPM" itemValue="RSEM.TPM"/>
+                                <f:selectItem itemLabel="RSEM.FPKM" itemValue="RSEM.FPKM"/>
+                                <f:selectItem itemLabel="RSEM.EXPECTED_COUNT" itemValue="RSEM.EXPECTED_COUNT"/>
+                                <f:selectItem itemLabel="HTSEQ.COUNT" itemValue="HTSEQ.COUNT"/>
                             </p:selectOneMenu>
                         </h:panelGrid>
                     </p:column>

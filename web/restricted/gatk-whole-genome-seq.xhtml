@@ -109,6 +109,11 @@
                     <p:selectBooleanButton id="exdb" value="#{GatkWGBean.excludeDB}" 
                                            onLabel="YES" offLabel="NO"/>
                     <h:panelGroup/>
+                    
+                    <p:outputLabel value="#{msg['config-vqsr']}" styleClass="configlabel"/>
+                    <p:selectBooleanButton id="vqsr" value="#{GatkWGBean.vqsr}" 
+                                           onLabel="YES" offLabel="NO"/>
+                    <h:panelGroup/>
                 </h:panelGrid>
             </p:panel>
             <p:separator styleClass="configsep"/>
@@ -219,6 +224,8 @@
                     <h:outputText value="#{GatkWGBean.variantDepth}"/>
                     <h:outputText value="#{msg['config-exdb']}"/>
                     <h:outputText value="#{GatkWGBean.excludeDB}"/>
+                    <h:outputText value="#{msg['config-vqsr']}"/>
+                    <h:outputText value="#{GatkWGBean.vqsr}"/>
                 </p:panelGrid>
                 <p:separator styleClass="configsep"/>
                 <h:panelGrid columns="3" cellspacing="2" cellpadding="2">

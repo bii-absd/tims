@@ -71,7 +71,7 @@ public abstract class ConfigBean implements Serializable {
     // Common Processing Parameters. 
     protected String type, normalization, summarization;
     protected Integer readDepth, variantDepth;
-    protected boolean excludeDB;
+    protected boolean excludeDB, vqsr;
     // Indicator of whether user have new data to upload or not.
     protected boolean haveNewData;
     // Pipeline name and technology
@@ -399,9 +399,13 @@ public abstract class ConfigBean implements Serializable {
         boolean result = Constants.OK;
         String configDir = homeDir + Constants.getCONFIG_PATH();
         String exDB = null;
+        String VQSR = null;
         // Parameter EXCLUDE_DB only apply for GATK pipelines.
         if (PipelineDB.isGATKPipeline(pipelineName)) {
             exDB = isExcludeDB()?"YES":"NO";
+            if (pipelineName.equals(PipelineDB.GATK_WG_GERM)) {
+                VQSR = isVqsr()?"YES":"NO";
+            }
         }
         // Config File will be send to the pipeline during execution
         File configFile = new File(configDir + 
@@ -433,7 +437,8 @@ public abstract class ConfigBean implements Serializable {
                      "\nSUMMARIZATION\t=\t" + getSummarization() + 
                      "\nREAD_DEPTH\t=\t" + getReadDepth() +
                      "\nVARIANT_DEPTH\t=\t" + getVariantDepth() +
-                     "\nEXCLUDE_DB\t=\t" + exDB + "\n\n");
+                     "\nEXCLUDE_DB\t=\t" + exDB + 
+                     "\nVQSR\t=\t" + VQSR + "\n\n");
 
             fw.write("### Output file after normalization and processing\n" +
                      "OUTPUT\t=\t" + pipelineOutput + "\n\n");
@@ -512,6 +517,10 @@ public abstract class ConfigBean implements Serializable {
             parameters += "RD:" + getReadDepth() + " ";
             parameters += "VD:" + getVariantDepth() + " ";
             parameters += "ExDB:" + exDB + " ";
+            if (pipelineName.equals(PipelineDB.GATK_WG_GERM)) {
+                String VQSR = isVqsr()?"YES":"NO";
+                parameters += "VQSR:" + VQSR + " ";
+            }
         }
         
         return parameters;
@@ -800,6 +809,12 @@ public abstract class ConfigBean implements Serializable {
     }
     public void setExcludeDB(boolean excludeDB) {
         this.excludeDB = excludeDB;
+    }
+    public boolean isVqsr() {
+        return vqsr;
+    }
+    public void setVqsr(boolean vqsr) {
+        this.vqsr = vqsr;
     }
     public boolean getJobSubmissionStatus() {
         return jobSubmissionStatus;

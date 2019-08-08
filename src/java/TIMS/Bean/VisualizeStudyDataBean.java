@@ -26,6 +26,7 @@ package TIMS.Bean;
 import TIMS.Database.ActivityLogDB;
 import TIMS.Database.Study;
 import TIMS.Database.StudyDB;
+import TIMS.Database.SystemParametersDB;
 import TIMS.Database.UserAccount;
 import TIMS.Database.UserAccountDB;
 import TIMS.General.Constants;
@@ -76,7 +77,7 @@ public class VisualizeStudyDataBean implements Serializable {
         ExternalContext ec = FacesContext.getCurrentInstance().getExternalContext();
         // Record this activity.
         ActivityLogDB.recordUserActivity(userName, Constants.VIS_DAT, study.getStudy_id());
-        ec.redirect(cbio);
+        ec.redirect(SystemParametersDB.getcBioPortalUrl() + cbio);
     }
     
     // Machine generated getters and setters.
