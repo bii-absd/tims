@@ -26,7 +26,7 @@
 
 date
 
-echo "This installation will take approximately 3 hours...".
+##echo "This installation will take approximately 3 hours...".
 
 sudo apt-get update
 sudo apt-get upgrade
@@ -130,6 +130,10 @@ else
   echo "Skipping install graphviz"
 fi
 
+### Install packages for HTseq
+sudo apt-get install build-essential python2.7-dev python-numpy python-matplotlib python-pysam
+
+
 ### Get userid and usergroup
 SUDO_ID=$(id -u -n)
 SUDO_GID=$(id -g -n)
@@ -152,50 +156,22 @@ if [ ! -d "$WORKDIR" ]; then
 	mkdir $WORKDIR/
 fi
 
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-cd $DIR
-wget http://mendel.bii.a-star.edu.sg/SEQUENCES/TIMS/pipelines.tar.gz
-
-cp $DIR/pipelines.tar.gz $WORKDIR/
-cd $WORKDIR/
-#############################
+##DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+##cd $DIR
+cd $WORKDIR
+wget http://mendel.bii.a-star.edu.sg/SEQUENCES/TIMS/pipelines-setup.tar.gz
 
 if [ ! -d "$BASEDIR/TIMS" ]; then
-	mkdir $BASEDIR/TIMS/
 	echo "Creating $BASEDIR/TIMS/ ..."
-	mkdir $BASEDIR/TIMS/bin/
-	echo "Creating $BASEDIR/TIMS/bin/ ..."
-	mkdir $BASEDIR/TIMS/programs/
-	echo "Creating $BASEDIR/TIMS/programs/ ..."
+	mkdir $BASEDIR/TIMS/
 fi
-
-if [ ! -d "$BASEDIR/TIMS/bin" ]; then
-	mkdir $BASEDIR/TIMS/bin/
-	echo "Creating $BASEDIR/TIMS/bin/ ..."
-fi
-
-if [ ! -d "$BASEDIR/TIMS/programs" ]; then
-	mkdir $BASEDIR/TIMS/programs/
-	echo "Creating $BASEDIR/TIMS/programs/ ..."
-fi
-
-if [ ! -d "$BASEDIR/TIMS/TestData" ]; then
-	mkdir $BASEDIR/TIMS/TestData/
-	echo "Creating $BASEDIR/TIMS/TestData/ ..."
-fi
-
-if [ ! -d "$BASEDIR/TIMS/genome-libraries" ]; then
-	mkdir $BASEDIR/TIMS/genome-libraries/
-	echo "Creating $BASEDIR/TIMS/genome-libraries/ ..."
-fi
-
 
 TIMS_HOME=$BASEDIR/TIMS
 
 
 ### Temporarily extract the pipeline's scripts
 cd $WORKDIR/
-tar -xvzf pipelines.tar.gz
+tar -xvzf pipelines-setup.tar.gz
 
 ### Checking whether curl is installed
 CURL_PKG=$(dpkg-query -W --showformat='${Status}\n' curl | grep "install ok installed")
@@ -301,21 +277,6 @@ else
   exit -1
 fi
 
-### Install Docker-CE
-sudo apt-get -y install apt-transport-https ca-certificates
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-sudo apt-key fingerprint 0EBFCD88
-sudo add-apt-repository \
-	"deb [arch=amd64] https://download.docker.com/linux/ubuntu \
-	$(lsb_release -cs) \
-	stable"
-
-sudo apt-get update
-sudo apt-get -y install docker-ce
-
-### Adding userID to the docker group
-sudo usermod -aG docker $SUDO_ID
-
 ### Checking if pdflatex has been installed
 LATEX_OK=$(dpkg-query -W --showformat='${Status}\n' texlive-latex-base | grep "install ok installed")
 echo Checking for texlive-latex-base: $LATEX_OK
@@ -333,15 +294,6 @@ if [ "" == "$LATEX_OK" ]; then
   sudo apt-get --force-yes --yes install texlive-fonts-recommended
 else
   echo "Skipping install texlive-fonts-recommended"
-fi
-
-LATEX_OK=$(dpkg-query -W --showformat='${Status}\n' texlive-fonts-extra | grep "install ok installed")
-echo Checking for texlive-fonts-extra: $LATEX_OK
-if [ "" == "$LATEX_OK" ]; then
-  echo "texlive-fonts-extra has not been installed"
-  sudo apt-get --force-yes --yes install texlive-fonts-extra
-else
-  echo "Skipping install texlive-fonts-extra"
 fi
 
 LATEX_OK=$(dpkg-query -W --showformat='${Status}\n' texlive-latex-extra | grep "install ok installed")
@@ -406,198 +358,15 @@ $TIMS_PERL_BASE/perl-5.22.2/bin/cpan Parallel::ForkManager
 ### Download Database and Programs ###
 ######################################
 cd $WORKDIR
-wget http://mendel.bii.a-star.edu.sg/SEQUENCES/TIMS/programs.tar.gz
-wget http://mendel.bii.a-star.edu.sg/SEQUENCES/TIMS/resources.tar.gz
-wget http://mendel.bii.a-star.edu.sg/SEQUENCES/TIMS/docker-resources.tar
-tar -xvzf programs.tar.gz
-tar -xvzf resources.tar.gz
-tar -xvf docker-resources.tar
 
-### Installing Docker Images
-DOCKER_PKG=$(sg docker -c "docker images" | grep broadinstitute/gatk | grep 4.0.8.1)
-echo Checking for broadinstitute/gatk:4.0.8.1: $DOCKER_PKG
-if [ -z "$DOCKER_PKG" ]; then
-	echo "Docker broadinstitute/gatk:4.0.8.1 is not available. Loading..."
-	sg docker -c "docker load -i gatk4.0.8.1.tar.gz"
-else
-	echo "Docker image broadinstitute/gatk:4.0.8.1 is available. Skipping..."
-fi
+wget http://mendel.bii.a-star.edu.sg/SEQUENCES/TIMS/install-pipeline-KB.script
+chmod +x install-pipeline-KB.script
+source install-pipeline-KB.script
 
-DOCKER_PKG=$(sg docker -c "docker images" | grep broadinstitute/genomes-in-the-cloud | grep 2.3.0-1501082129)
-echo Checking for broadinstitute/genomes-in-the-cloud:2.3.0-1501082129: $DOCKER_PKG
-if [ -z "$DOCKER_PKG" ]; then
-	echo "Docker broadinstitute/genomes-in-the-cloud:2.3.0-1501082129 is not available. Loading..."
-	sg docker -c "docker load -i gotc-2.3.0.tar.gz"
-else
-	echo "Docker image broadinstitute/genomes-in-the-cloud:2.3.0-1501082129 is available. Skipping..."
-fi
-
-DOCKER_PKG=$(sg docker -c "docker images" | grep python | grep 2.7)
-echo Checking for python2.7: $DOCKER_PKG
-if [ -z "$DOCKER_PKG" ]; then
-	echo "Docker python2.7 is not available. Loading..."
-	sg docker -c "docker load -i python2.7.tar.gz"
-else
-	echo "Docker image python2.7 is available. Skipping..."
-fi
-
-### Installing VEP and .VEP at $BASEDIR
-if [ ! -d "$TIMS_HOME/vep" ]; then
-	mkdir $TIMS_HOME/vep/
-	echo "Creating $TIMS_HOME/vep/ ..."
-fi
-if [ ! -d "$TIMS_HOME/.vep" ]; then
-	mkdir $TIMS_HOME/.vep/
-	echo "Creating $TIMS_HOME/.vep/ ..."
-fi
-
-cd $WORKDIR
-echo "Moving ExAC_nonTCGA.r0.3.1.sites.vep.vcf.gz to $TIMS_HOME/.vep/ ..."
-mv sources/ExAC_nonTCGA.r0.3.1.sites.vep.vcf.gz $TIMS_HOME/.vep/
-echo "Moving ExAC_nonTCGA.r0.3.1.sites.vep.vcf.gz.tbi to $TIMS_HOME/.vep/ ..."
-mv sources/ExAC_nonTCGA.r0.3.1.sites.vep.vcf.gz.tbi $TIMS_HOME/.vep/
-echo "Moving homo_sapiens_86_GRCh37.tar.gz to $TIMS_HOME/.vep/ ..."
-mv sources/homo_sapiens_86_GRCh37.tar.gz $TIMS_HOME/.vep/
-echo "Extracting homo_sapiens_86_GRCh37.tar.gz at $TIMS_HOME/.vep/ ..."
-cd $TIMS_HOME/.vep/
-tar -xvzf homo_sapiens_86_GRCh37.tar.gz
-rm homo_sapiens_86_GRCh37.tar.gz
-
-### Back to $WORKDIR
-cd $WORKDIR
-
-### Moving programs
-echo "Moving picard.jar to $TIMS_HOME/programs/ ..."
-mv sources/picard.jar $TIMS_HOME/programs/
-echo "Moving gatk-package-4.0.8.1-local.jar to $TIMS_HOME/programs/ ..."
-mv sources/gatk-package-4.0.8.1-local.jar $TIMS_HOME/programs/
-echo "Moving vcf2maf-1.6.12.tar.gz to $TIMS_HOME/programs/ ..."
-mv sources/vcf2maf-1.6.12.tar.gz $TIMS_HOME/programs/
-echo "Moving vep.tar.gz to $TIMS_HOME/ ..."
-mv sources/vep.tar.gz $TIMS_HOME/
-echo "Moving cromwell-34.jar to $TIMS_HOME/programs/ ..."
-mv sources/cromwell-34.jar $TIMS_HOME/programs/
-echo "Moving apt-probeset-summarize to $TIMS_HOME/programs/ ..."
-mv sources/apt-probeset-summarize $TIMS_HOME/programs/
-echo "Moving apt-copynumber-workflow to $TIMS_HOME/programs/ ..."
-mv sources/apt-copynumber-workflow $TIMS_HOME/programs/
-echo "Moving rsem-1.2.21.tar.gz to $TIMS_HOME/programs/ ..."
-mv sources/rsem-1.2.21.tar.gz $TIMS_HOME/programs/
-echo "Moving HTSeq-0.6.1p1.tar.gz to $TIMS_HOME/programs/ ..."
-mv sources/HTSeq-0.6.1p1.tar.gz $TIMS_HOME/programs/
-
-### Extracting programs
-echo "Extracting vcf2maf-1.6.12.tar.gz to $TIMS_HOME/programs/vcf2maf-1.6.12/ ..."
-cd $TIMS_HOME/programs/
-tar -xvzf vcf2maf-1.6.12.tar.gz
-echo "Extracting vep.tar.gz to $TIMS_HOME/vep/ ..."
-cd $TIMS_HOME/
-tar -xvzf vep.tar.gz
-rm vep.tar.gz
-echo "Extracting RSEM to $TIMS_HOME/programs/ ..."
-cd $TIMS_HOME/programs/
-tar -xvzf rsem-1.2.21.tar.gz
-rm rsem-1.2.21.tar.gz
-echo "Extracting HTSeq-0.6.1p1 to $TIMS_HOME/programs/ ..."
-cd $TIMS_HOME/programs/
-tar -xvzf HTSeq-0.6.1p1.tar.gz
-rm HTSeq-0.6.1p1.tar.gz
-
-echo "Moving $TIMS_HOME/vep/htslib/ to $TIMS_HOME/programs/ ..."
-mv $TIMS_HOME/vep/htslib/ $TIMS_HOME/programs/
-echo "Moving $TIMS_HOME/vep/samtools to $TIMS_HOME/programs/ ..."
-mv $TIMS_HOME/vep/samtools/ $TIMS_HOME/programs/
-
-### Add environment variables
-cd $WORKDIR
-./addenv ~/.profile PATH="$""\PATH":$TIMS_HOME/programs/samtools/bin:$TIMS_HOME/programs/htslib/:$TIMS_HOME/vep/bin:$TIMS_HOME/vep:$TIMS_HOME/programs/rsem-1.2.21/:$TIMS_HOME/programs/HTSeq-0.6.1p1/bin/:
-PATH=$(echo $PATH)
-./addenv ~/.profile PATH="$""\PATH":$TIMS_PERL_BASE/perl-5.22.2/bin:.
-./addenv ~/.profile TIMS_HOME=$TIMS_HOME
-
-echo PATH=$PATH
-source ~/.profile
-
-### Testing if vcf2maf is executable
-testcommand=$($PERL_CMD $TIMS_HOME/programs/vcf2maf-1.6.12/vcf2maf.pl --help)
-if [ $? -eq 0 ]; then
-  echo "Testing vcf2maf.pl is okay"
-else
-  echo "Testing vcf2maf.pl failed"
-  exit -1
-fi
-
-### Copying pipelines/
-cd $WORKDIR
-echo "Copying sources/pipelines/ to $TIMS_HOME/bin/ ..."
-cp -R sources/pipelines/* $TIMS_HOME/bin/
-
-if [ $? -eq 0 ]; then
-  echo "Copying pipelines is done..."
-else
-  echo "Copying pipelines failed..."
-  exit -1
-fi
-
-### Moving affy-lib/
-echo "Moving sources/affy-lib/ to $TIMS_HOME/ ..."
-mv sources/affy-lib/ $TIMS_HOME/
-if [ $? -eq 0 ]; then
-  echo "Copying affy-lib is done..."
-else
-  echo "Copying affy-lib failed..."
-  exit -1
-fi
-
-
-### Copying genome-libraries/
-cd $WORKDIR
-echo "Moving sources/genome-libraries/ to $TIMS_HOME/ ..."
-mv sources/genome-libraries/ $TIMS_HOME/
-
-if [ $? -eq 0 ]; then
-  echo "Copying genome-libraries is done..."
-else
-  echo "Copying genome-libraries failed..."
-  exit -1
-fi
-
-echo "PROCESS = $?"
-
-
-
-./addenv ~/.profile PATH="$""\PATH":$TIMS_HOME/bin/seq-pipelines
-./addenv ~/.profile PATH="$""\PATH":$TIMS_HOME/bin/array-pipelines
-./addenv ~/.profile PERL5LIB=$PERL5LIB:$TIMS_HOME/bin/perl-lib/
-
-source ~/.profile
-
-### Create a soft-link to $TIMS_HOME/genome-libraries/ at /genome-libraries/
-cd /
-sudo ln -s $TIMS_HOME/genome-libraries/
-
-### Configure parameters.conf
-cd $WORKDIR
-R_BASE=$(which R)
-R_HOME=$(dirname $R_BASE)
-JAVA_HOME=$(which java)
-PYTHON_HOME=$(which python)
-./replacevalue $TIMS_HOME/bin/conf-files/ngs-parameters.conf TIMS_HOME $TIMS_HOME > $TIMS_HOME/bin/conf-files/parameters.conf.1
-mv $TIMS_HOME/bin/conf-files/parameters.conf.1 $TIMS_HOME/bin/conf-files/ngs-parameters.conf
-./replacevalue $TIMS_HOME/bin/conf-files/ngs-parameters.conf MY_R_HOME $R_HOME > $TIMS_HOME/bin/conf-files/parameters.conf.1
-mv $TIMS_HOME/bin/conf-files/parameters.conf.1 $TIMS_HOME/bin/conf-files/ngs-parameters.conf
-./replacevalue $TIMS_HOME/bin/conf-files/ngs-parameters.conf MY_JAVA_HOME $JAVA_HOME > $TIMS_HOME/bin/conf-files/parameters.conf.1
-mv $TIMS_HOME/bin/conf-files/parameters.conf.1 $TIMS_HOME/bin/conf-files/ngs-parameters.conf
-./replacevalue $TIMS_HOME/bin/conf-files/ngs-parameters.conf MY_PYTHON_HOME $PYTHON_HOME > $TIMS_HOME/bin/conf-files/parameters.conf.1
-mv $TIMS_HOME/bin/conf-files/parameters.conf.1 $TIMS_HOME/bin/conf-files/ngs-parameters.conf
-
-./replacevalue $TIMS_HOME/bin/conf-files/array-parameters.conf TIMS_HOME $TIMS_HOME > $TIMS_HOME/bin/conf-files/array-parameters.conf.1
-mv $TIMS_HOME/bin/conf-files/array-parameters.conf.1 $TIMS_HOME/bin/conf-files/array-parameters.conf
-./replacevalue $TIMS_HOME/bin/conf-files/array-parameters.conf MY_R_HOME $R_HOME > $TIMS_HOME/bin/conf-files/array-parameters.conf.1
-mv $TIMS_HOME/bin/conf-files/array-parameters.conf.1 $TIMS_HOME/bin/conf-files/array-parameters.conf
 
 ### Removing all temporarily extracted files
-rm -rf sources/ test/ addenv replacevalue install-Rpackages.Rscript
+cd $WORKDIR
+rm -rf test/ install-Rpackages.Rscript
 cd ~/
 rm -rf tmp_install/
 
@@ -605,3 +374,4 @@ sudo chown -R "$SUDO_ID:$SUDO_GID" /var/pipelines/
 source ~/.profile
 
 date
+
